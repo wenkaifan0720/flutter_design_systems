@@ -137,7 +137,7 @@ bool _framed(WidgetTester tester) => tester
         matching: find.byType(StudioSurface),
       ),
     )
-    .any((s) => s.face.radius == StudioRadii.bank);
+    .any((s) => s.face.radius == StudioThemeData.light().radiusBank);
 
 void main() {
   setUpAll(studioLoadFonts);

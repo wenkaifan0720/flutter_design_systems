@@ -31,13 +31,66 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
             );
             return KitRow(
               children: [
-                swatch('Raised', c.keyFace),
-                swatch('Level', c.panelFace),
-                swatch('Sunk', c.displayFace),
-                swatch('Readout', c.readoutFace),
+                swatch(
+                  'Raised',
+                  c.keyFace.copyWith(radius: context.studioTheme.radiusKey),
+                ),
+                swatch(
+                  'Level',
+                  c.panelFace.copyWith(radius: context.studioTheme.radiusPanel),
+                ),
+                swatch(
+                  'Sunk',
+                  c.displayFace.copyWith(
+                    radius: context.studioTheme.radiusDisplay,
+                  ),
+                ),
+                swatch(
+                  'Readout',
+                  c.readoutFace.copyWith(
+                    radius: context.studioTheme.radiusSmall,
+                  ),
+                ),
               ],
             );
           },
+        ),
+      ],
+    ),
+    KitSection(
+      title: "A part's own corners",
+      note:
+          "A style's corners name a step per corner, start and end as the part "
+          'reads: a panel cut at two diagonal corners, a key round at its top '
+          "start alone. Studio holds each to its steps: a milled corner is never "
+          'sharp, a key never a pill.',
+      children: [
+        KitRow(
+          children: [
+            SizedBox(
+              width: 220,
+              child: StudioPanel(
+                style: const StudioStyle(
+                  corners: WidgetStatePropertyAll(
+                    RawCorners(
+                      topStart: RawCorner.none,
+                      bottomEnd: RawCorner.none,
+                    ),
+                  ),
+                ),
+                child: const Text('Two corners cut'),
+              ),
+            ),
+            StudioButton.lit(
+              'Record',
+              style: const StudioStyle(
+                corners: WidgetStatePropertyAll(
+                  RawCorners.only(topStart: RawCorner.large),
+                ),
+              ),
+              onPressed: () {},
+            ),
+          ],
         ),
       ],
     ),
@@ -225,7 +278,7 @@ class _PresetTile extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: c.chassis,
-                borderRadius: BorderRadius.circular(StudioRadii.key),
+                borderRadius: BorderRadius.circular(theme.radiusKey),
                 border: Border.all(color: c.groove),
               ),
               child: Row(
@@ -241,7 +294,7 @@ class _PresetTile extends StatelessWidget {
                   // The readout glass and its figures: lit glass under dark
                   // figures by day, figures glowing on dark glass by night.
                   StudioSurface(
-                    face: c.readoutFace.copyWith(radius: StudioRadii.key),
+                    face: c.readoutFace.copyWith(radius: theme.radiusKey),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: StudioSpacing.small - 2,

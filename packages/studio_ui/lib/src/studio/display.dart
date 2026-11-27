@@ -13,6 +13,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'internal/corners.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -85,7 +86,7 @@ class _StudioDisclosureState extends State<StudioDisclosure> {
           builder: (context, states, _) => AnimatedStudioSurface(
             stiffness: StudioMotion.lampStiffness,
             face: c.recessFace.copyWith(
-              radius: StudioRadii.small,
+              radius: theme.radiusSmall,
               presence: states.contains(WidgetState.pressed) ? 1 : 0,
               focus: states.contains(WidgetState.focused)
                   ? c.focusRing
@@ -203,7 +204,7 @@ class StudioTable extends StatelessWidget {
       ],
     );
     return StudioSurface(
-      face: c.displayFace.copyWith(radius: StudioRadii.display),
+      face: c.displayFace.copyWith(radius: theme.radiusDisplay),
       child: Padding(
         padding: const EdgeInsets.all(StudioMetrics.recessInset),
         child: Column(
@@ -859,7 +860,12 @@ class StudioTag extends StatelessWidget {
         };
     final glass = tone == StudioTagTone.plain ? c.displayFace : c.readoutFace;
     return StudioSurface(
-      face: glass.copyWith(radius: 4, fill: layered.fill),
+      face: glass.copyWith(
+        radius: theme.radiusCap + 1,
+        fill: layered.fill,
+        corners: layered.corners,
+        borderRadius: studioRadiiOf(layered.shape),
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: StudioSpacing.small,
@@ -951,12 +957,14 @@ class StudioMedia extends StatelessWidget {
       child: AspectRatio(
         aspectRatio: aspectRatio,
         child: StudioSurface(
-          face: c.recessFace.copyWith(radius: StudioRadii.display),
+          face: c.recessFace.copyWith(
+            radius: StudioTheme.of(context).radiusDisplay,
+          ),
           child: Padding(
             padding: const EdgeInsets.all(inset - 1),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(
-                StudioRadii.display - inset + 1,
+                StudioTheme.of(context).radiusDisplay - inset + 1,
               ),
               child: Stack(
                 fit: StackFit.expand,

@@ -16,6 +16,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'internal/control_light.dart';
+import 'internal/corners.dart';
 
 import 'surface.dart';
 import 'theme.dart';
@@ -132,7 +133,7 @@ class _CheckKey extends StatelessWidget {
     final face = layered.on(
       c.keyFace
           .copyWith(
-            radius: StudioRadii.small,
+            radius: theme.radiusSmall,
             travel: value || pressed ? 1 : 0,
             fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
             presence: disabled ? studioUnpowered : 1,
@@ -917,6 +918,8 @@ class _StudioSwitchState extends State<StudioSwitch>
                 animation: _at,
                 builder: (context, _) => CustomPaint(
                   painter: _SwitchPainter(
+                    slotRadius: StudioTheme.of(context).radiusSmall + 1,
+                    capRadius: StudioTheme.of(context).radiusCap,
                     at: _at.value.clamp(0.0, 1.0),
                     rtl: rtl,
                     light: light,
@@ -952,6 +955,8 @@ class _SwitchPainter extends CustomPainter {
     required this.cue,
     required this.capFocus,
     required this.ratio,
+    required this.slotRadius,
+    required this.capRadius,
   });
 
   final double at;
@@ -964,6 +969,9 @@ class _SwitchPainter extends CustomPainter {
   // An on switch's window is lit already: focus lights the cap's rim.
   final Color capFocus;
   final double ratio;
+  // The slot's corners and the cap's, the theme's.
+  final double slotRadius;
+  final double capRadius;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -977,7 +985,7 @@ class _SwitchPainter extends CustomPainter {
         fill: c.slot,
         fillLow: Color.lerp(c.slot, c.shadow, 0.3)!,
         depth: StudioDepth.sunk,
-        radius: StudioRadii.small + 1,
+        radius: slotRadius,
       ),
       light,
       ratio: ratio,
@@ -987,7 +995,7 @@ class _SwitchPainter extends CustomPainter {
     // the light as well.
     final window = RRect.fromRectAndRadius(
       slot.deflate(lip),
-      const Radius.circular(StudioRadii.cap),
+      Radius.circular(capRadius),
     );
     // By night the unlit lens is fainter, so it never reads half lit.
     final night = c.brightness == ui.Brightness.dark;
@@ -1000,10 +1008,7 @@ class _SwitchPainter extends CustomPainter {
     );
     if (c.brightness == ui.Brightness.dark) {
       canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          slot.deflate(0.5),
-          const Radius.circular(StudioRadii.small + 1),
-        ),
+        RRect.fromRectAndRadius(slot.deflate(0.5), Radius.circular(slotRadius)),
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1
@@ -1027,10 +1032,7 @@ class _SwitchPainter extends CustomPainter {
               size.height - lip,
             )
           : Rect.fromLTRB(lip, lip, capRect.center.dx, size.height - lip);
-      final rr = RRect.fromRectAndRadius(
-        litRect,
-        const Radius.circular(StudioRadii.cap),
-      );
+      final rr = RRect.fromRectAndRadius(litRect, Radius.circular(capRadius));
       canvas.drawRRect(
         rr,
         Paint()
@@ -1069,7 +1071,7 @@ class _SwitchPainter extends CustomPainter {
         fill: enabled ? c.cap : Color.lerp(c.cap, c.slot, 0.35)!,
         fillLow: enabled ? c.capLow : Color.lerp(c.capLow, c.slot, 0.35)!,
         depth: StudioDepth.raised,
-        radius: StudioRadii.cap,
+        radius: capRadius,
         travel: pressed ? 0.6 : 0,
         brushed: true,
         rim: capFocus,
@@ -1105,7 +1107,9 @@ class _SwitchPainter extends CustomPainter {
       old.pressed != pressed ||
       old.cue != cue ||
       old.capFocus != capFocus ||
-      old.ratio != ratio;
+      old.ratio != ratio ||
+      old.slotRadius != slotRadius ||
+      old.capRadius != capRadius;
 }
 
 /// One key of a [StudioSegmentedButton].
@@ -1273,13 +1277,24 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
         final total = widths.fold(0.0, (sum, width) => sum + width);
         final extra = math.max(0.0, available - total) / segments.length;
         final equalFits = widths.every((width) => width <= equal);
+        // An app's corners take the bank's outer corners; the keys at its
+        // ends follow them, concentric, and the joins between keys stay.
+        final outer = studioOuterCorners(
+          theme,
+          RawStyleOf(layers, const {}),
+          theme.radiusBank,
+          Directionality.of(context),
+        );
         final bank = Semantics(
           label: widget.semanticLabel,
           container: true,
           child: SizedBox(
             width: available + 2 * StudioSpacing.hair,
             child: StudioSurface(
-              face: c.recessFace,
+              face: c.recessFace.copyWith(
+                radius: theme.radiusBank,
+                borderRadius: outer,
+              ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: StudioSpacing.hair,
@@ -1316,6 +1331,7 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
                                   ? equal
                                   : math.min(available, widths[i] + extra),
                               height,
+                              outer,
                             ),
                         ],
                       ),
@@ -1345,6 +1361,7 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
     TextStyle words,
     double width,
     double height,
+    BorderRadiusDirectional? outer,
   ) {
     final c = theme.colors;
     final chosen = s.value == widget.value;
@@ -1366,10 +1383,10 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
               : chosen
               ? c.litLegend
               : c.onKey);
-      final face = layered.on(
+      final keyed = layered.on(
         c.keyFace
             .copyWith(
-              radius: StudioRadii.bank - StudioMetrics.recessInset,
+              radius: theme.radiusBank - StudioMetrics.recessInset,
               travel: chosen || pressed ? 1 : 0,
               fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
               presence: disabled ? studioUnpowered : 1,
@@ -1384,6 +1401,17 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
               focused: states.contains(WidgetState.focused),
             ),
       );
+      final face = outer == null
+          ? keyed
+          : keyed.copyWith(
+              borderRadius: studioKeyCorners(
+                outer,
+                theme.radiusBank - inset,
+                inset: inset,
+                starts: i == 0,
+                ends: i == widget.segments.length - 1,
+              ),
+            );
       return Padding(
         padding: const EdgeInsetsDirectional.only(
           start: start,

@@ -32,7 +32,10 @@ class RoomtoneOverview extends StatelessWidget {
     // The pitch's name stands over its card as the player's does over the
     // player, so on a desk the two cards' tops meet one line.
     final card = StudioSurface(
-      face: c.panelFace.copyWith(brushed: false),
+      face: c.panelFace.copyWith(
+        radius: context.studioTheme.radiusPanel,
+        brushed: false,
+      ),
       child: Padding(
         padding: const EdgeInsets.all(StudioSpacing.regular),
         child: Column(

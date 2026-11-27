@@ -1,3 +1,12 @@
+## 0.7.0
+
+- Requires ui_core 0.8.5.
+- **Corners on the theme**: `StudioThemeData.shapeScheme` (ui_core's `RawShapeScheme`) holds Studio's milled radii, 3, 5, 6, 10 and 12 by default, so nothing moves at rest. It is held to `StudioThemeData.shapeLimits`: round only, a key from 4 to 10, each other step in its band, no stroke and no depth. Every part takes its corner from it, read as `radiusCap`, `radiusSmall`, `radiusKey`, `radiusDisplay`, `radiusPanel` and `radiusBank` (a bank of keys, concentric with them). A change eases across with the theme, at once under Reduce Motion; `copyWith`, `lerp`, `==` and `hashCode` see it.
+- **A part's own corners**: a style's `corners` (ui_core's `RawCorners`) name a step per corner, start and end as the part reads, so they turn right to left: cut two diagonal corners, or round the top start alone. Studio holds each to its steps, extra small to extra large (a milled corner is never sharp, a key never a pill), and says so once in debug; a style's `shape` wins as given. A key row, a toggle bank, a segmented button and a split key take them on their outer corners only: the keys at the ends follow, concentric, and the joins stay. A sheet takes its top corners. The shadows of a dialog, a popover, a tooltip, a toast and a command palette, a sheet's clip and a file drop's dashed edge follow them. A press that changes a part's corners eases them.
+- `StudioFace.corners` and `StudioFace.borderRadius` carry a face's own corners (`borderRadius` wins, as a shape does), and `StudioFace.resolveCorners(theme)` holds and draws them; `StudioFacePainter.textDirection` and `paintStudioFace(textDirection:)` lay them as the part reads.
+- `StudioSkeleton.radius` is nullable: null is the theme's `radiusSmall`. A tag's plate, a meter's window and a progress bar's window follow the theme's `radiusCap`; they stood at 4, 3 and 4 whatever the theme.
+- Deprecated `StudioRadii.cap`, `.small`, `.key`, `.display`, `.bank` and `.panel`: read the theme's corner (`StudioTheme.of(context).radiusKey`), which follows `shapeScheme`. They go in 0.8.0.
+
 ## 0.6.0
 
 - Requires ui_core 0.8.3. `StudioAppShell.branches` and `StudioScaffold.branches` give each place a navigator of its own, on ui_core's `RawAdaptiveShell.branches`: a page pushed on a place keeps the rail or the side panel beside it, the phone's key bank steps away for it, back pops the place before it leaves it, and choosing the place again returns to its first page. The act stands over each place's first page.

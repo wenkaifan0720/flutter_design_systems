@@ -14,6 +14,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'internal/control_light.dart';
+import 'internal/corners.dart';
 import 'internal/strip.dart';
 import 'menu.dart';
 import 'select.dart';
@@ -30,7 +31,7 @@ StudioFace _keyFace(
   StudioColors c,
   Set<WidgetState> states, {
   bool latched = false,
-  double radius = StudioRadii.key,
+  double? radius,
 }) {
   final disabled = states.contains(WidgetState.disabled);
   return c.keyFace
@@ -298,6 +299,14 @@ class StudioKeyRow extends StatelessWidget {
                 4,
           )
         : minimumHeight;
+    // An app's corners take the bank's outer corners; the keys at its ends
+    // follow them, concentric, and the joins between keys stay.
+    final outer = studioOuterCorners(
+      theme,
+      frame,
+      theme.radiusBank,
+      Directionality.of(context),
+    );
     return Semantics(
       container: true,
       explicitChildNodes: true,
@@ -305,7 +314,10 @@ class StudioKeyRow extends StatelessWidget {
       child: SizedBox(
         height: height,
         child: StudioSurface(
-          face: c.recessFace,
+          face: c.recessFace.copyWith(
+            radius: theme.radiusBank,
+            borderRadius: outer,
+          ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: StudioSpacing.hair),
             child: StudioStrip(
@@ -313,7 +325,7 @@ class StudioKeyRow extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  for (final item in items)
+                  for (final (i, item) in items.indexed)
                     RawButton(
                       onPressed: item.onPressed,
                       semanticLabel: item.label,
@@ -323,9 +335,20 @@ class StudioKeyRow extends StatelessWidget {
                           style,
                           theme.keyRowStyle,
                         ], states);
-                        final face = layered.on(
-                          _keyFace(c, states, radius: StudioRadii.bank - inset),
+                        final keyed = layered.on(
+                          _keyFace(c, states, radius: theme.radiusBank - inset),
                         );
+                        final face = outer == null
+                            ? keyed
+                            : keyed.copyWith(
+                                borderRadius: studioKeyCorners(
+                                  outer,
+                                  theme.radiusBank - inset,
+                                  inset: inset,
+                                  starts: i == 0,
+                                  ends: i == items.length - 1,
+                                ),
+                              );
                         final ink = face.foreground ?? c.onKey;
                         return Padding(
                           padding: const EdgeInsets.symmetric(
@@ -467,10 +490,19 @@ class StudioToggleBank<T> extends StatelessWidget {
     const inset = StudioMetrics.recessInset;
     final frame = RawStyleOf([style, theme.toggleBankStyle], const {});
     final height = frame.minimumSize?.height ?? theme.controlHeight;
+    final outer = studioOuterCorners(
+      theme,
+      frame,
+      theme.radiusBank,
+      Directionality.of(context),
+    );
     return SizedBox(
       height: height,
       child: StudioSurface(
-        face: c.recessFace,
+        face: c.recessFace.copyWith(
+          radius: theme.radiusBank,
+          borderRadius: outer,
+        ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: StudioSpacing.hair),
           child: RawSegmentedButton<T>(
@@ -497,14 +529,26 @@ class StudioToggleBank<T> extends StatelessWidget {
               ], states);
               final on = states.contains(WidgetState.selected);
               final disabled = states.contains(WidgetState.disabled);
-              final face = layered.on(
+              final keyed = layered.on(
                 _keyFace(
                   c,
                   states,
                   latched: on,
-                  radius: StudioRadii.bank - inset,
+                  radius: theme.radiusBank - inset,
                 ),
               );
+              final at = options.indexOf(value);
+              final face = outer == null
+                  ? keyed
+                  : keyed.copyWith(
+                      borderRadius: studioKeyCorners(
+                        outer,
+                        theme.radiusBank - inset,
+                        inset: inset,
+                        starts: at == 0,
+                        ends: at == options.length - 1,
+                      ),
+                    );
               final ink = face.foreground ?? c.onKey;
               return Padding(
                 padding: const EdgeInsets.symmetric(
@@ -626,6 +670,14 @@ class StudioSplitKey extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final layers = [style, lit ? theme.litButtonStyle : theme.buttonStyle];
+    // An app's corners are the pair's outer ones: the key's start, the
+    // narrow key's end; the corners where they meet stay.
+    final outer = studioOuterCorners(
+      theme,
+      RawStyleOf(layers, const {}),
+      theme.radiusKey,
+      Directionality.of(context),
+    );
     return RawSplitButton(
       label: label,
       onPressed: onPressed,
@@ -650,9 +702,22 @@ class StudioSplitKey extends StatelessWidget {
         };
         final layered = RawStyleOf(layers, now);
         final height = layered.minimumSize?.height ?? theme.controlHeight;
-        final face = layered.on(
-          lit ? _litFace(c, now, StudioRadii.key) : _keyFace(c, now),
+        final keyed = layered.on(
+          lit
+              ? _litFace(c, now, theme.radiusKey)
+              : _keyFace(c, now, radius: theme.radiusKey),
         );
+        final face = outer == null
+            ? keyed
+            : keyed.copyWith(
+                borderRadius: studioKeyCorners(
+                  outer,
+                  theme.radiusKey,
+                  inset: 0,
+                  starts: part == RawSplitPart.main,
+                  ends: part == RawSplitPart.toggle,
+                ),
+              );
         final ink = face.foreground ?? c.onKey;
         final glowing = lit && !now.contains(WidgetState.disabled);
         return TapTargetPadding(
@@ -805,7 +870,7 @@ class StudioLink extends StatelessWidget {
         return TapTargetPadding(
           child: AnimatedStudioSurface(
             face: c.recessFace.copyWith(
-              radius: StudioRadii.small,
+              radius: theme.radiusSmall,
               presence: states.contains(WidgetState.pressed) ? 1 : 0,
               focus: _ring(c, states),
             ),
@@ -900,7 +965,7 @@ class StudioKbd extends StatelessWidget {
             ConstrainedBox(
               constraints: BoxConstraints(minWidth: side, minHeight: side),
               child: StudioSurface(
-                face: layered.on(c.keyFace.copyWith(radius: StudioRadii.small)),
+                face: layered.on(c.keyFace.copyWith(radius: theme.radiusSmall)),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: StudioSpacing.tight + StudioSpacing.hair,

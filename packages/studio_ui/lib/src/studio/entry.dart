@@ -35,7 +35,7 @@ StudioFace _window(StudioThemeData theme, Set<WidgetState> states) {
   final focused = states.contains(WidgetState.focused);
   final disabled = states.contains(WidgetState.disabled);
   return c.displayFace.copyWith(
-    radius: StudioRadii.key,
+    radius: theme.radiusKey,
     rim: error
         ? c.danger
         : focused
@@ -140,7 +140,7 @@ class _WindowKey extends StatelessWidget {
           dimension: 28,
           child: AnimatedStudioSurface(
             face: c.recessFace.copyWith(
-              radius: StudioRadii.small,
+              radius: StudioTheme.of(context).radiusSmall,
               presence: states.contains(WidgetState.pressed) ? 1 : 0,
               focus: states.contains(WidgetState.focused)
                   ? c.focusRing
@@ -683,7 +683,7 @@ class StudioCodeField extends StatelessWidget {
             child: AnimatedStudioSurface(
               stiffness: StudioMotion.lampStiffness,
               face: c.readoutFace.copyWith(
-                radius: StudioRadii.small,
+                radius: StudioTheme.of(context).radiusSmall,
                 rim: slot.isError
                     ? c.danger
                     : slot.active && slot.focused
@@ -849,6 +849,7 @@ class StudioStepper extends StatelessWidget {
                   child: AnimatedStudioSurface(
                     stiffness: StudioMotion.lampStiffness,
                     face: c.readoutFace.copyWith(
+                      radius: StudioTheme.of(context).radiusSmall,
                       rim: focused
                           ? c.readoutLit.withValues(alpha: 0.9)
                           : c.readoutLit.withValues(alpha: 0),
@@ -1496,7 +1497,7 @@ class _StudioTagInputState<T extends Object> extends State<StudioTagInput<T>> {
               stiffness: StudioMotion.lampStiffness,
               face: layered.on(
                 _window(theme, states).copyWith(
-                  radius: StudioRadii.small + StudioMetrics.recessInset,
+                  radius: theme.radiusSmall + StudioMetrics.recessInset,
                 ),
               ),
               child: ConstrainedBox(
@@ -1608,7 +1609,7 @@ class _Plate extends StatelessWidget {
           AnimatedStudioSurface(
             stiffness: StudioMotion.lampStiffness,
             face: c.keyFace.copyWith(
-              radius: StudioRadii.small,
+              radius: StudioTheme.of(context).radiusSmall,
               focus: focused ? c.focusRing : c.focusRing.withValues(alpha: 0),
               fill: enabled ? null : Color.lerp(c.key, c.panelLow, 0.5),
               presence: enabled ? 1 : studioUnpowered,

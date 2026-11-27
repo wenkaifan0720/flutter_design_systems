@@ -38,7 +38,11 @@ class StudioPanel extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final layered = RawStyleOf([style, theme.panelStyle], const {});
     return StudioSurface(
-      face: layered.on(theme.colors.panelFace),
+      face: layered.on(
+        theme.colors.panelFace.copyWith(
+          radius: StudioTheme.of(context).radiusPanel,
+        ),
+      ),
       child: Padding(
         padding:
             padding ??
@@ -107,10 +111,12 @@ class StudioDisplay extends StatelessWidget {
       final layered = RawStyleOf([style, theme.displayStyle], states);
       final base = readout
           ? c.readoutFace.copyWith(
-              radius: StudioRadii.display,
+              radius: theme.radiusDisplay,
               foreground: c.onReadout,
             )
-          : c.displayFace;
+          : c.displayFace.copyWith(
+              radius: StudioTheme.of(context).radiusDisplay,
+            );
       final pressed = states.contains(WidgetState.pressed);
       final hovered = states.contains(WidgetState.hovered);
       final focused = states.contains(WidgetState.focused);

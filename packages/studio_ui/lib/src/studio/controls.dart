@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/corners.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -247,6 +248,7 @@ class _StudioFaderState extends State<StudioFader> {
     final prev = _snap(widget.value - _step);
     final face = CustomPaint(
       painter: _FaderPainter(
+        capRadius: StudioTheme.of(context).radiusCap,
         t: _t,
         axis: widget.axis,
         rtl: rtl,
@@ -377,6 +379,7 @@ class _FaderPainter extends CustomPainter {
     required this.ticks,
     required this.indexColor,
     required this.ratio,
+    required this.capRadius,
   });
 
   final double t;
@@ -389,6 +392,8 @@ class _FaderPainter extends CustomPainter {
   final int ticks;
   final Color indexColor;
   final double ratio;
+  // The handle's corners, the theme's cap.
+  final double capRadius;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -477,7 +482,7 @@ class _FaderPainter extends CustomPainter {
         fill: enabled ? c.cap : Color.lerp(c.cap, c.panelLow, 0.4)!,
         fillLow: enabled ? c.capLow : Color.lerp(c.capLow, c.panelLow, 0.4)!,
         depth: StudioDepth.raised,
-        radius: StudioRadii.cap,
+        radius: capRadius,
         travel: held ? 0.5 : 0,
         brushed: true,
       ),
@@ -507,7 +512,8 @@ class _FaderPainter extends CustomPainter {
       old.held != held ||
       old.ticks != ticks ||
       old.indexColor != indexColor ||
-      old.ratio != ratio;
+      old.ratio != ratio ||
+      old.capRadius != capRadius;
 }
 
 /// A knob: a knurled rotary with a lit pointer, ticks round it on the metal.
@@ -947,7 +953,11 @@ class StudioMeter extends StatelessWidget {
         height: along ? thickness : null,
         width: along ? null : thickness,
         child: StudioSurface(
-          face: c.readoutFace.copyWith(radius: 3),
+          face: c.readoutFace.copyWith(
+            radius: theme.radiusCap,
+            corners: layered.corners,
+            borderRadius: studioRadiiOf(layered.shape),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(StudioSpacing.hair),
             child: RepaintBoundary(

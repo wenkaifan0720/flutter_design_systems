@@ -412,7 +412,33 @@ MaterialApp(
 )
 ```
 
-The corners, the light from the top and the depths of the metal stay Studio's. Set a component style such as `buttonStyle` or `textFieldStyle` on the theme to apply it throughout an app, or pass a `StudioStyle` to an individual widget. Its state properties can change with focus, selection or a press.
+The light from the top and the depths of the metal stay Studio's. The corners are the theme's `shapeScheme`, Studio's milled radii by default, held to bands that still read as milled hardware (a key from 4 to 10, round only):
+
+```dart
+final rounder = StudioThemeData.light().copyWith(
+  shapeScheme: StudioThemeData.defaultShapeScheme.copyWith(
+    corners: StudioThemeData.defaultShapeScheme.corners.scaled(1.5),
+  ),
+);
+```
+
+A part takes its own corners from its style, a step per corner, start and end as it reads, so they turn right to left:
+
+```dart
+final record = StudioButton.lit(
+  'Record',
+  style: const StudioStyle(
+    corners: WidgetStatePropertyAll(
+      RawCorners(topStart: RawCorner.large, bottomEnd: RawCorner.large),
+    ),
+  ),
+  onPressed: () {},
+);
+```
+
+Each corner holds to Studio's steps, extra small to extra large: a milled corner is never sharp and a key is never a pill. A key row, a toggle bank, a segmented button and a split key take them on their outer corners, their end keys following; a style's `shape` wins as given. Lamps, knobs, switches, faders and tabs keep their own forms.
+
+Set a component style such as `buttonStyle` or `textFieldStyle` on the theme to apply it throughout an app, or pass a `StudioStyle` to an individual widget. Its state properties can change with focus, selection or a press.
 
 `textureStrength` controls the grain on metal surfaces. High-contrast mode removes the grain. Build custom controls with the same materials using `StudioSurface`, `StudioFace`, `StudioLamp` and `StudioReadout`.
 

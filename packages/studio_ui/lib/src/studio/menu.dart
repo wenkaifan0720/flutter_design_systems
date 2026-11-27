@@ -13,6 +13,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'internal/corners.dart';
 import 'internal/strip.dart';
 import 'select.dart';
 import 'surface.dart';
@@ -217,7 +218,9 @@ class StudioMenuBar extends StatelessWidget {
       ],
       barBuilder: (context, items) => StudioSurface(
         face: c.panelFace.copyWith(
-          radius: StudioRadii.small,
+          radius: theme.radiusSmall,
+          corners: bar.corners,
+          borderRadius: studioRadiiOf(bar.shape),
           fill: bar.fill,
           brushed: true,
         ),
@@ -256,7 +259,7 @@ class StudioMenuBar extends StatelessWidget {
         return AnimatedStudioSurface(
           stiffness: StudioMotion.lampStiffness,
           face: c.recessFace.copyWith(
-            radius: StudioRadii.small - 1,
+            radius: theme.radiusSmall - 1,
             presence: open || states.contains(WidgetState.hovered) ? 1 : 0,
             focus: states.contains(WidgetState.focused)
                 ? c.focusRing
@@ -464,9 +467,11 @@ class StudioCommandPalette extends StatelessWidget {
         Flexible(
           child: StudioSurface(
             face: StudioTheme.of(context).colors.displayFace
-                .copyWith(radius: StudioRadii.bank),
+                .copyWith(radius: StudioTheme.of(context).radiusBank),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(StudioRadii.bank),
+              borderRadius: BorderRadius.circular(
+                StudioTheme.of(context).radiusBank,
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(StudioMetrics.recessInset),
                 child: results,
@@ -501,12 +506,19 @@ Widget _panel(BuildContext context, StudioStyle? style, Widget child) {
   final c = theme.colors;
   final night = c.brightness == Brightness.dark;
   final layered = RawStyleOf([style, theme.commandPaletteStyle], const {});
+  final outer = studioOuterCorners(
+    theme,
+    layered,
+    theme.radiusPanel,
+    Directionality.of(context),
+  );
   return ConstrainedBox(
     constraints: const BoxConstraints(maxWidth: 560),
     child: DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(StudioRadii.panel),
-        boxShadow: [
+      decoration: studioShadowed(
+        radii: outer,
+        own: BorderRadius.circular(theme.radiusPanel),
+        shadows: [
           BoxShadow(
             color: c.shadow.withValues(alpha: night ? 0.6 : 0.3),
             blurRadius: 32,
@@ -516,7 +528,7 @@ Widget _panel(BuildContext context, StudioStyle? style, Widget child) {
       ),
       child: StudioSurface(
         face: layered.on(
-          c.panelFace.copyWith(radius: StudioRadii.panel, brushed: true),
+          c.panelFace.copyWith(radius: theme.radiusPanel, brushed: true),
         ),
         child: Padding(
           padding:

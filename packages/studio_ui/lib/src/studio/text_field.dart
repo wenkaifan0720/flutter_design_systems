@@ -303,7 +303,7 @@ class _StudioTextFieldState extends State<StudioTextField> {
         : c.indicator.withValues(alpha: 0);
     final face = layered.on(
       c.displayFace.copyWith(
-        radius: StudioRadii.key,
+        radius: theme.radiusKey,
         rim: rim,
         foreground: words.color,
         // A disabled window is unlit glass, near the metal's tone.

@@ -311,7 +311,7 @@ void main() {
             1,
           ),
         );
-        toggle.corner(_metal, cap, StudioRadii.cap);
+        toggle.corner(_metal, cap, StudioThemeData.light().radiusCap);
         final fader = await _paint(
           tester,
           width,

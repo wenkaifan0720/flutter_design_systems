@@ -58,12 +58,14 @@ class _Framed extends StatelessWidget {
   Widget build(BuildContext context) => SizedBox(
     height: height,
     child: StudioSurface(
-      face: context.studioTheme.colors.recessFace,
+      face: context.studioTheme.colors.recessFace.copyWith(
+        radius: context.studioTheme.radiusBank,
+      ),
       child: Padding(
         padding: const EdgeInsets.all(StudioMetrics.recessInset),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(
-            StudioRadii.panel - StudioMetrics.recessInset,
+            context.studioTheme.radiusPanel - StudioMetrics.recessInset,
           ),
           child: MediaQuery.removePadding(
             context: context,

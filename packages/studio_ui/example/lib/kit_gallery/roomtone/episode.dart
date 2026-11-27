@@ -40,7 +40,7 @@ class RoomtoneCover extends StatelessWidget {
         child: StudioSurface(
           // By night a smoked tile, so it parts from the dark glass.
           face: theme.colors.readoutFace.copyWith(
-            radius: size >= 80 ? StudioRadii.display : StudioRadii.small,
+            radius: size >= 80 ? theme.radiusDisplay : theme.radiusSmall,
             fill: theme.colors.brightness == Brightness.dark
                 ? Color.lerp(theme.colors.readout, theme.colors.onDisplay, 0.12)
                 : null,

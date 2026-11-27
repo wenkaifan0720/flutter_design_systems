@@ -15,6 +15,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'internal/corners.dart';
 import 'internal/curved.dart';
 import 'surface.dart';
 import 'theme.dart';
@@ -176,6 +177,12 @@ class StudioDialog extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final layered = RawStyleOf([style, theme.dialogStyle], const {});
+    final outer = studioOuterCorners(
+      theme,
+      layered,
+      theme.radiusPanel,
+      Directionality.of(context),
+    );
     final narrow = MediaQuery.sizeOf(context).width < StudioMetrics.tablet;
     final night = c.brightness == Brightness.dark;
     return ConstrainedBox(
@@ -186,9 +193,10 @@ class StudioDialog extends StatelessWidget {
         explicitChildNodes: true,
         label: title,
         child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(StudioRadii.panel),
-            boxShadow: [
+          decoration: studioShadowed(
+            radii: outer,
+            own: BorderRadius.circular(theme.radiusPanel),
+            shadows: [
               BoxShadow(
                 color: c.shadow.withValues(alpha: night ? 0.6 : 0.28),
                 blurRadius: 32,
@@ -197,7 +205,7 @@ class StudioDialog extends StatelessWidget {
             ],
           ),
           child: StudioSurface(
-            face: layered.on(c.panelFace),
+            face: layered.on(c.panelFace.copyWith(radius: theme.radiusPanel)),
             child: Padding(
               padding:
                   layered.padding(Directionality.of(context)) ??
@@ -490,7 +498,21 @@ class StudioSheet extends StatelessWidget {
     final side = size.width < StudioMetrics.tablet
         ? StudioSpacing.pageMargin(size.width)
         : StudioSpacing.regular;
-    const top = Radius.circular(StudioRadii.panel);
+    final top = Radius.circular(theme.radiusPanel);
+    // A sheet rises from the screen's edge: an app's corners take its top
+    // ones, and its foot stays square on the edge.
+    final outer = studioOuterCorners(
+      theme,
+      layered,
+      theme.radiusPanel,
+      Directionality.of(context),
+    );
+    final corners = outer == null
+        ? null
+        : BorderRadiusDirectional.only(
+            topStart: outer.topStart,
+            topEnd: outer.topEnd,
+          );
     // On a phone what it holds starts on the page's margin, as the page's
     // own does; wider, the framed panel's own inset.
     final pad =
@@ -512,9 +534,10 @@ class StudioSheet extends StatelessWidget {
         explicitChildNodes: true,
         label: title,
         child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.vertical(top: top),
-            boxShadow: [
+          decoration: studioShadowed(
+            radii: corners,
+            own: BorderRadius.vertical(top: top),
+            shadows: [
               BoxShadow(
                 color: c.shadow.withValues(alpha: night ? 0.55 : 0.22),
                 blurRadius: 24,
@@ -522,9 +545,14 @@ class StudioSheet extends StatelessWidget {
             ],
           ),
           child: ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: top),
+            clipper: corners == null
+                ? null
+                : StudioCornerClipper(corners, Directionality.of(context)),
+            borderRadius: BorderRadius.vertical(top: top),
             child: StudioSurface(
-              face: layered.on(c.panelFace.copyWith(radius: 0)),
+              face: layered
+                  .on(c.panelFace.copyWith(radius: 0))
+                  .copyWith(borderRadius: corners),
               child: SafeArea(
                 top: false,
                 child: Stack(
@@ -656,6 +684,7 @@ class _CloseKey extends StatelessWidget {
         dimension: theme.controlHeight,
         child: AnimatedStudioSurface(
           face: c.keyFace.copyWith(
+            radius: StudioTheme.of(context).radiusKey,
             travel: states.contains(WidgetState.pressed) ? 1 : 0,
             focus: states.contains(WidgetState.focused)
                 ? c.focusRing
@@ -724,6 +753,12 @@ class _Toast extends StatelessWidget {
     final c = theme.colors;
     final t = details.toast;
     final layered = RawStyleOf([style, theme.toastStyle], const {});
+    final outer = studioOuterCorners(
+      theme,
+      layered,
+      theme.radiusDisplay,
+      Directionality.of(context),
+    );
     final ink = layered.foreground ?? c.onReadout;
     final words = RawWidgetsLocalizations.of(context);
     final opacity = details.animation.drive(
@@ -735,9 +770,10 @@ class _Toast extends StatelessWidget {
         liveRegion: true,
         container: true,
         child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(StudioRadii.display),
-            boxShadow: [
+          decoration: studioShadowed(
+            radii: outer,
+            own: BorderRadius.circular(theme.radiusDisplay),
+            shadows: [
               BoxShadow(
                 color: c.shadow.withValues(alpha: 0.35),
                 blurRadius: 16,
@@ -747,7 +783,8 @@ class _Toast extends StatelessWidget {
           ),
           child: StudioSurface(
             face: c.readoutFace.copyWith(
-              radius: StudioRadii.display,
+              radius: theme.radiusDisplay,
+              borderRadius: outer,
               fill: layered.fill,
               depth: StudioDepth.level,
               focus: details.focused ? c.focusRing : null,
@@ -858,7 +895,9 @@ class _ToastKey extends StatelessWidget {
             fill: c.readoutLow,
             fillLow: c.readoutLow,
             depth: StudioDepth.sunk,
-            radius: StudioRadii.display - StudioMetrics.recessInset,
+            radius:
+                StudioTheme.of(context).radiusDisplay -
+                StudioMetrics.recessInset,
             presence:
                 states.contains(WidgetState.pressed) ||
                     states.contains(WidgetState.hovered)

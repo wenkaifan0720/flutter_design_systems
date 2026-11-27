@@ -16,6 +16,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'internal/corners.dart';
 import 'internal/control_light.dart';
 import 'internal/field_frame.dart';
 
@@ -409,7 +410,7 @@ class _StudioCalendarState extends State<StudioCalendar> {
                             edge: focused
                                 ? c.focusRing
                                 : c.focusRing.withValues(alpha: 0),
-                            radius: StudioRadii.small,
+                            radius: theme.radiusSmall,
                             child: AnimatedStudioSurface(
                               stiffness: StudioMotion.lampStiffness,
                               face: StudioFace(
@@ -420,7 +421,7 @@ class _StudioCalendarState extends State<StudioCalendar> {
                                     ? litFillLow
                                     : Color.lerp(c.display, c.shadow, 0.03)!,
                                 depth: StudioDepth.sunk,
-                                radius: StudioRadii.small,
+                                radius: theme.radiusSmall,
                                 rim: c.indicator.withValues(
                                   alpha: lit && !night && !focused ? 0.75 : 0,
                                 ),
@@ -487,14 +488,19 @@ class _StudioCalendarState extends State<StudioCalendar> {
               decoration: BoxDecoration(
                 color: frame.fill,
                 borderRadius: BorderRadius.circular(
-                  StudioRadii.bank - StudioMetrics.recessInset,
+                  theme.radiusBank - StudioMetrics.recessInset,
                 ),
               ),
               child: body,
             );
     }
     return StudioSurface(
-      face: c.displayFace.copyWith(radius: StudioRadii.bank, fill: frame.fill),
+      face: c.displayFace.copyWith(
+        radius: theme.radiusBank,
+        fill: frame.fill,
+        corners: frame.corners,
+        borderRadius: studioRadiiOf(frame.shape),
+      ),
       child: body,
     );
   }
@@ -546,7 +552,7 @@ class _PickerWindow extends StatelessWidget {
         final layered = RawStyleOf([theme.textFieldStyle], now);
         final face = layered.on(
           c.displayFace.copyWith(
-            radius: StudioRadii.key,
+            radius: theme.radiusKey,
             // Focused, the light round the window is its one edge.
             rim: error
                 ? c.danger
@@ -996,7 +1002,7 @@ Widget _drums(
                       fill: Color.lerp(c.readout, c.shadow, 0.1)!,
                       fillLow: c.readout,
                       depth: StudioDepth.sunk,
-                      radius: StudioRadii.small,
+                      radius: theme.radiusSmall,
                       focus: focused
                           ? c.focusRing
                           : c.focusRing.withValues(alpha: 0),
@@ -1034,10 +1040,10 @@ Widget _drums(
 }
 
 // The dark housing a drum or two turn in.
-Widget _housing(StudioColors c, Widget child) => StudioSurface(
-  face: c.readoutFace.copyWith(radius: StudioRadii.bank),
+Widget _housing(StudioColors c, double radius, Widget child) => StudioSurface(
+  face: c.readoutFace.copyWith(radius: radius),
   child: ClipRRect(
-    borderRadius: BorderRadius.circular(StudioRadii.bank),
+    borderRadius: BorderRadius.circular(radius),
     child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: StudioSpacing.small),
       child: child,
@@ -1091,6 +1097,7 @@ class StudioWheelPicker<T> extends StatelessWidget {
     final change = onChanged;
     return _housing(
       c,
+      StudioTheme.of(context).radiusBank,
       _drums(
         context,
         columns: [
@@ -1167,6 +1174,7 @@ class StudioTimePicker extends StatelessWidget {
         : words.formatDecimal(n);
     return _housing(
       c,
+      StudioTheme.of(context).radiusBank,
       // Hours then minutes, left to right, in a right-to-left language too,
       // as Material's time picker keeps them.
       Directionality(
@@ -1330,7 +1338,7 @@ class _StudioColorPickerState extends State<StudioColorPicker> {
       areaHeight: 180,
       areaBuilder: (context, area) => window(
         CustomPaint(painter: _AreaPainter(area.color.hue), size: Size.infinite),
-        StudioRadii.key,
+        theme.radiusKey,
       ),
       areaThumbBuilder: (context, area) =>
           _thumb(c, area.states, area.color.toColor().withValues(alpha: 1)),
@@ -1620,7 +1628,7 @@ class StudioRangeFader extends StatelessWidget {
                     ? c.capLow
                     : Color.lerp(c.capLow, c.panelLow, 0.4)!,
                 depth: StudioDepth.raised,
-                radius: StudioRadii.cap,
+                radius: theme.radiusCap,
                 travel: held ? 0.5 : 0,
                 brushed: true,
                 focus: _ring(c, states),
@@ -1805,7 +1813,7 @@ class StudioChip extends StatelessWidget {
               : c.onKey);
       final face = layered.on(
         c.keyFace.copyWith(
-          radius: StudioRadii.small,
+          radius: theme.radiusSmall,
           travel: selected || states.contains(WidgetState.pressed) ? 1 : 0,
           fill: disabled
               ? Color.lerp(c.key, c.panelLow, 0.5)
@@ -2219,6 +2227,8 @@ class StudioFileDrop extends StatelessWidget {
         if (errorText != null) WidgetState.error,
       },
     );
+    final direction = Directionality.of(context);
+    final outer = studioOuterCorners(theme, frame, theme.radiusBank, direction);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -2232,13 +2242,25 @@ class StudioFileDrop extends StatelessWidget {
           child: multiple || files.isEmpty
               ? StudioSurface(
                   face: c.displayFace.copyWith(
-                    radius: StudioRadii.bank,
+                    radius: theme.radiusBank,
                     fill: frame.fill,
+                    borderRadius: outer,
                   ),
                   child: CustomPaint(
                     painter: _DashedEdge(
                       errorText != null ? c.danger : c.groove,
                       c.edgeLight,
+                      theme.radiusBank,
+                      outer == null
+                          ? null
+                          : studioKeyCorners(
+                              outer,
+                              theme.radiusBank,
+                              inset: StudioSpacing.small,
+                              starts: true,
+                              ends: true,
+                            ),
+                      direction,
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(StudioSpacing.large),
@@ -2315,7 +2337,7 @@ class _FileRow extends StatelessWidget {
     final words = RawWidgetsLocalizations.of(context);
     final progress = file.progress;
     return StudioSurface(
-      face: c.displayFace.copyWith(radius: StudioRadii.key),
+      face: c.displayFace.copyWith(radius: theme.radiusKey),
       child: Padding(
         padding: const EdgeInsetsDirectional.only(
           start: StudioSpacing.medium,
@@ -2413,20 +2435,34 @@ class _Bar extends StatelessWidget {
 }
 
 class _DashedEdge extends CustomPainter {
-  _DashedEdge(this.groove, this.light);
+  _DashedEdge(
+    this.groove,
+    this.light,
+    this.radius, [
+    this.radii,
+    this.direction = TextDirection.ltr,
+  ]);
 
   final Color groove;
   final Color light;
+  // The frame's corners, the theme's bank.
+  final double radius;
+  // The edge's own corners, concentric with an app's corners on the frame.
+  final BorderRadiusGeometry? radii;
+  final TextDirection direction;
 
   @override
   void paint(Canvas canvas, Size size) {
     final rect = (Offset.zero & size).deflate(StudioSpacing.small);
+    final edge = radii;
     final path = Path()
       ..addRRect(
-        RRect.fromRectAndRadius(
-          rect,
-          const Radius.circular(StudioRadii.bank - StudioSpacing.small),
-        ),
+        edge == null
+            ? RRect.fromRectAndRadius(
+                rect,
+                Radius.circular(radius - StudioSpacing.small),
+              )
+            : studioCornerRect(rect, edge, direction),
       );
     final dashed = Path();
     for (final metric in path.computeMetrics()) {
@@ -2453,7 +2489,11 @@ class _DashedEdge extends CustomPainter {
 
   @override
   bool shouldRepaint(_DashedEdge old) =>
-      old.groove != groove || old.light != light;
+      old.groove != groove ||
+      old.light != light ||
+      old.radius != radius ||
+      old.radii != radii ||
+      old.direction != direction;
 }
 
 // A five-pointed lens, lit or dark; lit, it gives off its light.

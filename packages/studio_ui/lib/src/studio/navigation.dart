@@ -297,7 +297,7 @@ class _BankFace extends StatelessWidget {
     final face = layered.on(
       c.keyFace
           .copyWith(
-            radius: StudioRadii.bank - StudioMetrics.recessInset,
+            radius: theme.radiusBank - StudioMetrics.recessInset,
             travel: selected || pressed ? 1 : 0,
             foreground: ink,
             focus: states.contains(WidgetState.focused)
@@ -463,7 +463,9 @@ class StudioNavigationBar extends StatelessWidget {
             container: _places == null,
             explicitChildNodes: true,
             child: StudioSurface(
-              face: theme.colors.recessFace,
+              face: theme.colors.recessFace.copyWith(
+                radius: StudioTheme.of(context).radiusBank,
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(inset),
                 child: SizedBox(
@@ -588,7 +590,9 @@ class StudioNavigationRail extends StatelessWidget {
                   container: true,
                   explicitChildNodes: true,
                   child: StudioSurface(
-                    face: theme.colors.recessFace,
+                    face: theme.colors.recessFace.copyWith(
+                      radius: StudioTheme.of(context).radiusBank,
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(inset),
                       child: Column(
@@ -748,7 +752,9 @@ class StudioSideNavigation extends StatelessWidget {
                   container: true,
                   explicitChildNodes: true,
                   child: StudioSurface(
-                    face: c.recessFace,
+                    face: c.recessFace.copyWith(
+                      radius: StudioTheme.of(context).radiusBank,
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(StudioMetrics.recessInset),
                       child: Column(
@@ -861,7 +867,7 @@ class _SideFace extends StatelessWidget {
     final face = layered.on(
       c.keyFace
           .copyWith(
-            radius: StudioRadii.bank - StudioMetrics.recessInset,
+            radius: theme.radiusBank - StudioMetrics.recessInset,
             travel: selected || pressed ? 1 : 0,
             foreground: ink,
             focus: states.contains(WidgetState.focused)

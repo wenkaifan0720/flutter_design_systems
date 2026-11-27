@@ -237,7 +237,7 @@ class StudioButton extends StatelessWidget {
     switch (_kind) {
       case _KeyKind.text:
         return c.recessFace.copyWith(
-          radius: StudioRadii.key,
+          radius: theme.radiusKey,
           presence: pressed ? 1 : 0,
           rim: edge,
           foreground: disabled
@@ -248,6 +248,7 @@ class StudioButton extends StatelessWidget {
         );
       case _KeyKind.plain:
         return c.keyFace.copyWith(
+          radius: theme.radiusKey,
           travel: pressed ? 1 : 0,
           rim: edge,
           foreground: disabled
@@ -272,6 +273,7 @@ class StudioButton extends StatelessWidget {
         // its lamp out: every key that can't be pressed looks the same.
         if (disabled) {
           return c.keyFace.copyWith(
+            radius: theme.radiusKey,
             rim: edge,
             foreground: disabledInk,
             fill: Color.lerp(c.key, c.panelLow, 0.5),
@@ -281,7 +283,11 @@ class StudioButton extends StatelessWidget {
         // A destructive one is warmed by the danger light, apart from the
         // main key and from the key beside it.
         return (isDestructiveAction ? c.litKeyDangerFace : c.litKeyFace)
-            .copyWith(travel: pressed ? 1 : 0, rim: edge);
+            .copyWith(
+              radius: theme.radiusKey,
+              travel: pressed ? 1 : 0,
+              rim: edge,
+            );
     }
   }
 
@@ -371,6 +377,7 @@ class StudioIconButton extends StatelessWidget {
         final face = layered.on(
           c.keyFace
               .copyWith(
+                radius: StudioTheme.of(context).radiusKey,
                 travel: pressed || latched ? 1 : 0,
                 fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
                 presence: disabled ? studioUnpowered : 1,

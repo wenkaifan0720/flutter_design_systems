@@ -14,6 +14,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'internal/corners.dart';
 import 'button.dart';
 import 'feedback.dart';
 import 'surface.dart';
@@ -27,15 +28,19 @@ Color _ring(StudioColors c, Set<WidgetState> states) =>
     : c.focusRing.withValues(alpha: 0);
 
 // The slot a lit row or a pressed one sits in, pressed into the glass.
-StudioFace _slot(StudioColors c, {required bool shown, Color? focus}) =>
-    StudioFace(
-      fill: Color.lerp(c.displayLow, c.shadow, 0.06)!,
-      fillLow: Color.lerp(c.display, c.shadow, 0.03)!,
-      depth: StudioDepth.sunk,
-      radius: StudioRadii.small,
-      presence: shown ? 1 : 0,
-      focus: focus ?? const Color(0x00000000),
-    );
+StudioFace _slot(
+  StudioColors c, {
+  required bool shown,
+  required double radius,
+  Color? focus,
+}) => StudioFace(
+  fill: Color.lerp(c.displayLow, c.shadow, 0.06)!,
+  fillLow: Color.lerp(c.display, c.shadow, 0.03)!,
+  depth: StudioDepth.sunk,
+  radius: radius,
+  presence: shown ? 1 : 0,
+  focus: focus ?? const Color(0x00000000),
+);
 
 /// A column of a [StudioDataTable]: [flex] shares the width out.
 class StudioDataColumn<R> extends RawDataColumn<R> {
@@ -143,6 +148,7 @@ class StudioDataTable<R> extends StatelessWidget {
         stiffness: StudioMotion.lampStiffness,
         face: _slot(
           c,
+          radius: StudioTheme.of(context).radiusSmall,
           shown: states.contains(WidgetState.pressed),
           focus: _ring(c, states),
         ),
@@ -197,7 +203,12 @@ class StudioDataTable<R> extends StatelessWidget {
                   checked: page == RawDataTableSelection.all,
                   mixed: page == RawDataTableSelection.some,
                   builder: (context, states, _) => AnimatedStudioSurface(
-                    face: _slot(c, shown: false, focus: _ring(c, states)),
+                    face: _slot(
+                      c,
+                      radius: StudioTheme.of(context).radiusSmall,
+                      shown: false,
+                      focus: _ring(c, states),
+                    ),
                     child: lamp(
                       page == RawDataTableSelection.all,
                       some: page == RawDataTableSelection.some,
@@ -254,6 +265,7 @@ class StudioDataTable<R> extends StatelessWidget {
               stiffness: StudioMotion.lampStiffness,
               face: _slot(
                 c,
+                radius: StudioTheme.of(context).radiusSmall,
                 shown:
                     row.selected ||
                     row.states.contains(WidgetState.pressed) ||
@@ -301,8 +313,10 @@ class StudioDataTable<R> extends StatelessWidget {
         children: [
           StudioSurface(
             face: c.displayFace.copyWith(
-              radius: StudioRadii.display,
+              radius: StudioTheme.of(context).radiusDisplay,
               fill: frame.fill,
+              corners: frame.corners,
+              borderRadius: studioRadiiOf(frame.shape),
             ),
             child: Padding(
               padding: const EdgeInsets.all(StudioMetrics.recessInset),
@@ -451,7 +465,7 @@ class StudioScrollArea extends StatelessWidget {
           fillLow: const Color(0x00000000),
           depth: StudioDepth.level,
           presence: 0,
-          radius: StudioRadii.small,
+          radius: StudioTheme.of(context).radiusSmall,
           focus: focused ? c.focusRing : c.focusRing.withValues(alpha: 0),
         ),
         child: area,
@@ -561,7 +575,7 @@ class StudioSplitView extends StatelessWidget {
                     fill: c.cap,
                     fillLow: c.capLow,
                     depth: StudioDepth.raised,
-                    radius: StudioRadii.cap,
+                    radius: StudioTheme.of(context).radiusCap,
                     travel: held ? 0.5 : 0,
                     brushed: true,
                     focus: _ring(c, states),
@@ -642,7 +656,7 @@ class StudioCarousel extends StatelessWidget {
             aspectRatio: aspectRatio,
             child: StudioSurface(
               face: c.displayFace.copyWith(
-                radius: StudioRadii.display,
+                radius: StudioTheme.of(context).radiusDisplay,
                 focus: controls.focused
                     ? c.focusRing
                     : c.focusRing.withValues(alpha: 0),
@@ -651,7 +665,8 @@ class StudioCarousel extends StatelessWidget {
                 padding: const EdgeInsets.all(StudioMetrics.recessInset),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(
-                    StudioRadii.display - StudioMetrics.recessInset,
+                    StudioTheme.of(context).radiusDisplay -
+                        StudioMetrics.recessInset,
                   ),
                   child: viewport,
                 ),
@@ -763,7 +778,7 @@ class StudioReorderableList<T extends Object> extends StatelessWidget {
     final night = c.brightness == Brightness.dark;
     final rowHeight = theme.controlHeight + 8;
     return StudioSurface(
-      face: c.displayFace.copyWith(radius: StudioRadii.display),
+      face: c.displayFace.copyWith(radius: theme.radiusDisplay),
       child: Padding(
         padding: const EdgeInsets.all(StudioMetrics.recessInset),
         child: RawReorderableList<T>(
@@ -778,7 +793,8 @@ class StudioReorderableList<T extends Object> extends StatelessWidget {
             builder: (context, _) => DecoratedBox(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(
-                  StudioRadii.display - StudioMetrics.recessInset,
+                  StudioTheme.of(context).radiusDisplay -
+                      StudioMetrics.recessInset,
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -792,7 +808,7 @@ class StudioReorderableList<T extends Object> extends StatelessWidget {
               ),
               child: StudioSurface(
                 face: c.displayFace.copyWith(
-                  radius: StudioRadii.display - StudioMetrics.recessInset,
+                  radius: theme.radiusDisplay - StudioMetrics.recessInset,
                 ),
                 // The rule above the row stays in the list: across the
                 // lifted glass it would run past its round corners.
@@ -864,10 +880,6 @@ class StudioSwipeAction {
 // A swipe action's key, across.
 const double _swipeKeyExtent = 88;
 
-// The row's corners: a display's glass less the recess it stands in, so the
-// row is concentric with the well round it.
-const double _swipeRadius = StudioRadii.display - StudioMetrics.recessInset;
-
 /// A row that slides aside to show keys behind it: drag it toward its
 /// start or end and [startActions] or [endActions] stand in the metal it
 /// leaves; dragged far enough, the first action's lamp lights and letting
@@ -911,7 +923,10 @@ class StudioSwipeRow extends StatelessWidget {
       destructive: a.destructive,
       data: a,
     );
-    const corners = BorderRadius.all(Radius.circular(_swipeRadius));
+    // The row's corners: a display's glass less the recess it stands in, so
+    // the row is concentric with the well round it.
+    final swipeRadius = theme.radiusDisplay - StudioMetrics.recessInset;
+    final corners = BorderRadius.all(Radius.circular(swipeRadius));
     // The metal it uncovers follows the well's inner wall; the plate keeps
     // its own round corners as it slides, the metal running on under them.
     return ClipRRect(
@@ -920,7 +935,7 @@ class StudioSwipeRow extends StatelessWidget {
         startActions: [for (final a in startActions) wrap(a)],
         endActions: [for (final a in endActions) wrap(a)],
         actionExtent: _swipeKeyExtent,
-        underlap: _swipeRadius,
+        underlap: swipeRadius,
         actionBuilder: (context, action, details) {
           final a = action.data! as StudioSwipeAction;
           final pressed = details.states.contains(WidgetState.pressed);
@@ -940,6 +955,7 @@ class StudioSwipeRow extends StatelessWidget {
                   padding: const EdgeInsets.all(StudioSpacing.tight),
                   child: AnimatedStudioSurface(
                     face: c.keyFace.copyWith(
+                      radius: StudioTheme.of(context).radiusKey,
                       travel: pressed || details.armed ? 1 : 0,
                       foreground: ink,
                       focus: _ring(c, details.states),
@@ -1153,7 +1169,7 @@ class StudioTree<T extends Object> extends StatelessWidget {
         return AnimatedStudioSurface(
           stiffness: StudioMotion.lampStiffness,
           face: c.recessFace.copyWith(
-            radius: StudioRadii.small,
+            radius: theme.radiusSmall,
             presence:
                 item.selected ||
                     states.contains(WidgetState.pressed) ||

@@ -102,7 +102,9 @@ class _StudioProgressBarState extends State<StudioProgressBar>
       child: SizedBox(
         height: 14,
         child: StudioSurface(
-          face: c.readoutFace.copyWith(radius: 4),
+          face: c.readoutFace.copyWith(
+            radius: StudioTheme.of(context).radiusCap + 1,
+          ),
           child: Padding(
             padding: const EdgeInsets.all(StudioMetrics.lip),
             child: RepaintBoundary(
@@ -369,12 +371,7 @@ class _RingPainter extends CustomPainter {
 /// ```
 class StudioSkeleton extends StatefulWidget {
   /// A [width] × [height] block (a line of words, a cover).
-  const StudioSkeleton({
-    super.key,
-    this.width,
-    this.height = 16,
-    this.radius = StudioRadii.small,
-  });
+  const StudioSkeleton({super.key, this.width, this.height = 16, this.radius});
 
   /// Its width; its column's when null.
   final double? width;
@@ -382,8 +379,9 @@ class StudioSkeleton extends StatefulWidget {
   /// Its height.
   final double height;
 
-  /// Its corners.
-  final double radius;
+  /// Its corners; null, the theme's small window's
+  /// ([StudioThemeData.radiusSmall]).
+  final double? radius;
 
   @override
   State<StudioSkeleton> createState() => _StudioSkeletonState();
@@ -424,7 +422,9 @@ class _StudioSkeletonState extends State<StudioSkeleton>
             animation: _breathe,
             builder: (context, _) => DecoratedBox(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(widget.radius),
+                borderRadius: BorderRadius.circular(
+                  widget.radius ?? StudioTheme.of(context).radiusSmall,
+                ),
                 color: Color.lerp(
                   c.displayLow,
                   c.display,
@@ -506,7 +506,9 @@ class StudioStatusView extends StatelessWidget {
       liveRegion: error,
       // What it says is read on glass (law 2), never on the bare metal.
       child: StudioSurface(
-        face: c.displayFace,
+        face: c.displayFace.copyWith(
+          radius: StudioTheme.of(context).radiusDisplay,
+        ),
         child: Padding(
           padding: const EdgeInsets.all(StudioSpacing.large),
           child: Column(
@@ -662,7 +664,7 @@ class StudioBanner extends StatelessWidget {
       child: StudioSurface(
         // Words are read on glass (law 2): the strip is a display's.
         face: c.displayFace.copyWith(
-          radius: StudioRadii.key + StudioSpacing.small,
+          radius: theme.radiusKey + StudioSpacing.small,
         ),
         child: Padding(
           padding: const EdgeInsetsDirectional.only(

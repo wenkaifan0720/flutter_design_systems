@@ -88,7 +88,7 @@ class _Scope extends StatelessWidget {
           SizedBox(
             height: height,
             child: StudioSurface(
-              face: c.readoutFace.copyWith(radius: StudioRadii.display),
+              face: c.readoutFace.copyWith(radius: theme.radiusDisplay),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
                   StudioSpacing.small,

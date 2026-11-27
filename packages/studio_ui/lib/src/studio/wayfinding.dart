@@ -113,7 +113,7 @@ class StudioBreadcrumb extends StatelessWidget {
                   return TapTargetPadding(
                     child: AnimatedStudioSurface(
                       face: c.recessFace.copyWith(
-                        radius: StudioRadii.small,
+                        radius: theme.radiusSmall,
                         presence: states.contains(WidgetState.pressed) ? 1 : 0,
                         focus: states.contains(WidgetState.focused)
                             ? c.focusRing

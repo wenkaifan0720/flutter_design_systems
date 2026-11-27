@@ -199,7 +199,7 @@ class _StudioSelectState<T> extends State<StudioSelect<T>> {
                   : c.onDisplay);
           final face = layered.on(
             c.displayFace.copyWith(
-              radius: StudioRadii.key,
+              radius: theme.radiusKey,
               fill: enabled ? null : Color.lerp(c.display, c.panelLow, 0.4),
               // The window's rim lights as it opens; half lit under a
               // finger, before it does.
@@ -515,7 +515,9 @@ class StudioListBezel extends StatelessWidget {
     final night = c.brightness == Brightness.dark;
     return DecoratedBox(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(StudioRadii.bank + _bezelRim),
+        borderRadius: BorderRadius.circular(
+          StudioTheme.of(context).radiusBank + _bezelRim,
+        ),
         boxShadow: [
           BoxShadow(
             color: c.shadow.withValues(alpha: night ? 0.55 : 0.22),
@@ -528,8 +530,16 @@ class StudioListBezel extends StatelessWidget {
         // By night the rim is laid over the glass's edge, so the glass's own
         // contact shadow can't darken it; by day that shadow shades the rim's
         // lower edge, as it always has.
-        painter: night ? null : _BezelRimPainter(c),
-        foregroundPainter: night ? _BezelRimPainter(c, over: true) : null,
+        painter: night
+            ? null
+            : _BezelRimPainter(c, StudioTheme.of(context).radiusBank),
+        foregroundPainter: night
+            ? _BezelRimPainter(
+                c,
+                StudioTheme.of(context).radiusBank,
+                over: true,
+              )
+            : null,
         child: Padding(
           padding: const EdgeInsets.all(_bezelRim),
           child: StudioSurface(
@@ -537,11 +547,13 @@ class StudioListBezel extends StatelessWidget {
               fill: c.display,
               fillLow: c.displayLow,
               depth: StudioDepth.level,
-              radius: StudioRadii.bank,
+              radius: StudioTheme.of(context).radiusBank,
               foreground: c.onDisplay,
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(StudioRadii.bank),
+              borderRadius: BorderRadius.circular(
+                StudioTheme.of(context).radiusBank,
+              ),
               child: Padding(padding: padding, child: child),
             ),
           ),
@@ -568,9 +580,12 @@ const Color _nightEdgeLight = Color(0x59FFFFFF);
 // stands at least 3:1 from the glass on both sides of it, all round, and its
 // top edge catches the room's light.
 class _BezelRimPainter extends CustomPainter {
-  _BezelRimPainter(this.colors, {this.over = false});
+  _BezelRimPainter(this.colors, this.radius, {this.over = false});
 
   final StudioColors colors;
+
+  // The glass's corners, the theme's bank.
+  final double radius;
 
   // Whether the rim is laid over the glass's edge rather than under it.
   final bool over;
@@ -580,7 +595,7 @@ class _BezelRimPainter extends CustomPainter {
     final night = colors.brightness == Brightness.dark;
     final outline = RRect.fromRectAndRadius(
       Offset.zero & size,
-      const Radius.circular(StudioRadii.bank + _bezelRim),
+      Radius.circular(radius + _bezelRim),
     );
     final metal = Paint()
       ..shader = ui.Gradient.linear(
@@ -613,7 +628,7 @@ class _BezelRimPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_BezelRimPainter old) =>
-      old.colors != colors || old.over != over;
+      old.colors != colors || old.over != over || old.radius != radius;
 }
 
 /// A row in an open list. Keyboard focus and hover illuminate its legend.
@@ -690,7 +705,7 @@ class StudioMenuRow extends StatelessWidget {
       fill: Color.lerp(c.displayLow, c.shadow, 0.06)!,
       fillLow: Color.lerp(c.display, c.shadow, 0.03)!,
       depth: StudioDepth.sunk,
-      radius: StudioRadii.bank - StudioMetrics.recessInset,
+      radius: theme.radiusBank - StudioMetrics.recessInset,
       foreground: words,
       presence: pressed && !disabled ? 1 : 0,
     );

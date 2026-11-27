@@ -13,6 +13,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'internal/brush.dart';
+import 'internal/corners.dart';
 import 'theme.dart';
 
 /// Where a surface stands under the light: set into the metal, flush with
@@ -40,7 +41,9 @@ class StudioFace with Diagnosticable {
     required this.fillLow,
     required this.depth,
     this.foreground,
-    this.radius = StudioRadii.key,
+    this.radius = 6,
+    this.corners,
+    this.borderRadius,
     this.travel = 0,
     this.glow = const Color(0x00000000),
     this.rim = const Color(0x00000000),
@@ -62,9 +65,24 @@ class StudioFace with Diagnosticable {
   /// The words and glyphs on it; null leaves them as they are.
   final Color? foreground;
 
-  /// Its corners. A face set in another is concentric with it: its radius is
-  /// the outer one less the inset.
+  /// Its corners, 6 by default (a key's, [StudioThemeData.radiusKey]). A
+  /// face set in another is concentric with it: its radius is the outer one
+  /// less the inset.
   final double radius;
+
+  /// The step each corner takes when a part's style names its own
+  /// (`RawStyle.corners`), held to [StudioThemeData.shapeLimits] and drawn
+  /// at the theme's [StudioThemeData.shapeScheme] where the face is drawn
+  /// ([resolveCorners]); a corner left null keeps [radius]. Null: every
+  /// corner [radius].
+  final RawCorners? corners;
+
+  /// Each corner's own radius, outside Studio's bands: what a part's style's
+  /// `shape` gives (as Material's `ButtonStyle.shape` takes any border),
+  /// or what [corners] resolve to. It wins over [corners] and [radius]; a
+  /// radius past half the face's shorter side stands at that half, so a
+  /// corner of `double.infinity` is a full round end.
+  final BorderRadiusGeometry? borderRadius;
 
   /// How far a raised face has sunk under a press: 0 at rest, 1 home.
   final double travel;
@@ -94,6 +112,8 @@ class StudioFace with Diagnosticable {
     StudioDepth? depth,
     Color? foreground,
     double? radius,
+    RawCorners? corners,
+    BorderRadiusGeometry? borderRadius,
     double? travel,
     Color? glow,
     Color? rim,
@@ -106,6 +126,8 @@ class StudioFace with Diagnosticable {
     depth: depth ?? this.depth,
     foreground: foreground ?? this.foreground,
     radius: radius ?? this.radius,
+    corners: corners ?? this.corners,
+    borderRadius: borderRadius ?? this.borderRadius,
     travel: travel ?? this.travel,
     glow: glow ?? this.glow,
     rim: rim ?? this.rim,
@@ -113,6 +135,63 @@ class StudioFace with Diagnosticable {
     brushed: brushed ?? this.brushed,
     presence: presence ?? this.presence,
   );
+
+  // Its corners as radii, for a lerp that moves them one by one.
+  BorderRadiusGeometry get _radii =>
+      borderRadius ?? BorderRadius.all(Radius.circular(radius));
+
+  /// This face with its [corners] drawn at [theme]'s: each step held to
+  /// [StudioThemeData.shapeLimits] (in debug a step moved is said once) and
+  /// set at [StudioThemeData.shapeScheme]'s radius, as [borderRadius]. A face
+  /// with no [corners], or one whose [borderRadius] is given, is itself.
+  /// [StudioSurface] calls it, so a part only names the steps.
+  StudioFace resolveCorners(StudioThemeData theme) {
+    final asked = corners;
+    if (asked == null) return this;
+    if (borderRadius != null) return _withCorners(null, borderRadius);
+    final held = StudioThemeData.shapeLimits.clampCorners(
+      asked,
+      base: const RawCorners(),
+      look: 'Studio',
+    );
+    final scale = theme.shapeScheme.corners;
+    Radius at(RawCorner? step) => Radius.circular(switch (step) {
+      null => radius,
+      RawCorner.none => 0,
+      RawCorner.extraSmall => scale.extraSmall,
+      RawCorner.small => scale.small,
+      RawCorner.medium => scale.medium,
+      RawCorner.large => scale.large,
+      RawCorner.extraLarge => scale.extraLarge,
+      RawCorner.full => double.infinity,
+    });
+    return _withCorners(
+      null,
+      BorderRadiusDirectional.only(
+        topStart: at(held.topStart),
+        topEnd: at(held.topEnd),
+        bottomStart: at(held.bottomStart),
+        bottomEnd: at(held.bottomEnd),
+      ),
+    );
+  }
+
+  StudioFace _withCorners(RawCorners? corners, BorderRadiusGeometry? radii) =>
+      StudioFace(
+        fill: fill,
+        fillLow: fillLow,
+        depth: depth,
+        foreground: foreground,
+        radius: radius,
+        corners: corners,
+        borderRadius: radii,
+        travel: travel,
+        glow: glow,
+        rim: rim,
+        focus: focus,
+        brushed: brushed,
+        presence: presence,
+      );
 
   /// Between [a] and [b] at [t].
   static StudioFace lerp(StudioFace a, StudioFace b, double t) {
@@ -126,6 +205,10 @@ class StudioFace with Diagnosticable {
           ? (t < 0.5 ? a.foreground : b.foreground)
           : c(a.foreground!, b.foreground!),
       radius: a.radius + (b.radius - a.radius) * t,
+      corners: t < 0.5 ? a.corners : b.corners,
+      borderRadius: a.borderRadius == null && b.borderRadius == null
+          ? null
+          : BorderRadiusGeometry.lerp(a._radii, b._radii, t),
       travel: (a.travel + (b.travel - a.travel) * t).clamp(0.0, 1.0),
       glow: c(a.glow, b.glow),
       rim: c(a.rim, b.rim),
@@ -143,6 +226,8 @@ class StudioFace with Diagnosticable {
       other.depth == depth &&
       other.foreground == foreground &&
       other.radius == radius &&
+      other.corners == corners &&
+      other.borderRadius == borderRadius &&
       other.travel == travel &&
       other.glow == glow &&
       other.rim == rim &&
@@ -157,6 +242,8 @@ class StudioFace with Diagnosticable {
     depth,
     foreground,
     radius,
+    corners,
+    borderRadius,
     travel,
     glow,
     rim,
@@ -173,6 +260,16 @@ class StudioFace with Diagnosticable {
       ..add(ColorProperty('fillLow', fillLow))
       ..add(EnumProperty<StudioDepth>('depth', depth))
       ..add(DoubleProperty('radius', radius))
+      ..add(
+        DiagnosticsProperty<RawCorners>('corners', corners, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<BorderRadiusGeometry>(
+          'borderRadius',
+          borderRadius,
+          defaultValue: null,
+        ),
+      )
       ..add(DoubleProperty('travel', travel))
       ..add(ColorProperty('glow', glow))
       ..add(ColorProperty('focus', focus));
@@ -269,6 +366,7 @@ class StudioSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final face = this.face.resolveCorners(StudioTheme.of(context));
     final light = StudioLight.of(context);
     final ratio = MediaQuery.maybeDevicePixelRatioOf(context) ?? 1;
     final sink = face.depth == StudioDepth.raised
@@ -290,6 +388,7 @@ class StudioSurface extends StatelessWidget {
         face: face,
         light: light,
         ratio: ratio,
+        textDirection: Directionality.maybeOf(context),
       ),
       child: content == null
           ? null
@@ -308,14 +407,19 @@ class StudioSurface extends StatelessWidget {
 /// public for a part that paints its own face round other paint.
 class StudioFacePainter extends CustomPainter {
   /// [face] in [light], its brush at [ratio] device pixels a logical one.
-  StudioFacePainter({required this.face, required this.light, this.ratio = 1})
-    : _inBank = false;
+  StudioFacePainter({
+    required this.face,
+    required this.light,
+    this.ratio = 1,
+    this.textDirection,
+  }) : _inBank = false;
 
   StudioFacePainter._(
     this._inBank, {
     required this.face,
     required this.light,
     required this.ratio,
+    this.textDirection,
   });
 
   final bool _inBank;
@@ -329,15 +433,28 @@ class StudioFacePainter extends CustomPainter {
   /// Device pixels per logical pixel, for the brush.
   final double ratio;
 
+  /// Which way the face's own corners ([StudioFace.borderRadius]) read: a
+  /// start corner is the left one in left-to-right text. Null reads them
+  /// left to right.
+  final TextDirection? textDirection;
+
   @override
-  void paint(Canvas canvas, Size size) =>
-      _paintFace(canvas, Offset.zero & size, face, light, ratio, _inBank);
+  void paint(Canvas canvas, Size size) => _paintFace(
+    canvas,
+    Offset.zero & size,
+    face,
+    light,
+    ratio,
+    _inBank,
+    textDirection,
+  );
 
   @override
   bool shouldRepaint(StudioFacePainter old) =>
       old.face != face ||
       old.light != light ||
       old.ratio != ratio ||
+      old.textDirection != textDirection ||
       old._inBank != _inBank;
 }
 
@@ -349,7 +466,29 @@ void paintStudioFace(
   StudioFace face,
   StudioLight light, {
   double ratio = 1,
-}) => _paintFace(canvas, rect, face, light, ratio, false);
+  TextDirection? textDirection,
+}) => _paintFace(canvas, rect, face, light, ratio, false, textDirection);
+
+// The face's outline over [rect]: its own corners ([StudioFace.borderRadius])
+// when given, each at most half the shorter side, else [StudioFace.radius]
+// all round.
+RRect _outline(Rect rect, StudioFace face, TextDirection? direction) {
+  final radii = face.borderRadius;
+  if (radii == null) {
+    return RRect.fromRectAndRadius(rect, Radius.circular(face.radius));
+  }
+  final r = radii.resolve(direction ?? TextDirection.ltr);
+  final most = rect.shortestSide / 2;
+  Radius held(Radius c) =>
+      Radius.elliptical(math.min(c.x, most), math.min(c.y, most));
+  return RRect.fromRectAndCorners(
+    rect,
+    topLeft: held(r.topLeft),
+    topRight: held(r.topRight),
+    bottomLeft: held(r.bottomLeft),
+    bottomRight: held(r.bottomRight),
+  );
+}
 
 void _paintFace(
   Canvas canvas,
@@ -357,13 +496,13 @@ void _paintFace(
   StudioFace face,
   StudioLight light,
   double ratio,
-  bool inBank,
-) {
-  final r = Radius.circular(face.radius);
+  bool inBank, [
+  TextDirection? direction,
+]) {
   final sink = face.depth == StudioDepth.raised
       ? face.travel * StudioMetrics.pressTravel
       : 0.0;
-  final rest = RRect.fromRectAndRadius(rect, r);
+  final rest = _outline(rect, face, direction);
   // A key mounted in a bank travels into its socket. Its outline stays on
   // the socket's keylines while its legend, edge light and shadow move.
   final body = inBank ? rest : rest.shift(Offset(0, sink));
@@ -702,17 +841,23 @@ class _AnimatedStudioSurfaceState extends State<AnimatedStudioSurface>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(vsync: this)
     ..value = 1;
-  late StudioFace _from = widget.face;
-  late StudioFace _to = widget.face;
+  late StudioFace _from = _held(widget.face);
+  late StudioFace _to = _from;
+
+  // A face's own corners as radii at the theme's, so a change of them moves
+  // corner by corner on the spring rather than snapping.
+  StudioFace _held(StudioFace face) =>
+      face.resolveCorners(StudioTheme.of(context));
 
   StudioFace get _now => StudioFace.lerp(_from, _to, _controller.value);
 
   @override
   void didUpdateWidget(AnimatedStudioSurface old) {
     super.didUpdateWidget(old);
-    if (widget.face == _to) return;
+    final next = _held(widget.face);
+    if (next == _to) return;
     _from = _now;
-    _to = widget.face;
+    _to = next;
     _controller.value = 0;
     _controller.springTo(
       1,
@@ -797,7 +942,7 @@ extension StudioFaces on StudioColors {
     fill: panel,
     fillLow: panelLow,
     depth: StudioDepth.level,
-    radius: StudioRadii.panel,
+    radius: 12,
     foreground: legend,
     brushed: true,
   );
@@ -807,7 +952,7 @@ extension StudioFaces on StudioColors {
     fill: display,
     fillLow: displayLow,
     depth: StudioDepth.sunk,
-    radius: StudioRadii.display,
+    radius: 10,
     foreground: onDisplay,
   );
 
@@ -816,7 +961,7 @@ extension StudioFaces on StudioColors {
     fill: readout,
     fillLow: readoutLow,
     depth: StudioDepth.sunk,
-    radius: StudioRadii.small,
+    radius: 5,
     foreground: readoutLit,
   );
 
@@ -833,21 +978,33 @@ extension StudioFaces on StudioColors {
       brightness == Brightness.dark ? 0.25 : 0.65,
     )!,
     depth: StudioDepth.sunk,
-    radius: StudioRadii.bank,
+    radius: 10,
   );
 }
 
 /// A part's two style layers ([RawStyleOf]) put on a [StudioFace]: the
-/// style's `fill` (both tones), its `foreground`, and its `edge` for a lit
-/// rim. The light, the depths and the corners are the look's.
+/// style's `fill` (both tones), its `foreground`, its `edge` for a lit rim,
+/// and its `corners` (a step per corner, held to Studio's limits) or its
+/// `shape`'s radii (outside them; a shape wins). The light and the depths are
+/// the look's.
 extension StudioStyleFace on RawStyleOf {
-  /// [face] in these layers' colours.
+  /// [face] in these layers' colours and corners.
   StudioFace on(StudioFace face) {
     final fill = this.fill;
     final foreground = this.foreground;
     final edge = side?.color ?? this.edge;
-    if (fill == null && foreground == null && edge == null) return face;
+    final corners = this.corners;
+    final radii = studioRadiiOf(shape);
+    if (fill == null &&
+        foreground == null &&
+        edge == null &&
+        corners == null &&
+        radii == null) {
+      return face;
+    }
     return face.copyWith(
+      corners: corners,
+      borderRadius: radii,
       fill: fill,
       fillLow: fill == null
           ? null
@@ -1086,7 +1243,9 @@ class StudioReadout extends StatelessWidget {
       child: ConstrainedBox(
         constraints: BoxConstraints(minWidth: minWidth),
         child: StudioSurface(
-          face: theme.colors.readoutFace,
+          face: theme.colors.readoutFace.copyWith(
+            radius: StudioTheme.of(context).radiusSmall,
+          ),
           child: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: StudioSpacing.small + 2,

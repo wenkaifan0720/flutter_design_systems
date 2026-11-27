@@ -989,6 +989,14 @@ final Map<String, DocExample> _examples = {
     final theme = StudioThemeData.preset('cobalt', Brightness.dark);
     return theme;
   },
+  'StudioThemeData.shapeScheme': (context) {
+    final rounder = StudioThemeData.dark().copyWith(
+      shapeScheme: StudioThemeData.defaultShapeScheme.copyWith(
+        corners: StudioThemeData.defaultShapeScheme.corners.scaled(1.5),
+      ),
+    );
+    return rounder;
+  },
   'StudioTheme': (context) => MaterialApp(
     builder: (context, child) =>
         StudioTheme(data: StudioThemeData.dark(), child: child!),

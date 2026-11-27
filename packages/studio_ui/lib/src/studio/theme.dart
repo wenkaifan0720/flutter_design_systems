@@ -109,27 +109,55 @@ abstract final class StudioIconSizes {
   static const double huge = 28;
 }
 
-/// Studio's corners: machined, small and concentric. A shape set into
-/// another is inset by the difference of their radii.
+/// Studio's corners at their own values: machined, small and concentric. A
+/// shape set into another is inset by the difference of their radii. The
+/// parts draw the theme's corners ([StudioThemeData.shapeScheme], read as
+/// [StudioThemeData.radiusCap] to [StudioThemeData.radiusPanel]), which an
+/// app can change within Studio's bands; a part of an app's own reads them
+/// there, so it follows.
 abstract final class StudioRadii {
   /// A panel module set in the chassis, a dialog, a sheet.
+  @Deprecated(
+    "Read the theme's corner, StudioTheme.of(context).radiusPanel, which follows "
+    'its shapeScheme. Removed in 0.8.0.',
+  )
   static const double panel = 12;
 
   /// A glass display pane.
+  @Deprecated(
+    "Read the theme's corner, StudioTheme.of(context).radiusDisplay, which follows "
+    'its shapeScheme. Removed in 0.8.0.',
+  )
   static const double display = 10;
 
   /// A recess that holds keys (a bank, a rail): [key] plus
   /// [StudioMetrics.recessInset].
+  @Deprecated(
+    "Read the theme's corner, StudioTheme.of(context).radiusBank, which follows "
+    'its shapeScheme. Removed in 0.8.0.',
+  )
   static const double bank = 10;
 
   /// A key, a field's glass, a select's window.
+  @Deprecated(
+    "Read the theme's corner, StudioTheme.of(context).radiusKey, which follows "
+    'its shapeScheme. Removed in 0.8.0.',
+  )
   static const double key = 6;
 
   /// A small window: a readout, a toggle's slot.
+  @Deprecated(
+    "Read the theme's corner, StudioTheme.of(context).radiusSmall, which follows "
+    'its shapeScheme. Removed in 0.8.0.',
+  )
   static const double small = 5;
 
   /// The switch cap follows the 6 px corners of its slot past a 3 px lip.
   /// A fader uses the same corner on its raised handle.
+  @Deprecated(
+    "Read the theme's corner, StudioTheme.of(context).radiusCap, which follows "
+    'its shapeScheme. Removed in 0.8.0.',
+  )
   static const double cap = 3;
 }
 
@@ -1010,12 +1038,17 @@ class StudioThemeData with Diagnosticable {
     this.dialogStyle,
     this.bottomSheetStyle,
     this.toastStyle,
+    RawShapeScheme? shapeScheme,
   }) : assert(
          textureStrength >= 0 && textureStrength <= 1,
          'Studio brushes its metal from 0 (smooth) to 1: textureStrength '
          'stands in that range, not $textureStrength.',
        ),
        textureStrength = textureStrength.clamp(0.0, 1.0),
+       shapeScheme = shapeLimits.clamp(
+         shapeScheme ?? defaultShapeScheme,
+         look: 'Studio',
+       ),
        textTheme = textTheme ?? StudioTextTheme.of(colors, typeface: typeface),
        density = density ?? StudioDensity.adaptivePlatformDensity;
 
@@ -1315,6 +1348,82 @@ class StudioThemeData with Diagnosticable {
   /// is always smooth.
   final double textureStrength;
 
+  /// The corners an app can change, held to [shapeLimits]: Studio's milled
+  /// radii. [RawCorner.extraSmall] is a switch's cap and a fader's handle
+  /// (3), [RawCorner.small] a readout's window and a toggle's slot (5),
+  /// [RawCorner.medium] a key, a field's glass, a select's window (6),
+  /// [RawCorner.large] a glass display pane (10) and [RawCorner.extraLarge]
+  /// a panel module, a dialog, a sheet (12). The parts read them through
+  /// [radiusCap] to [radiusPanel]; a bank that holds keys stays concentric
+  /// with them ([radiusBank]). Lamps and knobs stay round, the corners stay
+  /// arcs, and the groove pair and the relief stay the light's: Studio opens
+  /// no stroke and no depth. A change of corners eases across with the
+  /// theme ([lerp]).
+  ///
+  /// ```dart
+  /// final rounder = StudioThemeData.dark().copyWith(
+  ///   shapeScheme: StudioThemeData.defaultShapeScheme.copyWith(
+  ///     corners: StudioThemeData.defaultShapeScheme.corners.scaled(1.5),
+  ///   ),
+  /// );
+  /// ```
+  final RawShapeScheme shapeScheme;
+
+  /// Studio's own corners: round, 3, 5, 6, 10 and 12.
+  static const RawShapeScheme defaultShapeScheme = RawShapeScheme(
+    corners: RawCornerScale(
+      extraSmall: 3,
+      small: 5,
+      medium: 6,
+      large: 10,
+      extraLarge: 12,
+    ),
+  );
+
+  /// The bands Studio holds a [shapeScheme] to, so every end still reads as
+  /// milled hardware: round corners alone; a key from 4 to 10 (under 4 a key
+  /// reads as a tile, over 10 as a pebble); each other step in proportion,
+  /// a milled part keeping a visible radius; no stroke and no depth. An
+  /// app's part may take its own step on each corner (a part's style's
+  /// `corners`), held to the steps from extra small to extra large: a
+  /// milled corner is never sharp, and a key is never a pill.
+  static const RawShapeLimits shapeLimits = RawShapeLimits(
+    extraSmall: RawBand(2, 5),
+    small: RawBand(3, 8),
+    medium: RawBand(4, 10),
+    large: RawBand(6, 14),
+    extraLarge: RawBand(8, 18),
+    cornerFreedom: RawCornerFreedom.perCorner,
+    cornerSteps: {
+      RawCorner.extraSmall,
+      RawCorner.small,
+      RawCorner.medium,
+      RawCorner.large,
+      RawCorner.extraLarge,
+    },
+  );
+
+  /// A switch's cap, a fader's handle: 3 by default ([RawCorner.extraSmall]).
+  double get radiusCap => shapeScheme.corners.extraSmall;
+
+  /// A readout's window, a toggle's slot: 5 by default ([RawCorner.small]).
+  double get radiusSmall => shapeScheme.corners.small;
+
+  /// A key, a field's glass, a select's window: 6 by default
+  /// ([RawCorner.medium]).
+  double get radiusKey => shapeScheme.corners.medium;
+
+  /// A glass display pane: 10 by default ([RawCorner.large]).
+  double get radiusDisplay => shapeScheme.corners.large;
+
+  /// A recess that holds keys (a bank, a rail): [radiusKey] plus
+  /// [StudioMetrics.recessInset], so the keys in it stay concentric with it.
+  double get radiusBank => radiusKey + StudioMetrics.recessInset;
+
+  /// A panel module, a dialog, a sheet: 12 by default
+  /// ([RawCorner.extraLarge]).
+  double get radiusPanel => shapeScheme.corners.extraLarge;
+
   /// Every ordinary key ([StudioButton]).
   final StudioStyle? buttonStyle;
 
@@ -1503,6 +1612,7 @@ class StudioThemeData with Diagnosticable {
     StudioStyle? dialogStyle,
     StudioStyle? bottomSheetStyle,
     StudioStyle? toastStyle,
+    RawShapeScheme? shapeScheme,
   }) {
     final nextColors = colors ?? this.colors;
     final nextFace = typeface ?? this.typeface;
@@ -1560,11 +1670,12 @@ class StudioThemeData with Diagnosticable {
       dialogStyle: dialogStyle ?? this.dialogStyle,
       bottomSheetStyle: bottomSheetStyle ?? this.bottomSheetStyle,
       toastStyle: toastStyle ?? this.toastStyle,
+      shapeScheme: shapeScheme ?? this.shapeScheme,
     );
   }
 
-  /// Between [a] and [b] at [t]: colours, type, density and brush move; the
-  /// part styles move where both name one.
+  /// Between [a] and [b] at [t]: colours, type, density, brush and corners
+  /// move; the part styles move where both name one.
   static StudioThemeData lerp(StudioThemeData a, StudioThemeData b, double t) {
     if (identical(a, b)) return a;
     StudioStyle? s(StudioStyle? x, StudioStyle? y) => StudioStyle.lerp(x, y, t);
@@ -1621,6 +1732,7 @@ class StudioThemeData with Diagnosticable {
       dialogStyle: s(a.dialogStyle, b.dialogStyle),
       bottomSheetStyle: s(a.bottomSheetStyle, b.bottomSheetStyle),
       toastStyle: s(a.toastStyle, b.toastStyle),
+      shapeScheme: RawShapeScheme.lerp(a.shapeScheme, b.shapeScheme, t),
     );
   }
 
@@ -1673,6 +1785,7 @@ class StudioThemeData with Diagnosticable {
     dialogStyle,
     bottomSheetStyle,
     toastStyle,
+    shapeScheme,
   ];
 
   @override
@@ -1689,7 +1802,14 @@ class StudioThemeData with Diagnosticable {
       ..add(DiagnosticsProperty<StudioColors>('colors', colors))
       ..add(DiagnosticsProperty<StudioTypeface>('typeface', typeface))
       ..add(DiagnosticsProperty<StudioDensity>('density', density))
-      ..add(DoubleProperty('textureStrength', textureStrength));
+      ..add(DoubleProperty('textureStrength', textureStrength))
+      ..add(
+        DiagnosticsProperty<RawShapeScheme>(
+          'shapeScheme',
+          shapeScheme,
+          defaultValue: defaultShapeScheme,
+        ),
+      );
   }
 }
 

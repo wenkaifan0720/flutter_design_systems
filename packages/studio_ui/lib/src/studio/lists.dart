@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/corners.dart';
 import 'internal/control_light.dart';
 
 import 'choices.dart';
@@ -322,7 +323,9 @@ class StudioListTile extends StatelessWidget {
         fill: layered.fill ?? Color.lerp(c.displayLow, c.shadow, 0.06)!,
         fillLow: layered.fill ?? Color.lerp(c.display, c.shadow, 0.03)!,
         depth: StudioDepth.sunk,
-        radius: StudioRadii.display - StudioMetrics.recessInset,
+        radius: theme.radiusDisplay - StudioMetrics.recessInset,
+        corners: layered.corners,
+        borderRadius: studioRadiiOf(layered.shape),
         foreground: ink,
         presence: pressed || selected ? 1 : 0,
       );

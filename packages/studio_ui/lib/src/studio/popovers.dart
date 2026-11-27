@@ -10,6 +10,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'internal/corners.dart';
 import 'button.dart';
 import 'overlays.dart';
 import 'surface.dart';
@@ -26,15 +27,22 @@ Widget _panel(
   final c = theme.colors;
   final night = c.brightness == Brightness.dark;
   final layered = RawStyleOf([style, theme.popoverStyle], const {});
+  final outer = studioOuterCorners(
+    theme,
+    layered,
+    theme.radiusPanel,
+    Directionality.of(context),
+  );
   final face = layered.on(
-    c.panelFace.copyWith(radius: StudioRadii.panel, brushed: true),
+    c.panelFace.copyWith(radius: theme.radiusPanel, brushed: true),
   );
   return ConstrainedBox(
     constraints: BoxConstraints(maxWidth: width),
     child: DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(StudioRadii.panel),
-        boxShadow: [
+      decoration: studioShadowed(
+        radii: outer,
+        own: BorderRadius.circular(theme.radiusPanel),
+        shadows: [
           BoxShadow(
             color: c.shadow.withValues(alpha: night ? 0.55 : 0.24),
             blurRadius: 20,
@@ -220,6 +228,12 @@ class StudioTooltip extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final layered = RawStyleOf([style, theme.tooltipStyle], const {});
+    final outer = studioOuterCorners(
+      theme,
+      layered,
+      theme.radiusSmall,
+      Directionality.of(context),
+    );
     return RawTooltipPlacement(
       placement: const RawPopoverPlacement(
         side: RawPopoverSide.above,
@@ -242,10 +256,11 @@ class StudioTooltip extends StatelessWidget {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 240),
               child: DecoratedBox(
-                decoration: BoxDecoration(
+                decoration: studioShadowed(
                   color: layered.fill ?? c.readout,
-                  borderRadius: BorderRadius.circular(StudioRadii.small),
-                  boxShadow: [
+                  radii: outer,
+                  own: BorderRadius.circular(theme.radiusSmall),
+                  shadows: [
                     BoxShadow(
                       color: c.shadow.withValues(alpha: 0.3),
                       blurRadius: 8,
