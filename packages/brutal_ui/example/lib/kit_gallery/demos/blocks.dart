@@ -258,7 +258,7 @@ Widget kitSpecimenBlock() => Builder(
         BrutalBlock(
           lead: true,
           color: theme.colors.signal,
-          label: 'Tonight',
+          debugLabel: 'Tonight',
           child: Text(
             'Low Tide',
             style: theme.textTheme.display.copyWith(

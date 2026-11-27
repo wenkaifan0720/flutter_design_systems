@@ -1,6 +1,7 @@
 // The names brutal_ui 0.4.0 renames: brutal_ui.dart calls them as before `dart fix --apply`,
 // brutal_ui.dart.expect as after.
 import 'package:flutter/widgets.dart';
+import 'package:brutal_ui/brutal_host.dart';
 import 'package:brutal_ui/brutal_ui.dart';
 
 void calls(BuildContext context) {

@@ -212,7 +212,7 @@ class _AdmitTicketPageState extends State<AdmitTicketPage> {
           lead: true,
           color: c.pink,
           padding: const EdgeInsets.all(BrutalSpacing.large),
-          label: 'Door code',
+          debugLabel: 'Door code',
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

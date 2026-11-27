@@ -5,6 +5,12 @@
 /// beside that one.
 ///
 /// Outside semver: this library may change in any version, a patch included; the CHANGELOG says how to move.
+///
+/// {@canonicalFor host}
+/// {@canonicalFor host.BrutalPresentation}
+/// {@canonicalFor host.BrutalPreview}
 library;
 
 export 'package:ui_core/host.dart';
+
+export 'src/brutal/host.dart';

@@ -6,6 +6,7 @@
 // semantics container, so each is a container of its own.
 // ignore_for_file: avoid_relative_lib_imports
 import 'package:brutal_ui/brutal_ui.dart';
+import 'package:brutal_ui/brutal_host.dart';
 import 'package:material_ui/material_ui.dart' show MaterialApp;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';

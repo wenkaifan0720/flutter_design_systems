@@ -454,13 +454,6 @@ class BrutalTypeface with Diagnosticable {
   }
 }
 
-/// The contrast ratio between [a] and [b], 1 to 21, as WCAG counts it.
-@Deprecated(
-  'Use RawPalette.contrastRatio from ui_core. '
-  'It is removed in brutal_ui 0.7.0.',
-)
-double brutalContrast(Color a, Color b) => RawPalette.contrastRatio(a, b);
-
 /// Where the hard shadow stands from its face in [direction], [by] px: down,
 /// and right in left-to-right text, left in right-to-left.
 Offset brutalTravelOffset(
@@ -920,6 +913,54 @@ class BrutalThemeData with Diagnosticable {
     'riso',
     'blueprint',
     'acid',
+  ];
+
+  /// The six presets as ui_core's [RawNamedPalette]s, for an app's palette
+  /// picker: each one's id is its preset's (one of [presets]), its
+  /// swatches its signal, its lead block and its page, by day and by night.
+  /// [BrutalThemeData.preset] with the id gives its theme, and [BrutalHost]
+  /// takes one as its `palette`.
+  ///
+  /// ```dart
+  /// BrutalThemeData.preset(BrutalThemeData.palettes[2].id, Brightness.dark)
+  /// ```
+  static const List<RawNamedPalette> palettes = [
+    RawNamedPalette(
+      id: 'raw',
+      label: 'Raw',
+      swatches: [Color(0xFFFF6A13), Color(0xFFB8F229), Color(0xFFFFFFFF)],
+      darkSwatches: [Color(0xFFFF7A2E), Color(0xFFB8F229), Color(0xFF121212)],
+    ),
+    RawNamedPalette(
+      id: 'poster',
+      label: 'Poster',
+      swatches: [Color(0xFFFFD000), Color(0xFF2ED573), Color(0xFFFFFFFF)],
+      darkSwatches: [Color(0xFFFFD60A), Color(0xFF3DDC7A), Color(0xFF121212)],
+    ),
+    RawNamedPalette(
+      id: 'zine',
+      label: 'Zine',
+      swatches: [Color(0xFFFF7A59), Color(0xFFFFC2A1), Color(0xFFF4EFE3)],
+      darkSwatches: [Color(0xFFFF8C6E), Color(0xFFFFC7A8), Color(0xFF17140F)],
+    ),
+    RawNamedPalette(
+      id: 'riso',
+      label: 'Riso',
+      swatches: [Color(0xFFFF48B0), Color(0xFFFFE600), Color(0xFFFFFFFF)],
+      darkSwatches: [Color(0xFFFF5CB9), Color(0xFFFFE81F), Color(0xFF141312)],
+    ),
+    RawNamedPalette(
+      id: 'blueprint',
+      label: 'Blueprint',
+      swatches: [Color(0xFF4F7BFF), Color(0xFF8AA4FF), Color(0xFFE9F0FF)],
+      darkSwatches: [Color(0xFF6B8FFF), Color(0xFF93ABFF), Color(0xFF0E1424)],
+    ),
+    RawNamedPalette(
+      id: 'acid',
+      label: 'Acid',
+      swatches: [Color(0xFFB4FF2B), Color(0xFF3DE7FF), Color(0xFFFFFFFF)],
+      darkSwatches: [Color(0xFFB4FF2B), Color(0xFF3DE7FF), Color(0xFF0D0D0D)],
+    ),
   ];
 
   /// The preset named [id] (one of [presets]) in [brightness].

@@ -1,7 +1,7 @@
 /// Brutal's display formatting: the times, days, sums and counts its pages
 /// print, in one shape everywhere: 24-hour times with a colon ("19:30"),
 /// ranges with an en dash ("19:30–23:00"), days written out ("Friday 14
-/// November", "Fri 14 Nov"), sums with two places and thousands commas
+/// November", "Fri 14 Nov"), a date with its year ("14 Nov 2026"), sums with two places and thousands commas
 /// ("1,420.00", the currency drawn beside it), counts with commas ("1,512"),
 /// a badge's count capped ("99+") and lengths as "45 min" or "1 h 45 min".
 ///
@@ -64,6 +64,10 @@ abstract final class BrutalFormat {
   static String dayShort(DateTime at) =>
       '${_days[at.weekday - 1].substring(0, 3)} ${at.day} '
       '${_months[at.month - 1].substring(0, 3)}';
+
+  /// "14 Nov 2026": a day with its year, as a record or a form states it.
+  static String date(DateTime at) =>
+      '${at.day} ${_months[at.month - 1].substring(0, 3)} ${at.year}';
 
   /// "November 2026", a month's head.
   static String month(DateTime at) => '${_months[at.month - 1]} ${at.year}';

@@ -1,10 +1,9 @@
 /// Brutal's app frame: what an app's pages stand in. [BrutalHost] once over
 /// the navigator; [BrutalScreen] round each page; [BrutalPage] the route a
-/// push raises one in (a sheet's is `BrutalSheetPage`); [BrutalPreview] one
-/// page alone, as the app stands it; [BrutalLoadingState] and
-/// [BrutalErrorState] a page whose data is on its way or lost; [BrutalInput]
-/// the plain one-line field; [BrutalTab] and [BrutalShellAction] an app
-/// shell's places and its one act.
+/// push raises one in (a sheet's is `BrutalSheetPage`); [BrutalLoadingState]
+/// and [BrutalErrorState] a page whose data is on its way or lost;
+/// [BrutalInput] the plain one-line field. The app's places are
+/// [BrutalAppShell]'s.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -25,21 +24,27 @@ const double _pageWidth = 1200;
 
 /// The app's host, mounted once over its navigator (`WidgetsApp.builder`):
 /// Brutal's theme for the brightness asked for, its toasts and the page
-/// colour of its palette.
+/// colour of its palette. A new brightness or palette moves: every colour
+/// of the page lerps to it (at once under Reduce Motion).
 ///
 /// ```dart
-/// MaterialApp(builder: (context, child) => BrutalHost(child: child!))
+/// MaterialApp(builder: (context, child) => BrutalHost(palette: BrutalThemeData.palettes[1], child: child!))
 /// ```
 class BrutalHost extends StatelessWidget {
   /// Hosts [child] in [theme] or [darkTheme], as [brightness] (or the platform)
-  /// asks; either left out is the default preset in that brightness.
+  /// asks; either left out is [palette]'s preset in that brightness.
   const BrutalHost({
     super.key,
+    this.palette,
     this.theme,
     this.darkTheme,
     this.brightness,
     required this.child,
   });
+
+  /// The preset both brightnesses are built from, one of
+  /// [BrutalThemeData.palettes]; null: the first, raw.
+  final RawNamedPalette? palette;
 
   /// The theme by day.
   final BrutalThemeData? theme;
@@ -62,11 +67,19 @@ class BrutalHost extends StatelessWidget {
         MediaQuery.platformBrightnessOf(context);
     final data =
         (wanted == Brightness.dark ? darkTheme : theme) ??
-        BrutalThemeData.preset(BrutalThemeData.presets.first, wanted);
-    return BrutalTheme(
+        BrutalThemeData.preset(
+          palette?.id ?? BrutalThemeData.presets.first,
+          wanted,
+        );
+    return AnimatedBrutalTheme(
       data: data,
       child: BrutalToaster(
-        child: ColoredBox(color: data.colors.paper, child: child),
+        child: Builder(
+          builder: (context) => ColoredBox(
+            color: BrutalTheme.of(context).colors.paper,
+            child: child,
+          ),
+        ),
       ),
     );
   }
@@ -75,6 +88,13 @@ class BrutalHost extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
+      ..add(
+        DiagnosticsProperty<RawNamedPalette>(
+          'palette',
+          palette,
+          defaultValue: null,
+        ),
+      )
       ..add(
         DiagnosticsProperty<BrutalThemeData>(
           'theme',
@@ -201,24 +221,35 @@ class BrutalScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const BrutalRule(),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(
-                        margin,
-                        BrutalSpacing.regular,
-                        margin,
-                        BrutalSpacing.regular + media.padding.bottom,
-                      ),
-                      child: framed
-                          ? Align(
-                              alignment: AlignmentDirectional.centerEnd,
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(
-                                  maxWidth: 360,
-                                ),
-                                child: foot,
-                              ),
-                            )
-                          : foot,
+                    // Its action ends on the page column's end edge: past
+                    // the column's widest the page centres it.
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final side =
+                            margin +
+                            (constraints.maxWidth - (_pageWidth + 2 * margin))
+                                    .clamp(0.0, double.infinity) /
+                                2;
+                        return Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            side,
+                            BrutalSpacing.regular,
+                            side,
+                            BrutalSpacing.regular + media.padding.bottom,
+                          ),
+                          child: framed
+                              ? Align(
+                                  alignment: AlignmentDirectional.centerEnd,
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 360,
+                                    ),
+                                    child: foot,
+                                  ),
+                                )
+                              : foot,
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -488,361 +519,6 @@ class _PageArriveState extends State<_PageArrive> {
   }
 }
 
-/// How a page stands in a [BrutalPreview].
-enum BrutalPresentation {
-  /// A root, over the app's places.
-  root,
-
-  /// Pushed over a root.
-  pushed,
-
-  /// Raised as a sheet.
-  sheet,
-}
-
-/// One page alone, as the app stands it: the same host, the same places
-/// and act on a root, the same route on a pushed page or a sheet, with no
-/// router.
-///
-/// ```dart
-/// BrutalPreview(presentation: BrutalPresentation.pushed, child: BrutalScreen(body: const Text('Doors at eight.')))
-/// ```
-class BrutalPreview extends StatelessWidget {
-  /// A preview of [child].
-  const BrutalPreview({
-    super.key,
-    required this.child,
-    this.theme,
-    this.darkTheme,
-    this.brightness = Brightness.light,
-    this.presentation = BrutalPresentation.root,
-    this.tabs = const [],
-    this.selectedIndex = 0,
-    this.action,
-    this.brand,
-    this.drawer = false,
-    this.platform = PreviewPlatform.android,
-  });
-
-  /// The page.
-  final Widget child;
-
-  /// The theme by day.
-  final BrutalThemeData? theme;
-
-  /// The theme by night.
-  final BrutalThemeData? darkTheme;
-
-  /// The brightness to draw in.
-  final Brightness brightness;
-
-  /// How the page stands.
-  final BrutalPresentation presentation;
-
-  /// The app's places, on a root.
-  final List<BrutalTab> tabs;
-
-  /// The place the page is.
-  final int selectedIndex;
-
-  /// The app's one act, on a root.
-  final ShellAction? action;
-
-  /// The app's name, at the head of its places on a tablet or a desktop.
-  final String? brand;
-
-  /// Whether a sheet stands as tall as its content.
-  final bool drawer;
-
-  /// The platform previewed.
-  final PreviewPlatform platform;
-
-  @override
-  Widget build(BuildContext context) {
-    Widget rooted(Widget page) => tabs.isEmpty && action == null
-        ? page
-        : BrutalAppShell(
-            tabs: tabs,
-            selectedIndex: selectedIndex,
-            onDestinationSelected: (_) {},
-            action: action,
-            brand: brand,
-            child: page,
-          );
-    return PreviewFrame(
-      platform: platform,
-      brightness: brightness,
-      // The app inside, a semantics container of its own: its routes'
-      // barriers would hide from a screen reader what the page around it
-      // paints before it.
-      child: Semantics(
-        container: true,
-        child: MaterialApp(
-          key: ValueKey<Object>((presentation, drawer)),
-          debugShowCheckedModeBanner: false,
-          localizationsDelegates: const [
-            RawWidgetsLocalizations.delegate,
-            DefaultMaterialLocalizations.delegate,
-            DefaultWidgetsLocalizations.delegate,
-          ],
-          builder: (context, app) => BrutalHost(
-            theme: theme,
-            darkTheme: darkTheme,
-            brightness: brightness,
-            child: app ?? const SizedBox.shrink(),
-          ),
-          home: switch (presentation) {
-            BrutalPresentation.root => rooted(child),
-            BrutalPresentation.pushed => PreviewStage(
-              route: (context, page) => BrutalPage<void>(
-                key: const ValueKey<String>('brutal-preview'),
-                child: page,
-              ).createRoute(context),
-              child: child,
-            ),
-            BrutalPresentation.sheet => PreviewStage(
-              route: (context, page) => BrutalSheetPage<void>(
-                key: const ValueKey<String>('brutal-preview'),
-                drawer: drawer,
-                child: page,
-              ).createRoute(context),
-              child: child,
-            ),
-          },
-        ),
-      ),
-    );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(
-        DiagnosticsProperty<BrutalThemeData>(
-          'theme',
-          theme,
-          defaultValue: null,
-        ),
-      )
-      ..add(
-        DiagnosticsProperty<BrutalThemeData>(
-          'darkTheme',
-          darkTheme,
-          defaultValue: null,
-        ),
-      )
-      ..add(DiagnosticsProperty<Brightness>('brightness', brightness))
-      ..add(
-        DiagnosticsProperty<BrutalPresentation>('presentation', presentation),
-      )
-      ..add(IterableProperty<BrutalTab>('tabs', tabs))
-      ..add(IntProperty('selectedIndex', selectedIndex))
-      ..add(
-        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
-      )
-      ..add(StringProperty('brand', brand, defaultValue: null))
-      ..add(FlagProperty('drawer', value: drawer, ifTrue: 'drawer'))
-      ..add(DiagnosticsProperty<PreviewPlatform>('platform', platform));
-  }
-}
-
-/// The app's places and its one act round a root page: [BrutalScaffold]'s
-/// bar on a phone, its rail on a tablet, its side list on a desktop, and
-/// the act a [BrutalFloatingButton] over the page's bottom end, which the
-/// page's [BrutalScreen] keeps clear. An app on a router mounts it through
-/// `BrutalShell`; a preview mounts it directly.
-///
-/// ```dart
-/// BrutalAppShell(tabs: const [BrutalTab(LucideIcons.house, 'Home'), BrutalTab(LucideIcons.ticket, 'Tickets')], selectedIndex: 0, onDestinationSelected: (i) {}, child: const HomePage())
-/// ```
-class BrutalAppShell extends StatelessWidget {
-  /// [child] with the app's [tabs].
-  const BrutalAppShell({
-    super.key,
-    required this.tabs,
-    required this.selectedIndex,
-    required this.onDestinationSelected,
-    required this.child,
-    this.action,
-    this.brand,
-    this.showPlaces = true,
-  });
-
-  /// The app's places.
-  final List<BrutalTab> tabs;
-
-  /// The place shown.
-  final int selectedIndex;
-
-  /// Called with the place chosen.
-  final ValueChanged<int> onDestinationSelected;
-
-  /// The page.
-  final Widget child;
-
-  /// The app's one act.
-  final ShellAction? action;
-
-  /// The app's name, at the head of the rail or the side list.
-  final String? brand;
-
-  /// Whether a phone's bar stands: false while a page pushed over the root
-  /// covers it (a rail or a side list stays).
-  final bool showPlaces;
-
-  @override
-  Widget build(BuildContext context) {
-    final width = MediaQuery.sizeOf(context).width;
-    final phone = width < 600;
-    final places = showPlaces || !phone;
-    final act = places ? action : null;
-    final name = brand;
-    return BrutalScaffold(
-      destinations: [
-        for (final tab in tabs)
-          BrutalDestination(icon: tab.icon, label: tab.label, key: tab.key),
-      ],
-      // A phone's bar springs away under a page pushed over the root.
-      showNavigation: showPlaces,
-      selectedIndex: selectedIndex,
-      onDestinationSelected: onDestinationSelected,
-      brand: name == null || name.isEmpty ? null : _Brand(name),
-      floatingButton: act == null ? null : _ActButton(act),
-      body: ShellInsets(
-        bottomInset: act == null
-            ? 0
-            : _ActButton.side + BrutalSpacing.pageMargin(width),
-        child: child,
-      ),
-    );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(IterableProperty<BrutalTab>('tabs', tabs))
-      ..add(IntProperty('selectedIndex', selectedIndex))
-      ..add(
-        ObjectFlagProperty<ValueChanged<int>>.has(
-          'onDestinationSelected',
-          onDestinationSelected,
-        ),
-      )
-      ..add(
-        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
-      )
-      ..add(StringProperty('brand', brand, defaultValue: null))
-      ..add(
-        FlagProperty('showPlaces', value: showPlaces, ifTrue: 'showPlaces'),
-      );
-  }
-}
-
-/// The app's name at the head of its places: in the title type where it
-/// fits, its first letter in a square where it does not.
-class _Brand extends StatelessWidget {
-  const _Brand(this.name);
-
-  final String name;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = BrutalTheme.of(context);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final narrow = constraints.maxWidth < 120;
-        return Semantics(
-          header: true,
-          label: name,
-          child: ExcludeSemantics(
-            child: Padding(
-              padding: const EdgeInsets.all(BrutalSpacing.regular),
-              child: Text(
-                narrow ? name.characters.first.toUpperCase() : name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: narrow ? TextAlign.center : TextAlign.start,
-                style: theme.textTheme.title.copyWith(color: theme.colors.ink),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-/// The shell's act: the signal square when it is the app's standing
-/// invitation ([ShellAction.accent]), else a white one.
-class _ActButton extends StatelessWidget {
-  const _ActButton(this.action);
-
-  final ShellAction action;
-
-  /// The square's side.
-  static const double side = 64;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = BrutalTheme.of(context).colors;
-    return KeyedSubtree(
-      key: action.key,
-      child: BrutalFloatingButton(
-        icon: Icon(action.icon),
-        tooltip: action.label ?? 'New',
-        onPressed: () => action.onPressed(context),
-        style: action.accent
-            ? null
-            : BrutalStyle(
-                fill: WidgetStatePropertyAll(c.surface),
-                foreground: WidgetStatePropertyAll(c.ink),
-              ),
-      ),
-    );
-  }
-}
-
-/// One of an app shell's places as an app declares it: its glyph, its
-/// name and the key on its cell.
-///
-/// ```dart
-/// BrutalTab(LucideIcons.house, 'Home', ValueKey('open-home'))
-/// ```
-@immutable
-class BrutalTab {
-  /// A place called [label], shown by [icon].
-  const BrutalTab(this.icon, this.label, [this.key]);
-
-  /// Its glyph.
-  final IconData icon;
-
-  /// Its name.
-  final String label;
-
-  /// The key on its cell.
-  final Key? key;
-}
-
-/// The app's one act beside its places (add, write, capture): the signal
-/// square over a root page's bottom end when [accent], a white one when
-/// not.
-///
-/// ```dart
-/// BrutalShellAction(icon: LucideIcons.plus, accent: true, onPressed: (context) => openNewEvent(context))
-/// ```
-class BrutalShellAction extends ShellAction {
-  /// An act wearing [icon].
-  const BrutalShellAction({
-    required super.icon,
-    required super.onPressed,
-    super.label,
-    super.accent = true,
-    super.key,
-  });
-}
-
 /// While a page's data is on its way: the spinner over its word, centred.
 ///
 /// ```dart
@@ -852,7 +528,8 @@ class BrutalLoadingState extends StatelessWidget {
   /// The page waiting.
   const BrutalLoadingState({super.key, this.label});
 
-  /// What a screen reader says; null takes the design kit's ("Loading").
+  /// Its word, drawn under the spinner and said by a screen reader; null
+  /// takes the design kit's ("Loading").
   final String? label;
 
   @override

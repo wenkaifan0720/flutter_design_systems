@@ -81,6 +81,23 @@ class BrutalNotice extends StatelessWidget {
   /// Its style, over [BrutalThemeData.noticeStyle].
   final BrutalStyle? style;
 
+  /// The lead cell's colour for [tone] in [colors]: ink for news, the
+  /// danger red for a failure, and for a success and a warning the look's
+  /// own lime and orange, whatever the palette. A palette recolours the
+  /// signal and the lead block, often to one hue; what happened keeps hues
+  /// of its own, told apart in every palette.
+  static Color fillOf(BrutalColors colors, BrutalNoticeTone tone) {
+    final own = colors.brightness == Brightness.dark
+        ? const BrutalColors.dark()
+        : const BrutalColors.light();
+    return switch (tone) {
+      BrutalNoticeTone.info => colors.ink,
+      BrutalNoticeTone.success => own.lime,
+      BrutalNoticeTone.warning => own.signal,
+      BrutalNoticeTone.danger => colors.danger,
+    };
+  }
+
   /// The width of the lead cell.
   static const double leadWidth = 48;
 
@@ -89,11 +106,12 @@ class BrutalNotice extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final t = theme.textTheme;
-    final (fill, glyph) = switch (tone) {
-      BrutalNoticeTone.info => (c.ink, LucideIcons.info),
-      BrutalNoticeTone.success => (c.lime, LucideIcons.check),
-      BrutalNoticeTone.warning => (c.signal, LucideIcons.triangleAlert),
-      BrutalNoticeTone.danger => (c.danger, LucideIcons.circleAlert),
+    final fill = fillOf(c, tone);
+    final glyph = switch (tone) {
+      BrutalNoticeTone.info => LucideIcons.info,
+      BrutalNoticeTone.success => LucideIcons.check,
+      BrutalNoticeTone.warning => LucideIcons.triangleAlert,
+      BrutalNoticeTone.danger => LucideIcons.circleAlert,
     };
     final urgent =
         live ??
@@ -270,7 +288,10 @@ class BrutalStateView extends StatelessWidget {
       BrutalState.empty => (c.surface, LucideIcons.inbox),
       BrutalState.error => (c.danger, LucideIcons.circleAlert),
       BrutalState.loading => (c.surface, null),
-      BrutalState.success => (c.lime, LucideIcons.check),
+      BrutalState.success => (
+        BrutalNotice.fillOf(c, BrutalNoticeTone.success),
+        LucideIcons.check,
+      ),
     };
     final layered = RawStyleOf([style, theme.stateViewStyle], const {});
     final face = layered.on(

@@ -1,3 +1,27 @@
+## 0.7.0
+
+- Requires ui_core 0.8.2.
+- **Breaking:** `BrutalAppShell.action` is a `BrutalShellAction` (icon, tooltip, onPressed, accent), from the main library; it was the host library's `ShellAction`. `BrutalShellAction(icon: LucideIcons.plus, tooltip: 'New event', onPressed: (context) => create())` replaces `ShellAction(icon: ..., label: 'New event', onPressed: ...)`.
+- **Breaking:** `BrutalPreview` and `BrutalPresentation` move to the host library, `package:brutal_ui/brutal_host.dart` (a page previewed alone, with no router); an app that used them imports it.
+- **Breaking:** `brutalContrast` is removed, as 0.6.0 said: `dart fix --apply` moves a caller to `RawPalette.contrastRatio`.
+- **Breaking:** `BrutalBlock.label` is `debugLabel`: it only names the block in the keyline check's findings, never drawn or spoken. `dart fix --apply` renames it.
+- **Breaking:** `BrutalSelect.maxWideWidth` is removed: a select takes its column's width at every width, as a text field does (it stood at most 320 wide from 600 up), so a form's fields stand on one edge.
+- `BrutalAppShell` stands on ui_core's `RawAdaptiveShell` at every width: the bar under 600, the rail to 1024, the side list past it (`modeForWidth` picks others). `BrutalAppShell.branches` keeps a stack per place: a pushed page keeps the rail or the side list while the phone's bar steps away and the act goes, and back pops the place's stack. A screen reader hears the places as tabs.
+- `BrutalHost.palette` builds both appearances from one of `BrutalThemeData.palettes`, the six presets as ui_core's `RawNamedPalette`s (id, label, and the signal, lead block and page as swatches by day and by night) for an app's palette picker. A new palette or appearance blends: `BrutalHost` animates the theme (it snapped).
+- On a desktop the app bar's title and `BrutalScreen`'s footer stand on the page's column (1200 at most, centred past it), where the body starts; they stood at the window's edges.
+- `BrutalAppBar(large: true)` keeps its one 56 px row, its headline in it, so its rule meets the rule under a rail's or a side list's head; it stood an empty 56 px row over a second band. The headline grows with text to 1.6 times, the most the row holds.
+- `BrutalTextField` takes `validator`, `onSaved` and `autovalidateMode`, as `TextFormField` does: in a `RawForm` (or a `Form`) it checks with the form, its error under it in red, and takes the focus when it is the first one wrong.
+- A slider's and a range slider's track meet the column's edges, the ink running to the thumbs' centres (the track stopped half a thumb in).
+- A field's hint is drawn in the off grey, a step lighter than help, so it never reads as a typed value: at least 4.5:1 on the box and 2.5:1 from typed words in every palette.
+- `BrutalFormat.date`: one medium date with the year, "14 Nov 2026". `BrutalDatePicker` writes its day so (it wrote the day without the year).
+- `BrutalNotice.fillOf`: a notice's lead-cell colour for its tone. A success and a warning keep the look's own lime and orange in every palette, told apart from each other and from the ink (in Blueprint both were blue); `BrutalStateView`'s success reads it too.
+- A `BrutalListTile`'s `leading` is decoration, out of the row's name: a `BrutalAvatar` there no longer says the title twice. The row's name reads its status tag, and a control at its end keeps its own node.
+- A chip's, a segment's and a button's glyph grow with the words beside it; a `BrutalAvatar` grows with text up to twice its side, its letters inside.
+- `BrutalShellAction.tooltip` names the act in its tooltip and to a screen reader.
+- A phone bar's name that is too long for its cell shrinks to it a tight step clear of its sides (an Arabic "الإعدادات" touched them).
+- The example is an app to copy (`example/lib/main.dart`, Shelf): `BrutalHost` with light, dark or the platform's appearance and a palette, `BrutalAppShell.branches` with three places, a list that pushes a page and its dialog, a form that checks its fields with a date, and settings, in the device's language; on a desk its list and form keep to one column 720 wide. The gallery (Admit and every part's page) runs with `flutter run -t lib/gallery.dart`.
+- The README builds an app: the install line names `lucide_icons_flutter` beside `material_ui`; `BrutalHost` as the one mount, a list and its page, a dialog that pops with its answer, a checked form with a date, the palette picker and `BrutalAppShell.branches`; a Building blocks table; density stated. Every Dart block in it compiles as written (ui_core_test's `DesignReadmeCheck`).
+
 ## 0.6.1
 
 - Requires ui_core 0.7.2.

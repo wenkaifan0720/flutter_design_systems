@@ -246,7 +246,8 @@ class BrutalListTile extends StatelessWidget {
   /// A second line under [title].
   final String? subtitle;
 
-  /// A glyph at the start, 24 px.
+  /// A glyph or a person's monogram at the start, 24 px: decoration, kept
+  /// out of the row's name ([title] and [semanticLabel] name it).
   final Widget? leading;
 
   /// A control at the end: a switch, a checkbox, a tag.
@@ -350,7 +351,9 @@ class BrutalListTile extends StatelessWidget {
                       ),
                       child: SizedBox.square(
                         dimension: 24,
-                        child: Center(child: leading),
+                        // Decoration: the title names the row (a monogram
+                        // would say its title again).
+                        child: ExcludeSemantics(child: Center(child: leading)),
                       ),
                     ),
                     const SizedBox(width: BrutalSpacing.medium),

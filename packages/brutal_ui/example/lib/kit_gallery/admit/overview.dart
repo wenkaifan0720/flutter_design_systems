@@ -58,7 +58,7 @@ class AdmitOverview extends StatelessWidget {
       lead: true,
       color: c.blue,
       padding: const EdgeInsets.all(BrutalSpacing.regular),
-      label: 'Live screen',
+      debugLabel: 'Live screen',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

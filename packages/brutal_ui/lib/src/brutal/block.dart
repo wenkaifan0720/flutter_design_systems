@@ -44,7 +44,7 @@ class BrutalBlock extends StatelessWidget {
     this.color,
     this.padding,
     this.semanticLabel,
-    this.label,
+    this.debugLabel,
     this.style,
   });
 
@@ -67,8 +67,9 @@ class BrutalBlock extends StatelessWidget {
   /// What a screen reader calls it when it is a button.
   final String? semanticLabel;
 
-  /// What the keyline check calls it.
-  final String? label;
+  /// What the keyline check calls it in its findings; never drawn or
+  /// spoken.
+  final String? debugLabel;
 
   /// Its style, over [BrutalThemeData.blockStyle].
   final BrutalStyle? style;
@@ -94,7 +95,7 @@ class BrutalBlock extends StatelessWidget {
     }
 
     Widget inside(RawStyleOf layered) => RawKeylineRegion(
-      label: label ?? 'Block',
+      label: debugLabel ?? 'Block',
       child: Padding(
         padding:
             padding ??

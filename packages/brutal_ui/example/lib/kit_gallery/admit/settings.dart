@@ -27,7 +27,7 @@ class AdmitSettings extends StatelessWidget {
           lead: true,
           color: c.violet,
           padding: const EdgeInsets.all(BrutalSpacing.large),
-          label: 'Account',
+          debugLabel: 'Account',
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

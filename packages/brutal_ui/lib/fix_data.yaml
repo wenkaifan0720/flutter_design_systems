@@ -1,7 +1,42 @@
-# brutal_ui's data-driven fixes: `dart fix --apply` moves a caller to each name 0.4.0 renames. test_fixes/ holds
+# brutal_ui's data-driven fixes: `dart fix --apply` moves a caller to each name 0.4.0 renames, and off what 0.7.0
+# removes. test_fixes/ holds
 # their before and after (`dart fix --compare-to-golden test_fixes`).
 version: 1
 transforms:
+
+  - title: "Rename to 'debugLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalBlock'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'debugLabel'
+
+  - title: "Rename to 'debugLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'label'
+      inClass: 'BrutalBlock'
+    changes:
+      - kind: 'rename'
+        newName: 'debugLabel'
+
+  - title: "Replace with 'RawPalette.contrastRatio'"
+    date: 2026-11-26
+    element:
+      uris: ['brutal_ui.dart']
+      function: 'brutalContrast'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['brutal_ui.dart']
+          method: 'contrastRatio'
+          inClass: 'RawPalette'
+          static: true
 
   - title: "Rename to 'hintText'"
     date: 2026-11-22
@@ -1003,7 +1038,7 @@ transforms:
   - title: "Rename to 'theme'"
     date: 2026-11-22
     element:
-      uris: ['brutal_ui.dart']
+      uris: ['brutal_ui.dart', 'brutal_host.dart']
       constructor: ''
       inClass: 'BrutalPreview'
     changes:
@@ -1014,7 +1049,7 @@ transforms:
   - title: "Rename to 'theme'"
     date: 2026-11-22
     element:
-      uris: ['brutal_ui.dart']
+      uris: ['brutal_ui.dart', 'brutal_host.dart']
       field: 'light'
       inClass: 'BrutalPreview'
     changes:
@@ -1024,7 +1059,7 @@ transforms:
   - title: "Rename to 'darkTheme'"
     date: 2026-11-22
     element:
-      uris: ['brutal_ui.dart']
+      uris: ['brutal_ui.dart', 'brutal_host.dart']
       constructor: ''
       inClass: 'BrutalPreview'
     changes:
@@ -1035,7 +1070,7 @@ transforms:
   - title: "Rename to 'darkTheme'"
     date: 2026-11-22
     element:
-      uris: ['brutal_ui.dart']
+      uris: ['brutal_ui.dart', 'brutal_host.dart']
       field: 'dark'
       inClass: 'BrutalPreview'
     changes:
@@ -1045,7 +1080,7 @@ transforms:
   - title: "Rename to 'selectedIndex'"
     date: 2026-11-22
     element:
-      uris: ['brutal_ui.dart']
+      uris: ['brutal_ui.dart', 'brutal_host.dart']
       constructor: ''
       inClass: 'BrutalPreview'
     changes:
@@ -1056,7 +1091,7 @@ transforms:
   - title: "Rename to 'selectedIndex'"
     date: 2026-11-22
     element:
-      uris: ['brutal_ui.dart']
+      uris: ['brutal_ui.dart', 'brutal_host.dart']
       field: 'activeIndex'
       inClass: 'BrutalPreview'
     changes:

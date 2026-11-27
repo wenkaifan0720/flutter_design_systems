@@ -48,8 +48,8 @@ class BrutalSelectItem<T> {
 /// keyboard is, a rule round the row, inside its edges.
 /// Held down, the chevron's cell turns over (ink for paper).
 ///
-/// Below 600 px it spans its column; wider, it stands at most
-/// [maxWideWidth] at its column's start.
+/// It takes its column's width at every width, as a text field does, so
+/// the fields of a form stand on one edge.
 ///
 /// A null [onChanged] disables it. Enter, Space, Down or Up opens it with
 /// the keyboard on the chosen item (the first when none is); a press opens
@@ -108,10 +108,6 @@ class BrutalSelect<T> extends StatefulWidget {
 
   /// The box's style, over [BrutalThemeData.textFieldStyle].
   final BrutalStyle? style;
-
-  /// The widest a select stands from 600 px up; below, it spans its
-  /// column.
-  static const double maxWideWidth = 320;
 
   @override
   State<BrutalSelect<T>> createState() => _BrutalSelectState<T>();
@@ -312,23 +308,12 @@ class _BrutalSelectState<T> extends State<BrutalSelect<T>> {
               ),
             ),
           );
-    // From 600 up a select takes its words' room, never its column's.
-    final narrow = MediaQuery.sizeOf(context).width < 600;
-    final field = BrutalFieldFrame(
+    return BrutalFieldFrame(
       labelText: labelText,
       helperText: helperText,
       errorText: errorText,
       enabled: enabled,
       child: box,
-    );
-    if (narrow) return field;
-    return Align(
-      alignment: AlignmentDirectional.topStart,
-      heightFactor: 1,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: BrutalSelect.maxWideWidth),
-        child: field,
-      ),
     );
   }
 }

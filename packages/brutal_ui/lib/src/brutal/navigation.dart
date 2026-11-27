@@ -9,8 +9,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
+import 'package:ui_core/host.dart' show ShellInsets;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'button.dart';
 import 'lists.dart';
 import 'internal/focus_ink.dart';
 import 'surface.dart';
@@ -181,10 +183,14 @@ class BrutalAppBarAction extends StatelessWidget {
   }
 }
 
+/// The widest a page's content stands, inside its margins, as
+/// [BrutalScreen] lays it.
+const double _columnWidth = 1200;
+
 /// The bar over a screen: a back cell at the start when [onBack] is set
 /// (or the [leading] cell given, usually [autoLeading]'s), the [title] in
-/// the title type, and square [actions] at the end, each on a full-height
-/// rule. A rule runs under the whole bar.
+/// the title type on the page's column, and square [actions] at the end,
+/// each on a full-height rule. A rule runs under the whole bar.
 ///
 /// Reads [style]'s `fill` (the bar), `edge` (its rules), `foreground` (the
 /// title and the back glyph) and `textStyle` (the title), then
@@ -232,8 +238,11 @@ class BrutalAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// Action cells at the end, usually [BrutalAppBarAction]s.
   final List<Widget> actions;
 
-  /// Whether the title stands in the headline type under the bar's row: a
-  /// top-level screen's.
+  /// Whether the title stands in the headline type: a top-level screen's.
+  /// The bar keeps its one row, so its rule meets the rule under the head of
+  /// a rail or a side list beside it; the headline grows with the reader's
+  /// text to 1.6 times, the most the row holds (a Cupertino navigation bar's
+  /// title stops growing too), and a longer title ends in an ellipsis.
   final bool large;
 
   /// The bar's row's height, without the rule.
@@ -244,7 +253,7 @@ class BrutalAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize =>
-      Size.fromHeight(height + BrutalMetrics.maxBorderWidth + (large ? 56 : 0));
+      const Size.fromHeight(height + BrutalMetrics.maxBorderWidth);
 
   @override
   Widget build(BuildContext context) {
@@ -257,50 +266,68 @@ class BrutalAppBar extends StatelessWidget implements PreferredSizeWidget {
     final margin = BrutalSpacing.pageMargin(MediaQuery.sizeOf(context).width);
     final back = onBack;
     final start = leading ?? (back == null ? null : _ExitCell(onPressed: back));
-    final row = SizedBox(
-      height: height,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (start != null) ...[
-            SizedBox(width: height, child: start),
-            BrutalRule(vertical: true, color: rule),
-          ],
-          Expanded(
-            child: large
-                ? const SizedBox.shrink()
-                : Padding(
-                    padding: EdgeInsetsDirectional.only(
-                      start: start == null ? margin : BrutalSpacing.regular,
-                      end: BrutalSpacing.regular,
-                    ),
-                    child: Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      child: Semantics(
-                        header: true,
-                        child: RawCapCenter(
-                          capHeightFactor: BrutalTheme.of(context)
-                              .capHeightFactor,
-                          child: Text(
-                            title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: layered.text(
-                              theme.textTheme.title.copyWith(color: words),
-                            ),
-                          ),
+    // The title stands on the page's column: past the column's widest, the
+    // page centres it, and the title keeps to its start edge.
+    Widget row(double width) {
+      final column =
+          margin +
+          (width - (_columnWidth + 2 * margin)).clamp(0.0, double.infinity) / 2;
+      final lead = start == null
+          ? column
+          : (column - height - theme.borderWidth).clamp(
+              BrutalSpacing.regular,
+              double.infinity,
+            );
+      return SizedBox(
+        height: height,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (start != null) ...[
+              SizedBox(width: height, child: start),
+              BrutalRule(vertical: true, color: rule),
+            ],
+            Expanded(
+              child: Padding(
+                padding: EdgeInsetsDirectional.only(
+                  start: lead,
+                  end: BrutalSpacing.regular,
+                ),
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Semantics(
+                    header: true,
+                    child: RawCapCenter(
+                      capHeightFactor: theme.capHeightFactor,
+                      child: Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textScaler: large
+                            ? MediaQuery.textScalerOf(context)
+                                  .clamp(maxScaleFactor: 1.6)
+                            : null,
+                        style: layered.text(
+                          (large
+                                  ? theme.textTheme.headline
+                                  : theme.textTheme.title)
+                              .copyWith(color: words),
                         ),
                       ),
                     ),
                   ),
-          ),
-          for (final action in actions) ...[
-            BrutalRule(vertical: true, color: rule),
-            action,
+                ),
+              ),
+            ),
+            for (final action in actions) ...[
+              BrutalRule(vertical: true, color: rule),
+              action,
+            ],
           ],
-        ],
-      ),
-    );
+        ),
+      );
+    }
+
     return _BarLayers(
       layers: [style, theme.appBarStyle],
       child: ColoredBox(
@@ -311,34 +338,9 @@ class BrutalAppBar extends StatelessWidget implements PreferredSizeWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (large) Flexible(child: row) else row,
-              if (large)
-                Padding(
-                  padding: EdgeInsetsDirectional.only(
-                    start: margin,
-                    end: margin,
-                    bottom: BrutalSpacing.medium,
-                  ),
-                  child: Semantics(
-                    header: true,
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        minHeight: 56 - BrutalSpacing.medium,
-                      ),
-                      child: Align(
-                        alignment: AlignmentDirectional.bottomStart,
-                        child: Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: layered.text(
-                            theme.textTheme.headline.copyWith(color: words),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+              LayoutBuilder(
+                builder: (context, constraints) => row(constraints.maxWidth),
+              ),
               BrutalRule(color: rule),
             ],
           ),
@@ -491,14 +493,18 @@ class BrutalNavigationBar extends StatelessWidget {
     children: [
       Icon(d.icon, size: layered.iconSize ?? 24, color: words),
       const SizedBox(height: BrutalSpacing.tight),
-      FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Text(
-          d.label.toUpperCase(),
-          textScaler: _labelScaler(context),
-          maxLines: 1,
-          style: layered.text(
-            BrutalTheme.of(context).textTheme.caption.copyWith(color: words),
+      // A long name shrinks to its cell, a tight step clear of its sides.
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: BrutalSpacing.tight),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            d.label.toUpperCase(),
+            textScaler: _labelScaler(context),
+            maxLines: 1,
+            style: layered.text(
+              BrutalTheme.of(context).textTheme.caption.copyWith(color: words),
+            ),
           ),
         ),
       ),
@@ -1001,22 +1007,10 @@ class BrutalScaffold extends StatelessWidget {
       ],
     );
     if (!places) return ColoredBox(color: theme.colors.paper, child: column);
-    // Brutal's widths: the bar under 600, the rail to 1024, the side list
-    // past it.
-    final mode = width < 600
-        ? RawNavigationMode.bar
-        : width < 1024
-        ? RawNavigationMode.rail
-        : RawNavigationMode.sidebar;
-    List<BrutalStyle?> layers(RawNavigationMode mode) => [
-      switch (mode) {
-        RawNavigationMode.bar => theme.navigationBarStyle,
-        RawNavigationMode.rail => theme.navigationRailStyle,
-        RawNavigationMode.sidebar => theme.sideNavigationStyle,
-      },
-    ];
+    // Brutal's widths, by the window's: the bar under 600, the rail to 1024,
+    // the side list past it.
     final content = RawAdaptiveShell(
-      mode: mode,
+      mode: BrutalAppShell.modeFor(width),
       showNavigation: showNavigation,
       dampingRatio: BrutalMotion.dampingRatio,
       stiffness: BrutalMotion.overlayStiffness,
@@ -1026,60 +1020,151 @@ class BrutalScaffold extends StatelessWidget {
       ],
       selectedIndex: selectedIndex,
       onDestinationSelected: onDestinationSelected!,
-      destinationBuilder: (context, destination, details) {
-        final d = destination.data! as BrutalDestination;
-        return KeyedSubtree(
-          key: d.key,
-          child: _CellFace(
-            states: details.states,
-            chosen: details.states.contains(WidgetState.selected),
-            layers: layers(details.mode),
-            builder: (context, words, _, layered) => switch (details.mode) {
-              RawNavigationMode.bar => BrutalNavigationBar._barContent(
-                context,
-                d,
-                words,
-                layered,
-              ),
-              RawNavigationMode.rail => BrutalNavigationRail._railContent(
-                context,
-                d,
-                words,
-                layered,
-              ),
-              RawNavigationMode.sidebar => BrutalSideNavigation._sideContent(
-                context,
-                d,
-                words,
-                layered,
-              ),
-            },
-          ),
-        );
-      },
-      navigationBuilder: (context, details) => switch (details.mode) {
-        RawNavigationMode.bar => BrutalNavigationBar._barLayout(
-          context,
-          layers(details.mode),
-          details.destinations,
-        ),
-        RawNavigationMode.rail => BrutalNavigationRail._railLayout(
-          context,
-          layers(details.mode),
-          brand,
-          details.destinations,
-        ),
-        RawNavigationMode.sidebar => BrutalSideNavigation._sideLayout(
-          context,
-          layers(details.mode),
-          brand,
-          sideFooter,
-          details.destinations,
-        ),
-      },
+      destinationBuilder: _destination,
+      navigationBuilder: _navigation(brand, sideFooter),
       body: column,
     );
     return ColoredBox(color: theme.colors.paper, child: content);
+  }
+
+  // The style layers of the places in [mode].
+  static List<BrutalStyle?> _layers(
+    BrutalThemeData theme,
+    RawNavigationMode mode,
+  ) => [
+    switch (mode) {
+      RawNavigationMode.bar ||
+      RawNavigationMode.top => theme.navigationBarStyle,
+      RawNavigationMode.rail => theme.navigationRailStyle,
+      RawNavigationMode.sidebar => theme.sideNavigationStyle,
+    },
+  ];
+
+  // A place's cell, as the bar, the rail or the side list draws it.
+  static Widget _destination(
+    BuildContext context,
+    RawNavigationDestination destination,
+    RawDestinationDetails details,
+  ) {
+    final d = destination.data! as BrutalDestination;
+    return KeyedSubtree(
+      key: d.key,
+      child: _CellFace(
+        states: details.states,
+        chosen: details.states.contains(WidgetState.selected),
+        layers: _layers(BrutalTheme.of(context), details.mode),
+        builder: (context, words, _, layered) => switch (details.mode) {
+          RawNavigationMode.bar || RawNavigationMode.top =>
+            BrutalNavigationBar._barContent(context, d, words, layered),
+          RawNavigationMode.rail => BrutalNavigationRail._railContent(
+            context,
+            d,
+            words,
+            layered,
+          ),
+          RawNavigationMode.sidebar => BrutalSideNavigation._sideContent(
+            context,
+            d,
+            words,
+            layered,
+          ),
+        },
+      ),
+    );
+  }
+
+  // The places laid out for their mode, [brand] at the head of a rail, a
+  // side list or a header, [sideFooter] at the side list's foot.
+  static RawNavigationBuilder _navigation(Widget? brand, Widget? sideFooter) =>
+      (context, details) {
+        final layers = _layers(BrutalTheme.of(context), details.mode);
+        return switch (details.mode) {
+          RawNavigationMode.bar => BrutalNavigationBar._barLayout(
+            context,
+            layers,
+            details.destinations,
+          ),
+          RawNavigationMode.top => _topLayout(context, layers, brand, details),
+          RawNavigationMode.rail => BrutalNavigationRail._railLayout(
+            context,
+            layers,
+            brand,
+            details.destinations,
+          ),
+          RawNavigationMode.sidebar => BrutalSideNavigation._sideLayout(
+            context,
+            layers,
+            brand,
+            sideFooter,
+            details.destinations,
+          ),
+        };
+      };
+
+  // The places across the top, when an app asks for them there: [brand] at
+  // the start, the bar's cells on shared rules, a rule under them.
+  static Widget _topLayout(
+    BuildContext context,
+    List<BrutalStyle?> layers,
+    Widget? brand,
+    RawNavigationDetails details,
+  ) {
+    final theme = BrutalTheme.of(context);
+    final frame = RawStyleOf(layers, const {});
+    final rule = frame.side?.color ?? frame.edge;
+    return ColoredBox(
+      color: theme.colors.paper,
+      child: Padding(
+        padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              height: 64,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (brand != null) ...[
+                    SizedBox(
+                      width: BrutalSideNavigation.width,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: BrutalSpacing.regular,
+                        ),
+                        child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: DefaultTextStyle.merge(
+                            style: theme.textTheme.title,
+                            child: brand,
+                          ),
+                        ),
+                      ),
+                    ),
+                    BrutalRule(vertical: true, color: rule),
+                  ],
+                  Expanded(
+                    child: details.group(
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          for (final (i, cell)
+                              in details.destinations.indexed) ...[
+                            if (i > 0) BrutalRule(vertical: true, color: rule),
+                            Expanded(child: cell),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            BrutalRule(color: rule),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -1391,4 +1476,382 @@ class _BrutalTabBarState extends State<BrutalTabBar>
       ),
     );
   }
+}
+
+/// The app's frame: its places and its pages, at every width, through
+/// ui_core's `RawAdaptiveShell`. On a phone (under 600 wide) the places
+/// stand in [BrutalNavigationBar]'s bar along the bottom; to 1024 in
+/// [BrutalNavigationRail]'s rail down the start; past it in
+/// [BrutalSideNavigation]'s side list, the app's [brand] at the head of the
+/// rail or the list. [modeForWidth] moves those widths. The app's one
+/// [action] is a [BrutalFloatingButton] over a root page's bottom end,
+/// which the page's [BrutalScreen] keeps clear.
+///
+/// A screen reader hears the places as tabs ("Tickets, tab 2 of 3"); the
+/// arrows move along them, Enter or Space chooses one, and F6 moves between
+/// them and the page. A toast stands above the phone's bar.
+///
+/// [BrutalAppShell.branches] keeps a stack of pages for each place: a page
+/// pushed on one (`Navigator.of(context).push`) keeps the rail or the side
+/// list beside it while the phone's bar steps away, and back pops it.
+/// [BrutalAppShell] stands round the app's own [child] (an `IndexedStack`,
+/// a router's shell), and [showPlaces] hides the phone's bar.
+///
+/// ```dart
+/// BrutalAppShell.branches(tabs: const [BrutalTab(LucideIcons.house, 'Home'), BrutalTab(LucideIcons.ticket, 'Tickets')], selectedIndex: place, onDestinationSelected: (i) => setState(() => place = i), branches: [(context) => const Text('Home'), (context) => const Text('Tickets')])
+/// ```
+class BrutalAppShell extends StatelessWidget {
+  /// The app's places round its own [child].
+  const BrutalAppShell({
+    super.key,
+    required this.tabs,
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+    required Widget this.child,
+    this.action,
+    this.brand,
+    this.showPlaces = true,
+    this.modeForWidth = BrutalAppShell.modeFor,
+  }) : branches = null,
+       navigatorKeys = null,
+       backBehavior = RawBranchBackBehavior.firstDestination,
+       hideBarOnPush = false;
+
+  /// The app's places, each with a stack of pages of its own, starting on
+  /// its [branches] page.
+  const BrutalAppShell.branches({
+    super.key,
+    required this.tabs,
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+    required List<WidgetBuilder> this.branches,
+    this.navigatorKeys,
+    this.backBehavior = RawBranchBackBehavior.firstDestination,
+    this.hideBarOnPush = true,
+    this.action,
+    this.brand,
+    this.showPlaces = true,
+    this.modeForWidth = BrutalAppShell.modeFor,
+  }) : child = null;
+
+  /// Brutal's places for a shell [width] wide: the bar under 600, the rail
+  /// to 1024, the side list past it.
+  static RawNavigationMode modeFor(double width) => width < 600
+      ? RawNavigationMode.bar
+      : width < 1024
+      ? RawNavigationMode.rail
+      : RawNavigationMode.sidebar;
+
+  /// The app's places.
+  final List<BrutalTab> tabs;
+
+  /// The place shown.
+  final int selectedIndex;
+
+  /// Called with the place chosen.
+  final ValueChanged<int> onDestinationSelected;
+
+  /// The app's own pages ([BrutalAppShell]); null for
+  /// [BrutalAppShell.branches].
+  final Widget? child;
+
+  /// Each place's first page ([BrutalAppShell.branches]); null round a
+  /// [child].
+  final List<WidgetBuilder>? branches;
+
+  /// The places' navigators, to push onto one from outside it (a
+  /// notification opening a page).
+  final List<GlobalKey<NavigatorState>>? navigatorKeys;
+
+  /// Where back goes from a place's first page.
+  final RawBranchBackBehavior backBehavior;
+
+  /// Whether the phone's bar steps away while a page is pushed over a
+  /// place's first page; the rail and the side list stay.
+  final bool hideBarOnPush;
+
+  /// The app's one act, over a root page.
+  final BrutalShellAction? action;
+
+  /// The app's name, at the head of the rail or the side list.
+  final String? brand;
+
+  /// Whether a phone's bar stands: false while a page of the app's own
+  /// covers a root (a rail or a side list stays).
+  final bool showPlaces;
+
+  /// How the places show for the shell's width: [modeFor] by default.
+  final RawNavigationModeForWidth modeForWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    final name = brand;
+    final act = action;
+    final head = name == null || name.isEmpty ? null : _Brand(name);
+    final places = [
+      for (final tab in tabs)
+        BrutalDestination(icon: tab.icon, label: tab.label, key: tab.key),
+    ];
+    final destinations = [
+      for (final d in places)
+        RawNavigationDestination(label: d.label, icon: d.icon, data: d),
+    ];
+    const destination = BrutalScaffold._destination;
+    final navigation = BrutalScaffold._navigation(head, null);
+    final branches = this.branches;
+    final Widget shell;
+    if (branches == null) {
+      // Over the app's own pages the act stands while the places do: a page
+      // of the app's own pushed over a root on a phone covers both.
+      final phone = MediaQuery.sizeOf(context).width < 600;
+      shell = RawAdaptiveShell(
+        modeForWidth: modeForWidth,
+        showNavigation: showPlaces,
+        dampingRatio: BrutalMotion.dampingRatio,
+        stiffness: BrutalMotion.overlayStiffness,
+        destinations: destinations,
+        selectedIndex: selectedIndex,
+        onDestinationSelected: onDestinationSelected,
+        destinationBuilder: destination,
+        navigationBuilder: navigation,
+        body: Semantics(
+          container: true,
+          explicitChildNodes: true,
+          child: act == null || (phone && !showPlaces)
+              ? child!
+              : _ActOver(action: act, child: child!),
+        ),
+      );
+    } else {
+      // Each place's first page wears the act; a page pushed over it covers
+      // it, as it covers the page.
+      shell = RawAdaptiveShell.branches(
+        modeForWidth: modeForWidth,
+        showNavigation: showPlaces,
+        hideBarOnPush: hideBarOnPush,
+        backBehavior: backBehavior,
+        navigatorKeys: navigatorKeys,
+        dampingRatio: BrutalMotion.dampingRatio,
+        stiffness: BrutalMotion.overlayStiffness,
+        destinations: destinations,
+        selectedIndex: selectedIndex,
+        onDestinationSelected: onDestinationSelected,
+        destinationBuilder: destination,
+        navigationBuilder: navigation,
+        branches: [
+          for (final root in branches)
+            act == null
+                ? root
+                : (context) => _ActOver(action: act, child: root(context)),
+        ],
+      );
+    }
+    return ColoredBox(
+      color: BrutalTheme.of(context).colors.paper,
+      child: shell,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<BrutalTab>('tabs', tabs))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(IntProperty('branches', branches?.length, defaultValue: null))
+      ..add(
+        IterableProperty<GlobalKey<NavigatorState>>(
+          'navigatorKeys',
+          navigatorKeys,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<RawBranchBackBehavior>(
+          'backBehavior',
+          backBehavior,
+          defaultValue: RawBranchBackBehavior.firstDestination,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'hideBarOnPush',
+          value: hideBarOnPush,
+          ifTrue: 'bar hidden on push',
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<BrutalShellAction>(
+          'action',
+          action,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('brand', brand, defaultValue: null))
+      ..add(FlagProperty('showPlaces', value: showPlaces, ifTrue: 'showPlaces'))
+      ..add(
+        ObjectFlagProperty<RawNavigationModeForWidth>(
+          'modeForWidth',
+          modeForWidth,
+          ifPresent: modeForWidth == BrutalAppShell.modeFor ? null : 'custom',
+        ),
+      );
+  }
+}
+
+/// A root page with the shell's act over its bottom end, the page's margin
+/// in, and the room the act takes for the page's [BrutalScreen] to keep
+/// clear.
+class _ActOver extends StatelessWidget {
+  const _ActOver({required this.action, required this.child});
+
+  final BrutalShellAction action;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final margin = BrutalSpacing.pageMargin(MediaQuery.sizeOf(context).width);
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        ShellInsets(bottomInset: _ActButton.side + margin, child: child),
+        PositionedDirectional(
+          end: margin,
+          bottom: margin + MediaQuery.paddingOf(context).bottom,
+          child: _ActButton(action),
+        ),
+      ],
+    );
+  }
+}
+
+/// The app's name at the head of its places: in the title type where it
+/// fits, its first letter in a square where it does not.
+class _Brand extends StatelessWidget {
+  const _Brand(this.name);
+
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = BrutalTheme.of(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final narrow = constraints.maxWidth < 120;
+        return Semantics(
+          header: true,
+          label: name,
+          child: ExcludeSemantics(
+            // Its height's room only: the side list and the top bar set it on
+            // their cells' start edge, the rail centres its letter.
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: BrutalSpacing.regular,
+              ),
+              child: Text(
+                narrow ? name.characters.first.toUpperCase() : name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: narrow ? TextAlign.center : TextAlign.start,
+                style: theme.textTheme.title.copyWith(color: theme.colors.ink),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// The shell's act: the signal square when it is the app's standing
+/// invitation ([BrutalShellAction.accent]), else a white one.
+class _ActButton extends StatelessWidget {
+  const _ActButton(this.action);
+
+  final BrutalShellAction action;
+
+  /// The square's side.
+  static const double side = 64;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = BrutalTheme.of(context).colors;
+    return KeyedSubtree(
+      key: action.key,
+      child: BrutalFloatingButton(
+        icon: Icon(action.icon),
+        tooltip: action.tooltip ?? 'New',
+        onPressed: () => action.onPressed(context),
+        style: action.accent
+            ? null
+            : BrutalStyle(
+                fill: WidgetStatePropertyAll(c.surface),
+                foreground: WidgetStatePropertyAll(c.ink),
+              ),
+      ),
+    );
+  }
+}
+
+/// One of an app shell's places as an app declares it: its glyph, its
+/// name and the key on its cell.
+///
+/// ```dart
+/// BrutalTab(LucideIcons.house, 'Home', ValueKey('open-home'))
+/// ```
+@immutable
+class BrutalTab {
+  /// A place called [label], shown by [icon].
+  const BrutalTab(this.icon, this.label, [this.key]);
+
+  /// Its glyph.
+  final IconData icon;
+
+  /// Its name.
+  final String label;
+
+  /// The key on its cell.
+  final Key? key;
+}
+
+/// The app's one act beside its places (add, write, capture): the signal
+/// square over a root page's bottom end when [accent], a white one when
+/// not.
+///
+/// ```dart
+/// BrutalShellAction(icon: LucideIcons.plus, tooltip: 'New event', onPressed: (context) => openNewEvent(context))
+/// ```
+@immutable
+class BrutalShellAction {
+  /// An act wearing [icon].
+  const BrutalShellAction({
+    required this.icon,
+    required this.onPressed,
+    this.tooltip,
+    this.accent = true,
+    this.key,
+  });
+
+  /// Its glyph.
+  final IconData icon;
+
+  /// Called with a context under the app's navigator when it is pressed.
+  final void Function(BuildContext context) onPressed;
+
+  /// What it does, shown in its tooltip and said by a screen reader; null:
+  /// "New".
+  final String? tooltip;
+
+  /// Whether it is the app's standing invitation, the signal square; else
+  /// a white one.
+  final bool accent;
+
+  /// The key on its button.
+  final Key? key;
 }

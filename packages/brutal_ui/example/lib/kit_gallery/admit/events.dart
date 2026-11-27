@@ -401,7 +401,7 @@ class AdmitEventPage extends StatelessWidget {
           lead: true,
           color: c.blue,
           padding: const EdgeInsets.all(BrutalSpacing.large),
-          label: 'Event',
+          debugLabel: 'Event',
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

@@ -728,7 +728,10 @@ class BrutalSegmentedButton<T> extends StatelessWidget {
         textScaler: scale,
         maxLines: 1,
       )..layout();
-      widest = math.max(widest, painter.width + (s.icon == null ? 0 : 28));
+      widest = math.max(
+        widest,
+        painter.width + (s.icon == null ? 0 : scale.scale(20) + 8),
+      );
       painter.dispose();
     }
     // Whole pixels: on a fraction the rules between the cells and round them
@@ -912,7 +915,11 @@ class BrutalSegmentedButton<T> extends StatelessWidget {
               children: [
                 if (s.icon != null) ...[
                   IconTheme.merge(
-                    data: IconThemeData(size: layered.iconSize ?? 20),
+                    // The glyph grows with the words beside it.
+                    data: IconThemeData(
+                      size: MediaQuery.textScalerOf(context)
+                          .scale(layered.iconSize ?? 20),
+                    ),
                     child: s.icon!,
                   ),
                   const SizedBox(width: BrutalSpacing.small),

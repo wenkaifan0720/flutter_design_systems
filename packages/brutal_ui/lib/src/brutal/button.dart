@@ -169,7 +169,11 @@ class BrutalButton extends StatelessWidget {
           children: [
             if (icon != null) ...[
               IconTheme.merge(
-                data: IconThemeData(size: layered.iconSize ?? 20),
+                // The glyph grows with the words beside it.
+                data: IconThemeData(
+                  size: MediaQuery.textScalerOf(context)
+                      .scale(layered.iconSize ?? 20),
+                ),
                 child: icon!,
               ),
               const SizedBox(width: BrutalSpacing.small),

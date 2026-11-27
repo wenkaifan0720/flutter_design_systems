@@ -285,15 +285,13 @@ class _BrutalSliderState extends State<BrutalSlider> {
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  Positioned(
-                    left: reach / 2,
-                    right: reach / 2,
-                    top: 0,
-                    bottom: 0,
+                  // The track meets the column's edges; its ink runs from
+                  // the start to the thumb's centre.
+                  Positioned.fill(
                     child: Center(
                       child: _Track(
                         start: 0,
-                        end: _fraction,
+                        end: (reach / 2 + _fraction * usable) / width,
                         enabled: enabled,
                         layers: layers,
                       ),
@@ -400,6 +398,7 @@ class BrutalRangeSlider extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layers = [style, theme.sliderStyle];
+    final reach = _reachOf(context);
     return RawRangeSlider(
       values: RawRangeValues(values.start, values.end),
       onChanged: onChanged == null
@@ -411,12 +410,24 @@ class BrutalRangeSlider extends StatelessWidget {
       startLabel: startLabel,
       endLabel: endLabel,
       semanticFormatterCallback: semanticFormatterCallback,
-      thumbSize: Size.square(_reachOf(context)),
-      trackBuilder: (context, track) => _Track(
-        start: track.start,
-        end: track.end,
-        enabled: track.enabled,
-        layers: layers,
+      thumbSize: Size.square(reach),
+      // The track meets the column's edges, past the thumbs' centres, as a
+      // slider's does; its ink runs between the thumbs' centres.
+      trackBuilder: (context, track) => LayoutBuilder(
+        builder: (context, box) {
+          final w = box.maxWidth;
+          final full = w + reach;
+          return OverflowBox(
+            minWidth: full,
+            maxWidth: full,
+            child: _Track(
+              start: (reach / 2 + track.start * w) / full,
+              end: (reach / 2 + track.end * w) / full,
+              enabled: track.enabled,
+              layers: layers,
+            ),
+          );
+        },
       ),
       thumbBuilder: (context, index, states) =>
           _thumbFace(c, states, false, layers),
@@ -539,7 +550,13 @@ class BrutalChip extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (icon != null) ...[
-                      Icon(icon, size: layered.iconSize ?? 16, color: words),
+                      // The glyph grows with the words beside it.
+                      Icon(
+                        icon,
+                        size: MediaQuery.textScalerOf(context)
+                            .scale(layered.iconSize ?? 16),
+                        color: words,
+                      ),
                       const SizedBox(width: BrutalSpacing.small),
                     ],
                     RawCapCenter(

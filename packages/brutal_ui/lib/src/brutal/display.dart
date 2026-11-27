@@ -756,7 +756,8 @@ class BrutalAvatar extends StatelessWidget {
   /// Their picture; null, or one that fails, shows the initials.
   final ImageProvider? image;
 
-  /// The side.
+  /// The side at the reader's text size; larger text grows it, up to
+  /// twice, its letters with it.
   final double size;
 
   /// Its style, over [BrutalThemeData.avatarStyle].
@@ -780,17 +781,23 @@ class BrutalAvatar extends StatelessWidget {
     final fill =
         layered.fill ?? blocks[name.codeUnits.fold(0, (a, b) => a + b) % 4];
     final words = layered.foreground ?? c.onColor(fill);
+    // It grows with text up to twice its side, its letters with it, so they
+    // stay inside its square.
+    final side = MediaQuery.textScalerOf(context)
+        .clamp(maxScaleFactor: 2)
+        .scale(size);
     final initials = Center(
       child: RawCapCenter(
         capHeightFactor: BrutalTheme.of(context).capHeightFactor,
         child: Text(
           initialsOf(name),
           maxLines: 1,
+          textScaler: TextScaler.noScaling,
           style: layered
               .text(theme.textTheme.label)
               .copyWith(
                 color: words,
-                fontSize: (size * 0.38).clamp(10, 28),
+                fontSize: (side * 0.38).clamp(10, 56),
                 height: 1,
               ),
         ),
@@ -801,7 +808,7 @@ class BrutalAvatar extends StatelessWidget {
       image: image != null,
       excludeSemantics: true,
       child: SizedBox.square(
-        dimension: size,
+        dimension: side,
         child: BrutalSurface(
           face: BrutalFace(
             fill: fill,
@@ -813,8 +820,8 @@ class BrutalAvatar extends StatelessWidget {
               : Image(
                   image: image!,
                   fit: BoxFit.cover,
-                  width: size,
-                  height: size,
+                  width: side,
+                  height: side,
                   errorBuilder: (_, _, _) => initials,
                 ),
         ),

@@ -113,15 +113,4 @@ void main() {
       }
     });
   }
-
-  test('brutalContrast is RawPalette.contrastRatio', () {
-    // ignore: deprecated_member_use_from_same_package
-    expect(
-      brutalContrast(const Color(0xFFFF6A13), const Color(0xFFFFFFFF)),
-      RawPalette.contrastRatio(
-        const Color(0xFFFF6A13),
-        const Color(0xFFFFFFFF),
-      ),
-    );
-  });
 }

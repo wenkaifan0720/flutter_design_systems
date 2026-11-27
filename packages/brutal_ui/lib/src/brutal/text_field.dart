@@ -232,6 +232,9 @@ class BrutalTextField extends StatefulWidget {
     this.decorate,
     this.failureLine,
     this.style,
+    this.validator,
+    this.onSaved,
+    this.autovalidateMode,
   });
 
   /// The text being edited. Yours to dispose; given none, the field makes
@@ -244,7 +247,8 @@ class BrutalTextField extends StatefulWidget {
   /// The words over the box.
   final String? labelText;
 
-  /// Grey words in the empty box: a format or an example, never the label.
+  /// Words in the empty box, in the off grey so they never read as typed:
+  /// a format or an example, never the label.
   final String? hintText;
 
   /// Help under the box.
@@ -329,6 +333,20 @@ class BrutalTextField extends StatefulWidget {
   /// This field's style, over [BrutalThemeData.textFieldStyle].
   final BrutalStyle? style;
 
+  /// Checks the text in the `RawForm` (or Flutter's `Form`) above, as
+  /// `TextFormField`'s validator does: the words it returns show under the
+  /// box in red, its rule turns red, and a failed submit moves the focus
+  /// here. Null, with [onSaved] null too: the field takes no part in a form,
+  /// and [errorText] is the app's to set.
+  final FormFieldValidator<String>? validator;
+
+  /// Called with the text when the form above saves.
+  final FormFieldSetter<String>? onSaved;
+
+  /// When [validator] runs before the form is submitted; null: as the form
+  /// says (after a failed submit, on each edit).
+  final AutovalidateMode? autovalidateMode;
+
   @override
   State<BrutalTextField> createState() => _BrutalTextFieldState();
 
@@ -395,12 +413,42 @@ class _BrutalTextFieldState extends State<BrutalTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final field = widget;
+    if (field.validator == null && field.onSaved == null) {
+      return _field(context, field.errorText, field.onChanged);
+    }
+    // In a form: ui_core's RawFormField round it, the form's error shown on
+    // it, and its focus the one a failed submit asks for.
+    return RawFormField<String>(
+      focusNode: _focus,
+      initialValue: _controller.text,
+      validator: field.validator == null
+          ? null
+          : (_) => field.validator!(_controller.text),
+      onSaved: field.onSaved == null
+          ? null
+          : (_) => field.onSaved!(_controller.text),
+      autovalidateMode: field.autovalidateMode,
+      enabled: field.enabled,
+      builder: (state) =>
+          _field(context, field.errorText ?? state.errorText, (value) {
+            state.didChange(value);
+            field.onChanged?.call(value);
+          }),
+    );
+  }
+
+  Widget _field(
+    BuildContext context,
+    String? errorText,
+    ValueChanged<String>? onChanged,
+  ) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final states = <WidgetState>{
       if (!widget.enabled) WidgetState.disabled,
       if (_focus.hasFocus) WidgetState.focused,
-      if (widget.errorText != null) WidgetState.error,
+      if (errorText != null) WidgetState.error,
     };
     final layered = RawStyleOf([widget.style, theme.textFieldStyle], states);
     final words = theme.textTheme.body
@@ -416,12 +464,12 @@ class _BrutalTextFieldState extends State<BrutalTextField> {
           layered.edge ??
           (!widget.enabled
               ? c.disabled
-              : widget.errorText != null
+              : errorText != null
               ? c.danger
               : c.ink),
       foreground: words.color!,
       focus: _focus.hasFocus
-          ? (widget.errorText != null
+          ? (errorText != null
                 ? c.danger
                 : brutalFocusInk(c, layered.fill ?? c.surface))
           : c.ink.withValues(alpha: 0),
@@ -440,7 +488,8 @@ class _BrutalTextFieldState extends State<BrutalTextField> {
               widget.hintText!,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: words.copyWith(color: c.inkMuted),
+              // A step lighter than help, so a hint never reads as typed.
+              style: words.copyWith(color: c.disabled),
             ),
       child: Material(
         type: MaterialType.transparency,
@@ -457,7 +506,7 @@ class _BrutalTextFieldState extends State<BrutalTextField> {
           textCapitalization: widget.textCapitalization,
           autofillHints: widget.autofillHints,
           inputFormatters: widget.inputFormatters,
-          onChanged: widget.onChanged,
+          onChanged: onChanged,
           onSubmitted: widget.onSubmitted,
           onEditingComplete: widget.onEditingComplete,
           enabled: widget.enabled,
@@ -469,6 +518,7 @@ class _BrutalTextFieldState extends State<BrutalTextField> {
       ),
     );
     final entry = _named(
+      errorText,
       widget.textDirection == null
           ? entryBox
           : Directionality(
@@ -556,7 +606,7 @@ class _BrutalTextFieldState extends State<BrutalTextField> {
     return BrutalFieldFrame(
       labelText: widget.labelText,
       helperText: widget.helperText,
-      errorText: widget.errorText,
+      errorText: errorText,
       enabled: widget.enabled,
       failureLine: widget.failureLine,
       // A caller's `decorate` names the entry itself.
@@ -572,12 +622,12 @@ class _BrutalTextFieldState extends State<BrutalTextField> {
   /// object is no semantics boundary, so without one the field's name and
   /// flags land on whatever node holds it (a page's column, with its
   /// results under it).
-  Widget _named(Widget editable) => Semantics(
+  Widget _named(String? errorText, Widget editable) => Semantics(
     container:
         widget.decorate != null ||
         (widget.labelText == null &&
             widget.helperText == null &&
-            widget.errorText == null),
+            errorText == null),
     child:
         widget.decorate?.call(editable) ??
         Semantics(

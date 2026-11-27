@@ -113,7 +113,7 @@ Widget kitSpecimenAppShell() => kitState<int>(
     brand: 'Admit',
     action: BrutalShellAction(
       icon: LucideIcons.plus,
-      label: 'New event',
+      tooltip: 'New event',
       onPressed: (context) => kitFeedback(context, 'A new event opens here.'),
     ),
     child: BrutalScreen(
