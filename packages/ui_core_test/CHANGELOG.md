@@ -1,3 +1,7 @@
+## 0.6.2
+
+- `DesignFaceInsetCheck` skips a face a scroll cuts when the face is read from its pixels. A list row whose plate draws nothing of its own is read by the avatar it paints. Scrolled half past the list's foot (Stint's task list above its navigation bar), that avatar was read as ending at the foot, and its initials were named for standing close to an edge that is only the cut. A face read from its pixels that ends at a clip's edge, while the box it is painted in runs on past that edge, now counts as cut. It is read when it comes into view, as the check's documentation says. A face that shows whole above the cut is still read, even when its row runs on past it.
+
 ## 0.6.1
 
 - `DesignControlNodesCheck` reads a control inside another's own press: a row's share button inside the row's `RawButton`, which merges what it holds, is named with the row (`a button "Dune" and a button "Share Dune" are one node`). It counted only a control that holds no other, so the row was never a second control and the merge passed whenever the trailing control sat inside the row's press. The outer control is read where none inside it stands; a row with `RawButton(mergeSemantics: false)` (ui_core 0.8.1) passes, and so does a table's chosen row round its own checkbox, a check row.

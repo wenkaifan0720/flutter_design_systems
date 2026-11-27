@@ -126,9 +126,16 @@ extension on _LabelReader {
     final rim = face.read ? _withRim(control, face.box, face.rect) : null;
     final faceRect = rim?.rect ?? face.rect;
     // Only a face the screen shows whole: one a scroll or a clip cuts, or
-    // past the screen's edge, is read when a walk brings it into view.
+    // past the screen's edge, is read when a walk brings it into view. A
+    // face read from its pixels shows only up to the cut, so it is cut too
+    // where it ends at the clip and the box it is painted in runs on past.
     final clip = _clipOf(control, throughScrolls: true);
-    if (clip != null && clip.inflate(0.5).intersect(faceRect) != faceRect) {
+    if (clip != null &&
+        _cutBy(
+          clip.inflate(0.5),
+          faceRect,
+          face.read ? _paintedIn(control, face.box, faceRect) : faceRect,
+        )) {
       return const [];
     }
     final shown = [
@@ -1033,6 +1040,17 @@ class _FaceReader extends _LabelReader {
     return channel(c.r) << 24 | channel(c.g) << 16 | channel(c.b) << 8 | 0xFF;
   }
 }
+
+// Whether [clip] cuts the face [read] (global): [read] runs past it, or
+// ends at one of its edges where [box], the box it is painted in, runs on
+// past that edge (what shows of a face read from its pixels stops at the
+// cut: an avatar a list's foot cuts reads as ending there).
+bool _cutBy(Rect clip, Rect read, Rect box) =>
+    clip.intersect(read) != read ||
+    (read.left <= clip.left + 1 && box.left < clip.left) ||
+    (read.top <= clip.top + 1 && box.top < clip.top) ||
+    (read.right >= clip.right - 1 && box.right > clip.right) ||
+    (read.bottom >= clip.bottom - 1 && box.bottom > clip.bottom);
 
 // Whether [n] hides what it is painted over where it paints: an opaque
 // fill, a gradient, an image, a paint whose fill the check cannot read; not

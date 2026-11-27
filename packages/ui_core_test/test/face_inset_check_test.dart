@@ -1172,6 +1172,135 @@ void main() {
     });
   }
 
+  testWidgets("a row's ball a list's foot cuts is read when it comes into "
+      'view, not up to the cut', (tester) async {
+    // Stint's task list by night: a row whose plate draws nothing of its
+    // own, so its avatar ball is the face read from its pixels, scrolled
+    // half past the list's foot, over a bar in the page's colour. What
+    // shows of the ball ends at the foot, its initials' ink 0 to 3 px above
+    // it (named), while the ball runs on past it. In view, initials near the
+    // ball's own foot are named.
+    // A row whose plate paints its avatar's ball itself: the box the ball is
+    // painted in is the row's.
+    Widget plateRow(double down) => RawButton(
+      onPressed: () {},
+      builder: (context, states, _) => CustomPaint(
+        painter: const _PlateBall(Color(0xFF29243F), Color(0xFF7B6219)),
+        child: SizedBox(
+          width: 300,
+          height: 60,
+          child: Row(
+            children: [
+              const SizedBox(width: 12),
+              SizedBox.square(
+                dimension: 28,
+                child: Center(
+                  child: Transform.translate(
+                    offset: Offset(0, down),
+                    child: Text(
+                      'SO',
+                      style: _style.copyWith(
+                        fontSize: 10.64,
+                        height: 1,
+                        color: const Color(0xFFF3F0FF),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    Widget list(
+      double top, {
+      double offset = 0,
+      _Ball painter = _Ball.nightEnd,
+      double down = 0,
+      bool plate = false,
+    }) {
+      final controller = ScrollController(initialScrollOffset: offset);
+      addTearDown(controller.dispose);
+      // The list, its page painted in it (what it draws, a repaint boundary
+      // of its own, is read), over a bar in the page's colour, as a
+      // navigation bar under it by night.
+      return ColoredBox(
+        color: painter.page,
+        child: SizedBox(
+          width: 332,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: 200,
+                child: SingleChildScrollView(
+                  key: ValueKey('$top $offset $down $plate'),
+                  controller: controller,
+                  child: ColoredBox(
+                    color: painter.page,
+                    child: Column(
+                      children: [
+                        SizedBox(height: top),
+                        if (plate)
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: plateRow(down),
+                          )
+                        else
+                          row(painter, shift: Offset(0, down)),
+                        const SizedBox(height: 300),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 60),
+            ],
+          ),
+        ),
+      );
+    }
+
+    for (final top in const <double>[147, 148, 149, 150]) {
+      expect(
+        await _check(tester, list(top)),
+        isEmpty,
+        reason: 'the ball cut by the foot, ${top - 146} px past it',
+      );
+    }
+    // Scrolled on, the ball cut by the list's top, its initials' ink 1 to 3
+    // px below it.
+    for (final offset in const <double>[187, 188, 189]) {
+      expect(
+        await _check(tester, list(148, offset: offset)),
+        isEmpty,
+        reason: 'the ball cut by the top, scrolled $offset px',
+      );
+    }
+    expect(await _check(tester, list(148, offset: 100)), isEmpty);
+    // The row cut by the foot below its ball, whole above the cut: the ball
+    // is read, its initials near its foot named.
+    final above = await _check(
+      tester,
+      list(136, painter: _Ball.nightFoot, down: 9),
+    );
+    expect(above, hasLength(1), reason: 'the row cut below its whole ball');
+    expect(above.single, contains('from the foot of its face'));
+    // A ball the row's plate paints itself: cut, it is not read; whole above
+    // the cut, with the plate running on past it, it is.
+    expect(await _check(tester, list(148, plate: true)), isEmpty);
+    final painted = await _check(tester, list(136, plate: true, down: 9));
+    expect(painted, hasLength(1), reason: "the plate's own ball, whole");
+    expect(painted.single, contains('from the foot of its face'));
+    final close = await _check(
+      tester,
+      list(148, offset: 100, painter: _Ball.nightFoot, down: 9),
+    );
+    expect(close, hasLength(1), reason: 'in view, its initials near its foot');
+    expect(close.single, contains('from the foot of its face'));
+  });
+
   // A face its painter draws only a little off what is round it (a pale
   // select on its pale card by day, its rim shaded back to the card's colour
   // at its edge, and on its card by night; a dark face on its card by
@@ -1901,6 +2030,25 @@ class _KeyFace extends CustomPainter {
 
 // A rounded face in [fill], outlined 2 px wide inside its edge in [outline]
 // when given.
+// A row's plate that paints its avatar's ball itself: [page] over its box,
+// a ball of [face] 28 across, 12 in from its start, centred down it.
+class _PlateBall extends CustomPainter {
+  const _PlateBall(this.page, this.face);
+
+  final Color page;
+  final Color face;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRect(Offset.zero & size, Paint()..color = page);
+    canvas.drawCircle(Offset(26, size.height / 2), 14, Paint()..color = face);
+  }
+
+  @override
+  bool shouldRepaint(_PlateBall oldDelegate) =>
+      oldDelegate.page != page || oldDelegate.face != face;
+}
+
 class _Plate extends CustomPainter {
   const _Plate(this.fill, {this.outline});
 
