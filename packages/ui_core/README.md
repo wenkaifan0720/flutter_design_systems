@@ -8,7 +8,7 @@ it, so an app that uses a look rarely imports it directly. Add it to build a loo
 
 ```yaml
 dependencies:
-  ui_core: ^0.8.2
+  ui_core: ^0.8.3
 ```
 
 ```dart
@@ -230,6 +230,11 @@ class _InkAppShellState extends State<InkAppShell> {
 A page pushes onto its own destination's stack with `Navigator.of(context).push`; a page pushed on the app's root
 navigator (`Navigator.of(context, rootNavigator: true)`) covers the whole shell, as a full-screen editor does.
 
+A change of destination switches at once, as Material's `NavigationBar` over an `IndexedStack` does. A look whose
+design moves between destinations gives `transitionBuilder` (and `transitionDuration`): it gets each branch's coming
+in (`animation`) and going out (`secondaryAnimation`), as a page route's transition does. Both branches are painted
+only while it runs, the one going out taking no pointer, focus or screen reader, and reduced motion switches at once.
+
 ## Flutter's conventions
 
 The behaviours take what Flutter's own widgets take, under Flutter's names:
@@ -252,7 +257,7 @@ The behaviours take what Flutter's own widgets take, under Flutter's names:
 
 Controls expose their label, value, role and available actions to assistive technology. Keyboard navigation follows the reading direction. Use a builder’s `WidgetState` values to show focus, press, selection and disabled states. Motion follows the platform’s reduced-motion preference.
 
-A part shows its focus as a browser's `:focus-visible` decides: after a key, not after a press or a click, until the next key. A look's own pressable on a bare `FocusableActionDetector` shows it the same way through `RawFocusShown`, given the detector's `onShowFocusHighlight`; Flutter's highlight mode alone, which a mouse leaves traditional, keeps a ring on a row a click focused.
+A part shows its focus as a browser's `:focus-visible` decides: after a key, not after a press or a click, until the next key. A look's own pressable on a bare `FocusableActionDetector` shows it the same way through `RawFocusShown`, given the detector's `onFocusChange`; Flutter's highlight mode alone, which a mouse leaves traditional, keeps a ring on a row a click focused, and the detector's `onShowFocusHighlight` never comes on a touch platform once a mouse has connected before any input (Flutter reads the mode as the detector is built).
 
 ## Motion
 

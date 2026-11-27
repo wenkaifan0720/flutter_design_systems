@@ -672,7 +672,10 @@ class RawButtonState extends State<RawButton> {
       autofocus: widget.autofocus,
       mouseCursor: WidgetStateProperty.resolveAs<MouseCursor>(cursor, current),
       shortcuts: widget.shortcuts,
-      onShowFocusHighlight: (on) => _focus.focused(on && enabled),
+      // The focus itself, not the detector's highlight: the detector reads
+      // Flutter's highlight mode as it is built, and a mouse that connects
+      // before any input turns that mode traditional without telling it.
+      onFocusChange: (on) => _focus.focused(on && enabled),
       actions: {
         ActivateIntent: CallbackAction<ActivateIntent>(onInvoke: _activate),
         ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(

@@ -789,7 +789,7 @@ class _RawWheelPickerState extends State<RawPicker> {
           enabled: enabled,
           focusNode: _nodes[c],
           autofocus: widget.autofocus && c == 0,
-          onShowFocusHighlight: _focus[c].focused,
+          onFocusChange: _focus[c].focused,
           // A mouse turns a wheel by dragging it: it grabs, and grabbing
           // while it turns.
           mouseCursor: !enabled

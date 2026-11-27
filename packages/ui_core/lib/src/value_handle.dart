@@ -460,7 +460,7 @@ class _RawValueHandleState extends State<RawValueHandle> {
           focusNode: widget.focusNode,
           autofocus: widget.autofocus,
           mouseCursor: cursor,
-          onShowFocusHighlight: _focus.focused,
+          onFocusChange: _focus.focused,
           child: MouseRegion(
             onEnter: (_) {
               _hovered = true;

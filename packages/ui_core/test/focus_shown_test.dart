@@ -10,8 +10,8 @@ import 'package:ui_core/ui_core.dart';
 
 import 'behaviour_harness.dart';
 
-// A look's row: its ring from RawFocusShown, or ([shown] false) from the
-// detector's own highlight.
+// A look's row: its ring from RawFocusShown on the detector's focus, or
+// ([shown] false) from the detector's own highlight.
 class _Row extends StatefulWidget {
   const _Row({required this.focusNode, required this.shown});
 
@@ -38,8 +38,9 @@ class _RowState extends State<_Row> {
   @override
   Widget build(BuildContext context) => FocusableActionDetector(
     focusNode: widget.focusNode,
+    onFocusChange: widget.shown ? _focus.focused : null,
     onShowFocusHighlight: widget.shown
-        ? _focus.focused
+        ? null
         : (on) => setState(() => _ring = on),
     child: Semantics(
       key: const ValueKey('row'),
@@ -128,4 +129,32 @@ void main() {
     expect(find.text('plain'), findsOneWidget);
     expect(focusNode.hasFocus, isTrue);
   }, variant: _desktop);
+
+  testWidgets('RawFocusShown: Tab shows the ring after a mouse moved over '
+      'the row, before any other input', (tester) async {
+    final focusNode = FocusNode();
+    addTearDown(focusNode.dispose);
+    await tester.pumpWidget(
+      harness(
+        Align(
+          alignment: Alignment.topLeft,
+          child: _Row(focusNode: focusNode, shown: true),
+        ),
+      ),
+    );
+    // A touch platform: the highlight mode starts as touch, and a mouse
+    // turns it traditional without telling the detector.
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await mouse.addPointer(location: const Offset(600, 500));
+    addTearDown(mouse.removePointer);
+    await mouse.moveTo(tester.getCenter(find.byType(_Row)));
+    await tester.pumpAndSettle();
+    await mouse.moveTo(const Offset(600, 500));
+    await tester.pumpAndSettle();
+    expect(find.text('plain'), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+    expect(focusNode.hasFocus, isTrue);
+    expect(find.text('ring'), findsOneWidget);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 }

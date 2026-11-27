@@ -289,8 +289,12 @@ final class RawFocusHearing {
 /// detector's [FocusableActionDetector.onShowFocusHighlight] follows
 /// Flutter's focus highlight mode, which a mouse leaves traditional, so a
 /// row a click focused, or one a click-opened menu gives the focus back to,
-/// keeps its ring after use. Give that callback to [focused], paint the
-/// focus by what [onChanged] hears, and [dispose] it with the part's state:
+/// keeps its ring after use. And the detector reads that mode as it is
+/// built: a mouse that connects before any input (a trackpad on an iPad, a
+/// mouse on Android) turns it traditional without telling the detector, so
+/// its highlight never comes, even for a Tab. Give the detector's
+/// [FocusableActionDetector.onFocusChange] to [focused], paint the focus by
+/// what [onChanged] hears, and [dispose] it with the part's state:
 ///
 /// ```dart
 /// class LookPressable extends StatefulWidget {
@@ -317,7 +321,7 @@ final class RawFocusHearing {
 ///
 ///   @override
 ///   Widget build(BuildContext context) => FocusableActionDetector(
-///     onShowFocusHighlight: _focus.focused,
+///     onFocusChange: _focus.focused,
 ///     child: DecoratedBox(
 ///       decoration: BoxDecoration(
 ///         border: _ring ? Border.all(width: 2) : null,
@@ -343,9 +347,9 @@ class RawFocusShown {
   /// Whether the part shows its focus.
   bool get value => _value;
 
-  /// Whether the part has the focus Flutter would highlight: what a
-  /// [FocusableActionDetector.onShowFocusHighlight] says, or a focus in the
-  /// traditional highlight mode. [onChanged] hears whether it shows.
+  /// Whether the part has the focus: what a
+  /// [FocusableActionDetector.onFocusChange] or a [Focus.onFocusChange]
+  /// says. [onChanged] hears whether it shows, as the last input decides.
   void focused(bool on) {
     if (on != _focused) {
       _focused = on;

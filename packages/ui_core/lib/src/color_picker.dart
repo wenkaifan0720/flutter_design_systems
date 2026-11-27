@@ -317,36 +317,45 @@ class _RawColorAreaState extends State<RawColorArea> {
                 focusNode: widget.focusNode,
                 autofocus: widget.autofocus,
                 mouseCursor: SystemMouseCursors.precise,
-                onShowFocusHighlight: _focus.focused,
-                onShowHoverHighlight: (on) => setState(() => _hovered = on),
-                child: LayoutBuilder(
-                  builder: (context, box) {
-                    final size = Size(box.maxWidth, box.maxHeight);
-                    final t = widget.thumbSize;
-                    return GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onPanDown: (d) => _at(d.localPosition, size),
-                      onPanStart: (_) => setState(() => _dragging = true),
-                      onPanUpdate: (d) => _at(d.localPosition, size),
-                      onPanEnd: (_) => setState(() => _dragging = false),
-                      onPanCancel: () => setState(() => _dragging = false),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Positioned.fill(child: widget.builder(context, area)),
-                          Positioned(
-                            left: hsv.saturation * size.width - t.width / 2,
-                            top: (1 - hsv.value) * size.height - t.height / 2,
-                            width: t.width,
-                            height: t.height,
-                            child: Center(
-                              child: widget.thumbBuilder(context, area),
+                // The focus and the hover themselves, not the detector's
+                // highlights: it reads Flutter's highlight mode as it is
+                // built, and a mouse that connects before any input turns
+                // that mode traditional without telling it.
+                onFocusChange: _focus.focused,
+                child: MouseRegion(
+                  onEnter: (_) => setState(() => _hovered = true),
+                  onExit: (_) => setState(() => _hovered = false),
+                  child: LayoutBuilder(
+                    builder: (context, box) {
+                      final size = Size(box.maxWidth, box.maxHeight);
+                      final t = widget.thumbSize;
+                      return GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onPanDown: (d) => _at(d.localPosition, size),
+                        onPanStart: (_) => setState(() => _dragging = true),
+                        onPanUpdate: (d) => _at(d.localPosition, size),
+                        onPanEnd: (_) => setState(() => _dragging = false),
+                        onPanCancel: () => setState(() => _dragging = false),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Positioned.fill(
+                              child: widget.builder(context, area),
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+                            Positioned(
+                              left: hsv.saturation * size.width - t.width / 2,
+                              top: (1 - hsv.value) * size.height - t.height / 2,
+                              width: t.width,
+                              height: t.height,
+                              child: Center(
+                                child: widget.thumbBuilder(context, area),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),

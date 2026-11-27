@@ -356,6 +356,24 @@ typedef RawNavigationBuilder = Widget Function(
   RawNavigationDetails details,
 );
 
+/// Paints a branch of a [RawAdaptiveShell.branches] as the shell moves
+/// between destinations, for a look whose design moves between them, as a
+/// page route's transition does: [animation] runs
+/// from 0 to 1 as the branch comes in, [secondaryAnimation] from 0 to 1 as it
+/// goes out; at rest, the shown branch has 1 and 0. Each runs from where it
+/// is, so a change of destination in the middle of one carries on from the
+/// frame on screen. [child] is the branch.
+///
+/// ```dart
+/// (context, animation, secondaryAnimation, child) => FadeTransition(opacity: animation, child: FadeTransition(opacity: ReverseAnimation(secondaryAnimation), child: child))
+/// ```
+typedef RawBranchTransitionBuilder = Widget Function(
+  BuildContext context,
+  Animation<double> animation,
+  Animation<double> secondaryAnimation,
+  Widget child,
+);
+
 /// Where back goes from a branch at its root page.
 enum RawBranchBackBehavior {
   /// To the first destination, then out of the app (Material's rule).
@@ -444,6 +462,8 @@ class RawAdaptiveShell extends StatefulWidget {
        navigatorKeys = null,
        backBehavior = RawBranchBackBehavior.firstDestination,
        hideBarOnPush = false,
+       transitionBuilder = null,
+       transitionDuration = Duration.zero,
        assert(dampingRatio > 0 && stiffness > 0);
 
   /// A shell whose body is one [Navigator] per destination, each starting
@@ -454,6 +474,15 @@ class RawAdaptiveShell extends StatefulWidget {
   /// While the selected branch has a page over its root the bar steps away
   /// ([hideBarOnPush]). Tab from a branch's page reaches the navigation, a
   /// page with nothing to focus on it too, and Shift+Tab goes back to it.
+  ///
+  /// A change of destination switches at once, as Material's
+  /// `NavigationBar` over an `IndexedStack` does; a look whose design moves
+  /// between destinations gives its [transitionBuilder]. Then both are
+  /// painted only while it runs, the one going out taking no pointer, focus
+  /// or screen reader, its tickers stopping once it is hidden, and reduced
+  /// motion switches at once. Each branch keeps its state. Focus in the
+  /// branch going out moves to the one coming in (where it was in it, else
+  /// its page); focus on the navigation stays there.
   ///
   /// ```dart
   /// RawAdaptiveShell.branches(destinations: const [RawNavigationDestination(label: 'Home', icon: IconData(0xe318)), RawNavigationDestination(label: 'Mail', icon: IconData(0xe158))], selectedIndex: 0, onDestinationSelected: (index) {}, destinationBuilder: (context, destination, details) => Text(destination.label), navigationBuilder: (context, details) => Row(children: details.destinations), branches: [(context) => const Text('Home'), (context) => const Text('Mail')])
@@ -469,6 +498,8 @@ class RawAdaptiveShell extends StatefulWidget {
     this.navigatorKeys,
     this.backBehavior = RawBranchBackBehavior.firstDestination,
     this.hideBarOnPush = true,
+    this.transitionBuilder,
+    this.transitionDuration = const Duration(milliseconds: 250),
     this.mode,
     this.modeForWidth,
     this.showNavigation = true,
@@ -512,6 +543,15 @@ class RawAdaptiveShell extends StatefulWidget {
   /// scaffold does. Always false over the app's own [body], which says so
   /// through [showNavigation].
   final bool hideBarOnPush;
+
+  /// Paints the branches as the destination changes, for a look whose
+  /// design moves between destinations ([RawAdaptiveShell.branches]); null
+  /// switches at once.
+  final RawBranchTransitionBuilder? transitionBuilder;
+
+  /// How long a [transitionBuilder]'s change of destination takes;
+  /// [Duration.zero] switches at once, as reduced motion does.
+  final Duration transitionDuration;
 
   /// How the destinations show at every width; null: by the shell's width
   /// ([modeForWidth]).
@@ -589,6 +629,19 @@ class RawAdaptiveShell extends StatefulWidget {
           ifTrue: 'bar hidden on push',
         ),
       )
+      ..add(
+        ObjectFlagProperty<RawBranchTransitionBuilder>.has(
+          'transitionBuilder',
+          transitionBuilder,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'transitionDuration',
+          transitionDuration,
+          defaultValue: Duration.zero,
+        ),
+      )
       ..add(EnumProperty<RawNavigationMode>('mode', mode, defaultValue: null))
       ..add(
         ObjectFlagProperty<RawNavigationModeForWidth>.has(
@@ -610,7 +663,7 @@ class RawAdaptiveShell extends StatefulWidget {
 }
 
 class _RawAdaptiveShellState extends State<RawAdaptiveShell>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final RovingFocus _focus = RovingFocus('RawAdaptiveShell');
 
   // The body keeps its state as the mode changes and the frame with it.
@@ -629,6 +682,99 @@ class _RawAdaptiveShellState extends State<RawAdaptiveShell>
   final Set<int> _built = {};
   final List<GlobalKey<NavigatorState>> _keys = [];
   final Map<int, bool> _deep = {};
+
+  // Each built branch's coming in and going out, and the branches going
+  // out now (painted until they are hidden).
+  final Map<int, AnimationController> _in = {};
+  final Map<int, AnimationController> _out = {};
+  final Set<int> _leaving = {};
+
+  // Where the focus was in each branch it left, to come back to.
+  final Map<int, WeakReference<FocusNode>> _lastFocus = {};
+
+  AnimationController _inOf(int i) => _in[i] ??= AnimationController(
+    vsync: this,
+    duration: widget.transitionDuration,
+  );
+
+  AnimationController _outOf(int i) => _out[i] ??=
+      AnimationController(vsync: this, duration: widget.transitionDuration)
+        ..addStatusListener((status) {
+          if (status == AnimationStatus.completed) _hide(i);
+        });
+
+  // A branch gone out is hidden, ready to come in again from the start.
+  void _hide(int i) {
+    if (!mounted || i == widget.selectedIndex) return;
+    _in[i]?.value = 0;
+    _out[i]?.value = 0;
+    setState(() => _leaving.remove(i));
+  }
+
+  // The selected branch changed from [from] to [to].
+  void _switchBranch(int from, int to) {
+    // Focus in the branch going out goes to the one coming in.
+    final focusWasIn =
+        _built.contains(from) &&
+        (_navigatorKey(from).currentState?.focusNode.hasFocus ?? false);
+    final primary = FocusManager.instance.primaryFocus;
+    if (focusWasIn && primary != null) {
+      _lastFocus[from] = WeakReference(primary);
+    }
+    // Focus outside the branches (on a destination) stays there, though a
+    // branch shown for the first time pushes its first page, which asks for
+    // the focus.
+    final stay =
+        primary != null &&
+            primary is! FocusScopeNode &&
+            !_built.any(
+              (i) => _navigatorKey(i).currentState?.focusNode.hasFocus ?? false,
+            )
+        ? primary
+        : null;
+    final instant =
+        widget.transitionBuilder == null ||
+        widget.transitionDuration == Duration.zero ||
+        rawReduceMotionOf(context);
+    if (instant) {
+      _leaving
+        ..remove(from)
+        ..remove(to);
+      _in[from]?.value = 0;
+      _out[from]?.value = 0;
+      _out[to]?.value = 0;
+      _in[to]?.value = 1;
+    } else {
+      _leaving
+        ..add(from)
+        ..remove(to);
+      _outOf(from).forward();
+      _outOf(to).reverse();
+      _inOf(to).forward();
+    }
+    if (stay != null) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted && stay.context != null && stay.canRequestFocus) {
+          stay.requestFocus();
+        }
+      });
+    }
+    if (focusWasIn) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || widget.selectedIndex != to) return;
+        final branch = _navigatorKey(to).currentState?.focusNode;
+        if (branch == null) return;
+        final last = _lastFocus[to]?.target;
+        if (last != null &&
+            last.canRequestFocus &&
+            last.ancestors.contains(branch)) {
+          last.requestFocus();
+        } else {
+          branch.requestFocus();
+        }
+      });
+    }
+  }
 
   // The destinations chosen before ([RawBranchBackBehavior.history]).
   final List<int> _history = [];
@@ -661,7 +807,15 @@ class _RawAdaptiveShellState extends State<RawAdaptiveShell>
   void didUpdateWidget(RawAdaptiveShell oldWidget) {
     super.didUpdateWidget(oldWidget);
     _syncBar();
+    if (oldWidget.transitionDuration != widget.transitionDuration) {
+      for (final c in [..._in.values, ..._out.values]) {
+        c.duration = widget.transitionDuration;
+      }
+    }
     if (oldWidget.selectedIndex != widget.selectedIndex) {
+      if (widget.branches != null) {
+        _switchBranch(oldWidget.selectedIndex, widget.selectedIndex);
+      }
       if (!_goingBack && widget.backBehavior == RawBranchBackBehavior.history) {
         _history
           ..remove(oldWidget.selectedIndex)
@@ -673,6 +827,9 @@ class _RawAdaptiveShellState extends State<RawAdaptiveShell>
 
   @override
   void dispose() {
+    for (final c in [..._in.values, ..._out.values]) {
+      c.dispose();
+    }
     _focus.dispose();
     _visibility.dispose();
     super.dispose();
@@ -792,39 +949,62 @@ class _RawAdaptiveShellState extends State<RawAdaptiveShell>
         child: Stack(
           fit: StackFit.expand,
           children: [
-            for (var i = 0; i < branches.length; i++)
-              if (_built.contains(i))
-                KeyedSubtree(
-                  key: ValueKey(i),
-                  child: Offstage(
-                    offstage: i != selected,
-                    child: TickerMode(
-                      enabled: i == selected,
-                      child: ExcludeFocus(
-                        excluding: i != selected,
-                        child: NotificationListener<NavigationNotification>(
-                          onNotification: (notification) {
-                            _branchDepth(i, notification.canHandlePop);
-                            return true;
-                          },
-                          child: Navigator(
-                            key: _navigatorKey(i),
-                            onGenerateInitialRoutes: (navigator, name) => [
-                              PageRouteBuilder<void>(
-                                settings: RouteSettings(name: name),
-                                transitionDuration: Duration.zero,
-                                reverseTransitionDuration: Duration.zero,
-                                pageBuilder: (context, _, _) =>
-                                    widget.branches![i](context),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+            // The selected branch over those going out.
+            for (final i in [
+              for (var i = 0; i < branches.length; i++)
+                if (_built.contains(i) && i != selected) i,
+              selected,
+            ])
+              KeyedSubtree(key: ValueKey(i), child: _branch(i, selected)),
           ],
+        ),
+      ),
+    );
+  }
+
+  // Branch [i]: painted while it is the [selected] one or going out, only
+  // the selected one taking pointers, focus and a screen reader.
+  Widget _branch(int i, int selected) {
+    final shown = i == selected;
+    final painted = shown || _leaving.contains(i);
+    Widget branch = NotificationListener<NavigationNotification>(
+      onNotification: (notification) {
+        _branchDepth(i, notification.canHandlePop);
+        return true;
+      },
+      child: Navigator(
+        key: _navigatorKey(i),
+        onGenerateInitialRoutes: (navigator, name) => [
+          PageRouteBuilder<void>(
+            settings: RouteSettings(name: name),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+            pageBuilder: (context, _, _) => widget.branches![i](context),
+          ),
+        ],
+      ),
+    );
+    final transition = widget.transitionBuilder;
+    if (transition != null) {
+      // A branch first drawn at rest is in; one a change brings in starts
+      // from nothing (made then, in [_switchBranch]).
+      final comingIn = _in[i] ??= AnimationController(
+        vsync: this,
+        duration: widget.transitionDuration,
+        value: shown ? 1 : 0,
+      );
+      branch = transition(context, comingIn, _outOf(i), branch);
+    }
+    return Offstage(
+      offstage: !painted,
+      child: TickerMode(
+        enabled: painted,
+        child: ExcludeFocus(
+          excluding: !shown,
+          child: ExcludeSemantics(
+            excluding: !shown,
+            child: IgnorePointer(ignoring: !shown, child: branch),
+          ),
         ),
       ),
     );

@@ -973,6 +973,30 @@ final Map<String, DocExample> _examples = {
       (context) => const Text('Mail'),
     ],
   ),
+  'RawBranchTransitionBuilder': (context) => RawAdaptiveShell.branches(
+    destinations: const [
+      RawNavigationDestination(label: 'Home', icon: IconData(0xe318)),
+      RawNavigationDestination(label: 'Mail', icon: IconData(0xe158)),
+    ],
+    selectedIndex: 0,
+    onDestinationSelected: (index) {},
+    destinationBuilder: (context, destination, details) =>
+        Text(destination.label),
+    navigationBuilder: (context, details) =>
+        Row(children: details.destinations),
+    transitionBuilder: (context, animation, secondaryAnimation, child) =>
+        FadeTransition(
+          opacity: animation,
+          child: FadeTransition(
+            opacity: ReverseAnimation(secondaryAnimation),
+            child: child,
+          ),
+        ),
+    branches: [
+      (context) => const Text('Home'),
+      (context) => const Text('Mail'),
+    ],
+  ),
   'RawListDetail': (context) => RawListDetail<String>(
     selectedItem: null,
     onSelectedItemChanged: (item) {},
@@ -1106,7 +1130,7 @@ class _LookPressableState extends State<LookPressable> {
 
   @override
   Widget build(BuildContext context) => FocusableActionDetector(
-    onShowFocusHighlight: _focus.focused,
+    onFocusChange: _focus.focused,
     child: DecoratedBox(
       decoration: BoxDecoration(border: _ring ? Border.all(width: 2) : null),
       child: widget.child,
