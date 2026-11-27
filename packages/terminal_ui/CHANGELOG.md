@@ -1,3 +1,23 @@
+## 0.7.1
+
+- Requires ui_core 0.8.5 (ui_core_test 0.6.2 for the checks).
+- `TermScreen`: a screen's title line (a back key where its route can go back, heard as the platform's word for
+  back), then its body, scrolling, at most `maxCols` cells wide at the screen's start (`TermScreen.formCols`, 72,
+  for a desk's form). The example's screens are `TermScreen`s, and the README's list pushes one.
+- `TermTopBar`: the title wins the line. Where neither the path nor its last steps fit beside it, the title stands
+  alone, cut at its end where it must be, and a screen reader hears the path with it (the path took the title's
+  place).
+- A destructive action carries the danger's `✗` before its words: `TermButton` (plain and filled), a confirm's yes,
+  a menu's, a context menu's and a sheet's entry (`TermMenuRow.danger`) and `TermBracketFace.danger`. In a palette
+  of one ink (`mono`, `phosphor`, `amber`) the danger's ink is the words', so the glyph is what tells it apart; a
+  screen reader hears the words alone.
+- `TermListTile`: in a two-line row, where the subtitle and the words at the end don't both fit, the end's words take
+  a third line of their own, at the end, as they go under the title of a row without a subtitle (an author at 150%
+  text on a phone kept six to eight characters).
+- The palettes' labels are lower case, as every word Terminal shows (`standard`, `harbor`, `dusk`, `mono`,
+  `phosphor`, `amber`); their ids are unchanged.
+- A part's corners stay fixed (ui_core's `cornerFreedom: fixed`); the README says so.
+
 ## 0.7.0
 
 - Requires ui_core 0.8.1 (ui_core_test 0.6.1 for the checks).

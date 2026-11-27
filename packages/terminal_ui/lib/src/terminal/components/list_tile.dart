@@ -29,7 +29,10 @@ import 'pane.dart';
 /// phone, a narrow window or pane, whatever the pointer) it is two lines,
 /// [subtitle] under [title]. Under a finger it is two lines tall either way,
 /// its floor. [trailing] takes at most half the row; in a two-line row with
-/// a [subtitle] it stands at the end of the second line, in every row. The
+/// a [subtitle] it stands at the end of the second line, in every row, and
+/// where the subtitle and it don't both fit (an author on a phone at large
+/// text), on a third line of its own, at the end, as it goes under the
+/// title of a row without a subtitle. The
 /// row runs from edge to edge (put rows in a [TermPane.list]) and keeps a
 /// one-cell gutter at each end. The keyboard's focus is the cursor over the
 /// whole row, a pair of brackets cut out of its gutters (on a chosen row,
@@ -297,13 +300,17 @@ class TermListTile extends StatelessWidget {
                   // A narrow row has two lines. With a subtitle the words at
                   // the end stand at the end of the second, beside it, in
                   // every row, so a list's ends keep one column and the
-                  // title, what the row is, keeps the first line whole.
-                  // Without one they stand on the title's line, going under
-                  // it where both don't fit (a phone at large text).
+                  // title, what the row is, keeps the first line whole;
+                  // where the subtitle and they don't both fit (an author at
+                  // large text), they move to a third line of their own, at
+                  // the end. Without a subtitle
+                  // they stand on the title's line, going under it where
+                  // both don't fit (a phone at large text).
                   return LayoutBuilder(
                     builder: (context, c) {
                       final beside =
                           subtitle == null && _fitsBeside(grid, c.maxWidth);
+                      final endBelow = _endOwnLine(grid, c.maxWidth);
                       final first = Row(
                         children: [
                           ...lead,
@@ -329,10 +336,17 @@ class TermListTile extends StatelessWidget {
                                       ? const SizedBox.shrink()
                                       : slot(subtitle!, faint),
                                 ),
-                                if (!beside) ...endIn(width),
+                                if (!beside && !endBelow) ...endIn(width),
                               ],
                             ),
                           ),
+                          if (endBelow)
+                            SizedBox(
+                              height: lh,
+                              child: Row(
+                                children: [const Spacer(), ...endIn(width)],
+                              ),
+                            ),
                         ],
                       );
                     },
@@ -391,6 +405,11 @@ class TermListTile extends StatelessWidget {
                       touch ||
                       (stacked &&
                           (subtitle != null || !_fitsBeside(grid, width)));
+                  final lines = stacked && _endOwnLine(grid, width)
+                      ? 3
+                      : twoLines
+                      ? 2
+                      : 1;
                   return CustomPaint(
                     painter: _RowPainter(
                       ground: ground,
@@ -404,7 +423,7 @@ class TermListTile extends StatelessWidget {
                       ),
                     ),
                     child: SizedBox(
-                      height: twoLines ? lh * 2 : lh,
+                      height: lh * lines,
                       child: Padding(
                         padding: EdgeInsetsDirectional.only(start: cw, end: cw),
                         child: body(stacked, width),
@@ -468,6 +487,22 @@ class TermListTile extends StatelessWidget {
         ? 0.0
         : grid.widthOf(_plain(leading!) ?? ' ') + grid.cellWidth;
     return glyph + grid.widthOf(words) + grid.cellWidth + grid.widthOf(end) <=
+        width + 0.5;
+  }
+
+  // Whether a narrow row's end words go to a line of their own: where its
+  // subtitle and they don't both fit whole on its second line [width] wide
+  // (after the glyph's indent), read from their words where both are plain
+  // text, as a row without a subtitle moves them under its title.
+  bool _endOwnLine(TermGrid grid, double width) {
+    if (subtitle == null || trailing == null) return false;
+    final words = _plain(subtitle!);
+    final end = _plain(trailing!);
+    if (words == null || end == null) return false;
+    final glyph = leading == null
+        ? 0.0
+        : grid.widthOf(_plain(leading!) ?? ' ') + grid.cellWidth;
+    return glyph + grid.widthOf(words) + grid.cellWidth + grid.widthOf(end) >
         width + 0.5;
   }
 

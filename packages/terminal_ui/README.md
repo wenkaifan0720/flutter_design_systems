@@ -128,8 +128,11 @@ class _ShelfShellState extends State<ShelfShell> {
 
 A `TermPane.list` of `TermListTile`s, each pushing its own screen. A row is one line from `TermListTile.besideCols`
 (56) cells wide, its subtitle a column beside the title, and two lines narrower, whatever the pointer; the words at
-the end take at most half the row, and a row's `action` (a delete key, a menu) is a control of its own beside it. A
-pushed screen's `TermTopBar` takes a back key as its `leading`.
+the end take at most half the row (where the subtitle and they don't both fit, an author at large text on a phone,
+they take a line of their own at the end), and a row's `action` (a delete key, a menu) is a
+control of its own beside it. A screen is a `TermScreen`: its title line (a `TermTopBar`, with a back key where its
+route can go back), then its body, scrolling, at most `maxCols` cells wide. On a line too short for the title and
+its path, the title stays and the path gives way.
 
 ```dart
 import 'package:material_ui/material_ui.dart';
@@ -152,20 +155,10 @@ class BooksScreen extends StatelessWidget {
           subtitle: const Text('reading'),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(
-              builder: (context) => Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  TermTopBar(
-                    leading: TermIconButton(
-                      glyph: '←',
-                      semanticLabel: 'back',
-                      onPressed: () => Navigator.of(context).maybePop(),
-                    ),
-                    title: title,
-                    subtitle: 'books',
-                  ),
-                  TermDescriptionList(items: [('title', title), ('status', 'reading')]),
-                ],
+              builder: (context) => TermScreen(
+                title: title,
+                subtitle: 'books',
+                body: TermDescriptionList(items: [('title', title), ('status', 'reading')]),
               ),
             ),
           ),
@@ -178,7 +171,8 @@ class BooksScreen extends StatelessWidget {
 ### Forms
 
 Stand the fields in a `Column` a line apart (`spacing: context.termGrid.lineHeight`); every field (a text field, a
-select, a date) takes the column's width, so give a desk's form a column of its own (the example's is 72 cells). Check
+select, a date) takes the column's width, so give a desk's form a column of its own: `TermScreen`'s
+`maxCols: TermScreen.formCols`, 72 cells, as the example's screens do. Check
 the answers when the reader saves: give each problem to its field's `errorText`, in words (the frame and the words
 under it turn the danger ink, with a `✗`), and move the focus to the first one. A `TermDatePicker` with a null
 `value` is an optional date; it writes a chosen one `2026-11-14` (`termDate`), and its calendar opens under it,
@@ -263,7 +257,8 @@ takes a `semanticLabel` a screen reader hears.
 
 `showTermConfirmDialog` asks a y/N question and completes with the answer: `true` for yes, `false` for no, `null`
 when it is dismissed (Escape, the scrim, system back). Under 600 wide it stands as a sheet at the screen's foot, where
-a thumb reaches; a destructive one draws its yes in the danger ink. `TermToaster.show` says what happened.
+a thumb reaches; a destructive one draws its yes in the danger ink, `✗` before its words, as every destructive
+action does. `TermToaster.show` says what happened.
 
 ```dart
 import 'package:material_ui/material_ui.dart';
@@ -334,7 +329,7 @@ class PalettePicker extends StatelessWidget {
 
 | For | Use |
 | --- | --- |
-| The app and its screens | `TermHost`, `TermScaffold` (`.branches`), `TermTopBar`, `TermStatusLine`, `TermNavigationBar`, `TermNavigationRail`, `TermSideBar`, `TermTabBar`, `TermMenuBar`, `TermPageRoute` |
+| The app and its screens | `TermHost`, `TermScaffold` (`.branches`), `TermScreen`, `TermTopBar`, `TermStatusLine`, `TermNavigationBar`, `TermNavigationRail`, `TermSideBar`, `TermTabBar`, `TermMenuBar`, `TermPageRoute` |
 | Panes and rows | `TermPane` (`.list`), `TermListTile`, `TermSectionHeader`, `TermDescriptionList`, `TermDisclosure`, `TermTree`, `TermReorderableList`, `TermPullToRefresh`, `TermDivider`, `TermSplitView`, `TermScrollArea` |
 | Actions | `TermButton` (`.filled`), `TermIconButton`, `TermButtonGroup`, `TermSplitButton`, `TermLink`, `TermKey`, `TermCommandPalette` |
 | Form fields | `TermTextField` (`lines:` for a text area), `TermPasswordField`, `TermOtpField`, `TermNumberField`, `TermSelect`, `TermCombobox`, `TermTagInput`, `TermFileField`, `TermColorPicker` |
@@ -386,8 +381,8 @@ slipway, the gallery's demo app, is a made-up deploy console built only from the
 Six palettes come with it, each by day and by night: `standard` (Terminal's
 own night and paper, a cyan accent), `harbor` (a navy screen, a blue
 accent), `dusk` (a plum screen, a magenta accent), and three in one ink, as a
-monochrome terminal draws: `mono`, `phosphor` (green) and `amber`.
-`TermThemeData.palettes` lists them (see [Let the reader choose a palette](#let-the-reader-choose-a-palette)); `TermThemeData.preset(id, brightness)` gives one's theme for a part of the tree:
+monochrome terminal draws: `mono`, `phosphor` (green) and `amber`; a
+picker shows them by these lower-case names. `TermThemeData.palettes` lists them (see [Let the reader choose a palette](#let-the-reader-choose-a-palette)); `TermThemeData.preset(id, brightness)` gives one's theme for a part of the tree:
 
 ```dart
 import 'package:material_ui/material_ui.dart';
@@ -402,7 +397,9 @@ Widget inAmber(BuildContext context, Widget child) => TermTheme(
 Every part takes a `style:` (a `TermStyle`) over its slot in
 `TermThemeData`: one slot a part, and one a kind of button. A style sets
 colours (and a weight, on parts with words of their own); sizes stay
-whole cells and lines, so a style can't take the look off its grid.
+whole cells and lines, so a style can't take the look off its grid. A
+part's corners are fixed (ui_core's `cornerFreedom: fixed`): a frame's
+corners are box-drawing cells, `┌ ┐ └ ┘`, so there is no radius to set.
 
 ```dart
 final base = TermThemeData.dark(
@@ -467,7 +464,10 @@ reader hears what they mean (a status's word, a spinner's "loading", a
 bar's percentage) instead. Inverse selection is announced as selected. The
 spinners and the caret hold still under Reduce Motion. Every tone has a
 glyph (`✓ ✗ ! i`), so nothing is said by colour alone; the monochrome theme
-proves it.
+proves it. A destructive action (a button, a menu's or a sheet's entry, a
+confirm's yes) carries the danger's `✗` before its words, since in a
+palette of one ink the danger's ink is the words'; a screen reader hears
+the words alone.
 
 The keyboard's focus is the cursor: an accent block over the part, its
 words and brackets cut out of it, hollow on a part already chosen or

@@ -82,60 +82,6 @@ class _ShelfShellState extends State<ShelfShell> {
   }
 }
 
-/// A screen of the app: its title line (with a back key on a pushed
-/// screen), then [body], scrolling, on one column 72 cells wide at most,
-/// so a desk's rows keep a book's title and its status near.
-class ShelfScreen extends StatelessWidget {
-  const ShelfScreen({
-    super.key,
-    required this.title,
-    this.path,
-    required this.body,
-  });
-
-  final String title;
-
-  /// Where it stands: `books › Middlemarch`.
-  final String? path;
-
-  final Widget body;
-
-  @override
-  Widget build(BuildContext context) {
-    final grid = context.termGrid;
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    final route = ModalRoute.of(context);
-    final back = route != null && route.canPop && !route.isFirst
-        ? TermIconButton(
-            glyph: rtl ? '→' : '←',
-            semanticLabel: 'back',
-            onPressed: () => Navigator.of(context).maybePop(),
-          )
-        : null;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        TermTopBar(leading: back, title: title, subtitle: path),
-        Expanded(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: grid.cellWidth,
-              vertical: grid.lineHeight / 2,
-            ),
-            child: Align(
-              alignment: AlignmentDirectional.topStart,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: grid.cols(72)),
-                child: body,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 /// The reading list: the year's goal, then every book, each opening its
 /// own screen.
 class BooksScreen extends StatelessWidget {
@@ -146,7 +92,8 @@ class BooksScreen extends StatelessWidget {
     final shelf = ShelfScope.of(context);
     final books = shelf.books;
     final grid = context.termGrid;
-    return ShelfScreen(
+    return TermScreen(
+      maxCols: TermScreen.formCols,
       title: 'books',
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -214,9 +161,10 @@ class BookScreen extends StatelessWidget {
     final grid = context.termGrid;
     void edit() => Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) => ShelfScreen(
+        builder: (context) => TermScreen(
+          maxCols: TermScreen.formCols,
           title: 'edit book',
-          path: 'books › ${book.title}',
+          subtitle: 'books › ${book.title}',
           body: BookForm(
             saveLabel: 'save',
             initial: book,
@@ -228,9 +176,10 @@ class BookScreen extends StatelessWidget {
         ),
       ),
     );
-    return ShelfScreen(
+    return TermScreen(
+      maxCols: TermScreen.formCols,
       title: book.title,
-      path: 'books',
+      subtitle: 'books',
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: grid.lineHeight,
@@ -298,7 +247,8 @@ class AddBookScreen extends StatelessWidget {
   final VoidCallback onAdded;
 
   @override
-  Widget build(BuildContext context) => ShelfScreen(
+  Widget build(BuildContext context) => TermScreen(
+    maxCols: TermScreen.formCols,
     title: 'add a book',
     body: BookForm(
       saveLabel: 'save book',
@@ -455,7 +405,8 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final shelf = ShelfScope.of(context);
     final grid = context.termGrid;
-    return ShelfScreen(
+    return TermScreen(
+      maxCols: TermScreen.formCols,
       title: 'settings',
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

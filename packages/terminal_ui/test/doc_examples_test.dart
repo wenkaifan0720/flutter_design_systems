@@ -423,6 +423,14 @@ final Map<String, DocExample> _examples = {
       TermIconButton(glyph: '/', semanticLabel: 'Search', onPressed: () {}),
     ],
   ),
+  "navigation.dart:524": (context) => TermScreen(
+    title: 'Middlemarch',
+    subtitle: 'books',
+    maxCols: TermScreen.formCols,
+    body: TermDescriptionList(
+      items: [('author', 'George Eliot'), ('status', 'reading')],
+    ),
+  ),
   "navigation.dart:571": (context) => TermNavigationBar(
     destinations: const [
       TermNavigationDestination(label: 'home'),

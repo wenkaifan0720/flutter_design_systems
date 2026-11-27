@@ -104,11 +104,11 @@ void main() {
     final semantics = await _open(tester);
     await tester.tap(_place('settings').first);
     await tester.pumpAndSettle();
-    TermThemeData theme() => TermTheme.of(tester.element(find.text('Amber')));
+    TermThemeData theme() => TermTheme.of(tester.element(find.text('amber')));
     await tester.tap(find.text('dark'));
     await tester.pumpAndSettle();
     expect(theme().brightness, Brightness.dark);
-    await _press(tester, find.text('Amber'));
+    await _press(tester, find.text('amber'));
     expect(
       theme().background,
       TermThemeData.preset('amber', Brightness.dark).background,
@@ -158,7 +158,7 @@ void main() {
       }
       // The name says the palette; its cells add nothing to it.
       expect(_place('settings'), findsWidgets);
-      expect(find.bySemanticsLabel('Amber'), findsOneWidget);
+      expect(find.bySemanticsLabel('amber'), findsOneWidget);
       semantics.dispose();
     });
   }

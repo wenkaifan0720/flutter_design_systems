@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../internal/danger_mark.dart';
 import '../internal/pointer.dart';
 import '../primitives/box.dart';
 import '../primitives/control.dart';
@@ -26,7 +27,8 @@ import 'key_hint.dart';
 /// [onPressed] null disables it.
 ///
 /// [TermButton.filled] is a screen's one primary action, filled in the
-/// accent; [isDestructiveAction] draws either in the danger ink.
+/// accent; [isDestructiveAction] draws either in the danger ink, the
+/// danger's `✗` before its words: `[ ✗ delete ]`.
 ///
 /// ```dart
 /// TermButton(
@@ -75,7 +77,8 @@ class TermButton extends StatelessWidget {
   /// it.
   final SingleActivator? shortcut;
 
-  /// Whether the action destroys something: drawn in the danger ink.
+  /// Whether the action destroys something: drawn in the danger ink, `✗`
+  /// before the words (a screen reader hears the words alone).
   final bool isDestructiveAction;
 
   /// Whether the button is filled (the primary action).
@@ -211,12 +214,21 @@ class TermButton extends StatelessWidget {
                     child: Center(
                       widthFactor: 1,
                       heightFactor: 1,
-                      child: Text(
-                        label,
-                        textAlign: TextAlign.center,
-                        style: theme.textStyle
-                            .merge(own.textStyle)
-                            .copyWith(color: own.foreground ?? words),
+                      child: Builder(
+                        builder: (context) {
+                          final wordStyle = theme.textStyle
+                              .merge(own.textStyle)
+                              .copyWith(color: own.foreground ?? words);
+                          return TermDangerMarked(
+                            marked: isDestructiveAction,
+                            style: wordStyle,
+                            child: Text(
+                              label,
+                              textAlign: TextAlign.center,
+                              style: wordStyle,
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ),

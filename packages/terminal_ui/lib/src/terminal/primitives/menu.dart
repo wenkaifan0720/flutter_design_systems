@@ -6,6 +6,7 @@ library;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../internal/danger_mark.dart';
 import '../internal/menu_marks.dart';
 import '../internal/reveal.dart';
 import '../style.dart';
@@ -53,7 +54,8 @@ class TermMenuRow extends StatelessWidget {
   /// before it); null for an action.
   final bool? checked;
 
-  /// Whether it destroys something: in the danger ink.
+  /// Whether it destroys something: in the danger ink, `✗` before the
+  /// words.
   final bool danger;
 
   @override
@@ -159,6 +161,17 @@ class TermMenuRow extends StatelessWidget {
                   ),
                 ),
               ),
+            if (danger) ...[
+              ExcludeSemantics(
+                child: Text(
+                  '✗',
+                  maxLines: 1,
+                  softWrap: false,
+                  style: theme.textStyle.copyWith(color: words),
+                ),
+              ),
+              SizedBox(width: cw),
+            ],
             Expanded(
               child: Text(
                 label,
@@ -408,7 +421,7 @@ class TermBracketFace extends StatelessWidget {
   /// The cells between a bracket and the words.
   final int padCols;
 
-  /// Whether it destroys something: the danger ink.
+  /// Whether it destroys something: the danger ink, `✗` before the words.
   final bool danger;
 
   @override
@@ -466,12 +479,16 @@ class TermBracketFace extends StatelessWidget {
           ),
           child: Center(
             widthFactor: 1,
-            child: Text(
-              label,
-              maxLines: 1,
-              softWrap: false,
-              overflow: TextOverflow.ellipsis,
+            child: TermDangerMarked(
+              marked: danger,
               style: theme.textStyle.merge(textStyle).copyWith(color: words),
+              child: Text(
+                label,
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textStyle.merge(textStyle).copyWith(color: words),
+              ),
             ),
           ),
         ),

@@ -16,6 +16,7 @@ import '../primitives/control.dart';
 import '../primitives/spring.dart';
 import '../style.dart';
 import '../theme.dart';
+import 'button.dart';
 import 'key_hint.dart';
 import 'list_tile.dart';
 import 'pane.dart';
@@ -332,8 +333,9 @@ class _TermTabBarState extends State<TermTabBar> with TickerProviderStateMixin {
 /// The title line at the top of a screen: [leading] (a back key), [title]
 /// in bold, [subtitle] dim after it (a path: `atlas-api › runs`; on a
 /// short line it keeps its last steps whole, `…#1481 › change`, and on one
-/// too short for the title as well, the steps stand alone in its place,
-/// so where you are stays), and [actions] at the end. One line under a pointer, two under a finger (its
+/// too short for the title as well, the title stands alone, cut at its end
+/// where it must be, and the path is heard with it), and [actions] at the
+/// end. One line under a pointer, two under a finger (its
 /// buttons' floor), on the surface's ground with a rule under it.
 ///
 /// ```dart
@@ -414,9 +416,9 @@ class TermTopBar extends StatelessWidget {
                   child: LayoutBuilder(
                     builder: (context, c) {
                       // A path keeps its end, where you are: its last
-                      // steps whole after the title while they fit, then
-                      // the steps alone in the title's place, then the
-                      // last step's end.
+                      // steps whole after the title while they fit. The
+                      // title wins the line: with no step beside it, it
+                      // stands alone and the path is heard with it.
                       final words = subtitle!;
                       final steps = words.split(' › ');
                       final room = c.maxWidth + 0.5;
@@ -426,7 +428,6 @@ class TermTopBar extends StatelessWidget {
                           k == 0 ? words : '…${steps.sublist(k).join(' › ')}',
                       ];
                       String? shown;
-                      var withTitle = true;
                       for (final tail in tails) {
                         if (titled + grid.widthOf(tail) <= room) {
                           shown = tail;
@@ -434,22 +435,19 @@ class TermTopBar extends StatelessWidget {
                         }
                       }
                       if (shown == null) {
-                        withTitle = false;
-                        for (final tail in [...tails, steps.last]) {
-                          if (grid.widthOf(tail) <= room) {
-                            shown = tail;
-                            break;
-                          }
-                        }
-                      }
-                      if (shown == null) {
-                        var tail = '';
-                        for (final ch
-                            in steps.last.characters.toList().reversed) {
-                          if (grid.widthOf('…$ch$tail') > room) break;
-                          tail = '$ch$tail';
-                        }
-                        shown = '…${tail.trimLeft()}';
+                        return Semantics(
+                          container: true,
+                          header: true,
+                          label: '$title, $words',
+                          excludeSemantics: true,
+                          child: Text(
+                            title,
+                            maxLines: 1,
+                            softWrap: false,
+                            overflow: TextOverflow.ellipsis,
+                            style: titleStyle,
+                          ),
+                        );
                       }
                       // Each step isolated, so a right-to-left app reads
                       // the steps from its start in their order whatever
@@ -466,17 +464,8 @@ class TermTopBar extends StatelessWidget {
                         maxLines: 1,
                         softWrap: false,
                         overflow: TextOverflow.clip,
-                        style: withTitle ? theme.dimStyle : titleStyle,
+                        style: theme.dimStyle,
                       );
-                      if (!withTitle) {
-                        return Semantics(
-                          container: true,
-                          header: true,
-                          label: '$title, $words',
-                          excludeSemantics: true,
-                          child: path,
-                        );
-                      }
                       return Row(
                         children: [
                           Semantics(
@@ -516,6 +505,123 @@ class TermTopBar extends StatelessWidget {
     properties
       ..add(StringProperty('title', title))
       ..add(StringProperty('subtitle', subtitle, defaultValue: null));
+  }
+}
+
+/// A screen of an app: its title line (a [TermTopBar] saying [title],
+/// [subtitle] and [actions], a back key before them where its route can go
+/// back), then [body], scrolling under it, on a column at most [maxCols]
+/// cells wide at the screen's start, or the whole width when null. It
+/// fills the room it is given: a [TermScaffold]'s branch, a pushed route.
+///
+/// Give a desk's form [formCols], so its labels stay near their fields and
+/// a book's title near its status; a list or a table takes the width.
+///
+/// ```dart
+/// TermScreen(
+///   title: 'Middlemarch',
+///   subtitle: 'books',
+///   maxCols: TermScreen.formCols,
+///   body: TermDescriptionList(
+///     items: [('author', 'George Eliot'), ('status', 'reading')],
+///   ),
+/// )
+/// ```
+class TermScreen extends StatelessWidget {
+  /// The cells a form's column takes at most: 72, a line of prose.
+  static const int formCols = 72;
+
+  /// A screen called [title] showing [body].
+  const TermScreen({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.leading,
+    this.automaticallyImplyLeading = true,
+    this.actions = const [],
+    this.maxCols,
+    required this.body,
+  });
+
+  /// The screen's name, read as its heading.
+  final String title;
+
+  /// Where it stands, dim after the title: `books › Middlemarch`.
+  final String? subtitle;
+
+  /// Before the title; null: the back key, where the route can go back and
+  /// [automaticallyImplyLeading] allows.
+  final Widget? leading;
+
+  /// Whether a pushed screen with no [leading] shows the back key: `←`
+  /// (`→` right to left), heard as the platform's word for back, popping
+  /// the route.
+  final bool automaticallyImplyLeading;
+
+  /// Buttons at the title line's end.
+  final List<Widget> actions;
+
+  /// The cells the body's column takes at most, at the screen's start;
+  /// null: the whole width.
+  final int? maxCols;
+
+  /// What the screen shows, scrolling under its title line.
+  final Widget body;
+
+  @override
+  Widget build(BuildContext context) {
+    final grid = context.termGrid;
+    var lead = leading;
+    if (lead == null && automaticallyImplyLeading) {
+      final route = ModalRoute.of(context);
+      if (route != null && route.canPop && !route.isFirst) {
+        final rtl = Directionality.of(context) == TextDirection.rtl;
+        lead = TermIconButton(
+          glyph: rtl ? '→' : '←',
+          semanticLabel: RawWidgetsLocalizations.of(context).backButtonTooltip
+              .toLowerCase(),
+          onPressed: () => Navigator.of(context).maybePop(),
+        );
+      }
+    }
+    final cap = maxCols;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TermTopBar(
+          leading: lead,
+          title: title,
+          subtitle: subtitle,
+          actions: actions,
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(
+              horizontal: grid.cellWidth,
+              vertical: grid.lineHeight / 2,
+            ),
+            child: cap == null
+                ? body
+                : Align(
+                    alignment: AlignmentDirectional.topStart,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: grid.cols(cap)),
+                      child: body,
+                    ),
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(IntProperty('maxCols', maxCols, defaultValue: null));
   }
 }
 

@@ -7,13 +7,22 @@ import 'package:terminal_ui/terminal_ui.dart';
 
 void main() {
   test('each named palette is its preset, by day and by night', () {
+    // Lower case, as every word Terminal shows; the ids stay.
     expect(TermThemeData.palettes.map((p) => p.label), [
-      'Standard',
-      'Harbor',
-      'Dusk',
-      'Mono',
-      'Phosphor',
-      'Amber',
+      'standard',
+      'harbor',
+      'dusk',
+      'mono',
+      'phosphor',
+      'amber',
+    ]);
+    expect(TermThemeData.palettes.map((p) => p.id), [
+      'standard',
+      'harbor',
+      'dusk',
+      'mono',
+      'phosphor',
+      'amber',
     ]);
     for (final p in TermThemeData.palettes) {
       for (final b in Brightness.values) {
