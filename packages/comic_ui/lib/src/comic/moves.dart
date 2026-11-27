@@ -17,15 +17,16 @@ import 'localizations.dart';
 import 'press.dart';
 import 'theme.dart';
 import 'internal/cap_label.dart';
+import 'internal/nav_faces.dart';
 import 'knobs.dart' show ComicSpace;
 
-/// A permanent side navigation panel for a wide layout.
+/// A permanent side navigation panel for a wide layout, [width] wide, beside the page in a `Row`.
 ///
 /// ```dart
 /// ComicNavigationDrawer(destinations: destinations, selectedIndex: 0, onDestinationSelected: select)
 /// ```
 class ComicNavigationDrawer extends StatelessWidget {
-  /// Creates a drawer. The host chooses when the window is wide enough.
+  /// Creates a drawer.
   const ComicNavigationDrawer({
     super.key,
     required this.destinations,
@@ -33,8 +34,13 @@ class ComicNavigationDrawer extends StatelessWidget {
     this.onDestinationSelected,
     this.header,
     this.footer,
-    this.label,
+    this.semanticLabel,
+    this.width = 304,
   });
+
+  /// How wide it stands where its parent leaves the width open, beside the page in a `Row`; a parent that bounds the
+  /// width (a sheet, a sized column) sets it instead. It fills the height it is given.
+  final double width;
 
   /// Destinations in reading order.
   final List<ComicNavItem> destinations;
@@ -52,100 +58,74 @@ class ComicNavigationDrawer extends StatelessWidget {
   final Widget? footer;
 
   /// Overrides the localized navigation label.
-  final String? label;
+  final String? semanticLabel;
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
     return Semantics(
-      label: label ?? ComicLocalizations.of(context).mainNavigation,
-      child: ComicStateDecoration(
-        decoration: BoxDecoration(
-          color: t.colors.card,
-          // The app bar's rule, so the two meet as one line at the corner.
-          border: BorderDirectional(
-            end: BorderSide(color: t.colors.nightLine, width: t.rim(3)),
+      label: semanticLabel ?? ComicLocalizations.of(context).mainNavigation,
+      child: LimitedBox(
+        maxWidth: width,
+        child: ComicStateDecoration(
+          decoration: BoxDecoration(
+            color: t.colors.card,
+            // The app bar's rule, so the two meet as one line at the corner.
+            border: BorderDirectional(
+              end: BorderSide(color: t.colors.nightLine, width: t.rim(3)),
+            ),
           ),
-        ),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(ComicSpace.near),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (header != null) ...[
-                  header!,
-                  const SizedBox(height: ComicSpace.gap),
-                ],
-                // The destinations are a list: a screen reader counts them, and they read as a list's rows.
-                Semantics(
-                  container: true,
-                  role: SemanticsRole.list,
-                  explicitChildNodes: true,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Rows stand apart by more than a print's depth, so the print of the row the keyboard pops
-                      // never reaches the next row.
-                      for (var i = 0; i < destinations.length; i++) ...[
-                        if (i > 0)
-                          SizedBox(height: t.focus.gap + t.focus.width),
-                        Semantics(
-                          container: true,
-                          role: SemanticsRole.listItem,
-                          child: ComicPressable(
-                            key: destinations[i].key,
-                            label: destinations[i].label,
-                            selected: i == selectedIndex,
-                            onPressed: onDestinationSelected == null
-                                ? destinations[i].onPressed
-                                : () => onDestinationSelected!(i),
-                            outline: WidgetStatePropertyAll(t.shapes.small),
-                            child: ComicStateDecoration(
-                              decoration: ShapeDecoration(
-                                color: i == selectedIndex
-                                    ? t.colors.caption
-                                    : t.colors.card,
-                                shape: t.shapes.small,
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(ComicSpace.near),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      destinations[i].icon,
-                                      color: i == selectedIndex
-                                          ? t.colors.onCaption
-                                          : t.colors.text,
-                                    ),
-                                    const SizedBox(width: ComicSpace.near),
-                                    Expanded(
-                                      child: CapLabel(
-                                        child: Text(
-                                          destinations[i].label,
-                                          style: t.type.body.copyWith(
-                                            color: i == selectedIndex
-                                                ? t.colors.onCaption
-                                                : t.colors.text,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(ComicSpace.near),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (header != null) ...[
+                    header!,
+                    const SizedBox(height: ComicSpace.gap),
+                  ],
+                  // The destinations are a list: a screen reader counts them, and they read as a list's rows.
+                  Semantics(
+                    container: true,
+                    role: SemanticsRole.list,
+                    explicitChildNodes: true,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Rows stand apart by more than a print's depth, so the print of the row the keyboard pops
+                        // never reaches the next row.
+                        for (var i = 0; i < destinations.length; i++) ...[
+                          if (i > 0)
+                            SizedBox(height: t.focus.gap + t.focus.width),
+                          Semantics(
+                            container: true,
+                            role: SemanticsRole.listItem,
+                            child: ComicPressable(
+                              key: destinations[i].key,
+                              semanticLabel: destinations[i].label,
+                              selected: i == selectedIndex,
+                              onPressed: onDestinationSelected == null
+                                  ? destinations[i].onPressed
+                                  : () => onDestinationSelected!(i),
+                              outline: WidgetStatePropertyAll(t.shapes.small),
+                              child: comicDrawerFace(
+                                context,
+                                destinations[i],
+                                on: i == selectedIndex,
                               ),
                             ),
                           ),
-                        ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
-                ),
-                if (footer != null) ...[
-                  const SizedBox(height: ComicSpace.gap),
-                  footer!,
+                  if (footer != null) ...[
+                    const SizedBox(height: ComicSpace.gap),
+                    footer!,
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),
@@ -165,7 +145,8 @@ class ComicNavigationDrawer extends StatelessWidget {
           onDestinationSelected,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(DoubleProperty('width', width, defaultValue: 304));
   }
 }
 
@@ -184,7 +165,7 @@ class ComicTabBar extends StatefulWidget {
     required this.tabs,
     this.selectedIndex = 0,
     this.onTap,
-    this.label,
+    this.semanticLabel,
   });
 
   /// Tab labels in reading order.
@@ -197,7 +178,7 @@ class ComicTabBar extends StatefulWidget {
   final ValueChanged<int>? onTap;
 
   /// Overrides the localized group name.
-  final String? label;
+  final String? semanticLabel;
   @override
   State<ComicTabBar> createState() => _ComicTabBarState();
 
@@ -208,7 +189,7 @@ class ComicTabBar extends StatefulWidget {
       ..add(IterableProperty<String>('tabs', tabs))
       ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onTap', onTap))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -219,7 +200,7 @@ class _ComicTabBarState extends State<ComicTabBar>
   BuildContext? _chosenTab;
 
   // ui_core's bar brings a tab into view as it is chosen; the tab chosen as the bar first shows is brought inside the
-  // rim here, after the frame: a cut, as a page change is. Only the bar's own row moves; the page around it stays.
+  // rim here, after the frame, at once: the bar's first frame. Only the bar's own row moves; the page around it stays.
   @override
   void initState() {
     super.initState();
@@ -350,7 +331,7 @@ class _ComicTabBarState extends State<ComicTabBar>
               controller: _controller!,
               isScrollable: scrolls,
               semanticLabel:
-                  widget.label ?? ComicLocalizations.of(context).tabs,
+                  widget.semanticLabel ?? ComicLocalizations.of(context).tabs,
               tabs: [
                 for (final tab in widget.tabs)
                   RawTab(label: tab, enabled: enabled),
@@ -413,7 +394,7 @@ class _ComicTabBarState extends State<ComicTabBar>
 /// inside its neighbours' reach.
 ///
 /// ```dart
-/// ComicPageDots(pageCount: 4, selectedIndex: 1, label: 'Pages', onPageChanged: select)
+/// ComicPageDots(pageCount: 4, selectedIndex: 1, semanticLabel: 'Pages', onPageChanged: select)
 /// ```
 class ComicPageDots extends StatelessWidget {
   /// Creates page indicators.
@@ -421,7 +402,7 @@ class ComicPageDots extends StatelessWidget {
     super.key,
     required this.pageCount,
     required this.selectedIndex,
-    required this.label,
+    required this.semanticLabel,
     this.onPageChanged,
   }) : assert(pageCount >= 0);
 
@@ -432,7 +413,7 @@ class ComicPageDots extends StatelessWidget {
   final int selectedIndex;
 
   /// The group's accessible label.
-  final String label;
+  final String semanticLabel;
 
   /// Selects a page; absent means display only.
   final ValueChanged<int>? onPageChanged;
@@ -476,7 +457,7 @@ class ComicPageDots extends StatelessWidget {
       return _ChoosingDots(
         count: pageCount,
         selectedIndex: selectedIndex,
-        label: label,
+        label: semanticLabel,
         onChanged: choose,
         dot: (i, states) => Padding(
           key: ValueKey('page-dot/$i'),
@@ -491,7 +472,7 @@ class ComicPageDots extends StatelessWidget {
       );
     }
     return Semantics(
-      label: label,
+      label: semanticLabel,
       value: '${pageCount == 0 ? 0 : selectedIndex + 1} / $pageCount',
       child: ExcludeSemantics(
         child: Wrap(children: [for (var i = 0; i < pageCount; i++) dot(i)]),
@@ -505,7 +486,7 @@ class ComicPageDots extends StatelessWidget {
     properties
       ..add(IntProperty('pageCount', pageCount))
       ..add(IntProperty('selectedIndex', selectedIndex))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(
         ObjectFlagProperty<ValueChanged<int>>.has(
           'onPageChanged',
@@ -547,6 +528,24 @@ class _ChoosingDotsState extends State<_ChoosingDots> {
   late List<GlobalKey> _keys = _make();
   int? _hovered, _down;
   var _focused = false;
+  // Focus shows after a key, not after a press of a pointer (a click on the web), as a browser's :focus-visible.
+  late final RawFocusShown _focusShown = RawFocusShown((shown) {
+    if (mounted && shown != _focused) setState(() => _focused = shown);
+  });
+
+  @override
+  void dispose() {
+    _focusShown.dispose();
+    super.dispose();
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      FlagProperty('focusShown', value: _focused, ifTrue: 'focus shown'),
+    );
+  }
 
   List<GlobalKey> _make() => [
     for (var i = 0; i < widget.count; i++) GlobalKey(),
@@ -600,7 +599,7 @@ class _ChoosingDotsState extends State<_ChoosingDots> {
       onDecrease: at > 0 ? () => _go(at - 1) : null,
       child: FocusableActionDetector(
         mouseCursor: SystemMouseCursors.click,
-        onShowFocusHighlight: (v) => setState(() => _focused = v),
+        onFocusChange: _focusShown.focused,
         onShowHoverHighlight: (v) {
           if (!v) setState(() => _hovered = null);
         },
@@ -776,7 +775,7 @@ class ComicNavigationRail extends StatelessWidget {
     this.onDestinationSelected,
     this.leading,
     this.trailing,
-    this.label,
+    this.semanticLabel,
   });
 
   /// Destinations in reading order.
@@ -795,7 +794,7 @@ class ComicNavigationRail extends StatelessWidget {
   final Widget? trailing;
 
   /// Overrides the localized navigation label.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -806,7 +805,7 @@ class ComicNavigationRail extends StatelessWidget {
       final item = destinations[i];
       return ComicPressable(
         key: item.key,
-        label: item.label,
+        semanticLabel: item.label,
         value: item.badgeLabel,
         selected: on,
         wash: false,
@@ -814,60 +813,13 @@ class ComicNavigationRail extends StatelessWidget {
         onPressed: onDestinationSelected == null
             ? item.onPressed
             : () => onDestinationSelected!(i),
-        builder: (context, states) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: ComicSpace.close),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // The marks sit on the indicator, in its shape.
-              ComicHighlight(
-                states: states,
-                shape: t.shapes.small,
-                child: Container(
-                  width: 56,
-                  height: 34,
-                  decoration: ShapeDecoration(
-                    color: on ? c.caption : null,
-                    shape: t.shapes.small.copyWith(
-                      side: on
-                          ? BorderSide(color: c.nightLine, width: t.rim(2.5))
-                          : BorderSide.none,
-                    ),
-                  ),
-                  child: Center(
-                    child: ComicStateLerp<Color?>(
-                      value: on ? c.onCaption : c.textSecondary,
-                      lerp: Color.lerp,
-                      builder: (context, ink, _) =>
-                          Icon(item.icon, size: 20, color: ink),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: ComicSpace.tight),
-              SizedBox(
-                width: 80,
-                child: Text(
-                  item.short.toUpperCase(),
-                  maxLines: 1,
-                  textAlign: TextAlign.center,
-                  overflow: TextOverflow.ellipsis,
-                  style: t.type.letter(
-                    15,
-                    lineHeight: 1,
-                    color: on ? c.text : c.textSecondary,
-                    tracking: .06,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+        builder: (context, states) =>
+            comicRailFace(context, item, on: on, states: states),
       );
     }
 
     return Semantics(
-      label: label ?? ComicLocalizations.of(context).mainNavigation,
+      label: semanticLabel ?? ComicLocalizations.of(context).mainNavigation,
       container: true,
       explicitChildNodes: true,
       child: ComicStateDecoration(
@@ -914,7 +866,7 @@ class ComicNavigationRail extends StatelessWidget {
           onDestinationSelected,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -938,13 +890,13 @@ class ComicCrumb {
 /// ```
 class ComicBreadcrumb extends StatelessWidget {
   /// Creates a trail.
-  const ComicBreadcrumb(this.items, {super.key, this.label});
+  const ComicBreadcrumb(this.items, {super.key, this.semanticLabel});
 
   /// The steps, the root first and the current page last.
   final List<ComicCrumb> items;
 
   /// Overrides the localized trail name.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -979,7 +931,7 @@ class ComicBreadcrumb extends StatelessWidget {
           )
         : ComicPressable(
             link: true,
-            label: items[i].label,
+            semanticLabel: items[i].label,
             outline: WidgetStatePropertyAll(t.shapes.small),
             onPressed: items[i].onPressed,
             child: ConstrainedBox(
@@ -1006,7 +958,7 @@ class ComicBreadcrumb extends StatelessWidget {
             ),
           );
     return Semantics(
-      label: label ?? ComicLocalizations.of(context).breadcrumbs,
+      label: semanticLabel ?? ComicLocalizations.of(context).breadcrumbs,
       container: true,
       explicitChildNodes: true,
       // Each step stands at its floor with its side room inside: a tap and a screen reader reach the same box. The steps
@@ -1043,7 +995,7 @@ class ComicBreadcrumb extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<ComicCrumb>('items', items))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -1062,7 +1014,7 @@ class ComicPagination extends StatelessWidget {
     required this.page,
     this.onPageChanged,
     this.window = 1,
-    this.label,
+    this.semanticLabel,
   }) : assert(pageCount >= 1),
        assert(page >= 0 && page < pageCount);
 
@@ -1079,7 +1031,7 @@ class ComicPagination extends StatelessWidget {
   final int window;
 
   /// The pager's accessible name.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -1100,7 +1052,7 @@ class ComicPagination extends StatelessWidget {
       required Widget child,
       bool on = false,
     }) => ComicPressable(
-      label: label,
+      semanticLabel: label,
       selected: on ? true : null,
       wash: false,
       ring: false,
@@ -1169,7 +1121,7 @@ class ComicPagination extends StatelessWidget {
       ),
     );
     return Semantics(
-      label: label,
+      label: semanticLabel,
       container: true,
       explicitChildNodes: true,
       child: LayoutBuilder(
@@ -1259,7 +1211,7 @@ class ComicPagination extends StatelessWidget {
         ),
       )
       ..add(IntProperty('window', window, defaultValue: 1))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 

@@ -69,11 +69,14 @@ final _fixed = <String, _Fixed>{
   ),
   'ComicSparkline': _Fixed(
     const Size(96, 28),
-    () => const ComicSparkline(label: 'Sales', values: [3, 5, 4, 8, 6, 9]),
+    () => const ComicSparkline(
+      semanticLabel: 'Sales',
+      values: [3, 5, 4, 8, 6, 9],
+    ),
   ),
   'ComicCheckbox': _Fixed(
     RawTapTargets.fallback.touch,
-    () => const ComicCheckbox(label: 'Keep issue', value: true),
+    () => const ComicCheckbox(semanticLabel: 'Keep issue', value: true),
     faceWide: true,
   ),
   'ComicBackButton': _Fixed(
@@ -83,7 +86,7 @@ final _fixed = <String, _Fixed>{
   ),
   'ComicIconButton': _Fixed(
     RawTapTargets.fallback.touch,
-    () => const ComicIconButton(Icons.add, label: 'Add'),
+    () => const ComicIconButton(Icons.add, semanticLabel: 'Add'),
     faceWide: true,
   ),
   'ComicPerson': _Fixed(
@@ -223,11 +226,14 @@ Set<String> _drawnParts() {
 
 /// In `_fixed` though their source shows no size: it's held by the private class or the part they're built from.
 // ComicChart's plot is painted by its State, which the source scan doesn't attribute to the widget; support.dart's
-// `check` and painting_test hold it.
+// `check` and painting_test hold it. The tab bar's and the rail's places are drawn by the faces ComicAppShell shares
+// (internal/nav_faces.dart).
 const _heldElsewhere = {
   'ComicBackButton',
   'ComicBurst',
   'ComicChart',
+  'ComicNavigationBar',
+  'ComicNavigationRail',
   'ComicSendButton',
 };
 

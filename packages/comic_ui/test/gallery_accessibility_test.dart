@@ -192,7 +192,7 @@ void main() {
       var chosen = 0;
       Widget control() => StatefulBuilder(
         builder: (context, setState) => ComicSegmentedButton<int>(
-          label: 'Density',
+          semanticLabel: 'Density',
           segments: const [
             ComicButtonSegment(0, 'Standard'),
             ComicButtonSegment(1, 'Comfortable'),

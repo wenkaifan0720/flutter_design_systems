@@ -49,17 +49,17 @@ class ComicButtonGroupItem {
 /// with the trough, none chosen (for one that stays on, a [ComicToggleGroup]). Each takes its own width.
 ///
 /// ```dart
-/// ComicButtonGroup(label: 'Text', items: [ComicButtonGroupItem('Copy', onPressed: copy), ComicButtonGroupItem('Paste', onPressed: paste)])
+/// ComicButtonGroup(semanticLabel: 'Text', items: [ComicButtonGroupItem('Copy', onPressed: copy), ComicButtonGroupItem('Paste', onPressed: paste)])
 /// ```
 class ComicButtonGroup extends StatelessWidget {
   /// Creates a [ComicButtonGroup].
-  const ComicButtonGroup({super.key, required this.items, this.label});
+  const ComicButtonGroup({super.key, required this.items, this.semanticLabel});
 
   /// The actions, in reading order.
   final List<ComicButtonGroupItem> items;
 
   /// What the group is, for a screen reader.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -69,8 +69,8 @@ class ComicButtonGroup extends StatelessWidget {
     final outer = look.shape ?? t.shapes.capsule;
     final inner = ComicTrack.cellShape(outer, rim);
     return Semantics(
-      label: label,
-      container: label != null,
+      label: semanticLabel,
+      container: semanticLabel != null,
       explicitChildNodes: true,
       child: Align(
         alignment: AlignmentDirectional.centerStart,
@@ -84,7 +84,7 @@ class ComicButtonGroup extends StatelessWidget {
           cells: [
             for (final item in items)
               ComicPressable(
-                label: item.label,
+                semanticLabel: item.label,
                 onPressed: item.onPressed,
                 wash: false,
                 ring: false,
@@ -112,7 +112,7 @@ class ComicButtonGroup extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<ComicButtonGroupItem>('items', items))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -140,7 +140,7 @@ Widget _words(
 /// the group. Space and Enter toggle the focused button.
 ///
 /// ```dart
-/// ComicToggleGroup<String>(label: 'Style', values: const ['Bold', 'Italic'], selected: on, multiSelectionEnabled: true, labelOf: (v) => v, onSelectionChanged: (next) => setState(() => on = next))
+/// ComicToggleGroup<String>(semanticLabel: 'Style', values: const ['Bold', 'Italic'], selected: on, multiSelectionEnabled: true, labelOf: (v) => v, onSelectionChanged: (next) => setState(() => on = next))
 /// ```
 class ComicToggleGroup<T> extends StatelessWidget {
   /// Creates a [ComicToggleGroup].
@@ -155,7 +155,7 @@ class ComicToggleGroup<T> extends StatelessWidget {
     this.multiSelectionEnabled = false,
     this.emptySelectionAllowed = false,
     this.isEnabled,
-    this.label,
+    this.semanticLabel,
   });
 
   /// Every value, in reading order.
@@ -186,7 +186,7 @@ class ComicToggleGroup<T> extends StatelessWidget {
   final bool Function(T value)? isEnabled;
 
   /// What the group is, for a screen reader.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -207,7 +207,7 @@ class ComicToggleGroup<T> extends StatelessWidget {
       emptySelectionAllowed: emptySelectionAllowed,
       isEnabled: isEnabled,
       labelOf: labelOf,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       // The trough sizes each cell (a field's height, its words' width) and the face fills it: the kit's own least
       // size would centre the face loose in the cell, its chosen fill a marker behind the word.
       minimumSize: Size.zero,
@@ -284,7 +284,7 @@ class ComicToggleGroup<T> extends StatelessWidget {
       ..add(
         ObjectFlagProperty<bool Function(T value)>.has('isEnabled', isEnabled),
       )
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 

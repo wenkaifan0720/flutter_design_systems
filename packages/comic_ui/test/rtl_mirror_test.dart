@@ -66,12 +66,16 @@ void main() {
       [find.text('Reminders'), find.byType(ComicSwitch)],
     ),
     'checkbox': (
-      ComicCheckbox(label: 'Unread only', value: true, onChanged: (_) {}),
+      ComicCheckbox(
+        semanticLabel: 'Unread only',
+        value: true,
+        onChanged: (_) {},
+      ),
       [find.byType(ComicCheckbox)],
     ),
     'segmented button': (
       ComicSegmentedButton<String>(
-        label: 'View',
+        semanticLabel: 'View',
         value: 'all',
         segments: const [
           ComicButtonSegment('all', 'All'),

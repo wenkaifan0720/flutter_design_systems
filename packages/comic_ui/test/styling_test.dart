@@ -3,6 +3,9 @@ import 'dart:math' as math;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
+import 'package:comic_ui/src/comic/theme.dart' show comicThemeWith;
+
+import 'support.dart' show comicRounded;
 
 double _ratio(Color a, Color b) =>
     (math.max(a.computeLuminance(), b.computeLuminance()) + .05) /
@@ -11,7 +14,7 @@ double _ratio(Color a, Color b) =>
 void main() {
   test('corner scales are value objects and preserve caller outlines', () {
     final square = const ComicShapes();
-    final round = ComicShapes.rounded(8);
+    final round = comicRounded(8);
     expect(square.capsule, const RoundedRectangleBorder());
     expect(round.capsule, const StadiumBorder());
     const full = ComicShapes(full: CircleBorder());
@@ -122,13 +125,13 @@ void main() {
     expect(ComicStyle.lerp(null, styled, 0), isNull);
     expect(ComicStyle.lerp(styled, null, 1), isNull);
     expect(ComicStyle.lerp(unset, styled, .75)!.fill!.resolve({}), Colors.red);
-    const ownStrokes = ComicStrokes.standard;
-    expect(ComicStrokes.lerp(ownStrokes, ComicStrokes.bold, 0), ownStrokes);
-    expect(
-      ComicStrokes.lerp(ownStrokes, ComicStrokes.bold, 1),
-      ComicStrokes.bold,
+    final own = ComicThemeData.offset();
+    final heavy = own.copyWith(
+      shapeScheme: comicShapeScheme.copyWith(stroke: 4),
     );
-    expect(ComicStrokes.lerp(ownStrokes, ComicStrokes.bold, .5).regular, 3.25);
+    expect(ComicThemeData.lerp(own, heavy, 0), same(own));
+    expect(ComicThemeData.lerp(own, heavy, 1), same(heavy));
+    expect(ComicThemeData.lerp(own, heavy, .5).stroke, 3.25);
     const ownComponents = ComicComponentThemes();
     const themed = ComicComponentThemes(chip: styled);
     expect(
@@ -138,13 +141,15 @@ void main() {
     expect(ComicComponentThemes.lerp(ownComponents, themed, 1), same(themed));
   });
   test('all derived themes retain typography, outlines, motion and component settings', () {
-    final theme = ComicThemeData.offset().copyWith(
-      shapes: ComicShapes.rounded(9),
-      strokes: ComicStrokes.bold,
-      density: ComicDensity.compact,
-      typeface: const ComicTypeface.app(display: 'Display', text: 'Text'),
+    final theme = comicThemeWith(
+      ComicThemeData.offset().copyWith(
+        shapeScheme: comicShapeScheme.copyWith(stroke: 4),
+        density: ComicDensity.compact,
+        typeface: const ComicTypeface.app(display: 'Display', text: 'Text'),
+        chipTheme: const ComicStyle(fill: WidgetStatePropertyAll(Colors.red)),
+      ),
+      shapes: comicRounded(9),
       motion: const ComicMotion(state: Duration(milliseconds: 270)),
-      chipTheme: const ComicStyle(fill: WidgetStatePropertyAll(Colors.red)),
     );
     expect(theme.copyWith(), theme);
     expect(theme.copyWith().hashCode, theme.hashCode);
@@ -154,14 +159,14 @@ void main() {
       theme.lettersOn(Colors.white),
     ]) {
       expect(derived.shapes, theme.shapes);
-      expect(derived.strokes, theme.strokes);
+      expect(derived.shapeScheme, theme.shapeScheme);
       expect(derived.density, theme.density);
       expect(derived.typeface, theme.typeface);
       expect(derived.components, theme.components);
       expect(derived.motion, theme.motion);
       expect(derived.type.body.fontFamily, 'Text');
       expect(derived.type.body.fontSize, 16);
-      expect(derived.focus.width, 5);
+      expect(derived.focus.width, 4.8);
     }
     final plain = ComicThemeData.offset();
     expect(ComicThemeData.lerp(plain, theme, 0), plain);
@@ -256,7 +261,8 @@ void main() {
   testWidgets(
     'ComicTheme is captured as an InheritedTheme and applies motion',
     (tester) async {
-      final data = ComicThemeData.offset().copyWith(
+      final data = comicThemeWith(
+        ComicThemeData.offset(),
         motion: const ComicMotion(state: Duration(milliseconds: 270)),
       );
       final theme = ComicTheme(data: data, child: const SizedBox());

@@ -66,7 +66,7 @@ class ComicLink extends StatelessWidget {
   Widget _link(ComicThemeData t, List<ComicStyle?> layers, ComicStyleOf base) {
     return ComicPressable(
       autofocus: autofocus,
-      label: label,
+      semanticLabel: label,
       link: true,
       button: false,
       onPressed: onPressed,

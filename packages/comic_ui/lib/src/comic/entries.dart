@@ -24,6 +24,7 @@ import 'theme.dart';
 import 'internal/cap_label.dart';
 import 'internal/style_guard.dart';
 import 'knobs.dart' show ComicSpace;
+import 'internal/field_label.dart';
 
 /// A multiline field, using Flutter's editor and Comic's selection menu.
 ///
@@ -325,7 +326,7 @@ class _ComicSearchFieldState extends State<ComicSearchField> {
         : ComicIconButton(
             ComicGlyphs.x,
             style: comicInFieldIcon,
-            label:
+            semanticLabel:
                 widget.clearLabel ??
                 RawWidgetsLocalizations.of(context).clearButtonTooltip,
             onPressed: !widget.enabled
@@ -410,7 +411,7 @@ class ComicSelect<T> extends StatelessWidget {
         ? hintText ?? ComicLocalizations.of(context).choose
         : matches.first.label;
     final t = ComicTheme.of(context);
-    // From 600 up the field keeps to its own width (at most 320) at its column's start; its list matches the field.
+    // The field takes its column's width, as a text field does; its list matches the field.
     return comicDropdownWidth(
       context,
       Column(
@@ -527,7 +528,7 @@ class ComicCheckRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ComicPressable(
     autofocus: autofocus,
-    label: label,
+    semanticLabel: label,
     checked: value,
     hint: note,
     focusNode: focusNode,
@@ -547,7 +548,7 @@ class ComicCheckRow extends StatelessWidget {
               child: ExcludeSemantics(
                 child: RowMark(
                   child: ComicCheckbox(
-                    label: label,
+                    semanticLabel: label,
                     isError: isError,
                     style: comicStyleOf([
                       style,
@@ -620,10 +621,20 @@ class ComicCheckRow extends StatelessWidget {
 }
 
 /// One radio choice and its optional explanation.
+///
+/// ```dart
+/// ComicRadio('print', 'Print', note: 'Posted each month')
+/// ```
 @immutable
 class ComicRadio<T> {
   /// Creates an option for [ComicRadioGroup].
-  const ComicRadio(this.value, this.label, {this.note, this.enabled = true});
+  const ComicRadio(
+    this.value,
+    this.label, {
+    this.note,
+    this.leading,
+    this.enabled = true,
+  });
 
   /// Its returned value.
   final T value;
@@ -633,6 +644,10 @@ class ComicRadio<T> {
 
   /// The explanation below the name.
   final String? note;
+
+  /// A picture of the choice between its mark and its name: a palette's
+  /// swatches. It only shows; a screen reader hears [label].
+  final Widget? leading;
 
   /// Whether this option can be selected.
   final bool enabled;
@@ -877,6 +892,10 @@ class _ComicRadioGroupState<T> extends State<ComicRadioGroup<T>> {
                             },
                           ),
                           const SizedBox(width: ComicSpace.close),
+                          if (o.leading case final leading?) ...[
+                            leading,
+                            const SizedBox(width: ComicSpace.close),
+                          ],
                           Expanded(
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
@@ -971,22 +990,22 @@ class ComicButtonSegment<T> {
 /// choice. When the labels need more space, the segments stack at the reader's text size.
 ///
 /// ```dart
-/// ComicSegmentedButton<String>(label: 'View', segments: const [ComicButtonSegment('all', 'All'), ComicButtonSegment('saved', 'Saved')], value: 'all', onChanged: change)
+/// ComicSegmentedButton<String>(semanticLabel: 'View', segments: const [ComicButtonSegment('all', 'All'), ComicButtonSegment('saved', 'Saved')], value: 'all', onChanged: change)
 /// ```
 class ComicSegmentedButton<T> extends StatefulWidget {
   /// Creates a segmented choice.
   const ComicSegmentedButton({
     super.key,
     this.style,
-    required this.label,
+    this.semanticLabel,
     required this.segments,
     this.value,
     this.onChanged,
     this.rowSegmentWidth = 104,
   });
 
-  /// Its accessible group name.
-  final String label;
+  /// Its group's name for a screen reader. Null in a [ComicFormField], whose label names it.
+  final String? semanticLabel;
 
   /// Options in reading order.
   final List<ComicButtonSegment<T>> segments;
@@ -1010,7 +1029,7 @@ class ComicSegmentedButton<T> extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(IterableProperty<ComicButtonSegment<T>>('segments', segments))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
@@ -1111,7 +1130,7 @@ class _ComicSegmentedState<T> extends State<ComicSegmentedButton<T>> {
     final inner = ComicTrack.cellShape(outer, rim);
     final lit = comicStyleOf(layers, const {WidgetState.selected});
     return Semantics(
-      label: widget.label,
+      label: ComicFieldLabel.unsaid(context, widget.semanticLabel, group: true),
       container: true,
       explicitChildNodes: true,
       child: Align(
@@ -1146,7 +1165,7 @@ class _ComicSegmentedState<T> extends State<ComicSegmentedButton<T>> {
     final segment = widget.segments[i];
     final chosen = segment.value == widget.value;
     return ComicPressable(
-      label: segment.name ?? segment.label,
+      semanticLabel: segment.name ?? segment.label,
       selected: chosen,
       focusNode: _nodes[i],
       keys: (_, event) => _keys(i, event),
@@ -1179,7 +1198,12 @@ class _ComicSegmentedState<T> extends State<ComicSegmentedButton<T>> {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (segment.icon != null) ...[
-                Icon(segment.icon, size: look.iconSize ?? 18, color: ink),
+                Icon(
+                  segment.icon,
+                  size: look.iconSize ?? 18,
+                  color: ink,
+                  applyTextScaling: true,
+                ),
                 const SizedBox(width: ComicSpace.close),
               ],
               Flexible(
@@ -1424,7 +1448,7 @@ class _ComicFileDropState extends State<ComicFileUpload> {
                             const SizedBox(height: ComicSpace.tight),
                             ComicLinearProgressIndicator(
                               value: file.progress,
-                              label: file.name,
+                              semanticLabel: file.name,
                               height: 8,
                             ),
                           ],
@@ -1437,7 +1461,7 @@ class _ComicFileDropState extends State<ComicFileUpload> {
                       ComicIconButton(
                         ComicGlyphs.x,
                         style: comicInFieldIcon,
-                        label: words.removeFile(file.name),
+                        semanticLabel: words.removeFile(file.name),
                         onPressed: () => widget.onRemove!(i),
                       ),
                     ],

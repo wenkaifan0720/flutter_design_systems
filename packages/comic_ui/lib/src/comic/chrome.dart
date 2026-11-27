@@ -14,6 +14,7 @@ import 'controls.dart';
 import 'component_themes.dart';
 import 'frames.dart';
 import 'internal/footer_clear.dart';
+import 'internal/nav_faces.dart';
 import 'internal/geometry.dart';
 import 'layout.dart';
 import 'people.dart';
@@ -45,7 +46,7 @@ class _NavTap extends StatelessWidget {
   Widget build(BuildContext context) => ComicPressable(
     key: item.key,
     onPressed: onPressed ?? item.onPressed,
-    label: item.label,
+    semanticLabel: item.label,
     value: item.badgeLabel,
     selected: on,
     outline: WidgetStatePropertyAll(ComicTheme.of(context).shapes.small),
@@ -136,7 +137,7 @@ class ComicGroupChip extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: name,
+      semanticLabel: name,
       button: onPressed != null,
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -200,53 +201,16 @@ class _NavLink extends StatelessWidget {
   final ComicNavItem item;
   final bool on;
   @override
-  Widget build(BuildContext context) {
-    final t = ComicTheme.of(context);
-    final c = t.colors;
-    final ink = on ? c.onCaption : c.textSecondary;
-    return _NavTap(
-      item: item,
-      on: on,
-      // The lit link fills its press's whole height, the least target, so its ground is the cell a person sees, not a
-      // pill inside it.
-      child: ComicStateDecoration.box(
-        height: ComicTapTarget.targetOf(context) < 40
-            ? 40
-            : ComicTapTarget.targetOf(context),
-        padding: const EdgeInsets.symmetric(horizontal: ComicSpace.gap),
-        decoration: on
-            ? ShapeDecoration(
-                color: c.caption,
-                shape: t.shapes.small.copyWith(
-                  side: BorderSide(color: c.nightLine, width: t.rim(2.5)),
-                ),
-              )
-            : ShapeDecoration(shape: t.shapes.small),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(item.icon, size: 19, color: ink),
-            const SizedBox(width: ComicSpace.close),
-            CapLabel(
-              child: Text(
-                item.label.toUpperCase(),
-                maxLines: 1,
-                style: t.type.letter(
-                  20,
-                  lineHeight: 1,
-                  color: ink,
-                  tracking: .06,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => _NavTap(
+    item: item,
+    on: on,
+    child: comicLinkFace(context, item, on: on),
+  );
 }
 
 /// The phone's tab bar: the current tab in a lamp's square, the app-level act a small balloon rising from the middle.
+/// An app takes [ComicAppShell], which paints this bar on a phone and the masthead on a desktop and gives the places
+/// their tabs, their keys and their selected state; the bar alone is a row of buttons for a frame of the app's own.
 ///
 /// ```dart
 /// ComicNavigationBar(destinations: const [ComicNavItem(label: 'Home', short: 'Home', icon: ComicGlyphs.house)], selectedIndex: 0, onDestinationSelected: select)
@@ -271,21 +235,14 @@ class ComicNavigationBar extends StatelessWidget {
   /// `onPressed` handles navigation. When present, only this callback runs.
   final ValueChanged<int>? onDestinationSelected;
 
-  /// The optional action beside this content.
-  final ShellAction? action;
+  /// The app's one act, a balloon rising from the bar's middle.
+  final ComicAppAction? action;
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
     final c = t.colors;
     final bottom = MediaQuery.paddingOf(context).bottom;
-    Widget word(String w, Color ink) => Padding(
-      padding: const EdgeInsets.symmetric(horizontal: ComicSpace.tight),
-      child: Text(
-        w.toUpperCase(),
-        textAlign: TextAlign.center,
-        style: t.type.letter(16, lineHeight: 1, color: ink, tracking: .06),
-      ),
-    );
+    Widget word(String w, Color ink) => comicTabWord(t, w, ink);
     Widget tab(int i) {
       final on = i == selectedIndex;
       return Expanded(
@@ -295,93 +252,8 @@ class ComicNavigationBar extends StatelessWidget {
               ? null
               : () => onDestinationSelected!(i),
           on: on,
-          builder: (context, states) => Padding(
-            padding: const EdgeInsets.only(top: ComicSpace.tight),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // The marks sit on the indicator, in its shape, not on the whole item.
-                ComicHighlight(
-                  states: states,
-                  shape: t.shapes.small,
-                  child: ComicStateDecoration.box(
-                    width: 46,
-                    height: 32,
-                    decoration: ShapeDecoration(
-                      color: on ? c.caption : null,
-                      shape: t.shapes.small.copyWith(
-                        side: on
-                            ? BorderSide(color: c.nightLine, width: t.rim(2.5))
-                            : BorderSide.none,
-                      ),
-                    ),
-                    // The count sits on the indicator's top end corner, as on an icon button, so every icon in
-                    // the bar keeps one centre whether it has a count or not.
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Center(
-                          child: ComicStateLerp<Color?>(
-                            value: on ? c.onCaption : c.textSecondary,
-                            lerp: Color.lerp,
-                            builder: (context, ink, _) => Icon(
-                              destinations[i].icon,
-                              size: 23,
-                              color: ink,
-                            ),
-                          ),
-                        ),
-                        if (destinations[i].badge case final badge?)
-                          PositionedDirectional(
-                            top: -6,
-                            end: -6,
-                            child: ExcludeSemantics(
-                              child: ComicStateDecoration.box(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 3,
-                                  vertical: 1,
-                                ),
-                                constraints: const BoxConstraints(
-                                  minWidth: 8,
-                                  minHeight: 8,
-                                ),
-                                decoration: ShapeDecoration(
-                                  color: c.caption,
-                                  shape:
-                                      (badge.isEmpty
-                                              ? t.shapes.full
-                                              : t.shapes.capsule)
-                                          .copyWith(
-                                            side: BorderSide(
-                                              color: c.nightLine,
-                                            ),
-                                          ),
-                                ),
-                                child: badge.isEmpty
-                                    ? null
-                                    : Text(
-                                        badge,
-                                        style: t.type.label.copyWith(
-                                          color: c.onCaption,
-                                        ),
-                                      ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: ComicSpace.nib),
-                ComicStateLerp<Color?>(
-                  value: on ? c.text : c.textSecondary,
-                  lerp: Color.lerp,
-                  builder: (context, ink, _) =>
-                      word(destinations[i].short, ink!),
-                ),
-              ],
-            ),
-          ),
+          builder: (context, states) =>
+              comicTabFace(context, destinations[i], on: on, states: states),
         ),
       );
     }
@@ -431,60 +303,619 @@ class ComicNavigationBar extends StatelessWidget {
         ),
       )
       ..add(
-        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+        DiagnosticsProperty<ComicAppAction>(
+          'action',
+          action,
+          defaultValue: null,
+        ),
       );
   }
 }
 
 class _TabAct extends StatelessWidget {
   const _TabAct({required this.action, required this.word});
-  final ShellAction action;
+  final ComicAppAction action;
   final Widget Function(String, Color) word;
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
     return ComicPressable(
       key: action.key,
-      onPressed: () => action.onPressed(context),
-      label: action.label,
+      onPressed: action.onPressed,
+      semanticLabel: action.label,
       wash: false,
       ring: false,
-      builder: (context, states) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ComicHighlight(
-            states: states,
-            shape: t.shapes.small,
-            washColor: action.accent ? c.onPrimary : null,
-            child: ComicStateDecoration.box(
-              width: 50,
-              height: 42,
-              decoration: ShapeDecoration(
-                color: action.accent
-                    ? c.primary
-                    : c.dark
-                    ? c.card
-                    : c.control,
-                shape: t.shapes.small.copyWith(
-                  side: BorderSide(color: c.nightLine, width: t.rim(3)),
+      // The tab face's geometry, a little wider: its glyph on the tabs' glyph line and its words on theirs.
+      builder: (context, states) => Padding(
+        padding: const EdgeInsets.only(top: ComicSpace.tight),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ComicHighlight(
+              states: states,
+              shape: t.shapes.small,
+              washColor: action.accent ? c.onPrimary : null,
+              child: ComicStateDecoration.box(
+                width: 56,
+                height: 32,
+                decoration: ShapeDecoration(
+                  color: action.accent
+                      ? c.primary
+                      : c.dark
+                      ? c.card
+                      : c.control,
+                  shape: t.shapes.small.copyWith(
+                    side: BorderSide(color: c.nightLine, width: t.rim(3)),
+                  ),
+                ),
+                child: Icon(
+                  action.icon,
+                  size: 23,
+                  color: action.accent
+                      ? c.onPrimary
+                      : c.dark
+                      ? c.text
+                      : c.onPaper,
                 ),
               ),
-              child: Icon(
-                action.icon,
-                size: 26,
-                color: action.accent
-                    ? c.onPrimary
-                    : c.dark
-                    ? c.text
-                    : c.onPaper,
+            ),
+            if (action.label.isNotEmpty) ...[
+              const SizedBox(height: ComicSpace.nib),
+              word(action.label, c.text),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The app's one act beside its places (add, write, capture): a key in the act's colour in the middle of the phone's tab
+/// bar, at the rail's head, and a button at the masthead's end on a desktop. [accent] fills it with the act's colour; off, it is a plain square.
+///
+/// ```dart
+/// ComicAppAction(icon: ComicGlyphs.plus, label: 'Add', onPressed: add)
+/// ```
+@immutable
+class ComicAppAction with Diagnosticable {
+  /// An act wearing [icon], called [label].
+  const ComicAppAction({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.accent = true,
+    this.key,
+  });
+
+  /// Its glyph.
+  final IconData icon;
+
+  /// Its words: under it in the tab bar, beside its glyph on a desktop, and its name to a screen reader.
+  final String label;
+
+  /// Called when it is pressed.
+  final VoidCallback onPressed;
+
+  /// Whether it wears the act's colour (the app's standing invitation); false: a plain square.
+  final bool accent;
+
+  /// The key on its button.
+  final Key? key;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(StringProperty('label', label))
+      ..add(
+        FlagProperty(
+          'accent',
+          value: accent,
+          ifFalse: 'plain',
+          defaultValue: true,
+        ),
+      );
+  }
+}
+
+/// The app's frame: its places and its pages, at every width, through ui_core's `RawAdaptiveShell`. On a phone (under
+/// 600 wide) the places stand in the tab bar at the foot, the [action] a key in the act's colour in its middle; on a
+/// tablet or a narrow window they stand in a rail of glyphs down the start, the act at its head; on a desktop (from
+/// [comicDeskWidth] wide) they are the masthead's links across the top, the app's [brand] at its start and the act at
+/// its end, and each page's own bar stands under it with its way back and its actions. [modeForWidth] moves those
+/// widths. A screen reader hears the places as tabs; the arrows move along them, Enter or Space chooses one, and F6
+/// moves to the page. Toasts keep clear of the tab bar and the masthead.
+///
+/// [ComicAppShell.branches] keeps a stack of pages for each place: a page pushed on one
+/// (`Navigator.of(context).push`) keeps the masthead or the rail beside it while the tab bar steps away, and back pops it.
+/// [ComicAppShell] stands round the app's own [body] (an `IndexedStack`, a router's shell), and [showNavigation]
+/// hides its tab bar.
+///
+/// ```dart
+/// ComicAppShell.branches(destinations: const [ComicNavItem(label: 'Home', short: 'Home', icon: ComicGlyphs.house), ComicNavItem(label: 'Alerts', short: 'Alerts', icon: ComicGlyphs.bell)], selectedIndex: place, onDestinationSelected: (index) => setState(() => place = index), branches: [(context) => const Text('Home'), (context) => const Text('Alerts')])
+/// ```
+class ComicAppShell extends StatefulWidget {
+  /// The app's places round its own [body].
+  const ComicAppShell({
+    super.key,
+    required this.destinations,
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+    required Widget this.body,
+    this.brand,
+    this.action,
+    this.modeForWidth = ComicAppShell.modeFor,
+    this.showNavigation = true,
+  }) : branches = null,
+       navigatorKeys = null,
+       backBehavior = RawBranchBackBehavior.firstDestination,
+       hideBarOnPush = false;
+
+  /// The app's places, each with a stack of pages of its own, starting on its [branches] page.
+  const ComicAppShell.branches({
+    super.key,
+    required this.destinations,
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+    required List<WidgetBuilder> this.branches,
+    this.navigatorKeys,
+    this.backBehavior = RawBranchBackBehavior.firstDestination,
+    this.hideBarOnPush = true,
+    this.brand,
+    this.action,
+    this.modeForWidth = ComicAppShell.modeFor,
+    this.showNavigation = true,
+  }) : body = null;
+
+  /// Comic's places for a shell [width] wide: the tab bar on a phone (under 600), a rail of glyphs down the start
+  /// from there (a tablet, a narrow window: a tab bar that wide would spread a few words over the screen), and the
+  /// masthead from [comicDeskWidth].
+  static RawNavigationMode modeFor(double width) => width < 600
+      ? RawNavigationMode.bar
+      : width < comicDeskWidth
+      ? RawNavigationMode.rail
+      : RawNavigationMode.top;
+
+  /// The app's places, in order. Each one's `label` names it in the masthead and to a screen reader, its `short`
+  /// under its glyph in the tab bar; [onDestinationSelected] chooses it (its own `onPressed` is not called).
+  final List<ComicNavItem> destinations;
+
+  /// The place shown.
+  final int selectedIndex;
+
+  /// Called with the place chosen.
+  final ValueChanged<int> onDestinationSelected;
+
+  /// The app's own pages ([ComicAppShell]); null for [ComicAppShell.branches].
+  final Widget? body;
+
+  /// Each place's first page ([ComicAppShell.branches]); null round a [body].
+  final List<WidgetBuilder>? branches;
+
+  /// The places' navigators, to push onto one from outside it (a notification opening a page).
+  final List<GlobalKey<NavigatorState>>? navigatorKeys;
+
+  /// Where back goes from a place's first page.
+  final RawBranchBackBehavior backBehavior;
+
+  /// Whether the tab bar steps away while a page is pushed over a place's first page; the masthead stays.
+  final bool hideBarOnPush;
+
+  /// The app's name, lettered at the masthead's start and on a phone's page bar.
+  final String? brand;
+
+  /// The app's one act.
+  final ComicAppAction? action;
+
+  /// How the places show for the shell's width: [modeFor] by default. A sidebar shows them as
+  /// [ComicNavigationDrawer] draws them, a rail as [ComicNavigationRail] does.
+  final RawNavigationModeForWidth modeForWidth;
+
+  /// Whether the tab bar shows: false while a page of the app's own covers a place's first page.
+  final bool showNavigation;
+
+  @override
+  State<ComicAppShell> createState() => _ComicAppShellState();
+
+  Widget _build(BuildContext context, GlobalKey bar) {
+    final places = [
+      for (final d in destinations)
+        RawNavigationDestination(
+          label: d.badgeLabel == null ? d.label : '${d.label}, ${d.badgeLabel}',
+          icon: d.icon,
+        ),
+    ];
+    Widget destination(
+      BuildContext context,
+      RawNavigationDestination place,
+      RawDestinationDetails details,
+    ) {
+      final t = ComicTheme.of(context);
+      final item = destinations[details.index];
+      final on = details.states.contains(WidgetState.selected);
+      return KeyedSubtree(
+        key: item.key,
+        child: switch (details.mode) {
+          RawNavigationMode.bar => comicTabFace(
+            context,
+            item,
+            on: on,
+            states: details.states,
+          ),
+          RawNavigationMode.top => ComicHighlight(
+            states: details.states,
+            shape: t.shapes.small,
+            child: comicLinkFace(context, item, on: on),
+          ),
+          RawNavigationMode.rail => comicRailFace(
+            context,
+            item,
+            on: on,
+            states: details.states,
+          ),
+          RawNavigationMode.sidebar => ComicHighlight(
+            states: details.states,
+            shape: t.shapes.small,
+            child: comicDrawerFace(context, item, on: on),
+          ),
+        },
+      );
+    }
+
+    Widget navigation(BuildContext context, RawNavigationDetails details) =>
+        switch (details.mode) {
+          RawNavigationMode.bar => _ShellBar(
+            key: bar,
+            details: details,
+            action: action,
+          ),
+          RawNavigationMode.top => _ShellMasthead(
+            details: details,
+            brand: brand,
+            action: action,
+          ),
+          RawNavigationMode.rail => _ShellSide(
+            details: details,
+            action: action,
+            width: 88,
+          ),
+          RawNavigationMode.sidebar => _ShellSide(
+            details: details,
+            brand: brand,
+            action: action,
+            width: 304,
+          ),
+        };
+    final branches = this.branches;
+    // A toast or a snack bar raised over the app's own pages stands above the tab bar.
+    return ComicFooterClear(
+      footer: bar,
+      child: ComicChromeScope(
+        brand: ComicBrand(name: brand ?? ''),
+        nav: destinations,
+        active: selectedIndex,
+        shellDrawn: true,
+        child: branches == null
+            ? RawAdaptiveShell(
+                destinations: places,
+                selectedIndex: selectedIndex,
+                onDestinationSelected: onDestinationSelected,
+                destinationBuilder: destination,
+                navigationBuilder: navigation,
+                modeForWidth: modeForWidth,
+                showNavigation: showNavigation,
+                body: body!,
+              )
+            : RawAdaptiveShell.branches(
+                destinations: places,
+                selectedIndex: selectedIndex,
+                onDestinationSelected: onDestinationSelected,
+                destinationBuilder: destination,
+                navigationBuilder: navigation,
+                modeForWidth: modeForWidth,
+                showNavigation: showNavigation,
+                hideBarOnPush: hideBarOnPush,
+                backBehavior: backBehavior,
+                navigatorKeys: navigatorKeys,
+                branches: branches,
+              ),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ComicNavItem>('destinations', destinations))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(IntProperty('branches', branches?.length, defaultValue: null))
+      ..add(
+        IterableProperty<GlobalKey<NavigatorState>>(
+          'navigatorKeys',
+          navigatorKeys,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<RawBranchBackBehavior>(
+          'backBehavior',
+          backBehavior,
+          defaultValue: RawBranchBackBehavior.firstDestination,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'hideBarOnPush',
+          value: hideBarOnPush,
+          ifTrue: 'bar hidden on push',
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<RawNavigationModeForWidth>(
+          'modeForWidth',
+          modeForWidth,
+          ifPresent: modeForWidth == ComicAppShell.modeFor ? null : 'custom',
+        ),
+      )
+      ..add(StringProperty('brand', brand, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ComicAppAction>(
+          'action',
+          action,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'showNavigation',
+          value: showNavigation,
+          ifFalse: 'navigation hidden',
+          defaultValue: true,
+        ),
+      );
+  }
+}
+
+class _ComicAppShellState extends State<ComicAppShell> {
+  final _bar = GlobalKey(debugLabel: 'ComicAppShell bar');
+
+  @override
+  Widget build(BuildContext context) => widget._build(context, _bar);
+}
+
+// The shell's tab bar: the places' tabs across a phone's foot, the act a balloon rising from the middle. The act stands
+// over a gap among the tabs, outside the tab bar a screen reader hears, which holds the tabs alone.
+class _ShellBar extends StatelessWidget {
+  const _ShellBar({super.key, required this.details, required this.action});
+  final RawNavigationDetails details;
+  final ComicAppAction? action;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = ComicTheme.of(context), c = t.colors;
+    final bottom = MediaQuery.paddingOf(context).bottom;
+    final act = action;
+    final count = details.destinations.length;
+    final middle = (count + 1) ~/ 2;
+    final slots = act == null ? count : count + 1;
+    final tabs = Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i <= count; i++) ...[
+          if (act != null && i == middle) const Expanded(child: SizedBox()),
+          if (i < count) Expanded(child: details.destinations[i]),
+        ],
+      ],
+    );
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: c.card,
+        border: Border(
+          top: BorderSide(color: c.nightLine, width: t.rim(3)),
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          ComicSpace.close,
+          ComicSpace.close,
+          ComicSpace.close,
+          10 + bottom,
+        ),
+        child: act == null
+            ? details.group(tabs)
+            : Stack(
+                alignment: AlignmentDirectional.bottomCenter,
+                children: [
+                  details.group(tabs),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      for (var i = 0; i < slots; i++)
+                        Expanded(
+                          child: i == middle
+                              ? _TabAct(
+                                  action: act,
+                                  word: (w, ink) => comicTabWord(t, w, ink),
+                                )
+                              : const SizedBox(),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+// The shell's masthead: the app's name, its places as lettered links, and the act at the end, on the page's measure.
+class _ShellMasthead extends StatelessWidget {
+  const _ShellMasthead({
+    required this.details,
+    required this.brand,
+    required this.action,
+  });
+  final RawNavigationDetails details;
+  final String? brand;
+  final ComicAppAction? action;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = ComicTheme.of(context), c = t.colors;
+    final name = brand ?? '';
+    final act = action;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: c.card,
+        border: Border(
+          bottom: BorderSide(color: c.nightLine, width: t.rim(3)),
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: ComicSpace.nib),
+          child: SizedBox(
+            height: 75,
+            child: _OnMeasure(
+              measure: _pageMeasure,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: ComicSpace.tier,
+                ),
+                child: Row(
+                  children: [
+                    if (name.isNotEmpty) ...[
+                      Flexible(
+                        flex: 0,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Semantics(
+                            header: true,
+                            child: ComicLogo(name),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: ComicSpace.tier + ComicSpace.tight),
+                    ],
+                    Expanded(
+                      child: Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: AlignmentDirectional.centerStart,
+                          child: details.group(
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                for (final (i, place)
+                                    in details.destinations.indexed) ...[
+                                  if (i > 0)
+                                    const SizedBox(width: ComicSpace.close),
+                                  place,
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (act != null) ...[
+                      const SizedBox(width: 18),
+                      _ShellAct(action: act),
+                    ],
+                  ],
+                ),
               ),
             ),
           ),
-          if ((action.label ?? '').isNotEmpty) ...[
-            const SizedBox(height: ComicSpace.nib),
-            word(action.label!, c.text),
-          ],
-        ],
+        ),
+      ),
+    );
+  }
+}
+
+// The shell's rail or sidebar: the places in a column at the window's start, on the card with the bar's rule at its
+// end; the act above them, and on a sidebar the app's name at its head.
+class _ShellSide extends StatelessWidget {
+  const _ShellSide({
+    required this.details,
+    required this.action,
+    required this.width,
+    this.brand,
+  });
+  final RawNavigationDetails details;
+  final ComicAppAction? action;
+  final double width;
+  final String? brand;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = ComicTheme.of(context), c = t.colors;
+    final name = brand ?? '';
+    final act = action;
+    final rail = width < 120;
+    return ComicStateDecoration(
+      decoration: BoxDecoration(
+        color: c.card,
+        border: BorderDirectional(
+          end: BorderSide(color: c.nightLine, width: t.rim(3)),
+        ),
+      ),
+      child: SizedBox(
+        width: width,
+        // The window's start edge: its notch or rounded corner stays clear; the page beside keeps the end's.
+        child: SafeArea(
+          left: Directionality.of(context) == TextDirection.ltr,
+          right: Directionality.of(context) == TextDirection.rtl,
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(
+              horizontal: rail ? 0 : ComicSpace.near,
+              vertical: ComicSpace.near,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: rail
+                  ? CrossAxisAlignment.center
+                  : CrossAxisAlignment.stretch,
+              children: [
+                if (name.isNotEmpty) ...[
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Semantics(header: true, child: ComicLogo(name)),
+                    ),
+                  ),
+                  const SizedBox(height: ComicSpace.gap),
+                ],
+                if (act != null) ...[
+                  Align(
+                    alignment: rail
+                        ? Alignment.center
+                        : AlignmentDirectional.centerStart,
+                    child: _ShellAct(action: act),
+                  ),
+                  const SizedBox(height: ComicSpace.gap),
+                ],
+                for (final (i, place) in details.destinations.indexed) ...[
+                  if (i > 0 && !rail)
+                    SizedBox(height: t.focus.gap + t.focus.width),
+                  place,
+                ],
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -506,7 +937,7 @@ class ComicTab {
   final IconData icon;
 
   /// {@template comic.label}
-  /// The visible or spoken name of the component.
+  /// The words drawn for it, which a screen reader reads as they are.
   /// {@endtemplate}
   final String label;
 
@@ -575,18 +1006,46 @@ class ComicScaffold extends StatelessWidget {
     final title = t.desk && chrome != null && !sheet && bar0 is ComicAppBar
         ? bar0.title
         : null;
-    final inner = title == null
+    // Under ComicAppShell's masthead a page has no bar of its own: its way back and its actions stand in that head,
+    // beside its title.
+    final head =
+        t.desk &&
+            !sheet &&
+            (chrome?.shellDrawn ?? false) &&
+            bar0 is ComicAppBar &&
+            bar0.logo == null
+        ? bar0
+        : null;
+    final exit = head == null
+        ? null
+        : head.leading ?? ComicAppBar.autoLeading(context);
+    final Widget? heading = title == null
+        ? null
+        : Text(
+            title.toUpperCase(),
+            style: comicDisplayFor(title, t.type.section),
+          );
+    final Widget? headRow =
+        head == null || (exit == null && head.actions.isEmpty)
+        ? heading
+        : Row(
+            children: [
+              if (exit != null) ...[exit, const SizedBox(width: 18)],
+              Expanded(child: heading ?? const SizedBox.shrink()),
+              for (final a in head.actions) ...[const SizedBox(width: 18), a],
+            ],
+          );
+    final inner = headRow == null
         ? body
         : ComicColumn(
             gap: 16,
             children: [
-              Text(
-                title.toUpperCase(),
-                style: comicDisplayFor(title, t.type.section),
-              ),
+              headRow,
               if (scroll) body else ComicGrow(child: body),
             ],
           );
+    // The page's measure: the width of its column, which the top bar's and the footer's contents keep to.
+    final measure = !fullBleed && scroll ? _pageMeasure : double.infinity;
     // The page body is one keyline region: its panels and words hold the page's margins.
     final Widget region = RawKeylineRegion(
       label: 'Page',
@@ -598,7 +1057,7 @@ class ComicScaffold extends StatelessWidget {
         ? Center(
             heightFactor: 1,
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1376),
+              constraints: const BoxConstraints(maxWidth: _pageMeasure),
               child: region,
             ),
           )
@@ -630,9 +1089,13 @@ class ComicScaffold extends StatelessWidget {
             mainAxisSize: sheet ? MainAxisSize.min : MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ?bar,
+              if (bar != null && head == null)
+                _PageMeasure(measure: measure, child: bar),
               sheet ? Flexible(child: page) : Expanded(child: page),
-              if (footer != null)
+              // The tab bar draws its own rule and keeps clear of the home indicator: it stands bare.
+              if (footer is ComicNavigationBar)
+                KeyedSubtree(key: footerKey, child: footer!)
+              else if (footer != null)
                 DecoratedBox(
                   key: footerKey,
                   decoration: BoxDecoration(
@@ -643,25 +1106,29 @@ class ComicScaffold extends StatelessWidget {
                   ),
                   child: SafeArea(
                     top: false,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        ComicSpace.near,
-                        ComicSpace.near,
-                        ComicSpace.near,
-                        ComicSpace.near,
-                      ),
-                      child: t.desk && !sheet
-                          ? Align(
-                              alignment: AlignmentDirectional.centerEnd,
-                              heightFactor: 1,
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(
-                                  maxWidth: 360,
+                    // On a desktop the act ends where the page's column ends.
+                    child: _OnMeasure(
+                      measure: sheet ? double.infinity : measure,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: t.desk && !sheet
+                              ? ComicSpace.tier
+                              : ComicSpace.near,
+                          vertical: ComicSpace.near,
+                        ),
+                        child: t.desk && !sheet
+                            ? Align(
+                                alignment: AlignmentDirectional.centerEnd,
+                                heightFactor: 1,
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                    maxWidth: 360,
+                                  ),
+                                  child: footer!,
                                 ),
-                                child: footer!,
-                              ),
-                            )
-                          : footer!,
+                              )
+                            : footer!,
+                      ),
                     ),
                   ),
                 ),
@@ -731,13 +1198,13 @@ class ComicBackButton extends StatelessWidget {
     super.key,
     this.close = false,
     this.onPressed,
-    this.label,
+    this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
   });
 
   /// Overrides the localized back or close label.
-  final String? label;
+  final String? semanticLabel;
 
   /// Uses the close action instead of a back arrow.
   final bool close;
@@ -760,8 +1227,8 @@ class ComicBackButton extends StatelessWidget {
       close
           ? ComicGlyphs.x
           : (rtl ? ComicGlyphs.arrowRight : ComicGlyphs.arrowLeft),
-      label:
-          label ??
+      semanticLabel:
+          semanticLabel ??
           (close
               ? RawWidgetsLocalizations.of(context).closeButtonLabel
               : RawWidgetsLocalizations.of(context).backButtonTooltip),
@@ -776,7 +1243,7 @@ class ComicBackButton extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         FlagProperty(
           'close',
@@ -806,11 +1273,12 @@ class ComicBackButton extends StatelessWidget {
 
 /// A page's top bar: the route's way out, the app's name or the page's title in the lettering, the app's places on a desktop, and
 /// the page's own [actions] at its end. A page never authors its own back or close: leave [leading] unset, or pass [autoLeading]
-/// to key it. On a desktop the title moves to the head of the page's column. [logo] stands in place of the logo, such as a
+/// to key it. On a desktop the title moves to the head of the page's column, and in a [ComicScaffold] under
+/// [ComicAppShell]'s masthead its way back and its actions join it there. [logo] stands in place of the logo, such as a
 /// `ComicGroupChip`.
 ///
 /// ```dart
-/// ComicAppBar(title: 'The plan', leading: ComicAppBar.autoLeading(context, key: const ValueKey('back')), actions: [ComicIconButton(ComicGlyphs.share2, label: 'Share')])
+/// ComicAppBar(title: 'The plan', leading: ComicAppBar.autoLeading(context, key: const ValueKey('back')), actions: [ComicIconButton(ComicGlyphs.share2, semanticLabel: 'Share')])
 /// ```
 class ComicAppBar extends StatelessWidget {
   /// Creates a [ComicAppBar].
@@ -850,9 +1318,15 @@ class ComicAppBar extends StatelessWidget {
     final sheet = RoutePresentation.of(context) == RoutePresentation.sheet;
     final exit = leading ?? autoLeading(context);
     final gap = t.desk ? 18.0 : 10.0;
-    final masthead = t.desk && chrome != null && !sheet;
-    final name = chrome?.brand.name ?? '';
-    final showTitle = title != null && !masthead;
+    // Under ComicAppShell on a desktop the shell's masthead carries the app's name, its places and its act: the page's
+    // bar keeps its way back and its own actions, and stands away when it has neither.
+    final underMasthead = t.desk && !sheet && (chrome?.shellDrawn ?? false);
+    if (underMasthead && exit == null && actions.isEmpty && logo == null) {
+      return const SizedBox.shrink();
+    }
+    final masthead = t.desk && chrome != null && !sheet && !underMasthead;
+    final name = underMasthead ? '' : chrome?.brand.name ?? '';
+    final showTitle = title != null && !masthead && !underMasthead;
     final Widget? who = logo != null
         ? logo!
         : showTitle
@@ -874,7 +1348,16 @@ class ComicAppBar extends StatelessWidget {
             child: ComicLogo(name),
           )
         : null;
-    final action = masthead ? chrome.action : null;
+    final shellAction = masthead ? chrome.action : null;
+    final action = shellAction == null
+        ? null
+        : ComicAppAction(
+            icon: shellAction.icon,
+            label: shellAction.label ?? '',
+            accent: shellAction.accent,
+            key: shellAction.key,
+            onPressed: () => shellAction.onPressed(context),
+          );
     return DecoratedBox(
       decoration: BoxDecoration(
         color: c.card,
@@ -887,52 +1370,56 @@ class ComicAppBar extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.only(bottom: ComicSpace.nib),
           child: SizedBox(
-            height: t.desk ? 75 : 57,
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: t.desk ? ComicSpace.tier : ComicSpace.near,
-              ),
-              child: Row(
-                children: [
-                  if (exit != null) ...[exit, SizedBox(width: gap)],
-                  if (who != null)
-                    masthead || logo == null && !showTitle
-                        ? Flexible(flex: 0, child: who)
-                        : Expanded(
-                            child: Align(
-                              alignment: AlignmentDirectional.centerStart,
-                              child: who,
+            height: t.desk && !underMasthead ? 75 : 57,
+            // On a desktop the bar's words keep to the page's column, as the title at its head does.
+            child: _OnMeasure(
+              measure: t.desk ? _PageMeasure.of(context) : double.infinity,
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: t.desk ? ComicSpace.tier : ComicSpace.near,
+                ),
+                child: Row(
+                  children: [
+                    if (exit != null) ...[exit, SizedBox(width: gap)],
+                    if (who != null)
+                      masthead || logo == null && !showTitle
+                          ? Flexible(flex: 0, child: who)
+                          : Expanded(
+                              child: Align(
+                                alignment: AlignmentDirectional.centerStart,
+                                child: who,
+                              ),
                             ),
-                          ),
-                  if (masthead) ...[
-                    const SizedBox(width: ComicSpace.tier + ComicSpace.tight),
-                    Expanded(
-                      child: Align(
-                        alignment: AlignmentDirectional.centerStart,
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
+                    if (masthead) ...[
+                      const SizedBox(width: ComicSpace.tier + ComicSpace.tight),
+                      Expanded(
+                        child: Align(
                           alignment: AlignmentDirectional.centerStart,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              for (var i = 0; i < chrome.nav.length; i++) ...[
-                                if (i > 0)
-                                  const SizedBox(width: ComicSpace.close),
-                                _NavLink(chrome.nav[i], i == chrome.active),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: AlignmentDirectional.centerStart,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                for (var i = 0; i < chrome.nav.length; i++) ...[
+                                  if (i > 0)
+                                    const SizedBox(width: ComicSpace.close),
+                                  _NavLink(chrome.nav[i], i == chrome.active),
+                                ],
                               ],
-                            ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ] else if (who == null || (logo == null && !showTitle))
-                    const Spacer(),
-                  if (action != null) ...[
-                    SizedBox(width: gap),
-                    _ShellAct(action: action),
+                    ] else if (who == null || (logo == null && !showTitle))
+                      const Spacer(),
+                    if (action != null) ...[
+                      SizedBox(width: gap),
+                      _ShellAct(action: action),
+                    ],
+                    for (final a in actions) ...[SizedBox(width: gap), a],
                   ],
-                  for (final a in actions) ...[SizedBox(width: gap), a],
-                ],
+                ),
               ),
             ),
           ),
@@ -953,10 +1440,10 @@ class ComicAppBar extends StatelessWidget {
 
 class _ShellAct extends StatelessWidget {
   const _ShellAct({required this.action});
-  final ShellAction action;
+  final ComicAppAction action;
   @override
   Widget build(BuildContext context) {
-    final label = action.label ?? '';
+    final label = action.label;
     final t = ComicTheme.of(context);
     // The accent action: the filled button with its words, or, with none, the icon button in its fill.
     return action.accent && label.isNotEmpty
@@ -965,13 +1452,13 @@ class _ShellAct extends StatelessWidget {
             key: action.key,
             icon: action.icon,
             size: ComicButtonSize.small,
-            onPressed: () => action.onPressed(context),
+            onPressed: action.onPressed,
           )
         : ComicIconButton(
             action.icon,
             key: action.key,
-            label: label,
-            onPressed: () => action.onPressed(context),
+            semanticLabel: label,
+            onPressed: action.onPressed,
             style: action.accent
                 ? ComicStyle(
                     fill: WidgetStatePropertyAll(t.colors.primary),
@@ -982,7 +1469,7 @@ class _ShellAct extends StatelessWidget {
   }
 }
 
-/// A one-line text field the generated stubs draw; [ComicTextField] is the same field with more to say.
+/// A plain one-line text field; [ComicTextField] is the same field with a label, help and an error.
 ///
 /// ```dart
 /// ComicInput(key: const ValueKey('name'), hintText: 'Your name', onChanged: (text) {})
@@ -1098,7 +1585,7 @@ class _NoPicturePainter extends CustomPainter {
 /// width it's given and sets its height by [aspect].
 ///
 /// ```dart
-/// ComicMedia(slotId: 'item-1', aspect: 1, label: 'First piece')
+/// ComicMedia(slotId: 'item-1', aspect: 1, semanticLabel: 'First piece')
 /// ```
 class ComicMedia extends StatelessWidget {
   /// Creates a [ComicMedia].
@@ -1106,7 +1593,7 @@ class ComicMedia extends StatelessWidget {
     super.key,
     required this.slotId,
     this.aspect = 4 / 3,
-    this.label,
+    this.semanticLabel,
     this.fit = BoxFit.cover,
     this.width,
     this.bare = false,
@@ -1122,8 +1609,8 @@ class ComicMedia extends StatelessWidget {
   /// The width divided by the height of the picture.
   final double aspect;
 
-  /// {@macro comic.label}
-  final String? label;
+  /// What a screen reader calls the picture; null leaves it out as decoration.
+  final String? semanticLabel;
 
   /// How the image or drawing fits its allocated bounds.
   final BoxFit fit;
@@ -1151,8 +1638,8 @@ class ComicMedia extends StatelessWidget {
       ),
     );
     final picture = Semantics(
-      image: label != null,
-      label: label,
+      image: semanticLabel != null,
+      label: semanticLabel,
       child: AspectRatio(
         aspectRatio: aspect,
         child: DecoratedBox(
@@ -1190,7 +1677,7 @@ class ComicMedia extends StatelessWidget {
     properties
       ..add(StringProperty('slotId', slotId))
       ..add(DoubleProperty('aspect', aspect, defaultValue: 4 / 3))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(EnumProperty<BoxFit>('fit', fit, defaultValue: BoxFit.cover))
       ..add(DoubleProperty('width', width, defaultValue: null))
       ..add(
@@ -1264,14 +1751,14 @@ class ComicPictureCard extends StatelessWidget {
       bleed: true,
       style: style,
       onPressed: onPressed,
-      label: title,
+      semanticLabel: title,
       child: ComicColumn(
         children: [
           ComicMedia(
             slotId: slotId,
             image: image,
             aspect: aspect,
-            label: title,
+            semanticLabel: title,
             bare: true,
           ),
           ComicGrow(
@@ -1341,20 +1828,21 @@ class ComicPictureCard extends StatelessWidget {
 /// While a page's data is on its way: a thought with three dots in it.
 ///
 /// ```dart
-/// ComicLoadingState(label: 'Loading issue')
+/// ComicLoadingState(semanticLabel: 'Loading issue')
 /// ```
 class ComicLoadingState extends StatelessWidget {
   /// Creates a [ComicLoadingState].
-  const ComicLoadingState({super.key, this.label});
+  const ComicLoadingState({super.key, this.semanticLabel});
 
   /// Overrides the localized loading announcement.
-  final String? label;
+  final String? semanticLabel;
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
     return Center(
       child: Semantics(
-        label: label ?? RawWidgetsLocalizations.of(context).loadingLabel,
+        label:
+            semanticLabel ?? RawWidgetsLocalizations.of(context).loadingLabel,
         child: Padding(
           padding: const EdgeInsets.all(ComicSpace.spread),
           child: ComicThought(
@@ -1374,7 +1862,9 @@ class ComicLoadingState extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(StringProperty('label', label, defaultValue: null));
+    properties.add(
+      StringProperty('semanticLabel', semanticLabel, defaultValue: null),
+    );
   }
 }
 
@@ -1433,6 +1923,42 @@ class ComicErrorState extends StatelessWidget {
       ..add(ObjectFlagProperty<VoidCallback>.has('onRetry', onRetry))
       ..add(StringProperty('retryLabel', retryLabel, defaultValue: null));
   }
+}
+
+// The widest a page's column stands; past it the page centres the column.
+const double _pageMeasure = 1376;
+
+// The measure of the page a top bar stands on, so its words keep to the page's column.
+class _PageMeasure extends InheritedWidget {
+  const _PageMeasure({required this.measure, required super.child});
+
+  final double measure;
+
+  static double of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_PageMeasure>()?.measure ??
+      double.infinity;
+
+  @override
+  bool updateShouldNotify(_PageMeasure old) => measure != old.measure;
+}
+
+// [child], no wider than [measure], centred in the width it is given.
+class _OnMeasure extends StatelessWidget {
+  const _OnMeasure({required this.measure, required this.child});
+
+  final double measure;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => measure == double.infinity
+      ? child
+      : Center(
+          heightFactor: 1,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: measure),
+            child: child,
+          ),
+        );
 }
 
 // Holds a page's footer key for as long as the page stands, and tells what is

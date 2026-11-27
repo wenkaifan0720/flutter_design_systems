@@ -17,6 +17,7 @@ Widget kitControlsDemo(Brightness brightness) => kitScreen(
     kitSection('A field', children: [kitSpecimenField()]),
     kitSection('A send button', children: [kitSpecimenSendButton()]),
     kitSection('A value to change', children: [kitSpecimenSelectField()]),
+    kitSection('A date in a form', children: [kitSpecimenDateField()]),
     kitSection('One of a few', children: [kitSpecimenChoices()]),
     kitSection('A box of your own', children: [kitSpecimenChoiceBox()]),
     kitSection('A filter', children: [kitSpecimenChip()]),
@@ -65,7 +66,7 @@ Widget kitSpecimenIconButton() => Builder(
     false,
     (context, value, change) => ComicIconButton(
       LucideIcons.bell,
-      label: kitSay(context, 'Alerts'),
+      semanticLabel: kitSay(context, 'Alerts'),
       // Alone on its column, the face stands on the keyline and its target grows toward the end.
       targetAlignment: AlignmentDirectional.centerStart,
       isSelected: value,
@@ -111,6 +112,16 @@ Widget kitSpecimenSelectField() => kitState(
   ),
 );
 
+Widget kitSpecimenDateField() => kitState<DateTime?>(
+  null,
+  (context, value, change) => ComicDateField(
+    labelText: kitSay(context, 'Started'),
+    value: value,
+    lastDate: kitToday,
+    onChanged: change,
+  ),
+);
+
 Widget kitSpecimenChoices() => kitState(
   'all',
   (context, value, change) => ComicChoices(
@@ -131,7 +142,7 @@ Widget kitSpecimenChoiceBox() => kitState(
     alignment: AlignmentDirectional.centerStart,
     child: ComicChoiceBox(
       selected: value,
-      label: kitSay(context, 'Your own content'),
+      semanticLabel: kitSay(context, 'Your own content'),
       onPressed: () => change(!value),
       padding: const EdgeInsets.all(12),
       child: Builder(
@@ -168,7 +179,7 @@ Widget kitSpecimenCheck() => Builder(
       kitState(
         true,
         (context, value, change) => ComicCheckbox(
-          label: kitSay(context, 'Keep this issue'),
+          semanticLabel: kitSay(context, 'Keep this issue'),
           value: value,
           onChanged: (next) => change(next ?? false),
         ),
@@ -176,7 +187,7 @@ Widget kitSpecimenCheck() => Builder(
       kitState(
         false,
         (context, value, change) => ComicCheckbox(
-          label: kitSay(context, 'Send updates'),
+          semanticLabel: kitSay(context, 'Send updates'),
           value: value,
           onChanged: (next) => change(next ?? false),
         ),
@@ -202,13 +213,16 @@ Widget kitSpecimenSwitch() => Wrap(
   children: [
     kitState(
       true,
-      (context, value, change) =>
-          ComicSwitch(label: 'Notifications', value: value, onChanged: change),
+      (context, value, change) => ComicSwitch(
+        semanticLabel: 'Notifications',
+        value: value,
+        onChanged: change,
+      ),
     ),
     kitState(
       false,
       (context, value, change) =>
-          ComicSwitch(label: 'Sound', value: value, onChanged: change),
+          ComicSwitch(semanticLabel: 'Sound', value: value, onChanged: change),
     ),
   ],
 );
@@ -223,7 +237,7 @@ Widget kitPressTile() => Builder(
         child: ComicPressable(
           onPressed: () =>
               kitFeedback(context, kitSay(context, 'Issue 12 opened.')),
-          label: kitSay(context, 'Issue 12'),
+          semanticLabel: kitSay(context, 'Issue 12'),
           outline: WidgetStatePropertyAll(t.shapes.medium),
           child: DecoratedBox(
             decoration: ShapeDecoration(
@@ -276,7 +290,7 @@ Widget kitSpecimenRadio() => kitState(
 Widget kitSpecimenSegmented() => kitState(
   'all',
   (context, value, change) => ComicSegmentedButton<String>(
-    label: 'View',
+    semanticLabel: 'View',
     segments: [
       ComicButtonSegment(kitSay(context, 'all'), kitSay(context, 'All')),
       ComicButtonSegment(kitSay(context, 'saved'), kitSay(context, 'Saved')),

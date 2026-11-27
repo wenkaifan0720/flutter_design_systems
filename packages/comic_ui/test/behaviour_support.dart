@@ -28,6 +28,8 @@ import 'pages/method_page.dart';
 import 'pages/form_page.dart';
 import 'pages/profile_page.dart';
 
+import 'package:comic_ui/src/comic/theme.dart' show comicThemeWith;
+
 /// One interactive part: [build] wires its main callback to `hit`, or none when `hit` is null.
 class _Part {
   const _Part(
@@ -37,6 +39,7 @@ class _Part {
     this.disables = true,
     this.roving = false,
     this.lit = false,
+    this.raises = false,
   });
   final Widget Function(VoidCallback? hit) build;
 
@@ -58,6 +61,10 @@ class _Part {
 
   /// Its rows light as a menu's under the keyboard, the selection fill in place of a ring.
   final bool lit;
+
+  /// Its press raises a route (the date field's calendar dialog), whose own scrim fades in as a dialog's does under
+  /// Reduce Motion; the still-motion law holds the part's face, so it is not pressed there.
+  final bool raises;
 }
 
 ValueChanged<T>? _on<T>(VoidCallback? hit) => hit == null ? null : (_) => hit();
@@ -78,7 +85,7 @@ T _own<T extends ChangeNotifier>(T value) {
 final _parts = <String, _Part>{
   'ComicPressable': _Part(
     (hit) => ComicPressable(
-      label: 'Tile',
+      semanticLabel: 'Tile',
       onPressed: hit,
       child: const Padding(padding: EdgeInsets.all(12), child: Text('Tile')),
     ),
@@ -100,7 +107,11 @@ final _parts = <String, _Part>{
   ),
   'ComicLink': _Part((hit) => ComicLink('Read', onPressed: hit)),
   'ComicIconButton': _Part(
-    (hit) => ComicIconButton(LucideIcons.heart, label: 'Save', onPressed: hit),
+    (hit) => ComicIconButton(
+      LucideIcons.heart,
+      semanticLabel: 'Save',
+      onPressed: hit,
+    ),
   ),
   'ComicButton': _Part((hit) => ComicButton('Go', onPressed: hit)),
   'ComicSendButton': _Part((hit) => ComicSendButton(onPressed: hit)),
@@ -115,13 +126,18 @@ final _parts = <String, _Part>{
   ),
   'ComicChip.removable': _Part((hit) => ComicChip('History', onDeleted: hit)),
   'ComicCheckbox': _Part(
-    (hit) => ComicCheckbox(value: false, label: 'Agree', onChanged: _on(hit)),
+    (hit) => ComicCheckbox(
+      value: false,
+      semanticLabel: 'Agree',
+      onChanged: _on(hit),
+    ),
   ),
   'ComicCheckRow': _Part(
     (hit) => ComicCheckRow(value: false, label: 'Agree', onChanged: _on(hit)),
   ),
   'ComicSwitch': _Part(
-    (hit) => ComicSwitch(value: false, label: 'Alerts', onChanged: _on(hit)),
+    (hit) =>
+        ComicSwitch(value: false, semanticLabel: 'Alerts', onChanged: _on(hit)),
   ),
   'ComicSwitchRow': _Part(
     (hit) => ComicSwitchRow(value: false, label: 'Alerts', onChanged: _on(hit)),
@@ -129,7 +145,7 @@ final _parts = <String, _Part>{
   'ComicGroupChip': _Part((hit) => ComicGroupChip('The crew', onPressed: hit)),
   'ComicChoiceBox': _Part(
     (hit) => ComicChoiceBox(
-      label: 'Tonight',
+      semanticLabel: 'Tonight',
       onPressed: hit,
       child: const Text('Tonight'),
     ),
@@ -158,7 +174,7 @@ final _parts = <String, _Part>{
   ),
   'ComicSegmentedButton': _Part(
     (hit) => ComicSegmentedButton<String>(
-      label: 'View',
+      semanticLabel: 'View',
       segments: const [
         ComicButtonSegment('all', 'All'),
         ComicButtonSegment('saved', 'Saved'),
@@ -205,7 +221,7 @@ final _parts = <String, _Part>{
     (hit) => ComicPageDots(
       pageCount: 4,
       selectedIndex: 1,
-      label: 'Pages',
+      semanticLabel: 'Pages',
       onPageChanged: _on(hit),
     ),
     // One adjustable control, as a slider: arrows step it, a tap goes to the nearest page.
@@ -231,13 +247,14 @@ final _parts = <String, _Part>{
     (hit) => ComicPagination(pageCount: 6, page: 2, onPageChanged: _on(hit)),
   ),
   'ComicRating': _Part(
-    (hit) => ComicRating(label: 'Rate it', value: 2, onChanged: _on(hit)),
+    (hit) =>
+        ComicRating(semanticLabel: 'Rate it', value: 2, onChanged: _on(hit)),
   ),
   // Its pages are the caller's: a button on one is reached by Tab and pressed by Enter. Its own dots move it whether or
   // not the caller listens, so it keeps a focus stop with no callback.
   'ComicCarouselView': _Part(
     (hit) => ComicCarouselView(
-      label: 'Covers',
+      semanticLabel: 'Covers',
       height: 120,
       onChanged: _on(hit),
       children: [
@@ -257,8 +274,11 @@ final _parts = <String, _Part>{
     (hit) => ComicPanelHead('Issues', more: 'See all', onMore: hit),
   ),
   'ComicPanel': _Part(
-    (hit) =>
-        ComicPanel(label: 'Issue', onPressed: hit, child: const Text('Issue')),
+    (hit) => ComicPanel(
+      semanticLabel: 'Issue',
+      onPressed: hit,
+      child: const Text('Issue'),
+    ),
   ),
   'ComicListTile': _Part(
     (hit) => ComicListTile(title: 'Issue', onPressed: hit),
@@ -438,7 +458,7 @@ final _parts = <String, _Part>{
   ),
   'ComicWheelPicker': _Part(
     (hit) => ComicWheelPicker<int>(
-      label: 'Copies',
+      semanticLabel: 'Copies',
       values: const [1, 2, 3],
       value: 2,
       labelOf: (n) => '$n',
@@ -518,7 +538,7 @@ final _parts = <String, _Part>{
   ),
   'ComicPopover': _Part(
     (hit) => ComicPopover(
-      label: 'Filters',
+      semanticLabel: 'Filters',
       anchorBuilder: (context, anchor) => ComicButton('Filter', onPressed: hit),
       builder: (context, close) => const Text('Only unread'),
     ),
@@ -537,7 +557,7 @@ final _parts = <String, _Part>{
   ),
   'ComicButtonGroupItem': _Part(
     (hit) => ComicButtonGroup(
-      label: 'Text',
+      semanticLabel: 'Text',
       items: [ComicButtonGroupItem('Copy', onPressed: hit)],
     ),
   ),
@@ -549,6 +569,12 @@ final _parts = <String, _Part>{
         ComicSplitAction('Save a copy', onPressed: hit == null ? null : () {}),
       ],
     ),
+  ),
+  // Enter and Space raise its calendar; a day chosen there calls onChanged.
+  'ComicDateField': _Part(
+    (hit) => ComicDateField(value: null, onChanged: _on(hit)),
+    keys: false,
+    raises: true,
   ),
   'ComicDatePicker': _Part(
     (hit) => ComicDatePicker(value: DateTime(2026, 11, 6), onChanged: _on(hit)),
@@ -597,16 +623,19 @@ bool _styled = false;
 ComicThemeData _appearance(Brightness mode) {
   final plain = ComicThemeData.preset('offset', mode);
   if (!_styled) return plain;
-  return plain.copyWith(
-    shapes: ComicShapes.rounded(8),
-    strokes: ComicStrokes.bold,
-    density: ComicDensity.compact,
-    filledButtonTheme: ComicStyle(
-      shape: WidgetStateProperty.resolveWith(
-        (states) =>
-            states.contains(WidgetState.pressed) ? const StadiumBorder() : null,
+  return comicThemeWith(
+    plain.copyWith(
+      shapeScheme: comicShapeScheme.copyWith(stroke: 4),
+      density: ComicDensity.compact,
+      filledButtonTheme: ComicStyle(
+        shape: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.pressed)
+              ? const StadiumBorder()
+              : null,
+        ),
       ),
     ),
+    shapes: comicRounded(8),
   );
 }
 
@@ -807,7 +836,7 @@ void behaviourLaws() {
         Center(
           child: ComicPressable(
             onPressed: () => hits++,
-            label: 'Small',
+            semanticLabel: 'Small',
             child: const SizedBox(
               key: ValueKey('small-face'),
               width: 20,
@@ -832,7 +861,7 @@ void behaviourLaws() {
           ComicPressable(
             onPressed: () => hits++,
             busy: true,
-            label: 'Wait',
+            semanticLabel: 'Wait',
             child: const SizedBox(width: 60, height: 60),
           ),
         ),
@@ -857,7 +886,7 @@ void behaviourLaws() {
       _host(
         ComicPressable(
           onPressed: () {},
-          label: 'Face',
+          semanticLabel: 'Face',
           builder: (context, states) {
             seen = states;
             return const SizedBox(
@@ -1040,7 +1069,7 @@ void partBehaviours({required bool styled}) {
             await _size(tester, 390);
             await tester.pumpWidget(_host(part.build(() {}), still: true));
             await tester.pump();
-            if (part.pressable) {
+            if (part.pressable && !part.raises) {
               await tester.tap(_presses.first, warnIfMissed: false);
             }
             await tester.pump();

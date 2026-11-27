@@ -657,25 +657,14 @@ EdgeInsetsDirectional comicFieldInset(ComicThemeData t) {
   return EdgeInsetsDirectional.fromSTEB(p.left, p.top, p.right, p.bottom);
 }
 
-/// The most a dropdown's closed face takes from 600 up (a dropdown's width): its content's width or a form
-/// grid's cell, never a whole column.
+/// The width from which a button stretched by its parent keeps its content's width ([ComicButtonRoom]) at 600 up.
 const double comicDropdownMost = 320;
 
-/// [face], a dropdown's closed face with its label, kept to [comicDropdownMost] at the start of the width it is given
-/// from 600 up; on a phone it takes its column. The face is marked ([ComicAnchorFace]) so a menu anchored on the
-/// wider room around it opens from the face.
-Widget comicDropdownWidth(BuildContext context, Widget face) {
-  final marked = ComicAnchorFace(child: face);
-  if (ComicTheme.of(context).width < 600) return marked;
-  return Align(
-    alignment: AlignmentDirectional.topStart,
-    heightFactor: 1,
-    child: ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: comicDropdownMost),
-      child: marked,
-    ),
-  );
-}
+/// [face], a dropdown's closed face with its label, taking the width its column gives it at every size, as a text
+/// field beside it does (Material's form fields do the same); a form that wants it narrower gives it a narrower box.
+/// The face is marked ([ComicAnchorFace]) so a menu anchored on the room around it opens from the face.
+Widget comicDropdownWidth(BuildContext context, Widget face) =>
+    ComicAnchorFace(child: face);
 
 /// Marks a dropdown's drawn face inside the room [comicDropdownWidth] gives it; [comicAnchorFaceOf] finds it.
 class ComicAnchorFace extends SingleChildRenderObjectWidget {

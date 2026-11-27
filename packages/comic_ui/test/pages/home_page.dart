@@ -63,7 +63,11 @@ class HomePage extends StatelessWidget {
     return ComicScaffold(
       topBar: ComicAppBar(
         actions: [
-          ComicIconButton(LucideIcons.bell, label: 'Alerts', onPressed: () {}),
+          ComicIconButton(
+            LucideIcons.bell,
+            semanticLabel: 'Alerts',
+            onPressed: () {},
+          ),
         ],
       ),
       body: ComicSections(

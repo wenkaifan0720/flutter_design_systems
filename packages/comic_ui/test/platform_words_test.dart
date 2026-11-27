@@ -5,7 +5,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
-import 'package:comic_ui/comic_host.dart';
 
 void main() {
   for (final (locale, direction, copy) in const [

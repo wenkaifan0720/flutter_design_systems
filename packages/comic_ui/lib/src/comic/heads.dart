@@ -251,11 +251,11 @@ class ComicStars extends StatelessWidget {
     this.of = 5,
     this.size = 13,
     this.onPaper = false,
-    this.label,
+    this.semanticLabel,
   });
 
   /// Overrides the localized rating label.
-  final String? label;
+  final String? semanticLabel;
 
   /// [count]: the count printed in the main figure. [of]: the total used to normalize the displayed value.
   final int count, of;
@@ -269,7 +269,7 @@ class ComicStars extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = ComicTheme.of(context).colors;
     return Semantics(
-      label: label ?? ComicLocalizations.of(context).rating(count, of),
+      label: semanticLabel ?? ComicLocalizations.of(context).rating(count, of),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -294,7 +294,7 @@ class ComicStars extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(IntProperty('count', count))
       ..add(IntProperty('of', of, defaultValue: 5))
       ..add(DoubleProperty('size', size, defaultValue: 13))
@@ -366,7 +366,7 @@ class ComicMoreLink extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: label,
+      semanticLabel: label,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -516,7 +516,7 @@ class ComicTag extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null && !iconEnd) ...[
-              Icon(icon, size: 14, color: letters),
+              Icon(icon, size: 14, color: letters, applyTextScaling: true),
               const SizedBox(width: ComicSpace.tight),
             ],
             Flexible(
@@ -535,7 +535,7 @@ class ComicTag extends StatelessWidget {
             ),
             if (icon != null && iconEnd) ...[
               const SizedBox(width: ComicSpace.tight),
-              Icon(icon, size: 14, color: letters),
+              Icon(icon, size: 14, color: letters, applyTextScaling: true),
             ],
           ],
         ),
@@ -625,13 +625,13 @@ class ComicIndicia extends StatelessWidget {
 /// that isn't asked for.
 ///
 /// ```dart
-/// ComicRating(label: 'Rate this issue', value: 3, onChanged: (v) => setState(() => rating = v))
+/// ComicRating(semanticLabel: 'Rate this issue', value: 3, onChanged: (v) => setState(() => rating = v))
 /// ```
 class ComicRating extends StatelessWidget {
   /// Creates a rating input.
   const ComicRating({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.value,
     this.of = 5,
     this.onChanged,
@@ -640,7 +640,7 @@ class ComicRating extends StatelessWidget {
   }) : assert(value >= 0 && value <= of);
 
   /// The question, as a screen reader names the group.
-  final String label;
+  final String semanticLabel;
 
   /// Stars chosen, from 0 (none) to [of].
   final int value;
@@ -666,7 +666,7 @@ class ComicRating extends StatelessWidget {
     // first inks on the column's keyline as the read-only stars do; the stars sit a floor apart. The marks of a press
     // (the dots under the pointer, the chosen disc) fill the star's own round face, which pops under the keyboard.
     return Semantics(
-      label: label,
+      label: semanticLabel,
       value: words.rating(value, of),
       container: true,
       explicitChildNodes: true,
@@ -675,7 +675,7 @@ class ComicRating extends StatelessWidget {
         children: [
           for (var i = 0; i < of; i++)
             ComicPressable(
-              label: words.rate(i + 1, of),
+              semanticLabel: words.rate(i + 1, of),
               selected: i + 1 == value,
               targetAlignment: AlignmentDirectional.centerStart,
               outline: WidgetStatePropertyAll(t.shapes.full),
@@ -698,7 +698,7 @@ class ComicRating extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IntProperty('value', value))
       ..add(IntProperty('of', of, defaultValue: 5))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))

@@ -66,7 +66,7 @@ void main() {
             ComicPageDots(
               pageCount: 5,
               selectedIndex: 2,
-              label: 'Pages',
+              semanticLabel: 'Pages',
               onPageChanged: choosing ? (_) {} : null,
             ),
             direction: direction,

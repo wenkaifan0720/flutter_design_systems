@@ -22,7 +22,7 @@ void main() {
                 const SizedBox(
                   width: 420,
                   child: ComicChart(
-                    label: 'Weekly issues',
+                    semanticLabel: 'Weekly issues',
                     labels: ['Monday', 'Tuesday', 'Wednesday'],
                     series: [
                       ComicChartSeries('Printed', [3, 5, 7]),

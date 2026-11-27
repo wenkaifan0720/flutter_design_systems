@@ -4,7 +4,7 @@ library;
 
 import 'package:flutter/widgets.dart';
 
-import 'main.dart';
+import 'gallery.dart';
 
 /// Opens the example app at [page], by day or night, in [direction].
 Widget _at(String page, Brightness brightness, TextDirection direction) =>

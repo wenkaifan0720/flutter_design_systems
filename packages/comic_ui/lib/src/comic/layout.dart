@@ -1269,8 +1269,8 @@ class RenderComicSplit extends RenderBox
       defaultPaint(context, offset);
 }
 
-/// `text-wrap: balance`: finds the narrowest width that keeps the same number of lines, so no line ends alone. The
-/// balanced box stands where [textAlign] says: in the middle by default, at the start for a start-aligned paragraph.
+/// Text with balanced lines, as CSS's `text-wrap: balance` sets them: the narrowest width that keeps the same number of
+/// lines, so no line ends alone. The balanced box stands where [textAlign] says: in the middle by default, at the start for a start-aligned paragraph.
 ///
 /// ```dart
 /// ComicBalancedText('A balanced headline', style: ComicTheme.of(context).type.title)

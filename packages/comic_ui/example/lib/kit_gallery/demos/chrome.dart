@@ -14,6 +14,7 @@ Widget kitChromeDemo(Brightness brightness) => kitScreen(
   title: 'Screen, bars and pictures',
   sections: [
     kitSection('The top bar', children: [kitSpecimenTopBar()]),
+    kitSection('The app\'s frame', children: [kitSpecimenAppShell()]),
     kitSection('The tab bar', children: [kitSpecimenTabBar()]),
     kitSection('The name', children: [kitSpecimenLogo()]),
     kitSection('A group', children: [kitSpecimenGroupChip()]),
@@ -39,6 +40,40 @@ Widget kitSpecimenTabBar() => kitState(
   ),
 );
 
+Widget kitSpecimenAppShell() => kitState(
+  0,
+  // As a phone shows it: the shell picks its places by its own width, and a column this narrow gets the tab bar.
+  (context, value, change) => Align(
+    alignment: AlignmentDirectional.centerStart,
+    child: SizedBox(
+      width: 390,
+      height: 360,
+      child: ComicAppShell(
+        brand: kitSay(context, 'Huzzah!'),
+        destinations: kitTabs(context),
+        selectedIndex: value,
+        onDestinationSelected: change,
+        action: ComicAppAction(
+          icon: ComicGlyphs.plus,
+          label: kitSay(context, 'New'),
+          onPressed: () => kitFeedback(context, kitSay(context, 'New')),
+        ),
+        body: ComicScaffold(
+          topBar: ComicAppBar(title: kitTabs(context)[value].label),
+          body: ComicPanel(
+            caption: kitSay(context, 'A panel'),
+            child: ComicKvRow(
+              kitSay(context, 'A label'),
+              kitSay(context, 'A value'),
+              isFirst: true,
+            ),
+          ),
+        ),
+      ),
+    ),
+  ),
+);
+
 Widget kitSpecimenLogo() =>
     Builder(builder: (context) => ComicLogo(kitSay(context, 'Huzzah!')));
 
@@ -54,8 +89,11 @@ Widget kitSpecimenGroupChip() => Builder(
   ),
 );
 
-Widget kitSpecimenPhoto() =>
-    const ComicMedia(slotId: 'kit-picture', aspect: 16 / 9, label: 'A picture');
+Widget kitSpecimenPhoto() => const ComicMedia(
+  slotId: 'kit-picture',
+  aspect: 16 / 9,
+  semanticLabel: 'A picture',
+);
 
 Widget kitSpecimenPictureCard() => Builder(
   builder: (context) => ComicRow(

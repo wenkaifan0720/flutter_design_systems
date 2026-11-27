@@ -433,8 +433,9 @@ void main() {
     Future<(RenderComicLettering, List<int>, int, int)> pump(
       WidgetTester tester,
       TextDirection dir,
-      double dpr,
-    ) async {
+      double dpr, {
+      ComicLetteringStyle style = ComicLetteringStyle.masthead,
+    }) async {
       tester.view.physicalSize = Size(500 * dpr, 200 * dpr);
       tester.view.devicePixelRatio = dpr;
       addTearDown(tester.view.reset);
@@ -447,15 +448,15 @@ void main() {
             child: Center(
               child: RepaintBoundary(
                 key: key,
-                child: const ColoredBox(
-                  color: Color(0xFFFFFFFF),
+                child: ColoredBox(
+                  color: const Color(0xFFFFFFFF),
                   child: SizedBox(
                     width: 460,
                     child: ComicLettering(
                       'Huzzah!',
                       size: 100,
-                      fill: Color(0xFFFFD21F),
-                      style: ComicLetteringStyle.masthead,
+                      fill: const Color(0xFFFFD21F),
+                      style: style,
                     ),
                   ),
                 ),
@@ -484,21 +485,39 @@ void main() {
       expect(find.byType(RichText), findsNothing);
     });
 
-    testWidgets('in RTL it draws the same ink, in one place', (tester) async {
-      final (_, a, w, h) = await pump(tester, TextDirection.ltr, 1);
-      final (_, b, _, _) = await pump(tester, TextDirection.rtl, 1);
-      // The same glyph run: count the ink. A doubled word would paint about twice as much.
-      int ink(List<int> px) {
-        var n = 0;
-        for (var i = 0; i < px.length; i += 4) {
-          if (px[i] < 250 || px[i + 2] < 250) n++;
+    testWidgets(
+      'in RTL it draws the same ink, in one place, its print toward the end',
+      (tester) async {
+        // Its print falls down and toward the end: in RTL, as LTR draws it with each layer's x mirrored. Mirroring x
+        // alone changes how the layers overlap the glyphs (down-left is not down-right), so plain LTR inks differently.
+        const masthead = ComicLetteringStyle.masthead;
+        final mirrored = ComicLetteringStyle(
+          outline: masthead.outline,
+          layers: [
+            for (final (x, y, sw, ink) in masthead.layers) (-x, y, sw, ink),
+          ],
+        );
+        final (_, a, w, h) = await pump(
+          tester,
+          TextDirection.ltr,
+          1,
+          style: mirrored,
+        );
+        final (_, b, _, _) = await pump(tester, TextDirection.rtl, 1);
+        // The same glyph run: count the ink. A doubled word would paint about twice as much.
+        int ink(List<int> px) {
+          var n = 0;
+          for (var i = 0; i < px.length; i += 4) {
+            if (px[i] < 250 || px[i + 2] < 250) n++;
+          }
+          return n;
         }
-        return n;
-      }
 
-      expect(w * h, greaterThan(0));
-      expect((ink(a) - ink(b)).abs() / ink(a), lessThan(.02));
-    }, tags: 'goldens'); // drawn ink
+        expect(w * h, greaterThan(0));
+        expect((ink(a) - ink(b)).abs() / ink(a), lessThan(.02));
+      },
+      tags: 'goldens',
+    ); // drawn ink
 
     testWidgets('at scale 3 it stays sharp: the edge is one or two pixels', (
       tester,

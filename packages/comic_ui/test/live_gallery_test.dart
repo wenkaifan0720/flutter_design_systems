@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
 
 // ignore_for_file: avoid_relative_lib_imports
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/kit_gallery/live_pages.dart';
 import 'gallery_support.dart';
@@ -21,7 +21,7 @@ const _offPage = {
 
 /// The example's own side nav or drawer (the Navigation page shows other drawers as specimens).
 final _pages = find.byWidgetPredicate(
-  (w) => w is ComicNavigationDrawer && w.label == 'Pages',
+  (w) => w is ComicNavigationDrawer && w.semanticLabel == 'Pages',
 );
 
 /// Moves the example to page [id] the way a person does.
@@ -136,12 +136,12 @@ void main() {
       ),
     );
     await settle(tester);
-    expect(shown().strokes, ComicStrokes.bold);
+    expect(shown().stroke, 4);
     // Natural widths: a two-way strip is not stretched across the window.
     final strokes = find.descendant(
       of: find.byType(CustomizePanel),
       matching: find.byWidgetPredicate(
-        (w) => w is ComicSegmentedButton<bool> && w.label == 'Strokes',
+        (w) => w is ComicSegmentedButton<bool> && w.semanticLabel == 'Strokes',
       ),
     );
     expect(tester.getSize(strokes).width, lessThan(360));

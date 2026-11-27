@@ -78,13 +78,17 @@ class ComicCard extends StatelessWidget {
 /// ```
 class ComicListSection extends StatelessWidget {
   /// Creates a group of rows.
-  const ComicListSection({super.key, required this.children, this.label});
+  const ComicListSection({
+    super.key,
+    required this.children,
+    this.semanticLabel,
+  });
 
   /// Rows in reading order.
   final List<Widget> children;
 
   /// Optional accessible group name.
-  final String? label;
+  final String? semanticLabel;
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
@@ -104,7 +108,7 @@ class ComicListSection extends StatelessWidget {
       comicRim(t, look, t.colors.nightLine, 3).width + gap,
     );
     return Semantics(
-      label: label,
+      label: semanticLabel,
       child: ComicPanel(
         bleed: true,
         child: Padding(
@@ -126,7 +130,9 @@ class ComicListSection extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(StringProperty('label', label, defaultValue: null));
+    properties.add(
+      StringProperty('semanticLabel', semanticLabel, defaultValue: null),
+    );
   }
 }
 
@@ -233,7 +239,7 @@ class _ComicDisclosureState extends State<ComicDisclosure> {
           ComicPressable(
             focusNode: widget.focusNode,
             autofocus: widget.autofocus,
-            label: widget.title,
+            semanticLabel: widget.title,
             expanded: _open,
             onPressed: () {
               final next = !_open;

@@ -45,7 +45,7 @@ final _cases = <String, _Case>{
   'icon': _Case(
     (s) => ComicIconButton(
       ComicGlyphs.search,
-      label: 'Search',
+      semanticLabel: 'Search',
       onPressed: () {},
       style: s,
     ),
@@ -61,7 +61,7 @@ final _cases = <String, _Case>{
   ),
   'checkbox': _Case(
     (s) => ComicCheckbox(
-      label: 'Keep issue',
+      semanticLabel: 'Keep issue',
       value: false,
       onChanged: (_) {},
       style: s,
@@ -107,7 +107,7 @@ final _cases = <String, _Case>{
   ),
   'segments': _Case(
     (s) => ComicSegmentedButton<int>(
-      label: 'View',
+      semanticLabel: 'View',
       value: 1,
       segments: const [
         ComicButtonSegment(1, 'Day'),
@@ -223,7 +223,7 @@ final _cases = <String, _Case>{
     () => find
         .descendant(
           of: find.byWidgetPredicate(
-            (w) => w is ComicPressable && w.label == 'November 1, 2026',
+            (w) => w is ComicPressable && w.semanticLabel == 'November 1, 2026',
           ),
           matching: find.byType(Container),
         )

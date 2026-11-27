@@ -38,7 +38,7 @@ Widget kitOpenRows() => Builder(
   builder: (context) => kitState(
     1,
     (context, value, change) => ComicListSection(
-      label: kitSay(context, 'Issues'),
+      semanticLabel: kitSay(context, 'Issues'),
       children: [
         for (final (i, title, meta) in [
           (0, kitSay(context, 'The first issue'), kitSay(context, 'Read')),

@@ -230,7 +230,7 @@ class ComicCover extends StatelessWidget {
       autofocus: autofocus,
       bleed: true,
       onPressed: onPressed,
-      label: masthead,
+      semanticLabel: masthead,
       child: short ? _short(t) : _whole(context, t, c),
     );
   }
@@ -611,7 +611,7 @@ class ComicSplash extends StatelessWidget {
                 false));
     return ComicPanel(
       bleed: true,
-      label: title,
+      semanticLabel: title,
       child: short
           ? _short(context, t)
           : ComicColumn(

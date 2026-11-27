@@ -8,11 +8,11 @@
 // a map of widgets-level PageTransitionsBuilders instead, one map for both
 // Materials, and the app puts it in its own ThemeData.
 //
-// Comic's push is a cut: the route takes no time, and the page it pushes
-// stands whole and in place in its first frame, nothing left running. On iOS
-// the map wraps the cut in ui_core's SwipeBackPageTransitionsBuilder, so
-// a swipe from the left edge still pops a page (Flutter's
-// CupertinoPageTransition is never built).
+// Comic's push is a panel wipe: the page it pushes stands whole and in place
+// in every frame, revealed from the reading start in 160 ms, nothing sliding.
+// On iOS the map wraps the wipe in ui_core's
+// SwipeBackPageTransitionsBuilder, so a swipe from the left edge still
+// pops a page (Flutter's CupertinoPageTransition is never built).
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPageTransition;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -48,18 +48,19 @@ void main() {
       await tester.pumpWidget(_app(transitions: comicPageTransitions));
       await tester.tap(find.text('Open'));
       await tester.pump();
-      // Comic's push: the route read the map (its duration is the cut's), and
-      // in its first frame the page stands in place, the first one gone.
+      await tester.pump(const Duration(milliseconds: 60));
+      // Comic's push: the route read the map (its duration is the wipe's), and
+      // the page stands in place while the first one shows until it is done.
       expect(
         ModalRoute.of(tester.element(find.text('Second')))!.transitionDuration,
-        Duration.zero,
+        const ComicPageTransitionsBuilder().transitionDuration,
       );
       expect(tester.getTopLeft(find.text('Second')), Offset.zero);
-      expect(find.text('Open'), findsNothing);
-      expect(tester.hasRunningAnimations, isFalse);
+      expect(find.text('Open'), findsOneWidget);
       expect(find.byType(CupertinoPageTransition), findsNothing);
       await tester.pumpAndSettle();
       expect(find.text('Second'), findsOneWidget);
+      expect(find.text('Open'), findsNothing);
     },
     variant: TargetPlatformVariant.all(),
   );
@@ -79,8 +80,8 @@ void main() {
   );
 
   // iOS's swipe back from the screen's leading edge lives in Cupertino's
-  // page transition, which Comic's cut replaces; the map keeps it round the
-  // cut.
+  // page transition, which Comic's wipe replaces; the map keeps it round the
+  // wipe.
   group("iOS's swipe back", () {
     // A drag from the screen's left edge, [by] to the right, slow enough not
     // to be a fling, the finger still down at the end.
@@ -95,10 +96,9 @@ void main() {
 
     Future<void> open(WidgetTester tester) async {
       await tester.tap(find.text('Open'));
-      await tester.pump();
+      await tester.pumpAndSettle();
       expect(tester.getTopLeft(find.text('Second')), Offset.zero);
       expect(find.byType(CupertinoPageTransition), findsNothing);
-      await tester.pumpAndSettle();
     }
 
     double width(WidgetTester tester) =>
@@ -140,7 +140,7 @@ void main() {
       expect(tester.getTopLeft(find.text('Second')).dx, 0);
     }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
-    testWidgets('the cut alone takes no swipe', (tester) async {
+    testWidgets('the wipe alone takes no swipe', (tester) async {
       await tester.pumpWidget(
         _app(
           transitions: const {

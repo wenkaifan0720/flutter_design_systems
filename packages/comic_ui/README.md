@@ -1,7 +1,7 @@
 # comic_ui
 
 Comic is a Flutter component library for apps styled as printed comics. It includes form controls, navigation,
-charts, speech balloons and illustrated panels. Six colour presets, each designed for light and dark.
+charts, speech balloons and illustrated panels. Six palettes, each designed for light and dark.
 
 ![Comic's cover page at desktop and phone width, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/comic_ui/screenshots/hero.png)
 
@@ -13,132 +13,35 @@ charts, speech balloons and illustrated panels. Six colour presets, each designe
 flutter pub add comic_ui material_ui
 ```
 
-A whole app: Comic's faces loaded and its theme over a bare `WidgetsApp`, one page and one button.
+A whole app: Comic's faces loaded, `ComicHost` over the app, one page and one button.
 
 ```dart
+import 'package:material_ui/material_ui.dart';
 import 'package:comic_ui/comic_ui.dart';
-import 'package:flutter/widgets.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await comicLoadFonts();
-  runApp(WidgetsApp(
-    color: const Color(0xFFFF3E92),
-    builder: (context, _) => ComicTheme(data: ComicThemeData.offset(), child: ComicScaffold(
-      body: Center(child: ComicButton.filled('Read on', onPressed: () {})))),
+  runApp(MaterialApp(
+    builder: (context, child) => ComicHost(child: child!),
+    home: ComicScaffold(body: Center(child: ComicButton.filled('Read on', onPressed: () {}))),
   ));
 }
 ```
 
-`material_ui` is Flutter's Material as a package, as it is from Flutter 3.50; the quick start's app is a
-`MaterialApp`. An app on `WidgetsApp` needs only `comic_ui`; one on `CupertinoApp` adds `cupertino_ui` (see
-[Set up the theme](#set-up-the-theme)).
+`material_ui` is Flutter's Material as a package, as it is from Flutter 3.50; import it, not
+`package:flutter/material.dart`. `comic_ui.dart` exports none of Flutter's libraries, so a file imports
+`material_ui` (or `package:flutter/widgets.dart`) beside it. An app on `CupertinoApp` adds `cupertino_ui`; one on
+`WidgetsApp` needs only `comic_ui`. Comic bundles its two typefaces, Bangers for lettering and Shantell Sans for text:
+`comicLoadFonts` loads them before the first frame.
 
-## Quick start
+## Mount ComicHost
 
-Comic bundles its two typefaces, Bangers for lettering and Shantell Sans for text. Load them before the first frame,
-then put `ComicTheme` under your app:
-
-```dart
-import 'package:material_ui/material_ui.dart';
-import 'package:comic_ui/comic_ui.dart';
-
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await comicLoadFonts();
-  runApp(
-    MaterialApp(
-      builder: (context, child) => ComicTheme(
-        data: ComicThemeData.offset(MediaQuery.platformBrightnessOf(context)),
-        child: child!,
-      ),
-      home: ComicScaffold(
-        topBar: const ComicAppBar(title: 'The plan'),
-        body: Center(
-          child: ComicButton.filled('New plan', onPressed: () {}),
-        ),
-      ),
-    ),
-  );
-}
-```
-
-## Set up the theme
-
-`ComicTheme` holds a `ComicThemeData` for everything under it. Install it in your app's `builder`, under whichever app
-widget you use; your navigator, routes and localizations stay yours.
-
-With `MaterialApp`:
-
-```dart
-import 'package:material_ui/material_ui.dart';
-import 'package:comic_ui/comic_ui.dart';
-
-class App extends StatelessWidget {
-  const App({super.key});
-
-  @override
-  Widget build(BuildContext context) => MaterialApp(
-    builder: (context, child) => ComicTheme(
-      data: ComicThemeData.offset(MediaQuery.platformBrightnessOf(context)),
-      child: child!,
-    ),
-    home: const HomePage(),
-  );
-}
-```
-
-A page changes as a comic's panel does: a cut, the next page whole in its first frame. comic_ui stands on
-material_ui, and `ComicTheme` gives material_ui's `Theme` the cut, so a `MaterialPageRoute` your app pushes on
-material_ui's `MaterialApp` cuts already. On Flutter's own `MaterialApp` (`package:flutter/material.dart`, deprecated
-from Flutter 3.50) a `MaterialPageRoute` reads Flutter's `Theme`, which Comic doesn't reach, and flies in unless that
-theme carries `comicPageTransitions`: `theme: ThemeData(pageTransitionsTheme: const PageTransitionsTheme(builders:
-comicPageTransitions))`. The one map fits both Materials' `PageTransitionsTheme`. On iOS a page still pops with a swipe
-from the screen's leading edge, the page following the finger: the map wraps the cut there in ui_core's
-`SwipeBackPageTransitionsBuilder`. A map of your own built on `ComicPageTransitionsBuilder` keeps the swipe the
-same way, or with `rawSwipeBack(map)`.
-
-With `CupertinoApp`:
-
-```dart
-import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:comic_ui/comic_ui.dart';
-
-class App extends StatelessWidget {
-  const App({super.key});
-
-  @override
-  Widget build(BuildContext context) => CupertinoApp(
-    builder: (context, child) => ComicTheme(
-      data: ComicThemeData.pulp(MediaQuery.platformBrightnessOf(context)),
-      child: child!,
-    ),
-    home: const HomePage(),
-  );
-}
-```
-
-With `WidgetsApp`, for an app with no Material or Cupertino at all:
-
-```dart
-import 'package:flutter/widgets.dart';
-import 'package:comic_ui/comic_ui.dart';
-
-class App extends StatelessWidget {
-  const App({super.key});
-
-  @override
-  Widget build(BuildContext context) => WidgetsApp(
-    color: const Color(0xff111111),
-    builder: (context, _) => ComicTheme(
-      data: ComicThemeData.sunday(MediaQuery.platformBrightnessOf(context)),
-      child: const HomePage(),
-    ),
-  );
-}
-```
-
-A page is a `ComicScaffold`: its top bar, then the page's column on newsprint.
+`ComicHost` is the one mount an app needs, in its app's `builder`, above the navigator: Comic's theme by day and by
+night, the palette, the page's ground and the text defaults. Its `brightness` is light, dark, or null for the
+platform's setting; its `palette` is one of `ComicThemeData.palettes`. A new appearance or palette blends: every
+colour of the page lerps to it. Toasts, snack bars, dialogs and sheets need no mount of their own: each rises on the
+navigator's overlay in the theme it was raised in. Your navigator, routes and localizations stay yours.
 
 ```dart
 class HomePage extends StatelessWidget {
@@ -147,118 +50,325 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ComicScaffold(
     topBar: const ComicAppBar(title: 'This issue'),
-    body: ComicSections(
+    body: ComicButton.filled('Read', onPressed: () {}),
+  );
+}
+
+class App extends StatefulWidget {
+  const App({super.key});
+
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  // Null follows the platform's light or dark setting.
+  Brightness? brightness;
+  RawNamedPalette palette = ComicThemeData.palettes.first;
+
+  @override
+  Widget build(BuildContext context) => MaterialApp(
+    builder: (context, child) => ComicHost(
+      brightness: brightness,
+      palette: palette,
+      child: child!,
+    ),
+    home: const HomePage(),
+  );
+}
+```
+
+A page changes as a motion comic turns to its next panel: a wipe, the next page drawn whole at full ink and revealed
+from the reading start behind a hard ink rule in 160 ms (a cut under Reduce Motion); nothing slides, fades or zooms.
+comic_ui stands on material_ui, and `ComicHost` (its `ComicTheme`) gives material_ui's `Theme` the wipe, so a
+`MaterialPageRoute` your app pushes on material_ui's `MaterialApp` wipes already. On Flutter's own `MaterialApp` (`package:flutter/material.dart`, deprecated
+from Flutter 3.50) a `MaterialPageRoute` reads Flutter's `Theme`, which Comic doesn't reach, and flies in unless that
+theme carries `comicPageTransitions`: `theme: ThemeData(pageTransitionsTheme: const PageTransitionsTheme(builders:
+comicPageTransitions))`. The one map fits both Materials' `PageTransitionsTheme`. On iOS a page still pops with a swipe
+from the screen's leading edge, the wipe following the finger: the map wraps the wipe there in ui_core's
+`SwipeBackPageTransitionsBuilder`. A map of your own built on `ComicPageTransitionsBuilder` keeps the swipe the
+same way, or with `rawSwipeBack(map)`.
+
+With `CupertinoApp`, or with `WidgetsApp` for an app with no Material or Cupertino at all:
+
+```dart
+import 'package:cupertino_ui/cupertino_ui.dart';
+
+CupertinoApp(
+  builder: (context, child) => ComicHost(child: child!),
+  home: const HomePage(),
+);
+```
+
+```dart
+WidgetsApp(
+  color: const Color(0xff111111),
+  builder: (context, _) => const ComicHost(child: HomePage()),
+);
+```
+
+`ComicTheme` alone restyles a part of the tree:
+`ComicTheme(data: ComicThemeData.preset('pulp', Brightness.dark), child: ...)`.
+
+## Build an app
+
+The example, `example/lib/main.dart`, is this app in one file to copy: a shelf of books in three places.
+
+**A list and its page.** A page is a `ComicScaffold`: its top bar, then its column on newsprint. A list is a section
+of ruled rows; a row pushes its page with Flutter's own route, and the pushed page's bar has its way back (Escape and
+the back gesture pop it too).
+
+```dart
+class BookPage extends StatelessWidget {
+  const BookPage({super.key, required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) => ComicScaffold(
+    topBar: ComicAppBar(title: title),
+    body: const ComicPanel(caption: 'Susanna Clarke', child: Text('Started 2 Oct 2026.')),
+  );
+}
+
+class BooksPage extends StatelessWidget {
+  const BooksPage({super.key});
+
+  @override
+  Widget build(BuildContext context) => ComicScaffold(
+    topBar: const ComicAppBar(title: 'Books'),
+    body: ComicListSection(
       children: [
-        ComicCard(
-          title: 'A new story',
-          children: [
-            const Text('Twelve pages to explore.'),
-            ComicButton.filled('Read', onPressed: () {}),
-          ],
-        ),
+        for (final (index, title) in ['Piranesi', 'Stoner'].indexed)
+          ComicListTile(
+            isFirst: index == 0,
+            title: title,
+            trailing: const ComicTag('To read'),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (context) => BookPage(title: title)),
+            ),
+          ),
       ],
     ),
   );
 }
 ```
 
-## Everyday parts
+**A dialog: pop it with the answer.** A dialog pops in as a panel on its print, with a short bounce (a cut under
+Reduce Motion). Its buttons pop the route with the answer, which `showComicDialog` returns; Escape, the barrier and the
+back gesture return null. Focus goes back where it was. A toast says what happened.
+
+```dart
+Future<void> confirmRemove(BuildContext context, String title) async {
+  final remove = await showComicDialog<bool>(
+    context,
+    builder: (context) => ComicDialog(
+      title: 'Remove $title?',
+      message: 'It leaves your shelf. You can add it again.',
+      actions: [
+        ComicButton('Keep', onPressed: () => Navigator.of(context).pop(false)),
+        ComicButton.filled(
+          'Remove',
+          isDestructiveAction: true,
+          onPressed: () => Navigator.of(context).pop(true),
+        ),
+      ],
+    ),
+  );
+  if (remove == true && context.mounted) showComicToast(context, 'Removed $title');
+}
+```
+
+**A form.** `RawForm` (ui_core's, exported with comic_ui) checks every field's `validator` on submit: each error
+shows under its field, the first wrong field takes the focus and a screen reader hears how many need attention; after
+that the errors follow the typing. A `ComicDateField` raises the calendar.
+
+```dart
+class AddBookPage extends StatefulWidget {
+  const AddBookPage({super.key});
+
+  @override
+  State<AddBookPage> createState() => _AddBookPageState();
+}
+
+class _AddBookPageState extends State<AddBookPage> {
+  final form = GlobalKey<RawFormState>();
+  DateTime? started;
+
+  @override
+  Widget build(BuildContext context) => ComicScaffold(
+    topBar: const ComicAppBar(title: 'Add a book'),
+    body: RawForm(
+      key: form,
+      onSubmit: () => showComicToast(context, 'Added'),
+      child: ComicColumn(
+        gap: ComicSpace.wide,
+        children: [
+          ComicTextField(
+            labelText: 'Title',
+            validator: (value) => (value ?? '').trim().isEmpty ? 'Enter the title' : null,
+          ),
+          ComicDateField(
+            labelText: 'Started',
+            hintText: 'Not yet',
+            value: started,
+            onChanged: (day) => setState(() => started = day),
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: ComicButton.filled('Save', onPressed: () => form.currentState!.submit()),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+```
+
+A select opens its options in a raised menu, the current one with a check:
+
+```dart
+ComicSelect<String>(
+  labelText: 'Format',
+  value: 'print',
+  options: const [
+    ComicSelectOption('print', 'Print'),
+    ComicSelectOption('digital', 'Digital'),
+  ],
+  onChanged: (value) {},
+);
+```
+
+**Settings: the palette picker.** `ComicThemeData.palettes` are the six print runs as ui_core's `RawNamedPalette`: an
+`id` to store, a `label` to show, and `swatchesFor(brightness)`, its colours by day or by night. A `ComicRadio`'s
+`leading` shows the swatches between its mark and its name. Give the chosen one to `ComicHost(palette: ...)`.
+
+```dart
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key, this.palette, this.onPalette});
+
+  final RawNamedPalette? palette;
+  final ValueChanged<RawNamedPalette>? onPalette;
+
+  @override
+  Widget build(BuildContext context) => ComicScaffold(
+    topBar: const ComicAppBar(title: 'Settings'),
+    body: ComicRadioGroup<RawNamedPalette>(
+      labelText: 'Palette',
+      options: [
+        for (final option in ComicThemeData.palettes)
+          ComicRadio(
+            option,
+            option.label,
+            leading: Swatches(option.swatchesFor(ComicTheme.of(context).brightness)),
+          ),
+      ],
+      groupValue: palette,
+      onChanged: onPalette,
+    ),
+  );
+}
+
+/// A palette's colours side by side in one square, ruled in the words' ink.
+class Swatches extends StatelessWidget {
+  const Swatches(this.colors, {super.key});
+
+  final List<Color> colors;
+
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: 24,
+    child: DecoratedBox(
+      position: DecorationPosition.foreground,
+      decoration: BoxDecoration(
+        border: Border.all(color: ComicTheme.of(context).colors.text, width: 2),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        // Colours have no reading direction: the stripes stand in one order in every language.
+        textDirection: TextDirection.ltr,
+        children: [for (final color in colors) Expanded(child: ColoredBox(color: color))],
+      ),
+    ),
+  );
+}
+```
+
+**The places: `ComicAppShell`.** On a phone the places are the tab bar at the foot; from 600 wide a rail of glyphs down
+the start; from 1024 wide the masthead's links, with the app's `brand` at its start. `.branches` keeps a stack for each
+place: a pushed page keeps the rail or the masthead while the tab bar steps away, and back pops it. A screen reader hears
+the places as tabs.
+
+```dart
+class Shelf extends StatefulWidget {
+  const Shelf({super.key});
+
+  @override
+  State<Shelf> createState() => _ShelfState();
+}
+
+class _ShelfState extends State<Shelf> {
+  int place = 0;
+
+  @override
+  Widget build(BuildContext context) => ComicAppShell.branches(
+    brand: 'Shelf',
+    destinations: const [
+      ComicNavItem(label: 'Books', short: 'Books', icon: ComicGlyphs.book),
+      ComicNavItem(label: 'Add a book', short: 'Add', icon: ComicGlyphs.add),
+      ComicNavItem(label: 'Settings', short: 'Settings', icon: ComicGlyphs.settings),
+    ],
+    selectedIndex: place,
+    onDestinationSelected: (index) => setState(() => place = index),
+    branches: [
+      (context) => const BooksPage(),
+      (context) => const AddBookPage(),
+      (context) => const SettingsPage(),
+    ],
+  );
+}
+```
+
+## Building blocks
+
+| For | Comic's |
+| --- | --- |
+| The app's mount | `ComicHost`; `ComicTheme` for a part of the tree |
+| Places | `ComicAppShell`, `ComicNavigationBar`, `ComicNavigationRail`, `ComicNavigationDrawer`, `ComicTabBar` |
+| A page | `ComicScaffold`, `ComicAppBar`, `ComicBackButton` |
+| Buttons | `ComicButton` (`.filled`, `.text`), `ComicIconButton`, `ComicSplitButton`, `ComicButtonGroup` |
+| Text entry | `ComicTextField`, `ComicTextArea`, `ComicPasswordField`, `ComicSearchField`, `ComicNumberField`, `ComicInputOtp` |
+| Choices | `ComicSelect`, `ComicCheckbox`, `ComicCheckRow`, `ComicRadioGroup`, `ComicSwitch`, `ComicSwitchRow`, `ComicSegmentedButton`, `ComicChip` |
+| Amounts | `ComicSlider`, `ComicRangeSlider`, `ComicRating` |
+| Dates and times | `ComicDateField`, `ComicCalendar`, `showComicDatePicker`, `showComicDateRangePicker`, `showComicTimePicker` |
+| A form | `RawForm`, `ComicFormField` |
+| Lists and tables | `ComicListSection`, `ComicListTile`, `ComicTable`, `ComicDescriptionList`, `ComicSwipeActions` |
+| Surfaces | `ComicPanel`, `ComicCard`, `ComicSections`, `ComicDivider` |
+| Raised | `showComicDialog` with `ComicDialog`, `showComicBottomSheet`, `showComicActionSheet`, `showComicMenu`, `ComicPopover`, `ComicTooltip`, `ComicHoverCard`, `showComicCommand` |
+| Feedback | `showComicToast`, `showComicSnackBar`, `ComicBanner`, `ComicLinearProgressIndicator`, `ComicCircularProgressIndicator`, `ComicSkeleton`, `ComicEmptyState`, `ComicErrorState` |
+| Status | `ComicTag`, `ComicBadge`, `ComicMeter` |
+| People | `ComicPerson`, `ComicAvatar`, `ComicAvatarGroup` |
+| Steps and pages | `ComicStepProgress`, `ComicPagination`, `ComicBreadcrumb`, `ComicPageDots`, `ComicCarouselView` |
+| Charts | `ComicLineChart`, `ComicBarChart`, `ComicAreaChart`, `ComicPieChart`, `ComicSparkline` |
+| The comic's own | `ComicBalloon`, `ComicThought`, `ComicCaption`, `ComicBurst`, `ComicStamp`, `ComicSfx` |
+| Layout | `ComicColumn`, `ComicRow`, `ComicTier`, `ComicFitRow`, `ComicBeside`, `ComicGridOf` |
+| Glyphs | `ComicGlyphs` |
 
 A button comes in three emphases, as Cupertino names them: `ComicButton.filled` for the screen's one primary action,
 `ComicButton` (a square outline in caps) for any other, `ComicButton.text` for quiet words. `isDestructiveAction`
 draws any of them in the danger tone.
 
-```dart
-Row(
-  children: [
-    ComicButton.filled('New plan', icon: ComicGlyphs.plus, onPressed: create),
-    ComicButton('Share', onPressed: share),
-    ComicButton.text('Later', onPressed: close),
-    ComicButton('Delete issue', isDestructiveAction: true, onPressed: remove),
-  ],
-)
-```
-
-A text field takes a label, a hint and an error, and reports what is typed:
-
-```dart
-ComicTextField(
-  labelText: 'Your name',
-  hintText: 'As it should be lettered',
-  errorText: name.isEmpty ? 'Tell us who you are' : null,
-  onChanged: (text) => setState(() => name = text),
-)
-```
-
-A select opens its options in a raised menu; the current one carries a check:
-
-```dart
-ComicSelect<String>(
-  labelText: 'Format',
-  value: format,
-  options: const [
-    ComicSelectOption('print', 'Print'),
-    ComicSelectOption('digital', 'Digital'),
-  ],
-  onChanged: (value) => setState(() => format = value),
-)
-```
-
-A list is a section of ruled rows; a row presses, and a switch row turns a setting on and off:
-
-```dart
-ComicListSection(
-  label: 'Reading',
-  children: [
-    ComicListTile(title: 'Issue 12', subtitle: 'Twelve pages', onPressed: open),
-    ComicSwitchRow(
-      label: 'Reminders',
-      note: 'The evening before',
-      value: reminders,
-      onChanged: (value) => setState(() => reminders = value),
-    ),
-  ],
-)
-```
-
-A dialog pops in as a panel on its print, with a short bounce (a cut under Reduce Motion). Escape and the back
-gesture close it, and focus returns where it was:
-
-```dart
-showComicDialog<void>(
-  context,
-  builder: (context) => ComicDialog(
-    title: 'Remove this issue?',
-    message: 'It leaves your shelf on every device.',
-    actions: [
-      ComicButton.text('Keep it', onPressed: () => Navigator.pop(context)),
-      ComicButton.filled('Remove', isDestructiveAction: true, onPressed: remove),
-    ],
-  ),
-);
-```
-
-Navigation is a tab bar at a phone's foot and the masthead's links on a desktop:
-
-```dart
-ComicNavigationBar(
-  destinations: const [
-    ComicNavItem(label: 'Home', short: 'Home', icon: ComicGlyphs.house),
-    ComicNavItem(label: 'Alerts', short: 'Alerts', icon: ComicGlyphs.notifications),
-    ComicNavItem(label: 'Profile', short: 'Me', icon: ComicGlyphs.person),
-  ],
-  selectedIndex: tab,
-  onDestinationSelected: (index) => setState(() => tab = index),
-)
-```
-
 A press uses `onPressed`, a control `value` and `onChanged`, and a null callback disables it. Every part with one
 focus target takes an optional `focusNode` and `autofocus`; a field takes an optional `controller` and owns one only
-when you give none. `ComicDialog`, `ComicBottomSheet`, `ComicMenu`, `ComicTooltip` and `ComicSnackBar` each have a
-`showComic...` function.
+when you give none. A part's `label` is the words it draws; `semanticLabel` is a name only a screen reader hears. Its
+words are a `String` (`label`, `title`) and its icon an `IconData` (`icon`), where Flutter's own widgets take a
+`Widget`.
 
-A part's words are a `String` (`label`, `title`) and its icon an `IconData` (`icon`), where Flutter's own widgets
-take a `Widget`.
+`ComicGlyphs` names the icons Comic's parts draw, Lucide's, so an app has them with no other package; for the rest of
+Lucide, add `lucide_icons_flutter` and pass its `LucideIcons` where a part takes an `IconData`.
+
+Comic letters titles, buttons and tabs in capitals (the parts set Bangers in caps; write the words in plain case), so a
+widget test finds them as drawn, `find.text('READ ON')`, or with a finder that ignores case.
 
 ## Pictures
 
@@ -268,11 +378,11 @@ take a `Widget`.
 | ![Comic's speech and thought balloons, bursts and stamps at desktop width, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/comic_ui/screenshots/balloons_1440_day.png) | ![A settings page on a phone, at night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/comic_ui/screenshots/settings_390_night.png) |
 | ![Charts at desktop width, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/comic_ui/screenshots/charts_1440_day.png) | |
 
-## Editions and colours
+## Palettes and colours
 
-Six editions, each designed for the day and for its night issue (`Brightness.dark`); `ComicThemeData.preset(id, brightness)` picks one by name.
+Six palettes (print runs), each designed for the day and for its night issue (`Brightness.dark`). `ComicThemeData.palettes` lists them for a picker and `ComicHost(palette: ...)` takes one; `ComicThemeData.preset(id, brightness)` and the factories below give one's theme.
 
-| Factory | Edition |
+| Factory | Palette |
 | --- | --- |
 | `ComicThemeData.offset()` | Process yellow, pink and blue on warm newsprint, a Sunday comic |
 | `ComicThemeData.reprint()` | Teal and orange on seafoam stock, apricot captions |
@@ -300,9 +410,33 @@ Buttons, fields, choice controls, panels, overlays and avatars accept `ComicStyl
 `WidgetState`. A widget's style takes precedence over its component theme in `ComicThemeData`. Supply opaque
 colours for fills and overlays. Use `AnimatedComicTheme` to animate a theme change.
 
-To change the default square control corners, pass `shapes: ComicShapes.rounded(12)` to
-`ComicThemeData.copyWith`. Nested controls follow their container's corners. Use `ComicTypeface`, `ComicDensity`
-and `ComicStrokes` to change type, spacing or outline weight.
+Comic is square unless an app rounds it. `shapeScheme` sets the corners, the ink's weight and the print's depth,
+each held to Comic's band (a value past one stands at its end, and a debug build says so once). Start from
+`comicShapeScheme`, Comic's own: a bare `RawShapeScheme()` brings ui_core's rounded corners.
+
+```dart
+final rounder = ComicThemeData(
+  shapeScheme: comicShapeScheme.copyWith(
+    corners: comicShapeScheme.corners.copyWith(small: 6, medium: 10, large: 14),
+    stroke: 3,
+  ),
+);
+```
+
+| Value | Comic's | Band | What it moves |
+|---|---|---|---|
+| `extraSmall` | 0 | 0 to 8 | Chips, tags, badges, switches, segmented choices, tracks |
+| `small` | 0 | 0 to 8 | Buttons and fields |
+| `medium` | 0 | 0 to 12 | Cards, menus, snack bars, tooltips |
+| `large` | 0 | 0 to 16 | Dialogs and sheets (rounder reads as a balloon, kept for speech) |
+| `extraLarge` | 0 | fixed | Not drawn: no panel is larger than a dialog |
+| full | a stadium | fixed | A radio, an avatar, a balloon's tail |
+| style | round | round only | A bevel, a notch or a stair is another look's |
+| `stroke` | 2.5 | 2 to 4 | Every rim, rule and the focus ring, in proportion |
+| `depth` | 1 | 0.5 to 1.5 | A control's print (3 at 1), a raised panel's plate (4), the focus lift (2) |
+
+One part takes a corner of its own through its style's `shape` (`ComicButton('Join', style: ComicStyle(shape: ...))`).
+Use `ComicTypeface` and `ComicDensity` to change type or spacing.
 
 Comic uses a plain tint for hover and press, a pop for keyboard focus (the part lifts up and toward the start off a
 hard ink print of its outline) and a solid fill for disabled controls. Halftone patterns are reserved for illustrations. Speech balloons, narration captions and display
@@ -312,13 +446,13 @@ lettering keep a clear background behind the words.
 
 - **Screen readers and keyboards.** Every control reports its role, label, value and state (checked, selected,
   expanded, disabled) and leaves its decorative print out. Tab moves in reading order; Enter and Space press, arrows
-  move within groups, Escape closes what is raised, and the part the keyboard is on pops off its print. The example's tests hold every
+  move within groups, Escape closes what is raised, and the part the keyboard is on pops off its print. The gallery's tests hold every
   page to Flutter's tap-target, labelled-target and text-contrast guidelines, by day and by night.
 - **Tap targets.** Every control takes at least 40 by 40, for a finger and a pointer alike (ui_core's floor); a
   `RawTapTargetScope` above the theme sets an app's own. In a run of chips or links the targets reach into the room
   between the faces, so a run keeps its spacing.
 - **Large text.** Parts follow the system's text scaling: words wrap or end with an ellipsis on purpose, controls grow
-  taller, and dialogs and sheets scroll. Every example page is tested at text scale 2.0.
+  taller, and dialogs and sheets scroll. Every gallery page is tested at text scale 2.0.
 - **Right to left.** Layouts mirror under a right-to-left `Directionality`: arrows and chevrons turn, fills and
   sliders run from the start side, swipes and carousels follow the reading direction. Parameters say start and end.
 - **Other scripts.** Bangers and Shantell Sans cover Latin scripts. Arabic, Hebrew, Chinese, Japanese, Hindi, Thai and
@@ -347,12 +481,13 @@ Use `comic_ui.dart` elsewhere in your app. The parts library supports copied com
 
 ## Example
 
-The example app includes individual controls and complete form, settings, list and checkout screens. Use the app bar
-to switch light and dark mode. Open Customize to change the edition, colours, reading direction and text size.
+`example/lib/main.dart` is Shelf, the app [Build an app](#build-an-app) walks through. `flutter run -t lib/gallery.dart`
+opens the gallery: every part live on plain pages, light and dark from the app bar, and Customize for the palette, your
+own colours, the strokes, the density, the reading direction and the text size.
 
 ## Requirements
 
-Flutter 3.47.0 or later (Dart 3.13), on Android, iOS, web, macOS, Windows and Linux.
+Flutter 3.47.0 or later (Dart 3.13), on Android, iOS, web, macOS, Windows and Linux. comic_ui 0.8 stands on ui_core 0.8.
 
 ## Licence
 

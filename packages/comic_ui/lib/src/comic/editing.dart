@@ -178,7 +178,7 @@ class ComicTextContextMenu extends StatelessWidget {
       for (final item in buttonItems)
         ComicPressable(
           onPressed: item.onPressed,
-          label: labelOf(context, item),
+          semanticLabel: labelOf(context, item),
           washColor: touch ? c.onPaper : c.text,
           child: ConstrainedBox(
             constraints: BoxConstraints(

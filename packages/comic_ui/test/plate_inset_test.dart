@@ -9,6 +9,8 @@ import 'package:material_ui/material_ui.dart';
 
 import 'support.dart';
 
+import 'package:comic_ui/src/comic/theme.dart' show comicThemeWith;
+
 /// Physical pixels at twice the logical resolution. Only solid pixels count,
 /// so a partially covered curve contributes at most half a logical pixel.
 class _Pixels {
@@ -68,8 +70,9 @@ void main() {
         t.view.devicePixelRatio = 1;
         t.view.physicalSize = Size(width, 900);
         addTearDown(t.view.reset);
-        final theme = ComicThemeData.offset().copyWith(
-          shapes: ComicShapes.rounded(18),
+        final theme = comicThemeWith(
+          ComicThemeData.offset(),
+          shapes: comicRounded(18),
         );
         const shot = ValueKey('stacked segments');
         await t.pumpWidget(
@@ -87,7 +90,7 @@ void main() {
                       child: SizedBox(
                         width: 120,
                         child: ComicSegmentedButton<int>(
-                          label: 'View',
+                          semanticLabel: 'View',
                           value: 1,
                           segments: const [
                             ComicButtonSegment(1, 'Day'),
@@ -138,8 +141,9 @@ void main() {
             t.view.physicalSize = Size(width, 900);
             addTearDown(t.view.reset);
             // The corner is large enough to resolve in the sampled pixels.
-            final theme = ComicThemeData.offset().copyWith(
-              shapes: ComicShapes.rounded(message ? 32 : 18),
+            final theme = comicThemeWith(
+              ComicThemeData.offset(),
+              shapes: comicRounded(message ? 32 : 18),
             );
             const shot = ValueKey('print');
             final rtl = direction == TextDirection.rtl;

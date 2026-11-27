@@ -4,7 +4,6 @@
 // under the next day's rule, and the faint rules stood a darker dot deep at every crossing.
 import 'dart:ui' as ui;
 
-import 'package:comic_ui/comic_host.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';

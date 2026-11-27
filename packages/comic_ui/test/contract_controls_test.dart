@@ -60,7 +60,7 @@ void main() {
             _host(
               ComicPanel(
                 selected: selected,
-                label: 'Saved place',
+                semanticLabel: 'Saved place',
                 onPressed: active ? () => opened++ : null,
                 child: const Text('Mission'),
               ),
@@ -182,7 +182,8 @@ void main() {
         final mark = tester.getRect(
           find.byKey(const ValueKey('trailing mark')),
         );
-        final row = tester.getRect(find.byType(ComicListTile));
+        // The outer tile: a control at a pressing row's end stands beside the row's own press, an inner tile.
+        final row = tester.getRect(find.byType(ComicListTile).first);
         expect(row.contains(mark.topLeft), isTrue);
         expect(row.contains(mark.bottomRight - const Offset(.1, .1)), isTrue);
       }
@@ -220,7 +221,7 @@ void main() {
           Row(
             children: [
               ComicSegmentedButton<int>(
-                label: 'View',
+                semanticLabel: 'View',
                 value: 0,
                 segments: List.generate(
                   count,
@@ -410,7 +411,7 @@ void main() {
     await tester.pumpWidget(
       _host(
         ComicSegmentedButton<int>(
-          label: 'Format',
+          semanticLabel: 'Format',
           value: 1,
           segments: const [
             ComicButtonSegment(1, 'Print', name: 'Printed copy'),
@@ -471,7 +472,7 @@ void main() {
         await tester.pumpWidget(
           _host(
             ComicChart(
-              label: 'Balance',
+              semanticLabel: 'Balance',
               type: bars ? ComicChartType.bar : ComicChartType.line,
               height: 120,
               series: const [

@@ -13,6 +13,9 @@ import 'component_themes.dart';
 import 'styled.dart';
 import 'internal/style_guard.dart';
 import 'knobs.dart' show ComicSpace;
+import 'internal/field_label.dart';
+
+import 'package:ui_core/ui_core.dart' show RawFocusShown;
 
 /// An adjustable value with keyboard, pointer and accessibility actions.
 ///
@@ -76,9 +79,9 @@ class ComicSlider extends StatefulWidget {
   /// Width when placed in a row with unbounded width.
   final double rowWidth;
 
-  /// How far the track stands in from each end: the held knob's radius, so the knob at either end stands on the
-  /// slider's edge. The range slider ([ComicRangeSlider]) takes the same, so a slider and a range stacked in one column
-  /// share their track's ends.
+  /// How far the knob's centre stands in from each end: the held knob's radius, so the knob at either end stands
+  /// within the slider's edge. The track itself runs edge to edge, meeting a column's edges as a field beside it does;
+  /// the range slider ([ComicRangeSlider]) takes the same, so a slider and a range stacked in one column share both.
   static const double inset = 12;
 
   /// {@macro comic.autofocus}
@@ -143,6 +146,10 @@ class _ComicSliderState extends State<ComicSlider> {
   final _ownedFocus = FocusNode();
   FocusNode get _focus => widget.focusNode ?? _ownedFocus;
   bool _focused = false, _hovered = false, _dragging = false;
+  // Focus shows after a key, not after a press of a pointer (a click on the web), as a browser's :focus-visible.
+  late final RawFocusShown _focusShown = RawFocusShown((shown) {
+    if (mounted && shown != _focused) setState(() => _focused = shown);
+  });
   double? _moved;
   double get _span => widget.max - widget.min;
   double get _step => _span / (widget.divisions ?? 20);
@@ -215,8 +222,17 @@ class _ComicSliderState extends State<ComicSlider> {
 
   @override
   void dispose() {
+    _focusShown.dispose();
     _ownedFocus.dispose();
     super.dispose();
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      FlagProperty('focusShown', value: _focused, ifTrue: 'focus shown'),
+    );
   }
 
   @override
@@ -252,7 +268,7 @@ class _ComicSliderState extends State<ComicSlider> {
                   : _dragging
                   ? SystemMouseCursors.grabbing
                   : SystemMouseCursors.grab,
-              onShowFocusHighlight: (value) => setState(() => _focused = value),
+              onFocusChange: _focusShown.focused,
               onShowHoverHighlight: (value) => setState(() => _hovered = value),
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
@@ -314,7 +330,7 @@ class _ComicSliderState extends State<ComicSlider> {
     final node = Semantics(
       container: true,
       slider: true,
-      label: widget.label,
+      label: ComicFieldLabel.unsaid(context, widget.label),
       value: _words(widget.value),
       enabled: live,
       increasedValue: live ? _words(_snap(widget.value + _step)) : null,
@@ -373,13 +389,18 @@ class _SliderInk extends CustomPainter {
   final ComicFocusRing focus;
   @override
   void paint(Canvas canvas, Size size) {
+    // The rail's ink meets the slider's edges: its rim, drawn on the path's line, stands half its width inside.
+    final rim = (side?.width ?? 2) / 2;
     final rect = Rect.fromLTWH(
-          ComicSlider.inset,
+          rim,
           size.height / 2 - 4,
-          math.max(0, size.width - 2 * ComicSlider.inset),
+          math.max(0, size.width - 2 * rim),
           8,
         ),
-        x = ComicSlider.inset + (rtl ? 1 - at : at) * rect.width;
+        x =
+            ComicSlider.inset +
+            (rtl ? 1 - at : at) *
+                math.max(0, size.width - 2 * ComicSlider.inset);
     final paint = Paint();
     final path =
         shape?.getOuterPath(

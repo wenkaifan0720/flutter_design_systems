@@ -28,7 +28,7 @@ class _MethodPageState extends State<MethodPage> {
         actions: [
           ComicIconButton(
             LucideIcons.bookmark,
-            label: 'Save',
+            semanticLabel: 'Save',
             onPressed: () {},
           ),
         ],
@@ -85,7 +85,7 @@ class _MethodPageState extends State<MethodPage> {
                           ComicBeside(
                             object: ComicCheckbox(
                               value: _have.contains(thing),
-                              label: thing,
+                              semanticLabel: thing,
                               onChanged: (on) => setState(
                                 () => on == true
                                     ? _have.add(thing)

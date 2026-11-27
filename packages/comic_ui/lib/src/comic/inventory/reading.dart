@@ -351,8 +351,10 @@ class ComicDescriptionList extends StatelessWidget {
                     vertical: ComicSpace.close,
                   ),
                   child: beside
+                      // The term's capitals and its detail stand on one line of print, though their sizes differ.
                       ? Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
                           children: [
                             SizedBox(
                               width: box.maxWidth * .34,
@@ -401,7 +403,7 @@ class ComicDescriptionList extends StatelessWidget {
 /// ```
 class ComicStatusView extends StatelessWidget {
   /// While the screen's content loads.
-  const ComicStatusView.loading({super.key, this.label})
+  const ComicStatusView.loading({super.key, this.semanticLabel})
     : _kind = _Status.loading,
       title = null,
       message = null,
@@ -415,7 +417,7 @@ class ComicStatusView extends StatelessWidget {
     this.message,
     this.action,
   }) : _kind = _Status.empty,
-       label = null,
+       semanticLabel = null,
        onRetry = null;
 
   /// When it failed; [onRetry] offers another try.
@@ -426,7 +428,7 @@ class ComicStatusView extends StatelessWidget {
     this.onRetry,
     this.action,
   }) : _kind = _Status.error,
-       label = null;
+       semanticLabel = null;
 
   /// When it is done.
   const ComicStatusView.success({
@@ -435,13 +437,13 @@ class ComicStatusView extends StatelessWidget {
     required String this.message,
     this.action,
   }) : _kind = _Status.success,
-       label = null,
+       semanticLabel = null,
        onRetry = null;
 
   final _Status _kind;
 
   /// What is loading, for a screen reader.
-  final String? label;
+  final String? semanticLabel;
 
   /// [title]: the state's heading. [message]: its words.
   final String? title, message;
@@ -454,7 +456,7 @@ class ComicStatusView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => switch (_kind) {
-    _Status.loading => ComicLoadingState(label: label),
+    _Status.loading => ComicLoadingState(semanticLabel: semanticLabel),
     _Status.empty => ComicEmptyState(
       title: title!,
       body: message,
@@ -477,7 +479,7 @@ class ComicStatusView extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(StringProperty('title', title, defaultValue: null))
       ..add(StringProperty('message', message, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback>.has('onRetry', onRetry));
@@ -564,7 +566,7 @@ class ComicActionSheet<T> extends StatelessWidget {
           for (final action in actions)
             _SheetRowReach(
               child: ComicPressable(
-                label: action.label,
+                semanticLabel: action.label,
                 onPressed: action.enabled
                     ? () => onSelected(action.value)
                     : null,

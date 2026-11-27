@@ -259,7 +259,7 @@ void main() {
     }
   }
   test('nested corners subtract the actual inset and stop at zero', () {
-    final outer = ComicShapes.rounded(12).medium;
+    final outer = comicRounded(12).medium;
     for (final inset in [0.0, 3.0, 5.0, 20.0]) {
       final inner = comicInsetShape(outer, inset) as RoundedRectangleBorder;
       expect(
@@ -271,8 +271,8 @@ void main() {
   testWidgets('the slider paints a circular thumb in both corner families', (
     tester,
   ) async {
-    for (final shapes in [const ComicShapes(), ComicShapes.rounded(8)]) {
-      final theme = ComicThemeData.offset().copyWith(shapes: shapes);
+    for (final shapes in [const ComicShapes(), comicRounded(8)]) {
+      final theme = comicThemeWith(ComicThemeData.offset(), shapes: shapes);
       const shot = ValueKey('thumb-pixels');
       await tester.pumpWidget(
         MaterialApp(

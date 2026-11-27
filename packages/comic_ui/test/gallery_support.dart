@@ -16,7 +16,11 @@ import 'package:comic_ui/comic_ui.dart';
 import '../example/lib/gallery_pages.dart';
 import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/kit_gallery/theme.dart';
-import '../example/lib/main.dart' show GalleryCustom;
+import '../example/lib/gallery.dart' show GalleryCustom;
+
+import 'package:comic_ui/src/comic/theme.dart' show comicThemeWith;
+
+import 'support.dart' show comicRounded;
 
 export '../example/lib/gallery_pages.dart';
 
@@ -28,8 +32,9 @@ final touchFloorGuideline = MinimumTapTargetGuideline(
   link: 'https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum',
 );
 
-/// The corner scales the 0.1.x gallery offered. 0.2.0 deprecates `ComicShapes.rounded` and `copyWith(shapes:)`, since
-/// Comic is square, and its gallery offers them no more; until they go, these tests still draw every part on them.
+/// The corner scales the 0.1.x gallery offered. Comic is square and an app sets no corner scale (0.8.0 removed
+/// `ComicShapes.rounded` and `copyWith(shapes:)`), but a part takes its own corner through its style's `shape`, so
+/// these tests still draw every part on them (`comicThemeWith`).
 enum GalleryCorners {
   /// Square inked controls and surfaces: the look's own.
   square,
@@ -61,14 +66,14 @@ class CornerCustom extends GalleryCustom {
   /// Flutter borders on [corners].
   ComicShapes get shapes => switch (corners) {
     GalleryCorners.square => const ComicShapes(),
-    GalleryCorners.small => ComicShapes.rounded(4),
-    GalleryCorners.medium => ComicShapes.rounded(8),
-    GalleryCorners.large => ComicShapes.rounded(12),
+    GalleryCorners.small => comicRounded(4),
+    GalleryCorners.medium => comicRounded(8),
+    GalleryCorners.large => comicRounded(12),
   };
 
   @override
   ComicThemeData theme(String preset, Brightness brightness) =>
-      super.theme(preset, brightness).copyWith(shapes: shapes);
+      comicThemeWith(super.theme(preset, brightness), shapes: shapes);
 }
 
 /// The gallery's phone width.

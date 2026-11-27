@@ -59,7 +59,7 @@ void main() {
     (
       'ComicIconButton',
       'Save',
-      ComicIconButton(Icons.bookmark, label: 'Save', onPressed: () {}),
+      ComicIconButton(Icons.bookmark, semanticLabel: 'Save', onPressed: () {}),
     ),
     ('ComicButton', 'Save', ComicButton('Save', onPressed: () {})),
   ]) {

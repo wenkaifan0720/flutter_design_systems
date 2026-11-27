@@ -1,18 +1,8 @@
-# Comic's data-driven fixes: `dart fix --apply` moves a caller off what 0.2.0 deprecated and later versions removed,
-# where the move is mechanical. Rounded corners, a free motion and free stroke widths have no mechanical fix: their
-# deprecation messages and the CHANGELOG say what to use. test_fixes/ holds each fix's before and after (`dart fix --compare-to-golden test_fixes`).
+# Comic's data-driven fixes: `dart fix --apply` moves a caller off what an earlier version deprecated and a later one
+# removed or renamed, where the move is mechanical. `ComicShapes.rounded` has none: Comic is square, and the CHANGELOG
+# says how one part takes its own corner (its style's `shape`). test_fixes/ holds each fix's before and after (`dart fix --compare-to-golden test_fixes`).
 version: 1
 transforms:
-  - title: "Rename to 'standard'"
-    date: 2026-11-14
-    element:
-      uris: ['comic_ui.dart']
-      field: 'look'
-      inClass: 'ComicStrokes'
-    changes:
-      - kind: 'rename'
-        newName: 'standard'
-
   - title: "Remove 'scale'"
     date: 2026-11-14
     element:
@@ -1298,3 +1288,927 @@ transforms:
     changes:
       - kind: 'rename'
         newName: 'forPlatform'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicListTile'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicPanel'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicListSection'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicCarouselView'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicStars'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicRating'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicCircularProgressIndicator'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicLinearProgressIndicator'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicSkeleton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicChart'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicLineChart'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicSparkline'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicNavigationDrawer'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicTabBar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicNavigationRail'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicBreadcrumb'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicPagination'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicSendButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicSegmentedButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicBackButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicLoadingState'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: 'loading'
+      inClass: 'ComicStatusView'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicPopover'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicHoverCard'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicWheelPicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicMenuBar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicCommand'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicScrollArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicResizable'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicTreeView'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicButtonGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicToggleGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicPressable'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicIconButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicMedia'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicBadge'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicAvatarGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicAreaChart'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicBarChart'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicCheckbox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicSwitch'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicChoiceBox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicListTile'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicPanel'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicListSection'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicCarouselView'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicStars'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicRating'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicCircularProgressIndicator'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicLinearProgressIndicator'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicSkeleton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicChart'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicLineChart'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicSparkline'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicNavigationDrawer'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicTabBar'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicNavigationRail'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicBreadcrumb'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicPagination'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicSendButton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicSegmentedButton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicBackButton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicLoadingState'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicStatusView'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicPopover'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicHoverCard'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicWheelPicker'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicMenuBar'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicCommand'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicScrollArea'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicResizable'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicTreeView'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicButtonGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicPressable'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicIconButton'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicMedia'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicBadge'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicAvatarGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicCheckbox'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicSwitch'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicChoiceBox'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicPerson'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'semanticLabel'
+
+  - title: "Rename to 'semanticLabel'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicPerson'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticLabel'
+
+  - title: "Remove 'shapes'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      method: 'copyWith'
+      inClass: 'ComicThemeData'
+    changes:
+      - kind: 'removeParameter'
+        name: 'shapes'
+
+  - title: "Remove 'motion'"
+    date: 2026-11-26
+    element:
+      uris: ['comic_ui.dart']
+      method: 'copyWith'
+      inClass: 'ComicThemeData'
+    changes:
+      - kind: 'removeParameter'
+        name: 'motion'

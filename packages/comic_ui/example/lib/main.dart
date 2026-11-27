@@ -1,718 +1,424 @@
-// The Comic gallery: every part the package exports, live, on pages with plain names. The look's own navigation moves
-// between them: a side nav at a desktop's width, a drawer from the app bar's menu button on a phone. The app bar's
-// moon or sun turns the page to night or day; Customize opens the theme's knobs (the preset, the strokes, the density,
-// the faces, your own colours, the reading direction and the text scaling) and every page takes them as you set them.
-// Comic's corners stay square and its type at the look's sizes: the platform's text scaling serves readers.
-import 'dart:math' as math;
-
+// Shelf: a reading list in Comic, one file to copy as the start of an app. ComicHost stands above the navigator
+// (light, dark or the platform's, in one of the six palettes); ComicAppShell holds three places; the list pushes a
+// book's page, which asks before it removes it; the form checks its fields and takes a date; settings choose the
+// appearance and the palette. Run the gallery of every part with `flutter run -t lib/gallery.dart`.
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter/rendering.dart';
 import 'package:comic_ui/comic_ui.dart';
-import 'package:comic_ui/comic_host.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import 'gallery_pages.dart' show GalleryPage;
-import 'kit_gallery/kit.dart';
-import 'kit_gallery/live_pages.dart';
+void main() => runApp(const ShelfApp());
 
-/// The live pages as the deck holds them.
-final List<GalleryPage> examplePages = [
-  for (final page in livePages)
-    (id: page.id, title: page.title, build: (_) => livePageBody(page)),
-];
+/// A book on the shelf.
+@immutable
+class Book {
+  /// A book called [title], by [author], begun on [started] (null: not yet).
+  const Book(this.title, this.author, {this.started, this.finished = false});
 
-/// A gallery viewport that retains visited pages and pauses hidden animations.
-///
-/// Each appearance has its own page state. Customization updates the active
-/// page in place and reaches other visited pages when they are shown again.
-class GalleryPageDeck extends StatefulWidget {
-  /// Creates the viewport for [pageId] in [brightness].
-  const GalleryPageDeck({
-    super.key,
-    required this.pages,
-    required this.pageId,
-    required this.preset,
-    required this.brightness,
-    this.revision,
-  });
+  /// Its title.
+  final String title;
 
-  /// The pages the gallery can show.
-  final List<GalleryPage> pages;
+  /// Who wrote it.
+  final String author;
 
-  /// The selected page's identifier.
-  final String pageId;
+  /// When reading began; null while it waits.
+  final DateTime? started;
 
-  /// The selected printing preset.
-  final String preset;
-
-  /// The selected appearance.
-  final Brightness brightness;
-
-  /// Changes when customization changes, without replacing the active state.
-  final Object? revision;
-
-  @override
-  GalleryPageDeckState createState() => GalleryPageDeckState();
+  /// Whether it has been read to the end.
+  final bool finished;
 }
 
-/// Retained pages and the currently visible subtree.
-class GalleryPageDeckState extends State<GalleryPageDeck> {
-  final _visited = <(String, Brightness), _VisitedPage>{};
-  final _navigator = GlobalKey<NavigatorState>();
-
-  /// The visited page/appearance pairs currently retained by the viewport.
-  int get retainedPageCount => _visited.length;
-
-  /// The active subtree, for scrolling or inspecting the page on screen.
-  BuildContext? get activeContext =>
-      _visited[(widget.pageId, widget.brightness)]?.key.currentContext;
+/// The app: its appearance, its palette and the shelf, above the three places.
+class ShelfApp extends StatefulWidget {
+  /// Creates the app.
+  const ShelfApp({super.key});
 
   @override
-  void didUpdateWidget(GalleryPageDeck oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.preset != widget.preset) _visited.clear();
-    if (oldWidget.pageId != widget.pageId ||
-        oldWidget.brightness != widget.brightness ||
-        oldWidget.preset != widget.preset) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          final navigator =
-              Navigator.maybeOf(context, rootNavigator: true) ??
-              _navigator.currentState;
-          navigator?.popUntil((route) => route.isFirst);
-        }
-      });
-    }
-  }
+  State<ShelfApp> createState() => _ShelfAppState();
+}
+
+class _ShelfAppState extends State<ShelfApp> {
+  ThemeMode mode = ThemeMode.system;
+  RawNamedPalette palette = ComicThemeData.palettes.first;
+  int place = 0;
+  final books = <Book>[
+    Book(
+      'Piranesi',
+      'Susanna Clarke',
+      started: DateTime(2026, 10, 2),
+      finished: true,
+    ),
+    Book(
+      'The Left Hand of Darkness',
+      'Ursula K. Le Guin',
+      started: DateTime(2026, 11, 9),
+    ),
+    const Book('Stoner', 'John Williams'),
+  ];
 
   @override
-  Widget build(BuildContext context) {
-    final id = (widget.pageId, widget.brightness);
-    final page = widget.pages.firstWhere((page) => page.id == widget.pageId);
-    final active = _visited.putIfAbsent(
-      id,
-      () => _VisitedPage(widget.revision, page.build(widget.brightness)),
-    );
-    if (active.revision != widget.revision) {
-      active
-        ..revision = widget.revision
-        ..child = page.build(widget.brightness);
-    }
-    final entries = _visited.entries.toList();
-    final content = KitGalleryScope(
-      child: IndexedStack(
-        alignment: Alignment.topLeft,
-        index: entries.indexWhere((entry) => entry.key == id),
-        sizing: StackFit.expand,
+  Widget build(BuildContext context) => MaterialApp(
+    title: 'Shelf',
+    debugShowCheckedModeBanner: false,
+    // ui_core's 30 languages: a device in one of them hears the parts' shared words (Cancel, Close, Today) in it, and
+    // in Arabic or Hebrew the app reads right to left. flutter_localizations gives Material's own words.
+    supportedLocales: RawWidgetsLocalizations.supportedLocales,
+    localizationsDelegates: const [
+      RawWidgetsLocalizations.delegate,
+      ComicLocalizations.delegate,
+      ...GlobalMaterialLocalizations.delegates,
+    ],
+    // One mount for the whole app: the theme by day and by night, the palette, the page's ground and the toasts.
+    builder: (context, child) => ComicHost(
+      palette: palette,
+      brightness: switch (mode) {
+        ThemeMode.light => Brightness.light,
+        ThemeMode.dark => Brightness.dark,
+        ThemeMode.system => null,
+      },
+      child: child!,
+    ),
+    home: ComicAppShell.branches(
+      brand: 'Shelf',
+      destinations: const [
+        ComicNavItem(label: 'Books', short: 'Books', icon: ComicGlyphs.book),
+        ComicNavItem(label: 'Add a book', short: 'Add', icon: ComicGlyphs.add),
+        ComicNavItem(
+          label: 'Settings',
+          short: 'Settings',
+          icon: ComicGlyphs.settings,
+        ),
+      ],
+      selectedIndex: place,
+      onDestinationSelected: (index) => setState(() => place = index),
+      branches: [
+        (context) => BooksPage(
+          books: books,
+          onRemove: (book) => setState(() => books.remove(book)),
+        ),
+        (context) =>
+            AddBookPage(onAdd: (book) => setState(() => books.add(book))),
+        (context) => SettingsPage(
+          mode: mode,
+          palette: palette,
+          onMode: (next) => setState(() => mode = next),
+          onPalette: (next) => setState(() => palette = next),
+        ),
+      ],
+    ),
+  );
+}
+
+/// The shelf: a row a book, each opening its page.
+class BooksPage extends StatelessWidget {
+  /// The shelf of [books]; [onRemove] takes one off.
+  const BooksPage({super.key, required this.books, required this.onRemove});
+
+  /// The books, in order.
+  final List<Book> books;
+
+  /// Takes a book off the shelf.
+  final ValueChanged<Book> onRemove;
+
+  @override
+  Widget build(BuildContext context) => ComicScaffold(
+    topBar: const ComicAppBar(title: 'Books'),
+    body: PageColumn(
+      child: ComicListSection(
         children: [
-          for (final entry in entries)
-            TickerMode(
-              enabled: entry.key == id,
-              child: ExcludeFocus(
-                excluding: entry.key != id,
-                child: KeyedSubtree(
-                  key: entry.value.key,
-                  child: KeyedSubtree(
-                    key: ValueKey(
-                      '${entry.key.$1}/${widget.preset}/${entry.key.$2.name}',
-                    ),
-                    child: entry.value.child,
-                  ),
+          for (final (index, book) in books.indexed)
+            ComicListTile(
+              isFirst: index == 0,
+              title: book.title,
+              subtitle: book.author,
+              // A row's name reads its tag: "Piranesi, Susanna Clarke, Read".
+              trailing: statusTag(book),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) =>
+                      BookPage(book: book, onRemove: onRemove),
                 ),
               ),
             ),
         ],
       ),
-    );
-    if (Navigator.maybeOf(context) != null) return content;
-    return MaterialApp(
-      navigatorKey: _navigator,
-      debugShowCheckedModeBanner: false,
-      title: 'Comic',
-      theme: ThemeData(
-        pageTransitionsTheme: const PageTransitionsTheme(
-          builders: comicPageTransitions,
-        ),
-      ),
-      home: content,
-    );
-  }
-}
-
-class _VisitedPage {
-  _VisitedPage(this.revision, this.child);
-  final key = GlobalKey();
-  Object? revision;
-  Widget child;
-}
-
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  // The faces before the first frame: on the web the words never flash in a fallback face.
-  await comicLoadFonts();
-  runApp(const GalleryApp());
-}
-
-/// Three printing inks for `ComicThemeData.from`: act, caption and shade.
-typedef GalleryColours = ({String name, Color act, Color caption, Color shade});
-
-/// The colour pairs the panel offers in place of a preset.
-const List<GalleryColours> galleryColours = [
-  (
-    name: 'Plum press',
-    act: Color(0xff802651),
-    caption: Color(0xffeed36a),
-    shade: Color(0xff276c99),
-  ),
-  (
-    name: 'Teal issue',
-    act: Color(0xff087c72),
-    caption: Color(0xfff6bc54),
-    shade: Color(0xff6852a0),
-  ),
-  (
-    name: 'Night ink',
-    act: Color(0xff273d72),
-    caption: Color(0xffe9cb86),
-    shade: Color(0xff825066),
-  ),
-  (
-    name: 'Rose paper',
-    act: Color(0xffb0305a),
-    caption: Color(0xffedcf64),
-    shade: Color(0xff3b6e8f),
-  ),
-];
-
-/// What the Customize panel holds. Its defaults are the look's own, so an untouched panel draws the preset as designed.
-@immutable
-class GalleryCustom {
-  /// The panel's settings.
-  const GalleryCustom({
-    this.bold = false,
-    this.density = ComicDensity.standard,
-    this.oneFace = false,
-    this.colours,
-    this.direction = TextDirection.ltr,
-    this.textScale = 1,
-  });
-
-  /// Rims at 4 and the focus ring at 5.
-  final bool bold;
-
-  /// How compact the controls stand.
-  final ComicDensity density;
-
-  /// Shantell Sans for the heads too, in place of Bangers.
-  final bool oneFace;
-
-  /// Your own colours in place of the preset's; null keeps the preset.
-  final GalleryColours? colours;
-
-  /// The gallery's reading direction: right to left mirrors every page.
-  final TextDirection direction;
-
-  /// The system's text scaling the pages see, as a reader's accessibility setting would set it.
-  final double textScale;
-
-  /// [preset] in [brightness], or your own colours, with every knob set.
-  ComicThemeData theme(String preset, Brightness brightness) {
-    final pair = colours;
-    final base = pair == null
-        ? ComicThemeData.preset(preset, brightness)
-        : ComicThemeData.from(
-            primary: pair.act,
-            caption: pair.caption,
-            shade: pair.shade,
-            brightness: brightness,
-          );
-    return base.copyWith(
-      strokes: bold ? ComicStrokes.bold : ComicStrokes.standard,
-      density: density,
-      typeface: ComicTypeface.look.copyWith(
-        display: oneFace ? 'ShantellSans' : null,
-      ),
-    );
-  }
-
-  /// This with the named settings changed; [colours] is set as given.
-  GalleryCustom copyWith({
-    bool? bold,
-    ComicDensity? density,
-    bool? oneFace,
-    GalleryColours? Function()? colours,
-    TextDirection? direction,
-    double? textScale,
-  }) => GalleryCustom(
-    bold: bold ?? this.bold,
-    density: density ?? this.density,
-    oneFace: oneFace ?? this.oneFace,
-    colours: colours == null ? this.colours : colours(),
-    direction: direction ?? this.direction,
-    textScale: textScale ?? this.textScale,
+    ),
   );
 }
 
-/// The gallery: the look's app bar, its navigation and the live pages, with the Customize panel under the bar.
-///
-/// A link opens any page in a given theme, direction and text size, the scheme every look's gallery shares:
-/// `/#/<page>?theme=dark&dir=rtl&text=200` (the page's id, as `buttons` or `dialogs`; `theme` light or dark; `dir`
-/// ltr or rtl; `text` the text scaling in percent). Right to left reads in Arabic: the everyday screens, the pages'
-/// names and the sections' labels, so the direction is checked on real script, not English reordered.
-class GalleryApp extends StatefulWidget {
-  /// The gallery, opening on the page, theme, direction and text size its link names, else the overview by day.
-  /// [page], [brightness] and [direction], when given, open it there whatever the link says.
-  const GalleryApp({super.key, this.page, this.brightness, this.direction});
+/// One book's page, pushed over the shelf: the way back is in its bar.
+class BookPage extends StatelessWidget {
+  /// The page of [book]; [onRemove] takes it off the shelf.
+  const BookPage({super.key, required this.book, required this.onRemove});
 
-  /// The page it opens on, by its id (as `buttons` or `form`).
-  final String? page;
+  /// The book shown.
+  final Book book;
 
-  /// Whether it opens by day or by night.
-  final Brightness? brightness;
+  /// Takes the book off the shelf.
+  final ValueChanged<Book> onRemove;
 
-  /// The direction it opens in; right to left reads in Arabic.
-  final TextDirection? direction;
+  Future<void> _remove(BuildContext context) async {
+    // A dialog pops with the answer: true to remove, false or null (dismissed) to keep.
+    final remove = await showComicDialog<bool>(
+      context,
+      builder: (context) => ComicDialog(
+        title: 'Remove ${book.title}?',
+        message: 'It leaves your shelf. You can add it again.',
+        actions: [
+          ComicButton(
+            'Keep',
+            onPressed: () => Navigator.of(context).pop(false),
+          ),
+          ComicButton.filled(
+            'Remove',
+            isDestructiveAction: true,
+            onPressed: () => Navigator.of(context).pop(true),
+          ),
+        ],
+      ),
+    );
+    if (remove != true || !context.mounted) return;
+    onRemove(book);
+    Navigator.of(context).pop();
+    showComicToast(context, 'Removed ${book.title}');
+  }
 
   @override
-  State<GalleryApp> createState() => _GalleryAppState();
+  Widget build(BuildContext context) {
+    final started = book.started;
+    return ComicScaffold(
+      topBar: ComicAppBar(title: book.title),
+      body: PageColumn(
+        child: ComicColumn(
+          gap: ComicSpace.wide,
+          children: [
+            ComicPanel(
+              caption: book.author,
+              // The status stands at the line's end, as it does in the book's row.
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      started == null
+                          ? 'Not started yet'
+                          : 'Started ${ComicFormat.date(started)}',
+                    ),
+                  ),
+                  const SizedBox(width: ComicSpace.close),
+                  statusTag(book),
+                ],
+              ),
+            ),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: ComicButton(
+                'Remove from the shelf',
+                icon: ComicGlyphs.delete,
+                isDestructiveAction: true,
+                onPressed: () => _remove(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-class _GalleryAppState extends State<GalleryApp> with WidgetsBindingObserver {
-  var _page = livePages.first.id;
-  var _preset = kitShownPreset;
-  var _brightness = Brightness.light;
-  var _custom = const GalleryCustom();
-  var _customizing = false;
+/// A form for a new book: its fields checked on Save, the first wrong one focused; a saved book clears it for the next.
+class AddBookPage extends StatefulWidget {
+  /// The form; [onAdd] takes the new book.
+  const AddBookPage({super.key, required this.onAdd});
 
-  void _go(String id) => setState(() => _page = id);
+  /// Takes the new book.
+  final ValueChanged<Book> onAdd;
 
   @override
-  void initState() {
-    super.initState();
-    // Watching before the app's own navigator does, so a link the browser pushes later comes here first.
-    WidgetsBinding.instance.addObserver(this);
-    final link = Uri.tryParse(Uri.base.fragment);
-    if (link != null) _follow(link);
-    if (livePages.any((page) => page.id == widget.page)) _page = widget.page!;
-    _brightness = widget.brightness ?? _brightness;
-    _custom = _custom.copyWith(direction: widget.direction);
-  }
+  State<AddBookPage> createState() => _AddBookPageState();
+}
+
+class _AddBookPageState extends State<AddBookPage> {
+  final form = GlobalKey<RawFormState>();
+  final title = TextEditingController(), author = TextEditingController();
+  DateTime? started;
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
+    title.dispose();
+    author.dispose();
     super.dispose();
   }
 
-  /// Opens what [link] names: its page, and its theme, direction and text size where it gives them.
-  void _follow(Uri link) {
-    final id = link.pathSegments.where((part) => part.isNotEmpty).firstOrNull;
-    if (livePages.any((page) => page.id == id)) _page = id!;
-    final query = link.queryParameters;
-    _brightness = switch (query['theme']) {
-      'dark' => Brightness.dark,
-      'light' => Brightness.light,
-      _ => _brightness,
-    };
-    final text = int.tryParse(query['text'] ?? '');
-    _custom = _custom.copyWith(
-      direction: switch (query['dir']) {
-        'rtl' => TextDirection.rtl,
-        'ltr' => TextDirection.ltr,
-        _ => null,
-      },
-      textScale: text != null && text >= 50 && text <= 400 ? text / 100 : null,
-    );
-  }
-
-  // A link the browser pushes after the start (an address the reader edits, or Back to the opening link) is followed
-  // in place. The app's navigator knows no named routes: given the link, it would find no page for it and throw.
   @override
-  Future<bool> didPushRouteInformation(
-    RouteInformation routeInformation,
-  ) async {
-    setState(() => _follow(routeInformation.uri));
-    return true;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    kitShownPreset = _preset;
-    // Every page builds its theme through this: the panel's knobs reach each page as they change.
-    final custom = _custom, preset = _preset;
-    kitShownTheme = (brightness) => custom.theme(preset, brightness);
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Comic',
-      // Comic's page change, a cut, for the pages the gallery pushes, as an app gives it to its own routes.
-      theme: ThemeData(
-        pageTransitionsTheme: const PageTransitionsTheme(
-          builders: comicPageTransitions,
-        ),
-      ),
-      // ui_core's 30 languages, as an ordinary app gives them: a device in one of them hears the parts' shared words
-      // (Cancel, Close, Today) in it, and right to left the gallery reads Arabic, Comic's own words with it.
-      // flutter_localizations gives Flutter's Material and Cupertino words; Comic's theme gives its own library's.
-      locale: custom.direction == TextDirection.rtl ? const Locale('ar') : null,
-      supportedLocales: RawWidgetsLocalizations.supportedLocales,
-      localizationsDelegates: [
-        RawWidgetsLocalizations.delegate,
-        ...GlobalMaterialLocalizations.delegates,
-        KitComicWords(arabic: custom.direction == TextDirection.rtl),
-      ],
-      builder: (context, child) => KitWords(
-        arabic: custom.direction == TextDirection.rtl,
-        child: Directionality(
-          textDirection: custom.direction,
-          child: MediaQuery(
-            data: MediaQuery.of(context)
-                .copyWith(textScaler: TextScaler.linear(custom.textScale)),
-            child: ComicHost(
-              light: custom.theme(preset, Brightness.light),
-              dark: custom.theme(preset, Brightness.dark),
-              brightness: _brightness,
-              child: child!,
+  Widget build(BuildContext context) => ComicScaffold(
+    topBar: const ComicAppBar(title: 'Add a book'),
+    body: PageColumn(
+      child: RawForm(
+        key: form,
+        onSubmit: () {
+          widget.onAdd(
+            Book(title.text.trim(), author.text.trim(), started: started),
+          );
+          showComicToast(
+            context,
+            'Added ${title.text.trim()}',
+            tone: ComicTone.success,
+          );
+          form.currentState!.reset();
+          title.clear();
+          author.clear();
+          setState(() => started = null);
+        },
+        // Fields down a form keep one rhythm: ComicSpace.wide between them.
+        child: ComicColumn(
+          gap: ComicSpace.wide,
+          children: [
+            ComicTextField(
+              labelText: 'Title',
+              controller: title,
+              textInputAction: TextInputAction.next,
+              validator: (value) =>
+                  (value ?? '').trim().isEmpty ? 'Enter the title' : null,
             ),
-          ),
-        ),
-      ),
-      home: LiveNavigation(
-        go: _go,
-        child: Builder(builder: _shell),
-      ),
-    );
-  }
-
-  Widget _shell(BuildContext context) {
-    final wide = MediaQuery.sizeOf(context).width >= 840;
-    final at = livePages.indexWhere((page) => page.id == _page);
-    final items = [
-      for (final page in livePages)
-        ComicNavItem(
-          label: kitSay(context, page.title),
-          short: kitSay(context, page.title),
-          icon: page.icon,
-          key: ValueKey('nav/${page.id}'),
-        ),
-    ];
-    ComicNavigationDrawer drawer(ValueChanged<int> select) =>
-        ComicNavigationDrawer(
-          label: kitSay(context, 'Pages'),
-          header: const Padding(
-            padding: EdgeInsetsDirectional.only(start: 4, top: 4),
-            child: Align(
+            ComicTextField(
+              labelText: 'Author',
+              controller: author,
+              validator: (value) =>
+                  (value ?? '').trim().isEmpty ? 'Enter who wrote it' : null,
+            ),
+            ComicDateField(
+              labelText: 'Started',
+              hintText: 'Not yet',
+              value: started,
+              lastDate: DateTime.now(),
+              onChanged: (day) => setState(() => started = day),
+            ),
+            Align(
               alignment: AlignmentDirectional.centerStart,
-              child: ComicLogo('Comic'),
-            ),
-          ),
-          destinations: items,
-          selectedIndex: at,
-          onDestinationSelected: select,
-        );
-    final night = _brightness == Brightness.dark;
-    final bar = ComicAppBar(
-      title: kitSay(context, livePages[at].title),
-      leading: wide
-          ? null
-          : ComicIconButton(
-              LucideIcons.menu,
-              key: const ValueKey('nav/open'),
-              label: kitSay(context, 'Pages'),
-              onPressed: () async {
-                final chosen = await showComicNavigationDrawer<int>(
-                  context,
-                  builder: (context) =>
-                      drawer((i) => Navigator.of(context).pop(i)),
-                );
-                if (chosen != null) _go(livePages[chosen].id);
-              },
-            ),
-      actions: [
-        ComicIconButton(
-          night ? LucideIcons.sun : LucideIcons.moon,
-          key: const ValueKey('appearance'),
-          label: kitSay(context, night ? 'Day' : 'Night'),
-          onPressed: () => setState(
-            () => _brightness = night ? Brightness.light : Brightness.dark,
-          ),
-        ),
-        ComicIconButton(
-          LucideIcons.slidersHorizontal,
-          key: const ValueKey('customize'),
-          label: kitSay(context, 'Customize'),
-          isSelected: _customizing,
-          onPressed: () => setState(() => _customizing = !_customizing),
-        ),
-      ],
-    );
-    final t = ComicTheme.of(context);
-    // At a desk the sidebar runs the window's height with the brand at its top, and the bar stands over the content:
-    // the page's title and its panels share one leading edge on every page.
-    final content = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        bar,
-        if (_customizing)
-          ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.sizeOf(context).height * .5,
-            ),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: t.colors.card,
-                border: Border(
-                  bottom: BorderSide(
-                    color: t.colors.nightLine,
-                    width: t.rim(3),
-                  ),
-                ),
-              ),
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: t.desk ? 32 : 12,
-                  vertical: 16,
-                ),
-                child: CustomizePanel(
-                  custom: _custom,
-                  onChanged: (custom) => setState(() => _custom = custom),
-                  preset: _preset,
-                  onPreset: (preset) => setState(() => _preset = preset),
-                ),
+              child: ComicButton.filled(
+                'Save',
+                onPressed: () => form.currentState!.submit(),
               ),
             ),
-          ),
-        Expanded(
-          child: GalleryPageDeck(
-            pages: examplePages,
-            pageId: _page,
-            preset: _preset,
-            brightness: _brightness,
-            revision: _custom,
-          ),
+          ],
         ),
-      ],
-    );
-    if (!wide) return content;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _AtLeastItsWords(
-          width: 264,
-          child: drawer((i) => _go(livePages[i].id)),
-        ),
-        Expanded(child: content),
-      ],
-    );
-  }
+      ),
+    ),
+  );
 }
 
-/// The side nav's column: [width] wide, and wider where the reader's text makes a page's name hold a word longer than
-/// its row, so the names wrap only between their words. At 300% text "Overview" broke mid-word ("Overvie / w").
-class _AtLeastItsWords extends SingleChildRenderObjectWidget {
-  const _AtLeastItsWords({required this.width, required super.child});
-
-  /// The column's width while every word fits it.
-  final double width;
-
-  @override
-  RenderObject createRenderObject(BuildContext context) =>
-      _RenderAtLeastItsWords(width);
-
-  @override
-  void updateRenderObject(
-    BuildContext context,
-    _RenderAtLeastItsWords renderObject,
-  ) => renderObject.width = width;
-}
-
-class _RenderAtLeastItsWords extends RenderProxyBox {
-  _RenderAtLeastItsWords(this._width);
-
-  double _width;
-  set width(double value) {
-    if (value == _width) return;
-    _width = value;
-    markNeedsLayout();
-  }
-
-  // A child's least intrinsic width is its longest word's, with what stands beside it on its row.
-  double _own(double height) =>
-      math.max(_width, child?.getMinIntrinsicWidth(height) ?? 0);
-
-  @override
-  double computeMinIntrinsicWidth(double height) => _own(height);
-
-  @override
-  double computeMaxIntrinsicWidth(double height) => _own(height);
-
-  @override
-  Size computeDryLayout(covariant BoxConstraints constraints) {
-    final width = constraints.constrainWidth(_own(constraints.maxHeight));
-    final inner = constraints.tighten(width: width);
-    return child?.getDryLayout(inner) ?? inner.smallest;
-  }
-
-  @override
-  void performLayout() {
-    final width = constraints.constrainWidth(_own(constraints.maxHeight));
-    final inner = constraints.tighten(width: width);
-    final child = this.child;
-    if (child == null) {
-      size = inner.smallest;
-      return;
-    }
-    child.layout(inner, parentUsesSize: true);
-    size = child.size;
-  }
-}
-
-/// The theme's knobs, each a control of the look's own at its natural width, on a grid from the start edge.
-class CustomizePanel extends StatelessWidget {
-  /// A panel over [custom], reporting each change to [onChanged]; with [onPreset], the preset too.
-  const CustomizePanel({
+/// Settings: the appearance (the platform's, light or dark) and the palette, one of Comic's six print runs.
+class SettingsPage extends StatelessWidget {
+  /// The settings as they stand, and what changes them.
+  const SettingsPage({
     super.key,
-    required this.custom,
-    required this.onChanged,
-    this.preset,
-    this.onPreset,
+    required this.mode,
+    required this.palette,
+    required this.onMode,
+    required this.onPalette,
   });
 
-  /// What it shows.
-  final GalleryCustom custom;
+  /// The appearance chosen.
+  final ThemeMode mode;
 
-  /// Called with the panel's next settings.
-  final ValueChanged<GalleryCustom> onChanged;
+  /// The palette chosen.
+  final RawNamedPalette palette;
 
-  /// The preset shown, offered as a select when [onPreset] is set.
-  final String? preset;
+  /// Chooses an appearance.
+  final ValueChanged<ThemeMode> onMode;
 
-  /// Called with the preset chosen.
-  final ValueChanged<String>? onPreset;
+  /// Chooses a palette.
+  final ValueChanged<RawNamedPalette> onPalette;
 
   @override
-  Widget build(BuildContext context) {
-    String say(String en) => kitSay(context, en);
-    final c = custom;
-    final chosen = preset;
-    final choose = onPreset;
-    return Wrap(
-      spacing: 32,
-      runSpacing: 20,
-      crossAxisAlignment: WrapCrossAlignment.end,
+  Widget build(BuildContext context) => ComicScaffold(
+    topBar: const ComicAppBar(title: 'Settings'),
+    body: ComicColumn(
+      gap: ComicSpace.wide,
       children: [
-        if (chosen != null && choose != null)
-          SizedBox(
-            width: 220,
-            child: ComicSelect<String>(
-              labelText: say('Preset'),
-              value: chosen,
-              options: [
-                for (final id in ComicThemeData.presets)
-                  ComicSelectOption(id, id),
-              ],
-              onChanged: choose,
-            ),
-          ),
-        _Labelled(
-          say('Strokes'),
-          ComicSegmentedButton<bool>(
-            label: say('Strokes'),
-            value: c.bold,
-            segments: [
-              ComicButtonSegment(false, say('As drawn')),
-              ComicButtonSegment(true, say('Bold')),
+        ComicFormField(
+          'Appearance',
+          child: ComicSegmentedButton<ThemeMode>(
+            segments: const [
+              ComicButtonSegment(ThemeMode.system, 'System'),
+              ComicButtonSegment(ThemeMode.light, 'Light'),
+              ComicButtonSegment(ThemeMode.dark, 'Dark'),
             ],
-            onChanged: (v) => onChanged(c.copyWith(bold: v)),
+            value: mode,
+            onChanged: onMode,
           ),
         ),
-        _Labelled(
-          say('Density'),
-          ComicSegmentedButton<ComicDensity>(
-            label: say('Density'),
-            value: c.density,
-            segments: [
-              ComicButtonSegment(ComicDensity.standard, say('Standard')),
-              ComicButtonSegment(ComicDensity.comfortable, say('Comfortable')),
-              ComicButtonSegment(ComicDensity.compact, say('Compact')),
-            ],
-            onChanged: (v) => onChanged(c.copyWith(density: v)),
-          ),
-        ),
-        _Labelled(
-          say('Families'),
-          ComicSegmentedButton<bool>(
-            label: say('Families'),
-            value: c.oneFace,
-            segments: [
-              ComicButtonSegment(false, say('Bangers and Shantell')),
-              ComicButtonSegment(true, say('Shantell alone')),
-            ],
-            onChanged: (v) => onChanged(c.copyWith(oneFace: v)),
-          ),
-        ),
-        _Labelled(
-          say('Direction'),
-          ComicSegmentedButton<TextDirection>(
-            label: say('Direction'),
-            value: c.direction,
-            segments: [
-              ComicButtonSegment(TextDirection.ltr, say('Left to right')),
-              ComicButtonSegment(TextDirection.rtl, say('Right to left')),
-            ],
-            onChanged: (v) => onChanged(c.copyWith(direction: v)),
-          ),
-        ),
-        _Labelled(
-          say('Text scaling'),
-          ComicSegmentedButton<double>(
-            label: say('Text scaling'),
-            value: c.textScale,
-            segments: [
-              ComicButtonSegment(1.0, say('100%')),
-              ComicButtonSegment(1.5, say('150%')),
-              ComicButtonSegment(2.0, say('200%')),
-            ],
-            onChanged: (v) => onChanged(c.copyWith(textScale: v)),
-          ),
-        ),
-        SizedBox(
-          width: 220,
-          child: ComicSelect<String>(
-            labelText: say('Your own colours'),
-            value: c.colours?.name ?? '',
-            options: [
-              ComicSelectOption('', say("The preset's")),
-              for (final pair in galleryColours)
-                ComicSelectOption(pair.name, pair.name),
-            ],
-            onChanged: (v) => onChanged(
-              c.copyWith(
-                colours: () =>
-                    galleryColours.where((p) => p.name == v).firstOrNull,
+        ComicRadioGroup<RawNamedPalette>(
+          labelText: 'Palette',
+          options: [
+            // Each palette's colours, by day or by night, beside its name.
+            for (final option in ComicThemeData.palettes)
+              ComicRadio(
+                option,
+                option.label,
+                leading: Swatches(
+                  option.swatchesFor(ComicTheme.of(context).brightness),
+                ),
               ),
-            ),
-          ),
+          ],
+          groupValue: palette,
+          onChanged: onPalette,
         ),
       ],
-    );
-  }
+    ),
+  );
 }
 
-/// A knob's name drawn above its strip: a segmented button names itself only to a screen reader.
-class _Labelled extends StatelessWidget {
-  const _Labelled(this.text, this.child);
+/// A palette's colours side by side in one square, ruled in the words' ink.
+class Swatches extends StatelessWidget {
+  /// A square of [colors].
+  const Swatches(this.colors, {super.key});
 
-  final String text;
+  /// The palette's swatches, the most telling first.
+  final List<Color> colors;
+
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: 24,
+    child: DecoratedBox(
+      position: DecorationPosition.foreground,
+      // Square, inked like the panels around it.
+      decoration: BoxDecoration(
+        border: Border.all(color: ComicTheme.of(context).colors.text, width: 2),
+      ),
+      // Colours have no reading direction: a palette's stripes stand in one order in every language.
+      child: Row(
+        textDirection: TextDirection.ltr,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final color in colors) Expanded(child: ColoredBox(color: color)),
+        ],
+      ),
+    ),
+  );
+}
+
+/// Where a book stands: read, being read, or waiting. A `ComicTag` itself, not a widget around one, so a row takes it
+/// for a tag and reads its word in the row's name.
+ComicTag statusTag(Book book) => book.finished
+    ? const ComicTag('Read', tone: ComicSpeaker.fact)
+    : book.started != null
+    ? const ComicTag('Reading', tone: ComicSpeaker.currentUser)
+    : const ComicTag('To read');
+
+/// A page's column: on a desk a list, a book's page or a form reads in one column at the page's start, at most 720 wide
+/// (a form's measure), rather than across the window; on a phone it is the page's width.
+class PageColumn extends StatelessWidget {
+  /// Holds [child] to the column.
+  const PageColumn({super.key, required this.child});
+
+  /// The page's content.
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      ExcludeSemantics(child: ComicLabel(text)),
-      const SizedBox(height: 4),
-      child,
-    ],
+  Widget build(BuildContext context) => Align(
+    alignment: AlignmentDirectional.topStart,
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 720),
+      child: child,
+    ),
   );
 }

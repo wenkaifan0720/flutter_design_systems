@@ -532,8 +532,9 @@ class ComicLetteringStyle {
 }
 
 /// Outlined lettering: the concept's stacked `text-shadow`, as one part. It lays out once and paints that one layout in every
-/// layer, so the layers can't come apart in RTL or on a wrap, and it stays vector at any scale: no blur, no filter. Lettering
-/// is set in caps. [fit] shrinks one line to the width, for a masthead. Its box is the words' box; the outline paints outside.
+/// layer, so the layers can't come apart in RTL or on a wrap, and it stays vector at any scale: no blur, no filter. Its hard
+/// print falls down and toward the end, as a control's does: to the right in LTR, to the left in RTL. Lettering is set in
+/// caps. [fit] shrinks one line to the width, for a masthead. Its box is the words' box; the outline paints outside.
 ///
 /// ```dart
 /// ComicLettering('Volume one', size: 60, fill: t.colors.paper, style: ComicLetteringStyle.title)
@@ -768,7 +769,8 @@ class RenderComicLettering extends RenderBox
     final s = _w.style;
     for (final (x, y, sw, ink) in s.layers.reversed) {
       final color = _layerInk(ink);
-      final at = Offset(x * k, y * k);
+      // The print falls toward the end, as every print in Comic does: right in LTR, left in RTL.
+      final at = Offset((_dir == TextDirection.rtl ? -x : x) * k, y * k);
       // Each layer is a solid print of the glyphs, as a stacked text-shadow is; its own stroke fattens that print.
       // Drawn as the stroke alone it read as a hollow echo, a misregistration, with the ground showing through.
       _layers.add((_painter(fontSize, max, color, Paint()..color = color), at));

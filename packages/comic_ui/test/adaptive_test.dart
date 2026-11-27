@@ -21,7 +21,7 @@ void main() {
     var states = <WidgetState>{};
     try {
       Widget press(bool enabled) => ComicPressable(
-        label: 'Open issue',
+        semanticLabel: 'Open issue',
         focusNode: focus,
         onPressed: enabled ? () => calls++ : null,
         builder: (context, next) {

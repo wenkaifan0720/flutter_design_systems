@@ -106,7 +106,7 @@ void main() {
   test(
     'a focus ring grows a rounded corner by its gap and keeps a square one',
     () {
-      final rounded = comicOutsetShape(ComicShapes.rounded(8).small, 3);
+      final rounded = comicOutsetShape(comicRounded(8).small, 3);
       expect(
         (rounded as RoundedRectangleBorder).borderRadius
             .resolve(TextDirection.ltr)
@@ -187,7 +187,7 @@ void main() {
             final part = _partShape(highlight, size);
             final drawn = _bare(widget.shape);
             final where =
-                '${highlight.findAncestorWidgetOfExactType<ComicPressable>()?.label ?? highlight.toStringShort()} '
+                '${highlight.findAncestorWidgetOfExactType<ComicPressable>()?.semanticLabel ?? highlight.toStringShort()} '
                 '(${size.width.toStringAsFixed(0)}x${size.height.toStringAsFixed(0)})';
             if (part != null && _bare(part) != drawn) {
               failures.add('$where: mark $drawn on a part drawn as $part');

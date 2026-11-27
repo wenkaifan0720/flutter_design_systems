@@ -264,7 +264,7 @@ typedef _Part = ({String name, Widget Function() build, int? focus});
 List<_Part> _parts() {
   final day = DateTime(2026, 11, 9);
   Widget seg(int chosen) => ComicSegmentedButton<int>(
-    label: 'View',
+    semanticLabel: 'View',
     value: chosen,
     segments: const [
       ComicButtonSegment(0, 'Day'),
@@ -334,7 +334,7 @@ List<_Part> _parts() {
       name: 'icon button',
       build: () => ComicIconButton(
         ComicGlyphs.bell,
-        label: 'Alerts',
+        semanticLabel: 'Alerts',
         isSelected: true,
         onPressed: () {},
       ),
@@ -348,7 +348,7 @@ List<_Part> _parts() {
     (
       name: 'checkbox',
       build: () =>
-          ComicCheckbox(value: true, label: 'Agree', onChanged: (_) {}),
+          ComicCheckbox(value: true, semanticLabel: 'Agree', onChanged: (_) {}),
       focus: 0,
     ),
     (
@@ -363,7 +363,8 @@ List<_Part> _parts() {
     ),
     (
       name: 'switch',
-      build: () => ComicSwitch(value: true, label: 'On', onChanged: (_) {}),
+      build: () =>
+          ComicSwitch(value: true, semanticLabel: 'On', onChanged: (_) {}),
       focus: 0,
     ),
     (

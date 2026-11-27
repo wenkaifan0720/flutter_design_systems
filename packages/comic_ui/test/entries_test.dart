@@ -7,6 +7,8 @@ import 'package:comic_ui/src/comic/internal/reach.dart' show ComicOutward;
 
 import 'support.dart';
 
+import 'package:comic_ui/src/comic/theme.dart' show comicThemeWith;
+
 void main() {
   setUpAll(loadComicFonts);
   testWidgets('field owns its labels and editing UI', (tester) async {
@@ -135,7 +137,7 @@ void main() {
       ),
     );
     final clear = find.byWidgetPredicate(
-      (w) => w is ComicIconButton && w.label == 'Clear',
+      (w) => w is ComicIconButton && w.semanticLabel == 'Clear',
     );
     await tester.tap(clear);
     await tester.pump();
@@ -588,10 +590,12 @@ void main() {
         tester.view.physicalSize = const Size(390, 1000);
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.reset);
-        final theme = ComicThemeData.offset().copyWith(
-          shapes: ComicShapes.rounded(8),
-          strokes: ComicStrokes.bold,
-          density: ComicDensity.compact,
+        final theme = comicThemeWith(
+          ComicThemeData.offset().copyWith(
+            shapeScheme: comicShapeScheme.copyWith(stroke: 4),
+            density: ComicDensity.compact,
+          ),
+          shapes: comicRounded(8),
         );
         await tester.pumpWidget(
           MaterialApp(
@@ -619,7 +623,7 @@ void main() {
         Finder day(int number) => find.byWidgetPredicate(
           (widget) =>
               widget is ComicPressable &&
-              widget.label == 'November $number, 2026',
+              widget.semanticLabel == 'November $number, 2026',
         );
         tester.widget<ComicPressable>(day(2)).focusNode!.requestFocus();
         await tester.pump();
@@ -672,7 +676,7 @@ void main() {
                       const ComicTextArea(labelText: 'Notes'),
                       const ComicInputOtp(labelText: 'Verification code'),
                       ComicSegmentedButton<String>(
-                        label: 'View',
+                        semanticLabel: 'View',
                         value: 'all',
                         segments: const [
                           ComicButtonSegment('all', 'All issues'),

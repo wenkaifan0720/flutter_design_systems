@@ -138,12 +138,12 @@ void main() {
               actions: [
                 ComicIconButton(
                   ComicGlyphs.search,
-                  label: 'Search',
+                  semanticLabel: 'Search',
                   onPressed: () {},
                 ),
                 ComicIconButton(
                   ComicGlyphs.more,
-                  label: 'More',
+                  semanticLabel: 'More',
                   onPressed: () {},
                 ),
               ],
@@ -223,7 +223,7 @@ void main() {
               tabs: const ['Latest', 'Popular', 'Saved'],
               selectedIndex: 1,
               onTap: (_) {},
-              label: 'Sort',
+              semanticLabel: 'Sort',
             ),
           );
           final bar = find.byType(ComicTabBar);
@@ -236,7 +236,7 @@ void main() {
                     .descendant(of: bar, matching: find.byType(ComicPressable))
                     .evaluate())
               (
-                (p.widget as ComicPressable).label ?? '',
+                (p.widget as ComicPressable).semanticLabel ?? '',
                 _rect(tester, p).height,
               ),
           ], 'tab heights');
@@ -287,7 +287,7 @@ void main() {
           await pump(
             tester,
             ComicSegmentedButton<String>(
-              label: 'View',
+              semanticLabel: 'View',
               segments: const [
                 ComicButtonSegment('day', 'Day'),
                 ComicButtonSegment('week', 'Week'),
@@ -312,7 +312,7 @@ void main() {
                     )
                     .evaluate())
               (
-                (p.widget as ComicPressable).label ?? '',
+                (p.widget as ComicPressable).semanticLabel ?? '',
                 _rect(tester, p).height,
               ),
           ], 'segment heights');
@@ -450,7 +450,7 @@ void main() {
           (tester) async {
             await pump(
               tester,
-              ComicListSection(label: 'Group', children: rows),
+              ComicListSection(semanticLabel: 'Group', children: rows),
             );
             final group = find.byType(ComicListSection);
             final frame = _rect(
@@ -498,7 +498,7 @@ void main() {
             pageCount: 9,
             page: 4,
             onPageChanged: (_) {},
-            label: 'Results',
+            semanticLabel: 'Results',
           ),
         );
         final pager = find.byType(ComicPagination);

@@ -5,6 +5,7 @@ export 'comic/balloons.dart'
     hide comicBalloonPath, ComicBurstFit, ComicBurstLedger;
 export 'comic/chrome.dart';
 export 'comic/nav.dart';
+export 'comic/app_host.dart';
 export 'comic/controls.dart';
 export 'comic/frames.dart'
     hide
@@ -34,6 +35,7 @@ export 'comic/signatures/empty.dart';
 export 'comic/signatures/panels.dart';
 export 'comic/theme.dart'
     hide
+        comicThemeWith,
         ComicDarkPage,
         ComicDarkTheme,
         comicLightTones,
@@ -100,6 +102,15 @@ export 'package:ui_core/ui_core.dart'
 export 'package:ui_core/ui_core.dart' show RawMenuEntry;
 export 'package:ui_core/ui_core.dart'
     show RawWidgetsLocalizations, DefaultRawWidgetsLocalizations;
+export 'package:ui_core/ui_core.dart' show RawNamedPalette;
+export 'package:ui_core/ui_core.dart'
+    show
+        RawBand,
+        RawCornerScale,
+        RawCornerStyle,
+        RawShapeLimits,
+        RawShapeScheme;
+export 'package:ui_core/ui_core.dart' show RawForm, RawFormState;
 export 'package:ui_core/ui_core.dart' show RawRangeValues;
 export 'package:ui_core/ui_core.dart' show RawScrollbarVisibility;
 export 'package:ui_core/ui_core.dart' show RawSheetEdge;

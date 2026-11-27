@@ -359,7 +359,7 @@ class ComicFace {
 /// Overlapping framed faces, followed by the number of remaining people.
 ///
 /// ```dart
-/// ComicAvatarGroup([ComicFace('NW'), ComicFace('AK')], label: 'Contributors')
+/// ComicAvatarGroup([ComicFace('NW'), ComicFace('AK')], semanticLabel: 'Contributors')
 /// ```
 class ComicAvatarGroup extends StatelessWidget {
   /// Creates a face pile.
@@ -368,7 +368,7 @@ class ComicAvatarGroup extends StatelessWidget {
     super.key,
     this.max = 4,
     this.size = 36,
-    this.label,
+    this.semanticLabel,
   }) : assert(max >= 0),
        assert(size > 0);
 
@@ -382,7 +382,7 @@ class ComicAvatarGroup extends StatelessWidget {
   final double size;
 
   /// Overrides the joined names or initials.
-  final String? label;
+  final String? semanticLabel;
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
@@ -392,7 +392,8 @@ class ComicAvatarGroup extends StatelessWidget {
     final n = shown.length + (rest > 0 ? 1 : 0), step = frame.width * .75;
     return Semantics(
       label:
-          label ?? faces.map((face) => face.name ?? face.initials).join(', '),
+          semanticLabel ??
+          faces.map((face) => face.name ?? face.initials).join(', '),
       child: ExcludeSemantics(
         child: comicOwnSize(
           width: n == 0 ? 0 : frame.width + step * (n - 1),
@@ -428,7 +429,7 @@ class ComicAvatarGroup extends StatelessWidget {
       ..add(IterableProperty<ComicFace>('faces', faces))
       ..add(IntProperty('max', max, defaultValue: 4))
       ..add(DoubleProperty('size', size, defaultValue: 36))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -511,13 +512,13 @@ class ComicMeter extends StatelessWidget {
 /// corner, so pictures follow the shape theme.
 ///
 /// ```dart
-/// ComicCarouselView(label: 'This week', children: [for (final p in picks) ComicPictureCard(slotId: p.slotId, title: p.title)])
+/// ComicCarouselView(semanticLabel: 'This week', children: [for (final p in picks) ComicPictureCard(slotId: p.slotId, title: p.title)])
 /// ```
 class ComicCarouselView extends StatefulWidget {
   /// Creates a carousel.
   const ComicCarouselView({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.children,
     this.height = 220,
     this.itemWidth,
@@ -528,7 +529,7 @@ class ComicCarouselView extends StatefulWidget {
   });
 
   /// The carousel's accessible name.
-  final String label;
+  final String semanticLabel;
 
   /// The items, in order.
   final List<Widget> children;
@@ -558,7 +559,7 @@ class ComicCarouselView extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(DoubleProperty('height', height, defaultValue: 220))
       ..add(DoubleProperty('itemWidth', itemWidth, defaultValue: null))
       ..add(IntProperty('initialIndex', initialIndex, defaultValue: 0))
@@ -612,7 +613,7 @@ class _ComicCarouselState extends State<ComicCarouselView> {
           itemCount: count,
           initialPage: _index,
           viewportFraction: fraction,
-          semanticLabel: widget.label,
+          semanticLabel: widget.semanticLabel,
           slideLabel: (index, total) => words.page(index + 1, total),
           duration: motion.state == Duration.zero
               ? Duration.zero
@@ -669,7 +670,7 @@ class _ComicCarouselState extends State<ComicCarouselView> {
                   if (t.desk)
                     ComicIconButton(
                       rtl ? ComicGlyphs.chevronRight : ComicGlyphs.chevronLeft,
-                      label: words.previous,
+                      semanticLabel: words.previous,
                       // On the item's start keyline, its target growing toward the dots.
                       targetAlignment: AlignmentDirectional.centerStart,
                       onPressed: controls.previous,
@@ -678,14 +679,14 @@ class _ComicCarouselState extends State<ComicCarouselView> {
                     child: ComicPageDots(
                       pageCount: controls.count,
                       selectedIndex: controls.page,
-                      label: widget.label,
+                      semanticLabel: widget.semanticLabel,
                       onPageChanged: controls.goToPage,
                     ),
                   ),
                   if (t.desk)
                     ComicIconButton(
                       rtl ? ComicGlyphs.chevronLeft : ComicGlyphs.chevronRight,
-                      label: words.next,
+                      semanticLabel: words.next,
                       onPressed: controls.next,
                     ),
                 ],

@@ -164,7 +164,7 @@ Widget kitSpecimenDots() => kitState(
   (context, value, change) => ComicPageDots(
     pageCount: 4,
     selectedIndex: value,
-    label: kitSay(context, 'Preview pages'),
+    semanticLabel: kitSay(context, 'Preview pages'),
     onPageChanged: change,
   ),
 );
@@ -184,7 +184,7 @@ Widget kitSpecimenCard() => Builder(
 );
 Widget kitSpecimenGrouped() => Builder(
   builder: (context) => ComicListSection(
-    label: kitSay(context, 'Publication'),
+    semanticLabel: kitSay(context, 'Publication'),
     children: [
       ComicKvRow(kitSay(context, 'Pages'), '24', isFirst: true),
       ComicKvRow(kitSay(context, 'Print run'), '500'),
@@ -233,15 +233,17 @@ Widget kitSpecimenSpinner() => Builder(
     children: [
       ComicCircularProgressIndicator(
         value: .5,
-        label: kitSay(context, 'Half uploaded'),
+        semanticLabel: kitSay(context, 'Half uploaded'),
       ),
-      ComicCircularProgressIndicator(label: kitSay(context, 'Loading')),
+      ComicCircularProgressIndicator(semanticLabel: kitSay(context, 'Loading')),
     ],
   ),
 );
 Widget kitSpecimenProgress() => Builder(
-  builder: (context) =>
-      ComicLinearProgressIndicator(value: .6, label: kitSay(context, 'Upload')),
+  builder: (context) => ComicLinearProgressIndicator(
+    value: .6,
+    semanticLabel: kitSay(context, 'Upload'),
+  ),
 );
 Widget kitSpecimenSkeleton() => const Column(
   mainAxisSize: MainAxisSize.min,
@@ -256,7 +258,7 @@ Widget kitSpecimenSkeleton() => const Column(
 Widget kitSpecimenBadge() => Builder(
   builder: (context) => Align(
     alignment: AlignmentDirectional.centerStart,
-    child: ComicBadge(12, label: kitSay(context, 'Unread issues')),
+    child: ComicBadge(12, semanticLabel: kitSay(context, 'Unread issues')),
   ),
 );
 Widget kitSpecimenSuccess() => Builder(
@@ -279,7 +281,7 @@ Widget kitSpecimenPile() => Builder(
     ComicFace('JR'),
     ComicFace('AM'),
     ComicFace('LT'),
-  ], label: kitSay(context, 'Five contributors')),
+  ], semanticLabel: kitSay(context, 'Five contributors')),
 );
 Widget kitSpecimenMeter() => Builder(
   builder: (context) => ComicMeter(
@@ -292,7 +294,7 @@ Widget kitSpecimenMeter() => Builder(
 
 Widget kitSpecimenChart() => Builder(
   builder: (context) => ComicChart(
-    label: kitSay(context, 'Weekly pages'),
+    semanticLabel: kitSay(context, 'Weekly pages'),
     labels: KitWords.arabicOf(context)
         ? ['ن', 'ث', 'ر', 'خ', 'ج']
         : ['M', 'T', 'W', 'T', 'F'],
@@ -346,7 +348,7 @@ Widget kitSpecimenBreadcrumbs() => Builder(
 Widget kitSpecimenPagination() => kitState(
   3,
   (context, value, change) => ComicPagination(
-    label: kitSay(context, 'Results pages'),
+    semanticLabel: kitSay(context, 'Results pages'),
     pageCount: 12,
     page: value,
     onPageChanged: change,
@@ -409,7 +411,7 @@ Widget kitSpecimenCarousel() => LayoutBuilder(
         )
         .reduce(math.max);
     return ComicCarouselView(
-      label: kitSay(context, 'This week'),
+      semanticLabel: kitSay(context, 'This week'),
       itemWidth: itemWidth,
       height: math.max(
         180,
@@ -423,7 +425,7 @@ Widget kitSpecimenCarousel() => LayoutBuilder(
               context,
               KitWords.arabicOf(context) ? 'تم فتح $title.' : '$title opened.',
             ),
-            label: title,
+            semanticLabel: title,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
@@ -446,7 +448,12 @@ Widget kitSpecimenSparkline() => Builder(
       children: [
         Expanded(child: Text(label, style: t.type.body)),
         const SizedBox(width: 12),
-        ComicSparkline(label: label, values: values, width: 120, height: 32),
+        ComicSparkline(
+          semanticLabel: label,
+          values: values,
+          width: 120,
+          height: 32,
+        ),
         const SizedBox(width: 12),
         SizedBox(
           width: MediaQuery.textScalerOf(context).scale(36),
@@ -473,7 +480,7 @@ Widget kitSpecimenSparkline() => Builder(
 Widget _rating() => kitState(
   3,
   (context, value, change) => ComicRating(
-    label: kitSay(context, 'Rate this issue'),
+    semanticLabel: kitSay(context, 'Rate this issue'),
     value: value,
     onChanged: change,
   ),
@@ -508,7 +515,7 @@ const _weeks = ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4', 'Wk 5', 'Wk 6'];
 
 Widget kitSpecimenLineChart() => Builder(
   builder: (context) => ComicLineChart(
-    label: kitSay(context, 'Pages read each week'),
+    semanticLabel: kitSay(context, 'Pages read each week'),
     labels: [for (final week in _weeks) kitSay(context, week)],
     series: [
       ComicChartSeries(kitSay(context, 'You'), [12, 18, 16, 24, 21, 27]),
@@ -520,7 +527,7 @@ Widget kitSpecimenLineChart() => Builder(
 
 Widget kitSpecimenAreaChart() => Builder(
   builder: (context) => ComicAreaChart(
-    label: kitSay(context, 'Visitors each week'),
+    semanticLabel: kitSay(context, 'Visitors each week'),
     labels: [for (final week in _weeks) kitSay(context, week)],
     series: [
       ComicChartSeries(kitSay(context, 'Visitors'), [
@@ -537,7 +544,7 @@ Widget kitSpecimenAreaChart() => Builder(
 
 Widget kitSpecimenBarChart() => Builder(
   builder: (context) => ComicBarChart(
-    label: kitSay(context, 'Orders each week'),
+    semanticLabel: kitSay(context, 'Orders each week'),
     labels: [for (final week in _weeks) kitSay(context, week)],
     series: [
       ComicChartSeries(kitSay(context, 'Online'), [42, 51, 38, 60, 55, 64]),

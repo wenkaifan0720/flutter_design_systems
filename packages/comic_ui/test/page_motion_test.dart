@@ -1,5 +1,6 @@
-// A page change under Comic is a cut on every platform: a page pushed or popped stands in its place, whole, in the
-// first frame, with nothing left running; on iOS the edge swipe still takes a page back.
+// A page change under Comic is a panel wipe on every platform: a page pushed or popped stands in its place, whole,
+// in every frame, revealed from the reading start (and wiped back as it pops), nothing sliding; on iOS the edge swipe
+// still takes a page back.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
@@ -20,38 +21,36 @@ Route<void> _second() => MaterialPageRoute<void>(
 
 void main() {
   testWidgets(
-    'a page pushed or popped cuts: whole and in place in its first frame',
+    'a page pushed or popped wipes: whole and in place in every frame, the page under it showing until it is done',
     (tester) async {
       final navigator = GlobalKey<NavigatorState>();
       await tester.pumpWidget(_app(navigator));
       final screen = tester.getRect(find.byType(Navigator));
+      Rect pageOf(String words) => tester.getRect(
+        find
+            .ancestor(
+              of: find.text(words),
+              matching: find.byType(ComicScaffold),
+            )
+            .first,
+      );
 
       navigator.currentState!.push(_second()).ignore();
       await tester.pump();
-      final page = find
-          .ancestor(
-            of: find.text('Its words'),
-            matching: find.byType(ComicScaffold),
-          )
-          .first;
-      expect(tester.getRect(page), screen);
+      await tester.pump(const Duration(milliseconds: 60));
+      expect(pageOf('Its words'), screen, reason: 'nothing slides');
+      expect(find.text('The first page'), findsOneWidget, reason: 'wiping');
+      expect(tester.hasRunningAnimations, isTrue);
+      await tester.pumpAndSettle();
       expect(find.text('The first page'), findsNothing);
-      expect(tester.hasRunningAnimations, isFalse);
 
       navigator.currentState!.pop();
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 40));
+      expect(pageOf('Its words'), screen, reason: 'nothing slides');
+      expect(pageOf('The first page'), screen);
+      await tester.pumpAndSettle();
       expect(find.text('Its words'), findsNothing);
-      expect(
-        tester.getRect(
-          find
-              .ancestor(
-                of: find.text('The first page'),
-                matching: find.byType(ComicScaffold),
-              )
-              .first,
-        ),
-        screen,
-      );
       expect(tester.hasRunningAnimations, isFalse);
     },
     variant: TargetPlatformVariant.all(),
@@ -61,7 +60,7 @@ void main() {
     final navigator = GlobalKey<NavigatorState>();
     await tester.pumpWidget(_app(navigator));
     navigator.currentState!.push(_second()).ignore();
-    await tester.pump();
+    await tester.pumpAndSettle();
     await tester.dragFrom(const Offset(4, 300), const Offset(600, 0));
     await tester.pumpAndSettle();
     expect(find.text('Its words'), findsNothing);

@@ -148,7 +148,7 @@ class ComicSheet extends StatelessWidget {
                           if (onClose != null || showClose)
                             ComicIconButton(
                               ComicGlyphs.close,
-                              label:
+                              semanticLabel:
                                   closeLabel ??
                                   RawWidgetsLocalizations.of(context)
                                       .closeButtonLabel,
@@ -249,7 +249,7 @@ class ComicPopover extends StatelessWidget {
     this.side = RawPopoverSide.below,
     this.align = RawPopoverAlign.start,
     this.width = 320,
-    this.label,
+    this.semanticLabel,
     this.controller,
     this.onOpenChanged,
   });
@@ -271,7 +271,7 @@ class ComicPopover extends StatelessWidget {
   final double width;
 
   /// What a screen reader calls the panel.
-  final String? label;
+  final String? semanticLabel;
 
   /// Opens and closes it from elsewhere.
   final MenuController? controller;
@@ -283,7 +283,7 @@ class ComicPopover extends StatelessWidget {
   Widget build(BuildContext context) => RawPopover(
     controller: controller,
     onOpenChanged: onOpenChanged,
-    semanticLabel: label,
+    semanticLabel: semanticLabel,
     // A panel of its own width ([width]), not a list: it does not take a wide anchor's width.
     placement: RawPopoverPlacement(
       side: side,
@@ -324,7 +324,7 @@ class ComicPopover extends StatelessWidget {
         ),
       )
       ..add(DoubleProperty('width', width, defaultValue: 320))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<MenuController>(
           'controller',
@@ -356,7 +356,7 @@ class ComicHoverCard extends StatelessWidget {
     this.side = RawPopoverSide.below,
     this.align = RawPopoverAlign.start,
     this.width = 280,
-    this.label,
+    this.semanticLabel,
   });
 
   /// What the pointer rests on.
@@ -375,13 +375,13 @@ class ComicHoverCard extends StatelessWidget {
   final double width;
 
   /// What a screen reader calls the card.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) => RawPopover(
     trigger: RawPopoverTrigger.hover,
     focusOnOpen: false,
-    semanticLabel: label,
+    semanticLabel: semanticLabel,
     // A panel of its own width ([width]), not a list: it does not take a wide anchor's width.
     placement: RawPopoverPlacement(
       side: side,
@@ -413,6 +413,6 @@ class ComicHoverCard extends StatelessWidget {
         ),
       )
       ..add(DoubleProperty('width', width, defaultValue: 280))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }

@@ -95,7 +95,7 @@ final RawInventory comicInventory = RawInventory(
       'IconButton',
       (context) => const ComicIconButton(
         ComicGlyphs.share,
-        label: 'Share',
+        semanticLabel: 'Share',
         onPressed: _tap,
       ),
     ),
@@ -106,7 +106,7 @@ final RawInventory comicInventory = RawInventory(
     RawInventoryEntry.present(
       'ButtonGroup',
       (context) => const ComicButtonGroup(
-        label: 'Text',
+        semanticLabel: 'Text',
         items: [
           ComicButtonGroupItem('Copy', onPressed: _tap),
           ComicButtonGroupItem('Paste', onPressed: _tap),
@@ -116,7 +116,7 @@ final RawInventory comicInventory = RawInventory(
     RawInventoryEntry.present(
       'ToggleGroup',
       (context) => ComicToggleGroup<String>(
-        label: 'Style',
+        semanticLabel: 'Style',
         values: const ['Bold', 'Italic'],
         selected: const {'Bold'},
         multiSelectionEnabled: true,
@@ -209,7 +209,7 @@ final RawInventory comicInventory = RawInventory(
       'Checkbox',
       (context) => const ComicCheckbox(
         value: true,
-        label: 'Unread only',
+        semanticLabel: 'Unread only',
         onChanged: _take,
       ),
     ),
@@ -227,8 +227,11 @@ final RawInventory comicInventory = RawInventory(
     ),
     RawInventoryEntry.present(
       'Switch',
-      (context) =>
-          const ComicSwitch(value: true, label: 'Alerts', onChanged: _take),
+      (context) => const ComicSwitch(
+        value: true,
+        semanticLabel: 'Alerts',
+        onChanged: _take,
+      ),
     ),
     RawInventoryEntry.present(
       'Slider',
@@ -246,7 +249,7 @@ final RawInventory comicInventory = RawInventory(
     RawInventoryEntry.present(
       'SegmentedButton',
       (context) => const ComicSegmentedButton<String>(
-        label: 'View',
+        semanticLabel: 'View',
         segments: [
           ComicButtonSegment('all', 'All'),
           ComicButtonSegment('saved', 'Saved'),
@@ -261,8 +264,11 @@ final RawInventory comicInventory = RawInventory(
     ),
     RawInventoryEntry.present(
       'Rating',
-      (context) =>
-          const ComicRating(label: 'Rating', value: 3, onChanged: _take),
+      (context) => const ComicRating(
+        semanticLabel: 'Rating',
+        value: 3,
+        onChanged: _take,
+      ),
     ),
     RawInventoryEntry.present(
       'FileUpload',
@@ -303,7 +309,7 @@ final RawInventory comicInventory = RawInventory(
     RawInventoryEntry.present(
       'WheelPicker',
       (context) => ComicWheelPicker<int>(
-        label: 'Copies',
+        semanticLabel: 'Copies',
         values: const [1, 2, 3, 4, 5],
         value: 2,
         labelOf: (copies) => '$copies',
@@ -370,8 +376,11 @@ final RawInventory comicInventory = RawInventory(
     ),
     RawInventoryEntry.present(
       'PageDots',
-      (context) =>
-          const ComicPageDots(pageCount: 3, selectedIndex: 0, label: 'Pages'),
+      (context) => const ComicPageDots(
+        pageCount: 3,
+        selectedIndex: 0,
+        semanticLabel: 'Pages',
+      ),
     ),
     RawInventoryEntry.present(
       'MenuBar',
@@ -456,10 +465,10 @@ final RawInventory comicInventory = RawInventory(
     RawInventoryEntry.present(
       'CarouselView',
       (context) => const ComicCarouselView(
-        label: 'This week',
+        semanticLabel: 'This week',
         children: [
-          ComicMedia(slotId: 'pick-1', label: 'First pick'),
-          ComicMedia(slotId: 'pick-2', label: 'Second pick'),
+          ComicMedia(slotId: 'pick-1', semanticLabel: 'First pick'),
+          ComicMedia(slotId: 'pick-2', semanticLabel: 'Second pick'),
         ],
       ),
     ),
@@ -523,13 +532,13 @@ final RawInventory comicInventory = RawInventory(
       (context) => const ComicAvatarGroup([
         ComicFace('NW'),
         ComicFace('AK'),
-      ], label: 'Contributors'),
+      ], semanticLabel: 'Contributors'),
     ),
     RawInventoryEntry.present('Badge', (context) => const ComicBadge(3)),
     RawInventoryEntry.present('Tag', (context) => const ComicTag('New')),
     RawInventoryEntry.present(
       'Media',
-      (context) => const ComicMedia(slotId: 'cover', label: 'Cover'),
+      (context) => const ComicMedia(slotId: 'cover', semanticLabel: 'Cover'),
     ),
     RawInventoryEntry.present(
       'EmptyState',
@@ -610,13 +619,17 @@ final RawInventory comicInventory = RawInventory(
     // Feedback
     RawInventoryEntry.present(
       'LinearProgressIndicator',
-      (context) =>
-          const ComicLinearProgressIndicator(value: .4, label: 'Saving'),
+      (context) => const ComicLinearProgressIndicator(
+        value: .4,
+        semanticLabel: 'Saving',
+      ),
     ),
     RawInventoryEntry.present(
       'CircularProgressIndicator',
-      (context) =>
-          const ComicCircularProgressIndicator(value: .4, label: 'Saving'),
+      (context) => const ComicCircularProgressIndicator(
+        value: .4,
+        semanticLabel: 'Saving',
+      ),
     ),
     RawInventoryEntry.present(
       'Skeleton',
@@ -634,7 +647,7 @@ final RawInventory comicInventory = RawInventory(
     RawInventoryEntry.present(
       'LineChart',
       (context) => const ComicLineChart(
-        label: 'Pages read',
+        semanticLabel: 'Pages read',
         labels: _week,
         series: _pages,
       ),
@@ -642,7 +655,7 @@ final RawInventory comicInventory = RawInventory(
     RawInventoryEntry.present(
       'BarChart',
       (context) => const ComicBarChart(
-        label: 'Pages read',
+        semanticLabel: 'Pages read',
         labels: _week,
         series: _pages,
       ),
@@ -650,7 +663,7 @@ final RawInventory comicInventory = RawInventory(
     RawInventoryEntry.present(
       'AreaChart',
       (context) => const ComicAreaChart(
-        label: 'Pages read',
+        semanticLabel: 'Pages read',
         labels: _week,
         series: _pages,
       ),
@@ -668,8 +681,10 @@ final RawInventory comicInventory = RawInventory(
     ),
     RawInventoryEntry.present(
       'Sparkline',
-      (context) =>
-          const ComicSparkline(label: 'Pages', values: [12, 18, 16, 22]),
+      (context) => const ComicSparkline(
+        semanticLabel: 'Pages',
+        values: [12, 18, 16, 22],
+      ),
     ),
   ],
 );

@@ -93,7 +93,7 @@ List<MatrixRow> matrixRows() {
           ? null
           : ComicIconButton(
               ComicGlyphs.bell,
-              label: 'Alerts',
+              semanticLabel: 'Alerts',
               isSelected: f.selected,
               onPressed: f.disabled ? null : _tap,
             ),
@@ -102,7 +102,7 @@ List<MatrixRow> matrixRows() {
       'Button group',
       240,
       (off) => ComicButtonGroup(
-        label: 'Text',
+        semanticLabel: 'Text',
         items: [
           ComicButtonGroupItem('Copy', onPressed: off ? null : _tap),
           ComicButtonGroupItem('Paste', onPressed: off ? null : _tap),
@@ -115,7 +115,7 @@ List<MatrixRow> matrixRows() {
       (f) => f.error
           ? null
           : ComicToggleGroup<String>(
-              label: 'Style',
+              semanticLabel: 'Style',
               values: const ['Bold', 'Italic'],
               selected: f.selected ? const {'Bold'} : const {},
               emptySelectionAllowed: true,
@@ -149,7 +149,7 @@ List<MatrixRow> matrixRows() {
       150,
       (f) => ComicCheckbox(
         value: f.selected,
-        label: 'Agree',
+        semanticLabel: 'Agree',
         isError: f.error,
         onChanged: f.disabled ? null : _no,
       ),
@@ -173,7 +173,7 @@ List<MatrixRow> matrixRows() {
           ? null
           : ComicSwitch(
               value: f.selected,
-              label: 'On',
+              semanticLabel: 'On',
               onChanged: f.disabled ? null : _no,
             ),
     ),
@@ -200,7 +200,7 @@ List<MatrixRow> matrixRows() {
       (f) => f.error
           ? null
           : ComicSegmentedButton<int>(
-              label: 'View',
+              semanticLabel: 'View',
               value: f.selected ? 1 : 0,
               segments: const [
                 ComicButtonSegment(0, 'Day'),
@@ -427,7 +427,7 @@ List<MatrixRow> matrixRows() {
       (f) => f.error
           ? null
           : ComicRating(
-              label: 'Rating',
+              semanticLabel: 'Rating',
               value: f.selected ? 4 : 0,
               onChanged: f.disabled ? null : _no,
             ),
@@ -515,7 +515,7 @@ List<MatrixRow> matrixRows() {
       'Wheel picker',
       220,
       (off) => ComicWheelPicker<int>(
-        label: 'Copies',
+        semanticLabel: 'Copies',
         values: const [1, 2, 3, 4, 5],
         value: 3,
         labelOf: (n) => '$n',
@@ -724,7 +724,7 @@ List<MatrixRow> matrixRows() {
       'Popover',
       200,
       (off) => ComicPopover(
-        label: 'Filters',
+        semanticLabel: 'Filters',
         anchorBuilder: (context, anchor) =>
             ComicButton('Filter', onPressed: off ? null : anchor.toggle),
         builder: (context, close) => const Text('Only unread'),
@@ -742,13 +742,13 @@ List<MatrixRow> matrixRows() {
       'Carousel',
       360,
       () => ComicCarouselView(
-        label: 'Covers',
+        semanticLabel: 'Covers',
         height: 120,
         itemWidth: 140,
         children: [
           for (final word in ['One', 'Two', 'Three'])
             ComicPanel(
-              label: word,
+              semanticLabel: word,
               child: Center(child: Text(word)),
             ),
         ],
@@ -758,7 +758,7 @@ List<MatrixRow> matrixRows() {
       'Line chart',
       360,
       () => const ComicLineChart(
-        label: 'Pages read',
+        semanticLabel: 'Pages read',
         labels: _weeks,
         series: [
           ComicChartSeries('You', [12, 18, 16, 24]),
@@ -771,7 +771,7 @@ List<MatrixRow> matrixRows() {
       'Area chart',
       360,
       () => const ComicAreaChart(
-        label: 'Visitors',
+        semanticLabel: 'Visitors',
         labels: _weeks,
         series: [
           ComicChartSeries('Visitors', [320, 410, 380, 520]),
@@ -782,7 +782,7 @@ List<MatrixRow> matrixRows() {
       'Bar chart',
       360,
       () => const ComicBarChart(
-        label: 'Orders',
+        semanticLabel: 'Orders',
         labels: _weeks,
         series: [
           ComicChartSeries('Online', [42, 51, 38, 60]),

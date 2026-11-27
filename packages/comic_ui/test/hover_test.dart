@@ -256,7 +256,8 @@ void main() {
               continue;
             }
             final name = switch (kind) {
-              'press' => (element.widget as ComicPressable).label ?? 'a press',
+              'press' =>
+                (element.widget as ComicPressable).semanticLabel ?? 'a press',
               'slider' => 'slider',
               _ => 'field',
             };

@@ -89,7 +89,7 @@ void main() {
         const Padding(
           padding: EdgeInsets.all(16),
           child: ComicLineChart(
-            label: 'Pages read',
+            semanticLabel: 'Pages read',
             labels: ['Wk 1', 'Wk 2', 'Wk 3'],
             series: [
               ComicChartSeries('You', [12, 18, 16]),

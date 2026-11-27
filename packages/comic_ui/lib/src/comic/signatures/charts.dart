@@ -540,7 +540,12 @@ class ComicTally extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (yoursIcon != null) ...[
-                        Icon(yoursIcon, size: 14, color: c.primaryText),
+                        Icon(
+                          yoursIcon,
+                          size: 14,
+                          color: c.primaryText,
+                          applyTextScaling: true,
+                        ),
                         const SizedBox(width: ComicSpace.nib),
                       ],
                       Flexible(
@@ -845,7 +850,7 @@ class ComicFlow extends StatelessWidget {
             math.max(
               50.0,
               math.max(
-                f.person?.size ?? 0,
+                f.person?.sizeIn(context) ?? 0,
                 textHeight(f.name, nameStyle) +
                     textHeight(f.figure ?? '${f.amount}', t.type.data),
               ),
@@ -860,7 +865,7 @@ class ComicFlow extends StatelessWidget {
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final figureSize = t.desk ? 28.0 : 24.0;
     final popW = t.desk ? 136.0 : 118.0, popH = t.desk ? 84.0 : 76.0;
-    final roundel = intoPerson?.size ?? 0.0;
+    final roundel = intoPerson?.sizeIn(context) ?? 0.0;
     final rightHeight =
         (intoPerson == null ? 0.0 : roundel + 4) +
         math.max(18, textHeight(into, destinationStyle)) +

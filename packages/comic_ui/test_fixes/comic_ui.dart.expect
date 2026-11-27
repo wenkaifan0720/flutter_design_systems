@@ -124,7 +124,7 @@ void calls(BuildContext context) {
   final v19 = ComicPageDots(
     pageCount: 1,
     selectedIndex: 1,
-    label: 'Text',
+    semanticLabel: 'Text',
     onPageChanged: (_) {},
   );
   print(v19.pageCount);
@@ -134,7 +134,7 @@ void calls(BuildContext context) {
   print(v20.onPageChanged);
   final v21 = ComicIconButton(
     const IconData(0xe000),
-    label: 'Text',
+    semanticLabel: 'Text',
     isSelected: true,
   );
   print(v21.isSelected);

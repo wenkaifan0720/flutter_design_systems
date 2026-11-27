@@ -366,7 +366,7 @@ class ComicEventPanel extends StatelessWidget {
       bleed: true,
       ground: big ? ComicPanelFill.dots : ComicPanelFill.plain,
       onPressed: onPressed,
-      label: title,
+      semanticLabel: title,
       child: body,
     );
   }
@@ -495,7 +495,7 @@ class ComicMarkPanel extends StatelessWidget {
       autofocus: autofocus,
       bleed: true,
       onPressed: onPressed,
-      label: title,
+      semanticLabel: title,
       child: ComicColumn(
         children: [
           SizedBox(
@@ -818,7 +818,11 @@ class ComicVoicePanel extends StatelessWidget {
                 height: figure,
                 alignment: AlignmentDirectional.center,
                 child: slotId != null
-                    ? ComicPerson(slotId: slotId, size: figure, label: name)
+                    ? ComicPerson(
+                        slotId: slotId,
+                        size: figure,
+                        semanticLabel: name,
+                      )
                     : portrait ?? ComicPerson.seeded(name, size: figure),
               ),
             ),
@@ -1138,7 +1142,7 @@ class ComicReply extends StatelessWidget {
               ? ComicButton(label, icon: glyph, onPressed: onSend)
               : ComicIconButton(
                   glyph,
-                  label: label,
+                  semanticLabel: label,
                   onPressed: onSend,
                   style: ComicStyle(minimumSize: square),
                 )
@@ -1146,7 +1150,7 @@ class ComicReply extends StatelessWidget {
         ? ComicButton.filled(label, icon: glyph, onPressed: onSend)
         : ComicIconButton(
             glyph,
-            label: label,
+            semanticLabel: label,
             onPressed: onSend,
             style: ComicStyle(
               minimumSize: square,

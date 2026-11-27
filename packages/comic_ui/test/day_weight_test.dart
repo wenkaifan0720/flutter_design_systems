@@ -1,6 +1,5 @@
 // A chosen day's number has one weight in a date picker and in a calendar: heavy, as a range's chosen ends are; the
 // other days the body's.
-import 'package:comic_ui/comic_host.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';

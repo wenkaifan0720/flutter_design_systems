@@ -243,7 +243,7 @@ void main() {
       find.descendant(
         of: removable,
         matching: find.byWidgetPredicate(
-          (w) => w is ComicPressable && w.label == 'Delete History',
+          (w) => w is ComicPressable && w.semanticLabel == 'Delete History',
         ),
       ),
     );
@@ -407,7 +407,9 @@ void main() {
     await tester.enterText(find.byType(EditableText), 'See you soon');
     await _tap(
       tester,
-      find.byWidgetPredicate((w) => w is ComicPressable && w.label == 'Send'),
+      find.byWidgetPredicate(
+        (w) => w is ComicPressable && w.semanticLabel == 'Send',
+      ),
     );
     expect(
       tester.widget<EditableText>(find.byType(EditableText)).controller.text,

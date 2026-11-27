@@ -35,6 +35,8 @@ const _arabic = <String, String>{
   'Enter the 3 or 4 digit security code.':
       'أدخل رمز الأمان المكوّن من ٣ أو ٤ أرقام.',
   'Customize': 'تخصيص',
+  'Started': 'تاريخ البدء',
+  'A date in a form': 'تاريخ في نموذج',
   'Preset': 'النمط',
   'Strokes': 'الحدود',
   'As drawn': 'الافتراضي',

@@ -203,7 +203,7 @@ const _weeks = ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4', 'Wk 5', 'Wk 6'];
 // The three chart forms by their shared names (each a ComicChart of that form).
 Widget kitLineChart() => Builder(
   builder: (context) => ComicLineChart(
-    label: kitSay(context, 'Pages read each week'),
+    semanticLabel: kitSay(context, 'Pages read each week'),
     labels: [for (final week in _weeks) kitSay(context, week)],
     series: [
       ComicChartSeries(kitSay(context, 'You'), [12, 18, 16, 24, 21, 27]),
@@ -226,7 +226,7 @@ Widget kitGapChart() => Builder(
         style: ComicTheme.of(context).type.body,
       ),
       ComicChart(
-        label: kitSay(context, 'Hours slept each night'),
+        semanticLabel: kitSay(context, 'Hours slept each night'),
         labels: [
           kitSay(context, 'Mon'),
           kitSay(context, 'Tue'),
@@ -254,7 +254,7 @@ Widget kitGapChart() => Builder(
 
 Widget kitAreaChart() => Builder(
   builder: (context) => ComicAreaChart(
-    label: kitSay(context, 'Visitors each week'),
+    semanticLabel: kitSay(context, 'Visitors each week'),
     labels: [for (final week in _weeks) kitSay(context, week)],
     series: [
       ComicChartSeries(kitSay(context, 'Visitors'), [
@@ -271,7 +271,7 @@ Widget kitAreaChart() => Builder(
 
 Widget kitBarChart() => Builder(
   builder: (context) => ComicBarChart(
-    label: kitSay(context, 'Orders each week'),
+    semanticLabel: kitSay(context, 'Orders each week'),
     labels: [for (final week in _weeks) kitSay(context, week)],
     series: [
       ComicChartSeries(kitSay(context, 'Online'), [42, 51, 38, 60, 55, 64]),
@@ -282,7 +282,7 @@ Widget kitBarChart() => Builder(
 
 Widget kitEmptyChart() => Builder(
   builder: (context) => ComicChart(
-    label: kitSay(context, 'Pages read each week'),
+    semanticLabel: kitSay(context, 'Pages read each week'),
     series: [ComicChartSeries(kitSay(context, 'You'), [])],
     height: 120,
   ),
@@ -290,7 +290,7 @@ Widget kitEmptyChart() => Builder(
 
 Widget kitLoadingChart() => Builder(
   builder: (context) => ComicChart(
-    label: kitSay(context, 'Pages read each week'),
+    semanticLabel: kitSay(context, 'Pages read each week'),
     series: [ComicChartSeries(kitSay(context, 'You'), [])],
     height: 120,
     loading: true,
@@ -306,7 +306,12 @@ Widget _sparklines() => Builder(
       children: [
         Expanded(child: Text(label, style: t.type.body)),
         const SizedBox(width: 12),
-        ComicSparkline(label: label, values: values, width: 120, height: 32),
+        ComicSparkline(
+          semanticLabel: label,
+          values: values,
+          width: 120,
+          height: 32,
+        ),
         const SizedBox(width: 12),
         SizedBox(
           width: MediaQuery.textScalerOf(context).scale(36),

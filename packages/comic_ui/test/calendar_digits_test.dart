@@ -1,5 +1,4 @@
 // A calendar writes its days in the app's digits, as Material's does: in Arabic the 20th reads ٢٠.
-import 'package:comic_ui/comic_host.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -8,7 +8,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import 'controls.dart';
-import 'entries.dart' show ComicRadioGroup;
+import 'entries.dart' show ComicRadioGroup, ComicSegmentedButton;
+import 'heads.dart' show ComicTag;
 import 'layout.dart';
 import 'theme.dart';
 import 'press.dart';
@@ -17,6 +18,7 @@ import 'internal/row_frame.dart';
 import 'internal/cap_label.dart';
 import 'internal/style_guard.dart';
 import 'knobs.dart' show ComicSpace;
+import 'internal/field_label.dart';
 
 /// A row with a rule on its top edge. [strong] is the 3 px contour a total stands under.
 ///
@@ -444,7 +446,7 @@ class ComicListTile extends StatelessWidget {
     this.action,
     this.onPressed,
     this.isFirst = false,
-    this.label,
+    this.semanticLabel,
     this.selected = false,
     this.isDestructiveAction = false,
     this.enabled = true,
@@ -459,8 +461,9 @@ class ComicListTile extends StatelessWidget {
   /// plain row of words, not a disabled one.
   final bool enabled;
 
-  /// Overrides the spoken row name. By default it includes [title] and [subtitle].
-  final String? label;
+  /// Overrides the spoken row name. By default it is [title], [subtitle] and the words of a [trailing] tag or text,
+  /// as they are drawn; a [leading] mark is left out of it.
+  final String? semanticLabel;
 
   /// Selection and destructive emphasis.
   final bool selected, isDestructiveAction;
@@ -471,11 +474,25 @@ class ComicListTile extends StatelessWidget {
   /// A `ComicPerson`, a `ComicMark`, a `ComicCheckbox`, a `ComicMedia(width: 56)`: its own width stays.
   final Widget? leading;
 
-  /// A figure or a `ComicTag` beside the title, or below when it needs more room.
+  /// A figure or a `ComicTag` beside the title, or below when it needs more room: a status, read with the row's name.
+  /// A control here (a menu's button, an icon button) stands beside a row that presses, as [action] does, and keeps a
+  /// screen reader's node of its own.
   final Widget? trailing;
 
-  /// A `ComicButton(size: ComicButtonSize.small)` or `ComicButton`, one or two words.
+  /// A `ComicButton(size: ComicButtonSize.small)` or `ComicButton`, one or two words. It keeps its own node, apart
+  /// from the row's.
   final Widget? action;
+
+  // What a trailing part says, when the row is read with it: a tag's word, a figure's text.
+  static String? _spoken(Widget? part) => switch (part) {
+    ComicTag(:final word) => word,
+    Text(:final data?) => data,
+    _ => null,
+  };
+
+  // A trailing part that only shows something: a tag, words, a glyph. Anything else is taken for a control.
+  static bool _shows(Widget? part) =>
+      part is ComicTag || part is Text || part is RichText || part is Icon;
 
   /// The whole row opens something.
   final VoidCallback? onPressed;
@@ -492,6 +509,33 @@ class ComicListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
+    // A control in the trailing slot of a row that presses stands beside it, as an action does, so it keeps its node.
+    if (onPressed != null && trailing != null && !_shows(trailing)) {
+      return ComicListTile(
+        title: title,
+        subtitle: subtitle,
+        note: note,
+        leading: leading,
+        onPressed: onPressed,
+        isFirst: isFirst,
+        semanticLabel: semanticLabel,
+        selected: selected,
+        isDestructiveAction: isDestructiveAction,
+        enabled: enabled,
+        focusNode: focusNode,
+        autofocus: autofocus,
+        action: action == null
+            ? trailing
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  trailing!,
+                  const SizedBox(width: ComicSpace.close),
+                  action!,
+                ],
+              ),
+      );
+    }
     // Keep nested actions outside the row's named activation node.
     if (onPressed != null && action != null) {
       // The row and its action share one line: inside a group the row keeps a fill of its own beside the action.
@@ -503,18 +547,24 @@ class ComicListTile extends StatelessWidget {
         trailing: trailing,
         onPressed: onPressed,
         isFirst: isFirst,
-        label: label,
+        semanticLabel: semanticLabel,
         selected: selected,
         isDestructiveAction: isDestructiveAction,
         enabled: enabled,
+        focusNode: focusNode,
+        autofocus: autofocus,
       );
-      return _ListActionRow(
-        minimumContent:
-            (leading == null ? 144 : 212) *
-            MediaQuery.textScalerOf(context).scale(16) /
-            16,
-        content: RowFrame.off(child: main),
-        action: action!,
+      // One rule over the row and its action, so the rules of a list reach its action column.
+      return ComicRuled(
+        rule: !isFirst,
+        child: _ListActionRow(
+          minimumContent:
+              (leading == null ? 144 : 212) *
+              MediaQuery.textScalerOf(context).scale(16) /
+              16,
+          content: RowFrame.off(child: _RuleHeld(child: main)),
+          action: action!,
+        ),
       );
     }
     // Read below the selected fill's ComicLetteringScope, so a selected row's words take the fill's letters.
@@ -675,9 +725,13 @@ class ComicListTile extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         onPressed: enabled ? onPressed : null,
-        label:
-            label ??
-            [title, if (subtitle?.isNotEmpty == true) subtitle!].join(', '),
+        semanticLabel:
+            semanticLabel ??
+            [
+              title,
+              if (subtitle?.isNotEmpty == true) subtitle!,
+              if (_spoken(trailing) case final said? when said.isNotEmpty) said,
+            ].join(', '),
         value: note,
         selected: selected ? true : null,
         outline: grouped == null ? null : WidgetStatePropertyAll(grouped),
@@ -712,7 +766,7 @@ class ComicListTile extends StatelessWidget {
             );
     }
     if (grouped != null) row = RowReach(reach: reach, child: row);
-    return ComicRuled(rule: !isFirst, child: row);
+    return ComicRuled(rule: !isFirst && !_RuleHeld.on(context), child: row);
   }
 
   @override
@@ -728,7 +782,7 @@ class ComicListTile extends StatelessWidget {
           defaultValue: true,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         FlagProperty(
           'selected',
@@ -772,6 +826,17 @@ class ComicListTile extends StatelessWidget {
         ),
       );
   }
+}
+
+// A row beside its action: the rule over both is drawn round them, not over the row alone.
+class _RuleHeld extends InheritedWidget {
+  const _RuleHeld({required super.child});
+
+  static bool on(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<_RuleHeld>() != null;
+
+  @override
+  bool updateShouldNotify(_RuleHeld old) => false;
 }
 
 // Measure the action itself before deciding whether a reading column fits.
@@ -1038,7 +1103,7 @@ class ComicSwitchRow extends StatelessWidget {
     final t = ComicTheme.of(context);
     return ComicPressable(
       autofocus: autofocus,
-      label: label,
+      semanticLabel: label,
       hint: note,
       toggled: value,
       button: false,
@@ -1072,7 +1137,7 @@ class ComicSwitchRow extends StatelessWidget {
                       ], states).freeze(),
                       value: value,
                       onChanged: onChanged == null ? null : (_) {},
-                      label: label,
+                      semanticLabel: label,
                     ),
                   ),
                 ),
@@ -1323,14 +1388,20 @@ class ComicFormField extends StatelessWidget {
   final FocusNode? focusNode;
 
   /// Whether [child] is a group of controls: the label names the group and each control keeps its own node on a
-  /// screen reader. Null reads it from [child]: a [ComicChoices] or a [ComicRadioGroup] is a group; anything else is
-  /// one control, whose node takes the label, help and error.
+  /// screen reader. Null reads it from [child]: a [ComicChoices], a [ComicRadioGroup] or a [ComicSegmentedButton] is a
+  /// group; anything else is one control, whose node takes the label, help and error. Either way the label is heard
+  /// once: a control that names itself as the field does (a switch's `semanticLabel`, a quiet slider's `label`)
+  /// does not say it again.
   final bool? group;
 
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
-    final many = group ?? (child is ComicChoices || child is ComicRadioGroup);
+    final many =
+        group ??
+        (child is ComicChoices ||
+            child is ComicRadioGroup ||
+            child is ComicSegmentedButton);
     // No room of its own above the label: a form field stands where its column puts it, as a text field or a
     // select beside it does, so a form keeps one rhythm whichever part each row is.
     return RawInputDecorator(
@@ -1387,7 +1458,8 @@ class ComicFormField extends StatelessWidget {
             ),
         ],
       ),
-      child: child,
+      // A control that names itself as the field does is not heard saying it again.
+      child: ComicFieldLabel(label: label, merged: !many, child: child),
     );
   }
 

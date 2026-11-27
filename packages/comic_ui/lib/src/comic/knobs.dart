@@ -1,4 +1,4 @@
-// The theme-wide knobs beside the shapes: the stroke scale, density and the typeface. Each falls back to the look's
+// The theme-wide knobs beside the shape scheme: density and the typeface. Each falls back to the look's
 // own when null, so a theme that sets none draws Comic as it was designed.
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
@@ -7,73 +7,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
 import 'fonts.dart';
-
-/// The weight of Comic's ink, in two steps: [standard], the look's own contours part by part, and [bold], rims at 4
-/// and a focused part's print at 5. Each step names the widths every styled part's rims and rules read, in logical
-/// pixels: [hairline] for the rules inside a part (the act plate's inner rule, a segment's, a card's second line),
-/// [regular] for a part's rim, [heavy] for a focused part's print and a chosen part's rim; null keeps the look's own
-/// ink contours.
-///
-/// ```dart
-/// final theme = ComicThemeData.offset().copyWith(strokes: ComicStrokes.bold);
-/// ```
-@immutable
-class ComicStrokes with Diagnosticable {
-  const ComicStrokes._({this.hairline, this.regular, this.heavy});
-
-  /// The look's own ink: each part's contour as it was drawn, with heavier focus marks. A theme's default.
-  static const ComicStrokes standard = ComicStrokes._();
-
-  /// Rims at 4 and a focused part's print at 5: a bolder line for a brand that wants it.
-  static const ComicStrokes bold = ComicStrokes._(
-    hairline: 3,
-    regular: 4,
-    heavy: 5,
-  );
-
-  /// The rules inside a part.
-  final double? hairline;
-
-  /// A part's rim.
-  final double? regular;
-
-  /// A focused part's print and a chosen part's rim.
-  final double? heavy;
-
-  /// True when every width is null.
-  bool get isEmpty => hairline == null && regular == null && heavy == null;
-
-  /// Between [a] and [b]; a null width counts as the look's.
-  static ComicStrokes lerp(ComicStrokes a, ComicStrokes b, double t) {
-    if (identical(a, b) || t == 0) return a;
-    if (t == 1) return b;
-    double? l(double? x, double? y, double own) =>
-        x == null && y == null ? null : lerpDouble(x ?? own, y ?? own, t);
-    return ComicStrokes._(
-      hairline: l(a.hairline, b.hairline, 2),
-      regular: l(a.regular, b.regular, 2.5),
-      heavy: l(a.heavy, b.heavy, 3),
-    );
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      other is ComicStrokes &&
-      other.hairline == hairline &&
-      other.regular == regular &&
-      other.heavy == heavy;
-
-  @override
-  int get hashCode => Object.hash(hairline, regular, heavy);
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties.add(DoubleProperty('hairline', hairline, defaultValue: null));
-    properties.add(DoubleProperty('regular', regular, defaultValue: null));
-    properties.add(DoubleProperty('heavy', heavy, defaultValue: null));
-  }
-}
 
 /// How compact the controls stand, as Material's `VisualDensity`: each step of [vertical] takes 4 from a control's
 /// height and each step of [horizontal] 2 from its padding at either side, from -4 (tightest) to 4 (roomiest). The tap

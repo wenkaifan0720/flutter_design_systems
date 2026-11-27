@@ -1,6 +1,8 @@
 // A focused part that cannot lift off its row pops inside it.
 import 'package:flutter/widgets.dart';
 
+import '../theme.dart' show ComicTheme;
+
 /// Marks [child] as a row standing edge to edge with its neighbours (a tree's row, a swipe row's plate): a focus pop
 /// there cannot lift over them, so the part's print shows inside its outline instead.
 class PopInside extends InheritedWidget {
@@ -15,7 +17,8 @@ class PopInside extends InheritedWidget {
   bool updateShouldNotify(PopInside oldWidget) => false;
 }
 
-/// How far a part lifts up and to the start under the keyboard's focus, off its print, in logical pixels.
+/// How far a part lifts up and to the start under the keyboard's focus, off its print, in logical pixels, at a theme's
+/// depth of 1.
 const double comicFocusLift = 2;
 
 /// Wraps the list a person types for in a focused field (a combobox's, a multi-select's): the field's face stands
@@ -25,7 +28,7 @@ Widget comicListOnLiftedField(BuildContext field, Widget list) {
   if (PopInside.of(field)) return list;
   final end = Directionality.maybeOf(field) == TextDirection.rtl ? -1.0 : 1.0;
   return Transform.translate(
-    offset: Offset(-end * comicFocusLift, 0),
+    offset: Offset(-end * comicFocusLift * ComicTheme.of(field).depth, 0),
     child: list,
   );
 }

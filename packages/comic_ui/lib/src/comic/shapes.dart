@@ -3,13 +3,15 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
+import 'package:ui_core/ui_core.dart' show RawShapeScheme;
 
-/// One corner scale for controls and surfaces, with square corners by default.
+/// The outlines Comic's parts draw, read from a theme's `shapeScheme` ([ComicShapes.of]): an app sets the scheme,
+/// and these follow it.
 ///
 /// Buttons and fields use [small], cards and menus use [medium], and dialogs
-/// and sheets use [large]. [capsule] follows the family for chips and tracks;
-/// [full] stays round for identity and circular interaction affordances.
-/// Every slot accepts any caller-supplied [OutlinedBorder]; Comic's own are square.
+/// and sheets use [large]. [capsule], the scheme's extra small step, is for
+/// chips, tags, switches, segmented choices and tracks; [full] stays round for
+/// identity and circular interaction affordances. Comic's own are square.
 ///
 /// ```dart
 /// ComicTheme.of(context).shapes.medium
@@ -25,25 +27,20 @@ class ComicShapes with Diagnosticable {
     this.full = const StadiumBorder(),
   });
 
-  /// A rounded scale on [radius], in logical pixels.
-  ///
-  /// Controls and frames share [radius], so a field and the menu it opens, a
-  /// tab bar and the card under it, wear one corner; dialogs and sheets use
-  /// one and a half. A small mark (a checkbox) caps its own corner so it never
-  /// reads as round.
-  @Deprecated(
-    "Comic is square: only speech and heads are round (law 2). Give one part its own corner through its style's "
-    'shape instead. This feature was deprecated after v0.2.0.',
-  )
-  factory ComicShapes.rounded(double radius) {
-    assert(radius >= 0);
-    OutlinedBorder border(double value) =>
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(value));
+  /// The outlines [scheme]'s corners draw: its small, medium and large steps, its extra small step as [capsule], and
+  /// [full] always a stadium.
+  factory ComicShapes.of(RawShapeScheme scheme) {
+    final c = scheme.corners;
+    OutlinedBorder at(double r) => r <= 0
+        ? const RoundedRectangleBorder()
+        : RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(r)),
+          );
     return ComicShapes(
-      small: border(radius),
-      medium: border(radius),
-      large: border(radius * 1.5),
-      capsule: const StadiumBorder(),
+      small: at(c.small),
+      medium: at(c.medium),
+      large: at(c.large),
+      capsule: at(c.extraSmall),
     );
   }
 

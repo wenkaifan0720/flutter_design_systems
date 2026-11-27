@@ -46,7 +46,7 @@ void main() {
           slotId: 'x',
           aspect: 1,
           width: 56,
-          label: 'x',
+          semanticLabel: 'x',
         ),
         action: ComicButton('Open', onPressed: () {}),
       ),

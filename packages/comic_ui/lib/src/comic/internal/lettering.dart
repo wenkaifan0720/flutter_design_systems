@@ -43,12 +43,19 @@ TextScaler comicLetteringScaler(BuildContext context, TextStyle style) {
 /// script's last letter: words in such a script are set in the text face.
 bool comicRightToLeftScript(String text) => _rightToLeft.hasMatch(text);
 
-/// Keeps the visual weight of Bangers when a right-to-left word uses a fallback
-/// face. Connected letters use the font's own spacing. Lettering whose marks
-/// reach past a plain capital gets the leading they need ([comicMarkedLeading]).
+/// [style] for [words]. A right-to-left word is set in the text face (the style's first fallback) at a bold weight, which
+/// keeps the visual weight of Bangers, with the font's own spacing for its connected letters; the lettering face leaves
+/// its family list, as with it first an engine draws the script's letters as its missing-glyph boxes, and the text face's
+/// own fallbacks (the platform's fonts) give letters the text face lacks. Lettering whose marks reach past a plain
+/// capital gets the leading they need ([comicMarkedLeading]).
 TextStyle comicDisplayFor(String words, TextStyle style) =>
     comicRightToLeftScript(words)
-    ? style.copyWith(fontWeight: FontWeight.w700, letterSpacing: 0)
+    ? style.copyWith(
+        fontFamily: style.fontFamilyFallback?.firstOrNull ?? style.fontFamily,
+        fontFamilyFallback: const [],
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0,
+      )
     : comicMarkedLeading(words, style);
 
 /// The least line pitch, as a multiple of the size, at which lines of [words] in the look's lettering clear each

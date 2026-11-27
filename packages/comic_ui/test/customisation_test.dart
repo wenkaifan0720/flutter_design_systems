@@ -5,6 +5,9 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
+import 'package:comic_ui/src/comic/theme.dart' show comicThemeWith;
+
+import 'support.dart' show comicRounded;
 
 Widget _under(ComicThemeData data, Widget child) => MaterialApp(
   home: ComicTheme(
@@ -49,21 +52,19 @@ void main() {
   });
 
   test('the deprecated dials still do what they did until they go', () {
-    final rounded = ComicThemeData.offset().copyWith(
-      shapes: ComicShapes.rounded(8),
+    final rounded = comicThemeWith(
+      ComicThemeData.offset(),
+      shapes: comicRounded(8),
     );
     expect(
       rounded.shapes.small,
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     );
-    final slow = ComicThemeData.offset().copyWith(
+    final slow = comicThemeWith(
+      ComicThemeData.offset(),
       motion: const ComicMotion(press: Duration(milliseconds: 300)),
     );
     expect(slow.motion.press, const Duration(milliseconds: 300));
-    // The two steps: the look's own contours (a theme's default) and bold.
-    expect(ComicThemeData.offset().strokes, ComicStrokes.standard);
-    expect(ComicStrokes.standard.isEmpty, isTrue);
-    expect(ComicStrokes.bold.regular, 4);
   });
 
   group('law 1: a see-through fill or overlay asserts', () {

@@ -104,7 +104,7 @@ class _HeldState<T> extends State<_Held<T>> {
 
 Widget kitSpecimenButtonGroup() => Builder(
   builder: (context) => ComicButtonGroup(
-    label: kitSay(context, 'Text'),
+    semanticLabel: kitSay(context, 'Text'),
     items: [
       ComicButtonGroupItem(kitSay(context, 'Copy'), onPressed: () {}),
       ComicButtonGroupItem(kitSay(context, 'Paste'), onPressed: () {}),
@@ -116,7 +116,7 @@ Widget kitSpecimenButtonGroup() => Builder(
 Widget kitSpecimenToggleGroup() => kitState<Set<String>>(
   const {'Bold'},
   (context, on, change) => ComicToggleGroup<String>(
-    label: kitSay(context, 'Style'),
+    semanticLabel: kitSay(context, 'Style'),
     values: const ['Bold', 'Italic', 'Underline'],
     selected: on,
     multiSelectionEnabled: true,
@@ -227,7 +227,7 @@ Widget kitSpecimenDateRange() => kitState<RawDateRange?>(
 Widget kitSpecimenWheelPicker() => kitState<int>(
   3,
   (context, copies, change) => ComicWheelPicker<int>(
-    label: 'Copies',
+    semanticLabel: 'Copies',
     values: const [1, 2, 3, 4, 5, 6, 7, 8],
     value: copies,
     labelOf: (n) => '$n',
@@ -292,7 +292,7 @@ Widget kitSpecimenStatusView() => Builder(
       gap: 16,
       children: [
         ComicSegmentedButton<int>(
-          label: kitSay(context, 'State'),
+          semanticLabel: kitSay(context, 'State'),
           value: state,
           segments: [
             ComicButtonSegment(0, kitSay(context, 'Busy')),
@@ -304,7 +304,7 @@ Widget kitSpecimenStatusView() => Builder(
         ),
         switch (state) {
           0 => ComicStatusView.loading(
-            label: kitSay(context, 'Fetching your issues'),
+            semanticLabel: kitSay(context, 'Fetching your issues'),
           ),
           1 => ComicStatusView.empty(
             title: kitSay(context, 'No issues on this shelf'),
@@ -542,7 +542,7 @@ Widget kitScrollArea() => Builder(
         child: ComicScrollArea(
           controller: held,
           visibility: RawScrollbarVisibility.always,
-          label: kitSay(context, 'Letters to the editor'),
+          semanticLabel: kitSay(context, 'Letters to the editor'),
           child: ListView(
             controller: held,
             padding: const EdgeInsetsDirectional.only(start: 16),
@@ -687,7 +687,7 @@ Widget kitSpecimenTree() => _Held<RawTreeController<String>>(
     shrinkWrap: true,
     child: ComicTreeView<String>(
       controller: held,
-      label: kitSay(context, 'The run'),
+      semanticLabel: kitSay(context, 'The run'),
       labelOf: (node) => kitSay(context, node),
     ),
   ),
@@ -785,7 +785,7 @@ Widget kitPopover() => Builder(
   builder: (context) => Align(
     alignment: AlignmentDirectional.centerStart,
     child: ComicPopover(
-      label: kitSay(context, 'Filters'),
+      semanticLabel: kitSay(context, 'Filters'),
       anchorBuilder: (context, anchor) =>
           ComicButton(kitSay(context, 'Filter'), onPressed: anchor.toggle),
       builder: (context, close) => ComicColumn(
@@ -803,7 +803,7 @@ Widget kitHoverCard() => Builder(
   builder: (context) => Align(
     alignment: AlignmentDirectional.centerStart,
     child: ComicHoverCard(
-      label: kitSay(context, 'About Ada Okafor'),
+      semanticLabel: kitSay(context, 'About Ada Okafor'),
       card: Text(kitSay(context, 'Ada Okafor inks the run from issue 12 on.')),
       child: ComicLink(kitSay(context, 'Ada Okafor'), onPressed: () {}),
     ),

@@ -2,7 +2,6 @@
 // words after it read as two nodes, the heading flagged as a header: the keys
 // set round the app and its panes (F6 between panes) add no node of their own
 // for the two to merge into.
-import 'package:comic_ui/comic_host.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:material_ui/material_ui.dart' show MaterialApp;
 import 'package:flutter/rendering.dart';

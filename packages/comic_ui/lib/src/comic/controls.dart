@@ -309,7 +309,7 @@ class _Filled extends StatelessWidget {
     final look = comicStyleOf(layers, const {});
     final drawn = ComicPressable(
       onPressed: onPressed,
-      label: label,
+      semanticLabel: label,
       busy: busy,
       focusNode: focusNode,
       autofocus: autofocus,
@@ -458,7 +458,7 @@ class _Outlined extends StatelessWidget {
     final look = comicStyleOf(layers, const {});
     final drawn = ComicPressable(
       onPressed: onPressed,
-      label: label,
+      semanticLabel: label,
       busy: busy,
       focusNode: focusNode,
       autofocus: autofocus,
@@ -571,11 +571,11 @@ class _Outlined extends StatelessWidget {
   }
 }
 
-/// A square button with one icon, for a bar or a row. It keeps its size at its column's start, and needs a [label] for a screen
+/// A square button with one icon, for a bar or a row. It keeps its size at its column's start, and needs a [semanticLabel] for a screen
 /// reader.
 ///
 /// ```dart
-/// ComicIconButton(ComicGlyphs.bell, label: 'Alerts', onPressed: () {})
+/// ComicIconButton(ComicGlyphs.bell, semanticLabel: 'Alerts', onPressed: () {})
 /// ```
 class ComicIconButton extends StatelessWidget {
   /// Creates a [ComicIconButton].
@@ -583,7 +583,7 @@ class ComicIconButton extends StatelessWidget {
     this.icon, {
     super.key,
     this.style,
-    required this.label,
+    required this.semanticLabel,
     this.onPressed,
     this.size = 40,
     this.focusNode,
@@ -598,8 +598,8 @@ class ComicIconButton extends StatelessWidget {
   /// The optional glyph beside the words.
   final IconData icon;
 
-  /// {@macro comic.label}
-  final String label;
+  /// What a screen reader calls the button: the glyph is all it draws.
+  final String semanticLabel;
 
   /// {@macro comic.onPressed}
   final VoidCallback? onPressed;
@@ -639,7 +639,7 @@ class ComicIconButton extends StatelessWidget {
       child: ComicPressable(
         autofocus: autofocus,
         onPressed: onPressed,
-        label: label,
+        semanticLabel: semanticLabel,
         focusNode: focusNode,
         selected: isSelected ? true : null,
         value: badgeLabel,
@@ -759,7 +759,7 @@ class ComicIconButton extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<IconData>('icon', icon))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
       ..add(DoubleProperty('size', size, defaultValue: 40))
       ..add(
@@ -854,6 +854,9 @@ class ComicTextField extends StatelessWidget {
     this.failureLine,
     this.nameOnly = false,
     this.showLabel = true,
+    this.validator,
+    this.onSaved,
+    this.autovalidateMode,
   }) : assert(maxLines > 0, 'a field shows at least one line'),
        assert(
          minLines == null || (minLines > 0 && minLines <= maxLines),
@@ -866,7 +869,8 @@ class ComicTextField extends StatelessWidget {
   /// [initialValue]: initial text when no editing controller is supplied. [hintText]: placeholder text shown when the field is empty. [prefixText]: text displayed before the editable value.
   final String? initialValue, hintText, prefixText;
 
-  /// [onChanged]: reports a new value; null disables changes. [onSubmitted]: reports text submitted from the keyboard.
+  /// [onChanged]: reports each edit; [enabled] is what turns the field off. [onSubmitted]: reports text submitted
+  /// from the keyboard.
   final ValueChanged<String>? onChanged, onSubmitted;
 
   /// [trailing]: content after the main words. [leading]: content before the main words.
@@ -939,11 +943,66 @@ class ComicTextField extends StatelessWidget {
   /// Per-state field frame, text and metrics.
   final ComicStyle? style;
 
+  /// Checks the text in the `RawForm` (or Flutter's `Form`) above, as `TextFormField`'s validator does: the words
+  /// it returns show under the field, its rim turns to the danger tone, and a failed submit moves focus here. Null,
+  /// with [onSaved] null too: the field takes no part in a form, and [errorText] is the app's to set.
+  final FormFieldValidator<String>? validator;
+
+  /// Called with the text when the form above saves.
+  final FormFieldSetter<String>? onSaved;
+
+  /// When [validator] runs before the form is submitted; null: as the form says (after a failed submit, on each edit).
+  final AutovalidateMode? autovalidateMode;
+
   @override
-  Widget build(BuildContext context) => _FieldFocus(
-    node: focusNode,
-    builder: (context, node, hidden, toggle, hovered) =>
-        _build(context, node, hidden, toggle, hovered),
+  Widget build(BuildContext context) {
+    if (validator != null || onSaved != null) {
+      return _ComicTextFormField(field: this);
+    }
+    return _FieldFocus(
+      node: focusNode,
+      builder: (context, node, hidden, toggle, hovered) =>
+          _build(context, node, hidden, toggle, hovered),
+    );
+  }
+
+  // This field with the form's error and edits, and the focus a failed submit asks for.
+  ComicTextField _inForm({
+    required FocusNode focusNode,
+    required String? errorText,
+    required ValueChanged<String> onChanged,
+  }) => ComicTextField(
+    style: style,
+    controller: controller,
+    initialValue: initialValue,
+    hintText: hintText,
+    onChanged: onChanged,
+    onSubmitted: onSubmitted,
+    trailing: trailing,
+    leading: leading,
+    maxLines: maxLines,
+    minLines: minLines,
+    prefixText: prefixText,
+    keyboardType: keyboardType,
+    textDirection: textDirection,
+    onPaper: onPaper,
+    obscureText: obscureText,
+    labelText: labelText,
+    helperText: helperText,
+    errorText: errorText,
+    enabled: enabled,
+    focusNode: focusNode,
+    autofocus: autofocus,
+    textInputAction: textInputAction,
+    autofillHints: autofillHints,
+    inputFormatters: inputFormatters,
+    password: password,
+    revealLabels: revealLabels,
+    onEditingComplete: onEditingComplete,
+    decorate: decorate,
+    failureLine: failureLine,
+    nameOnly: nameOnly,
+    showLabel: showLabel,
   );
   Widget _build(
     BuildContext context,
@@ -1085,7 +1144,7 @@ class ComicTextField extends StatelessWidget {
             hidden ? ComicGlyphs.show : ComicGlyphs.hide,
             style: comicInFieldIcon,
             targetAlignment: AlignmentDirectional.centerEnd,
-            label: hidden
+            semanticLabel: hidden
                 ? (revealLabels?.$1 ??
                       RawWidgetsLocalizations.of(context).showPasswordLabel)
                 : (revealLabels?.$2 ??
@@ -1372,8 +1431,72 @@ class ComicTextField extends StatelessWidget {
         ),
       )
       ..add(
+        ObjectFlagProperty<FormFieldValidator<String>>.has(
+          'validator',
+          validator,
+        ),
+      )
+      ..add(ObjectFlagProperty<FormFieldSetter<String>>.has('onSaved', onSaved))
+      ..add(
+        EnumProperty<AutovalidateMode>(
+          'autovalidateMode',
+          autovalidateMode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
         DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
       );
+  }
+}
+
+// A text field in a form: ui_core's RawFormField round it, the form's error shown on it, and a focus node a failed
+// submit can ask for (the app's, or one of its own).
+class _ComicTextFormField extends StatefulWidget {
+  const _ComicTextFormField({required this.field});
+
+  final ComicTextField field;
+
+  @override
+  State<_ComicTextFormField> createState() => _ComicTextFormFieldState();
+}
+
+class _ComicTextFormFieldState extends State<_ComicTextFormField> {
+  FocusNode? _own;
+
+  FocusNode get _node => widget.field.focusNode ?? (_own ??= FocusNode());
+
+  @override
+  void dispose() {
+    _own?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final field = widget.field;
+    // With a controller the text is the controller's, whoever changed it.
+    String? text(String? value) => field.controller?.text ?? value;
+    return RawFormField<String>(
+      focusNode: _node,
+      initialValue: field.controller?.text ?? field.initialValue ?? '',
+      validator: field.validator == null
+          ? null
+          : (value) => field.validator!(text(value)),
+      onSaved: field.onSaved == null
+          ? null
+          : (value) => field.onSaved!(text(value)),
+      autovalidateMode: field.autovalidateMode,
+      enabled: field.enabled,
+      builder: (state) => field._inForm(
+        focusNode: _node,
+        errorText: field.errorText ?? state.errorText,
+        onChanged: (value) {
+          state.didChange(value);
+          field.onChanged?.call(value);
+        },
+      ),
+    );
   }
 }
 
@@ -1440,14 +1563,14 @@ class ComicSendButton extends StatelessWidget {
   const ComicSendButton({
     super.key,
     this.onPressed,
-    this.label,
+    this.semanticLabel,
     this.style,
     this.focusNode,
     this.autofocus = false,
   });
 
   /// Overrides the localized send label.
-  final String? label;
+  final String? semanticLabel;
 
   /// Null disables the action.
   final VoidCallback? onPressed;
@@ -1468,7 +1591,7 @@ class ComicSendButton extends StatelessWidget {
       ComicGlyphs.sendHorizontal,
       focusNode: focusNode,
       autofocus: autofocus,
-      label: label ?? ComicLocalizations.of(context).send,
+      semanticLabel: semanticLabel ?? ComicLocalizations.of(context).send,
       size: 46,
       onPressed: onPressed,
       style: ComicStyle.layered([
@@ -1486,7 +1609,7 @@ class ComicSendButton extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
       ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
       ..add(
@@ -1559,7 +1682,7 @@ class ComicSelectField extends StatelessWidget {
     final layers = [style, t.textFieldTheme],
         base = comicStyleOf([style, t.textFieldTheme], const {});
     final name = semanticLabel ?? labelText;
-    // A dropdown's face: its content's width, at most comicDropdownMost from 600 up.
+    // A dropdown's face: its column's width, as a text field's.
     final face = comicDropdownWidth(
       context,
       ComicPressable(
@@ -1567,7 +1690,7 @@ class ComicSelectField extends StatelessWidget {
         autofocus: autofocus,
         onPressed: onPressed,
         // Named, it reads its name and then its value; unnamed, its value is its name.
-        label: name ?? value,
+        semanticLabel: name ?? value,
         value: name == null ? null : value,
         // Under a ComicMenuAnchor (a select), expanded while its list is up.
         expanded: ComicMenuOpen.of(context),
@@ -1778,7 +1901,7 @@ class ComicChip extends StatelessWidget {
       onPressed: _press,
       focusNode: focusNode,
       autofocus: autofocus,
-      label: label,
+      semanticLabel: label,
       selected: selected,
       outline: base.shapes(t.shapes.capsule),
       overlay: base.overlay,
@@ -1965,7 +2088,12 @@ class ComicChip extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (icon != null) ...[
-                      Icon(icon, size: look.iconSize ?? 18, color: ink),
+                      Icon(
+                        icon,
+                        size: look.iconSize ?? 18,
+                        color: ink,
+                        applyTextScaling: true,
+                      ),
                       const SizedBox(width: ComicSpace.close),
                     ],
                     Flexible(child: words),
@@ -1987,7 +2115,7 @@ class ComicChip extends StatelessWidget {
     final Widget chip = _press == null && !disabled
         ? face({if (selected) WidgetState.selected})
         : ComicPressable(
-            label: label,
+            semanticLabel: label,
             selected: selected,
             onPressed: _press,
             focusNode: focusNode,
@@ -2015,7 +2143,7 @@ class ComicChip extends StatelessWidget {
       2 * (_crossEnd + _crossBox / 2),
     );
     final cross = ComicPressable(
-      label:
+      semanticLabel:
           deleteButtonTooltipMessage ??
           '${ComicLocalizations.of(context).delete} $label',
       onPressed: onDeleted,
@@ -2096,7 +2224,7 @@ class ComicChip extends StatelessWidget {
 /// A square tick box, with its tap target around it.
 ///
 /// ```dart
-/// ComicCheckbox(label: 'Keep issue', value: true, onChanged: (v) {})
+/// ComicCheckbox(semanticLabel: 'Keep issue', value: true, onChanged: (v) {})
 /// ```
 class ComicCheckbox extends StatelessWidget {
   /// Creates a [ComicCheckbox].
@@ -2105,7 +2233,7 @@ class ComicCheckbox extends StatelessWidget {
     this.style,
     required this.value,
     this.onChanged,
-    required this.label,
+    required this.semanticLabel,
     this.isError = false,
     this.tristate = false,
     this.focusNode,
@@ -2121,8 +2249,8 @@ class ComicCheckbox extends StatelessWidget {
   /// Reports a new value; null disables changes.
   final ValueChanged<bool?>? onChanged;
 
-  /// {@macro comic.label}
-  final String label;
+  /// What a screen reader calls the box: nothing draws it ([ComicCheckRow] draws its words beside the box).
+  final String semanticLabel;
 
   /// Whether validation failed, announced and exposed as WidgetState.error.
   final bool isError;
@@ -2156,7 +2284,7 @@ class ComicCheckbox extends StatelessWidget {
                           : false)
                     : value != true,
               ),
-        label: label,
+        semanticLabel: semanticLabel,
         error: isError,
         checked: value == true,
         mixed: value == null,
@@ -2250,7 +2378,7 @@ class ComicCheckbox extends StatelessWidget {
       )
       ..add(DiagnosticsProperty<bool>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<bool?>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(
         FlagProperty(
           'isError',
@@ -2294,7 +2422,7 @@ class ComicChoiceBox extends StatelessWidget {
     this.padding = EdgeInsets.zero,
     this.wordsAt,
     this.onPressed,
-    this.label,
+    this.semanticLabel,
     this.focusNode,
     this.onKeyEvent,
     this.hint,
@@ -2325,8 +2453,8 @@ class ComicChoiceBox extends StatelessWidget {
   /// {@macro comic.onPressed}
   final VoidCallback? onPressed;
 
-  /// {@macro comic.label}
-  final String? label;
+  /// What a screen reader calls the box, in place of the words its [child] draws.
+  final String? semanticLabel;
 
   /// Optional caller-owned focus node.
   final FocusNode? focusNode;
@@ -2351,7 +2479,7 @@ class ComicChoiceBox extends StatelessWidget {
     return ComicPressable(
       autofocus: autofocus,
       onPressed: onPressed,
-      label: label,
+      semanticLabel: semanticLabel,
       selected: many || inGroup ? null : selected,
       checked: many || inGroup ? selected : null,
       inGroup: inGroup,
@@ -2439,7 +2567,7 @@ class ComicChoiceBox extends StatelessWidget {
       )
       ..add(DoubleProperty('wordsAt', wordsAt, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(
           'focusNode',
@@ -2534,7 +2662,7 @@ class ComicChoices extends StatelessWidget {
                     vertical: ComicSpace.close,
                   ),
                   wordsAt: pad,
-                  label: o.label,
+                  semanticLabel: o.label,
                   onPressed: onChanged == null
                       ? null
                       : () => onChanged!(o.value),
@@ -2608,7 +2736,7 @@ class ComicChoices extends StatelessWidget {
                 selected: o.value == value,
                 padding: const EdgeInsets.symmetric(vertical: ComicSpace.close),
                 wordsAt: pad,
-                label: o.label,
+                semanticLabel: o.label,
                 onPressed: onChanged == null ? null : () => onChanged!(o.value),
                 child: Builder(
                   builder: (context) {
@@ -2762,7 +2890,7 @@ class ComicNumberField extends StatelessWidget {
     final ink = look.foreground ?? (c.dark ? c.text : c.onPaper);
     final side = ComicTrack.fieldHeight(context) - 2 * rim.width;
     Widget end(bool more) => ComicPressable(
-      label: more
+      semanticLabel: more
           ? moreLabel ?? ComicLocalizations.of(context).more
           : lessLabel ?? ComicLocalizations.of(context).less,
       wash: false,
@@ -2977,7 +3105,7 @@ class ComicSwitch extends StatelessWidget {
     this.style,
     required this.value,
     this.onChanged,
-    this.label,
+    this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
   });
@@ -2991,8 +3119,8 @@ class ComicSwitch extends StatelessWidget {
   /// Reports a new value; null disables changes.
   final ValueChanged<bool>? onChanged;
 
-  /// {@macro comic.label}
-  final String? label;
+  /// What a screen reader calls the switch: nothing draws it ([ComicSwitchRow] draws its words beside it).
+  final String? semanticLabel;
 
   /// {@macro comic.focusNode}
   final FocusNode? focusNode;
@@ -3012,7 +3140,7 @@ class ComicSwitch extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         onPressed: onChanged == null ? null : () => onChanged!(!value),
-        label: label,
+        semanticLabel: semanticLabel,
         toggled: value,
         // The marks are the track's own: drawn below, on the track, not on its taller target.
         wash: false,
@@ -3071,7 +3199,7 @@ class ComicSwitch extends StatelessWidget {
         ),
       )
       ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(
           'focusNode',
@@ -3143,7 +3271,7 @@ class _Action extends StatelessWidget {
     final base = comicStyleOf(layers, const {});
     final drawn = ComicPressable(
       onPressed: onPressed,
-      label: label,
+      semanticLabel: label,
       busy: busy,
       focusNode: focusNode,
       autofocus: autofocus,

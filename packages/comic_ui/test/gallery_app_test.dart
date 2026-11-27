@@ -7,7 +7,7 @@ import 'package:comic_ui/comic_ui.dart';
 
 // ignore_for_file: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/kit.dart';
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import 'gallery_support.dart';
 import 'support.dart';
 
@@ -86,7 +86,7 @@ void main() {
     expect(
       tester
           .widget<ComicIconButton>(find.byKey(const ValueKey('appearance')))
-          .label,
+          .semanticLabel,
       'Day',
       reason: 'The link asked for the night',
     );
@@ -333,14 +333,14 @@ void main() {
       }
 
       await choose('Bold');
-      expect(shown().strokes, ComicStrokes.bold);
+      expect(shown().stroke, 4);
       await choose('Compact');
       expect(shown().density, ComicDensity.compact);
       await tester.tap(find.bySemanticsLabel('Customize'));
       await settle(tester);
       expect(find.byType(CustomizePanel), findsNothing);
-      expect(shown().strokes, ComicStrokes.bold);
-      // Customize offers no corners: a panel's corners stay the look's (law 2).
+      expect(shown().stroke, 4);
+      // The Strokes knob moves the stroke alone: the corners stay Comic's square.
       expect(shown().shapes, const ComicShapes());
     });
   }

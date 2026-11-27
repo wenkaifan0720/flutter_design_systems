@@ -129,7 +129,7 @@ void main() {
                       leading: const ComicAvatar('AM'),
                       action: ComicIconButton(
                         ComicGlyphs.more,
-                        label: 'Options',
+                        semanticLabel: 'Options',
                         onPressed: () {},
                       ),
                     ),

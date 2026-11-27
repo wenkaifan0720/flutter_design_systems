@@ -40,7 +40,7 @@ void main() {
     await _arabic(
       tester,
       const ComicChart(
-        label: 'ساعات اليوم',
+        semanticLabel: 'ساعات اليوم',
         type: ComicChartType.bar,
         labels: ['الاثنين', 'الثلاثاء', 'الأربعاء'],
         series: [
@@ -61,7 +61,7 @@ void main() {
     final semantics = tester.ensureSemantics();
     await _arabic(
       tester,
-      const ComicSparkline(label: 'الأسبوع', values: [2, 6, 3]),
+      const ComicSparkline(semanticLabel: 'الأسبوع', values: [2, 6, 3]),
     );
     final node = tester.getSemantics(find.bySemanticsLabel('الأسبوع'));
     expect(node.value, contains('٢'));

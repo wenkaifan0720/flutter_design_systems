@@ -143,7 +143,7 @@ void main() {
     await _large(
       tester,
       ComicToggleGroup<String>(
-        label: 'Style',
+        semanticLabel: 'Style',
         values: const ['Bold', 'Italic', 'Underline'],
         selected: const {'Bold'},
         multiSelectionEnabled: true,

@@ -21,6 +21,19 @@ import 'internal/platform_words.dart';
 /// The width where the phone layout becomes the 12-column desktop layout.
 const double comicDeskWidth = 1024;
 
+/// Comic's own [RawShapeScheme]: square corners, a 2.5 rim, the print as drawn (`ComicThemeData.shapeScheme`).
+const RawShapeScheme comicShapeScheme = RawShapeScheme(
+  corners: RawCornerScale(
+    extraSmall: 0,
+    small: 0,
+    medium: 0,
+    large: 0,
+    extraLarge: 0,
+  ),
+  stroke: 2.5,
+  depth: 1,
+);
+
 /// Comic's motion: a page being turned, quick and snappy, with a small overshoot where a panel pops. A press lands in
 /// [press]; a control's state (a switch's thumb, a check inked in, a selected segment) moves in [state]; what moves across
 /// the page in [move]; what pops over it in [raise] (a dialog, a menu), or [travel] from the page's foot (a sheet), and
@@ -1576,13 +1589,42 @@ class ComicThemeData with Diagnosticable {
     this.colors,
     this.width,
     this.onDots, {
-    this.shapes = const ComicShapes(),
-    this.strokes = ComicStrokes.standard,
+    this.shapeScheme = comicShapeScheme,
+    ComicShapes? shapes,
     this.density = ComicDensity.standard,
     this.typeface = ComicTypeface.look,
     this.components = const ComicComponentThemes(),
     this.motion = const ComicMotion(),
-  }) : type = ComicTextTheme._(colors, width >= comicDeskWidth, typeface);
+  }) : shapes = shapes ?? ComicShapes.of(shapeScheme),
+       type = ComicTextTheme._(colors, width >= comicDeskWidth, typeface);
+
+  /// The theme of [palette] (one of [palettes]; null: offset, the first) in [brightness], with any knob set, as
+  /// Material's `ThemeData()` gives its default.
+  ///
+  /// ```dart
+  /// ComicThemeData(palette: ComicThemeData.palettes[3], brightness: Brightness.dark)
+  /// ```
+  factory ComicThemeData({
+    Brightness brightness = Brightness.light,
+    RawNamedPalette? palette,
+    RawShapeScheme? shapeScheme,
+    ComicDensity? density,
+    ComicTypeface? typeface,
+    ComicComponentThemes? components,
+  }) {
+    final theme = preset((palette ?? palettes.first).id, brightness);
+    return shapeScheme == null &&
+            density == null &&
+            typeface == null &&
+            components == null
+        ? theme
+        : theme.copyWith(
+            shapeScheme: shapeScheme,
+            density: density,
+            typeface: typeface,
+            components: components,
+          );
+  }
 
   /// The offset preset: process yellow, pink and blue on warm newsprint, a Sunday comic.
   factory ComicThemeData.offset([Brightness brightness = Brightness.light]) =>
@@ -1641,11 +1683,46 @@ class ComicThemeData with Diagnosticable {
     );
   }
 
-  /// Shape scale; null slots keep each original drawing.
-  final ComicShapes shapes;
+  /// The corners, the ink's weight and the print's depth an app may set, held to [shapeLimits] (a value past a band
+  /// stands at its end). Comic's own is [comicShapeScheme]: square corners, a 2.5 rim, the print as drawn. Start from
+  /// it (`comicShapeScheme.copyWith(stroke: 4)`): a bare `RawShapeScheme()` brings ui_core's rounded corners.
+  ///
+  /// | Value | Comic's | Band | What it moves |
+  /// |---|---|---|---|
+  /// | corner style | round | round only | A pen cuts a panel square or rounds it; a bevel, a notch or a stair is another look's. |
+  /// | extraSmall | 0 | 0 to 8 | Chips, tags, badges, switches, segmented choices and tracks. |
+  /// | small | 0 | 0 to 8 | Buttons and fields: rounder than 8 a 40 px control reads as a pill. |
+  /// | medium | 0 | 0 to 12 | Cards, menus, snack bars and tooltips: past 12 a panel reads as a bubble. |
+  /// | large | 0 | 0 to 16 | Dialogs and sheets: past 16 a panel reads as a balloon, which Comic keeps for speech. |
+  /// | extraLarge | 0 | fixed 0 | Not drawn: Comic has no panel larger than a dialog. |
+  /// | full | a stadium | fixed | Round affordances (a radio, an avatar, a balloon's tail) stay round. |
+  /// | stroke | 2.5 | 2 to 4 | A part's rim, with its rules and the focus ring in proportion (at 4: a 4 rim, 3.2 rules, a 4.8 ring). Under 2 the ink stops reading as a pen line; over 4 it fills a 40 px control. |
+  /// | depth | 1 | 0.5 to 1.5 | The print under a control (3 at 1), a raised panel's plate (4) and a focused part's lift (2). Under half it stops reading as print; past 1.5 a part stands off its row. |
+  ///
+  /// ```dart
+  /// final rounder = ComicThemeData(
+  ///   shapeScheme: comicShapeScheme.copyWith(
+  ///     corners: comicShapeScheme.corners.copyWith(extraSmall: 6, small: 6, medium: 10, large: 14),
+  ///     stroke: 3,
+  ///     depth: 1.25,
+  ///   ),
+  /// );
+  /// ```
+  final RawShapeScheme shapeScheme;
 
-  /// Rim, rule and focus widths.
-  final ComicStrokes strokes;
+  /// Comic's bands for [shapeScheme], the table above as code.
+  static const RawShapeLimits shapeLimits = RawShapeLimits(
+    extraSmall: RawBand(0, 8),
+    small: RawBand(0, 8),
+    medium: RawBand(0, 12),
+    large: RawBand(0, 16),
+    extraLarge: RawBand.fixed(0),
+    stroke: RawBand(2, 4),
+    depth: RawBand(.5, 1.5),
+  );
+
+  /// The outlines [shapeScheme]'s corners draw, part by part.
+  final ComicShapes shapes;
 
   /// Density changes the face while preserving accessible targets.
   final ComicDensity density;
@@ -1659,11 +1736,18 @@ class ComicThemeData with Diagnosticable {
   /// Timing and curves, cut under Reduce Motion by ComicMotion.of.
   final ComicMotion motion;
 
-  /// A contour's width, defaulting to the component's drawing.
-  double rim([double own = 2.5]) => strokes.regular ?? own;
+  /// The ink's weight: [shapeScheme]'s stroke, 2.5 unless an app sets it.
+  double get stroke => shapeScheme.stroke ?? 2.5;
 
-  /// A rule's width, defaulting to its original drawing.
-  double rule([double own = 2]) => strokes.hairline ?? own;
+  /// The print's depth: [shapeScheme]'s, 1 (the print as drawn) unless an app sets it.
+  double get depth => shapeScheme.depth ?? 1;
+
+  /// A contour's width: [own], the part's drawing at a 2.5 [stroke], in proportion to the stroke (a heavier pen draws
+  /// every line heavier, each as much as the next).
+  double rim([double own = 2.5]) => own * stroke / 2.5;
+
+  /// A rule's width inside a part: [own] at a 2.5 [stroke], in proportion to it, as [rim].
+  double rule([double own = 2]) => own * stroke / 2.5;
 
   /// The actButton component style.
   ComicStyle get filledButtonTheme => components.actButton;
@@ -1763,6 +1847,115 @@ class ComicThemeData with Diagnosticable {
     'cosmic',
   ];
 
+  /// The six print runs as palettes a picker offers, in [presets]' order, offset first: each one's `id` is its
+  /// preset's, stable from version to version, for an app to store; its swatches are its act, its captions, its group
+  /// ink and its page, by day and by night.
+  ///
+  /// ```dart
+  /// ComicHost(
+  ///   palette: ComicThemeData.palettes.firstWhere((p) => p.id == saved),
+  ///   child: app,
+  /// )
+  /// ```
+  static const List<RawNamedPalette> palettes = [
+    RawNamedPalette(
+      id: 'offset',
+      label: 'Offset',
+      swatches: [
+        Color(0xFFFF3E92),
+        Color(0xFFFFD83A),
+        Color(0xFF1D63D1),
+        Color(0xFFF3E8CF),
+      ],
+      darkSwatches: [
+        Color(0xFFFF4FA0),
+        Color(0xFFFFD83A),
+        Color(0xFF5B8CFF),
+        Color(0xFF06081A),
+      ],
+    ),
+    RawNamedPalette(
+      id: 'reprint',
+      label: 'Reprint',
+      swatches: [
+        Color(0xFFFF7A1F),
+        Color(0xFFFFC48A),
+        Color(0xFF007C8A),
+        Color(0xFFC8E9E3),
+      ],
+      darkSwatches: [
+        Color(0xFFFF8A33),
+        Color(0xFFF5E34C),
+        Color(0xFF38C2CE),
+        Color(0xFF03141A),
+      ],
+    ),
+    RawNamedPalette(
+      id: 'newsstand',
+      label: 'Newsstand',
+      swatches: [
+        Color(0xFFFF3B3F),
+        Color(0xFF7FD8F2),
+        Color(0xFF0B7F43),
+        Color(0xFFD8E2E4),
+      ],
+      darkSwatches: [
+        Color(0xFFFF4D52),
+        Color(0xFFFFC400),
+        Color(0xFF38CC7E),
+        Color(0xFF09090C),
+      ],
+    ),
+    RawNamedPalette(
+      id: 'pulp',
+      label: 'Pulp',
+      swatches: [
+        Color(0xFFBE2F1A),
+        Color(0xFFF0AE2E),
+        Color(0xFF2B5A4C),
+        Color(0xFFE6D3A8),
+      ],
+      darkSwatches: [
+        Color(0xFFE8573B),
+        Color(0xFFF0AE2E),
+        Color(0xFF6DB298),
+        Color(0xFF120B06),
+      ],
+    ),
+    RawNamedPalette(
+      id: 'sunday',
+      label: 'Sunday',
+      swatches: [
+        Color(0xFF5CCB8A),
+        Color(0xFFFFE26A),
+        Color(0xFF5F47C4),
+        Color(0xFFCCE2F7),
+      ],
+      darkSwatches: [
+        Color(0xFF74DCA0),
+        Color(0xFFFFE26A),
+        Color(0xFFA892F4),
+        Color(0xFF110F1F),
+      ],
+    ),
+    RawNamedPalette(
+      id: 'cosmic',
+      label: 'Cosmic',
+      swatches: [
+        Color(0xFF7B3FF2),
+        Color(0xFFD9F25A),
+        Color(0xFF00A3C4),
+        Color(0xFFF0EBF7),
+      ],
+      darkSwatches: [
+        Color(0xFF9C6BFF),
+        Color(0xFFD9F25A),
+        Color(0xFF33C7E6),
+        Color(0xFF0B0717),
+      ],
+    ),
+  ];
+
   static final Map<String, _Palette> _palettes = {
     'offset': _offset,
     'reprint': _reprint,
@@ -1773,7 +1966,7 @@ class ComicThemeData with Diagnosticable {
   };
   static final Map<(String, Brightness), ComicThemeData> _cache = {};
 
-  /// The theme for preset [id] in [brightness]; an unknown id throws. The theme file's call.
+  /// The theme for preset [id] (one of [presets]) in [brightness]; an unknown id throws.
   static ComicThemeData preset(String id, Brightness brightness) {
     final palette = _palettes[id];
     if (palette == null) {
@@ -1796,7 +1989,7 @@ class ComicThemeData with Diagnosticable {
   ComicThemeData atWidth(double width) =>
       width == this.width ? this : copyWith(width: width);
 
-  /// The stubs' page title and body text.
+  /// A page's title style (`type.panel`).
   TextStyle get h1 => type.panel;
 
   /// Body text: `type.body`.
@@ -1812,7 +2005,7 @@ class ComicThemeData with Diagnosticable {
 
   late final ComicFocusRing _focus = ComicFocusRing(
     color: _comicFocusColor(colors),
-    width: strokes.heavy ?? 3,
+    width: 3 * stroke / 2.5,
   );
 
   /// The keyboard's focus ink and room, legible on page, card and control grounds.
@@ -1837,20 +2030,10 @@ class ComicThemeData with Diagnosticable {
     ComicColors? colors,
     double? width,
     bool? onDots,
-    @Deprecated(
-      "Comic is square: only speech and heads are round (law 2). Give one part its own corner through its style's "
-      'shape instead. This feature was deprecated after v0.2.0.',
-    )
-    ComicShapes? shapes,
-    ComicStrokes? strokes,
+    RawShapeScheme? shapeScheme,
     ComicDensity? density,
     ComicTypeface? typeface,
     ComicComponentThemes? components,
-    @Deprecated(
-      "Comic's motion is a quick cut and a small pop; Reduce Motion turns it to cuts (ComicMotion.still) by itself. "
-      'This feature was deprecated after v0.2.0.',
-    )
-    ComicMotion? motion,
     ComicTones? tones,
     ComicStyle? filledButtonTheme,
     ComicStyle? buttonTheme,
@@ -1881,11 +2064,14 @@ class ComicThemeData with Diagnosticable {
     (colors ?? this.colors).copyWith(status: tones),
     width ?? this.width,
     onDots ?? this.onDots,
-    shapes: shapes ?? this.shapes,
-    strokes: strokes ?? this.strokes,
+    // A scheme an app gives is held to Comic's bands; the outlines follow it.
+    shapeScheme: shapeScheme == null
+        ? this.shapeScheme
+        : shapeLimits.clamp(shapeScheme, look: 'Comic'),
+    shapes: shapeScheme == null ? shapes : null,
     density: density ?? this.density,
     typeface: typeface ?? this.typeface,
-    motion: motion ?? this.motion,
+    motion: motion,
     components: (components ?? this.components).copyWith(
       actButton: filledButtonTheme,
       lineButton: buttonTheme,
@@ -1924,8 +2110,9 @@ class ComicThemeData with Diagnosticable {
       ComicColors.lerp(a.colors, b.colors, t),
       lerpDouble(a.width, b.width, t)!,
       t < .5 ? a.onDots : b.onDots,
+      // Between two held schemes, not held again.
+      shapeScheme: RawShapeScheme.lerp(a.shapeScheme, b.shapeScheme, t),
       shapes: ComicShapes.lerp(a.shapes, b.shapes, t),
-      strokes: ComicStrokes.lerp(a.strokes, b.strokes, t),
       density: ComicDensity.lerp(a.density, b.density, t),
       typeface: ComicTypeface.lerp(a.typeface, b.typeface, t),
       components: ComicComponentThemes.lerp(a.components, b.components, t),
@@ -1941,8 +2128,8 @@ class ComicThemeData with Diagnosticable {
           other.colors == colors &&
           other.width == width &&
           other.onDots == onDots &&
+          other.shapeScheme == shapeScheme &&
           other.shapes == shapes &&
-          other.strokes == strokes &&
           other.density == density &&
           other.typeface == typeface &&
           other.components == components &&
@@ -1954,8 +2141,8 @@ class ComicThemeData with Diagnosticable {
     colors,
     width,
     onDots,
+    shapeScheme,
     shapes,
-    strokes,
     density,
     typeface,
     components,
@@ -1969,8 +2156,8 @@ class ComicThemeData with Diagnosticable {
     properties.add(EnumProperty<Brightness>('brightness', brightness));
     properties.add(FlagProperty('onDots', value: onDots, ifTrue: 'on dots'));
     properties.add(DoubleProperty('width', width));
+    properties.add(DiagnosticsProperty('shapeScheme', shapeScheme));
     properties.add(DiagnosticsProperty('shapes', shapes));
-    properties.add(DiagnosticsProperty('strokes', strokes));
     properties.add(DiagnosticsProperty('density', density));
     properties.add(DiagnosticsProperty('typeface', typeface));
     properties.add(DiagnosticsProperty('components', components));
@@ -1979,6 +2166,27 @@ class ComicThemeData with Diagnosticable {
     properties.add(DiagnosticsProperty<ComicColors>('colors', colors));
   }
 }
+
+/// [theme] in [shapes] or [motion]: Comic's own tests try its parts in outlines and timings an app does not set (any
+/// border, where an app's `shapeScheme` gives round corners within Comic's bands; its motion its own). Not exported.
+@visibleForTesting
+ComicThemeData comicThemeWith(
+  ComicThemeData theme, {
+  ComicShapes? shapes,
+  ComicMotion? motion,
+}) => ComicThemeData._(
+  theme.id,
+  theme._palette,
+  theme.colors,
+  theme.width,
+  theme.onDots,
+  shapeScheme: theme.shapeScheme,
+  shapes: shapes ?? theme.shapes,
+  density: theme.density,
+  typeface: theme.typeface,
+  components: theme.components,
+  motion: motion ?? theme.motion,
+);
 
 ComicColors _withInks(ComicColors c, Color ink, Color textSecondary) =>
     ComicColors(
@@ -2104,7 +2312,7 @@ class ComicTheme extends InheritedTheme {
       ?.data
       .atWidth(MediaQuery.sizeOf(context).width);
 
-  /// [ComicThemeData.preset]: an app's theme file names its preset here.
+  /// [ComicThemeData.preset], the theme for preset [id] in [brightness].
   static ComicThemeData preset(String id, Brightness brightness) =>
       ComicThemeData.preset(id, brightness);
 
@@ -2243,7 +2451,7 @@ ThemeData _comicMaterialOf(ComicColors c, ComicTypeface face) => ThemeData(
     surface: c.card,
     onSurface: c.text,
   ),
-  // Every platform's page change is Comic's cut, so a page an app pushes under Comic never flies in.
+  // Every platform's page change is Comic's panel wipe, so a page an app pushes under Comic never flies in.
   pageTransitionsTheme: const PageTransitionsTheme(
     builders: comicPageTransitions,
   ),
@@ -2261,9 +2469,9 @@ ThemeData _comicMaterialOf(ComicColors c, ComicTypeface face) => ThemeData(
 /// Comic's page change for every platform, a map of the widgets layer's `PageTransitionsBuilder`s: one map fits both
 /// Materials' `PageTransitionsTheme`. Comic's own Material theme carries it, for apps on material_ui. An app on Flutter's
 /// own `MaterialApp` puts it in its own `ThemeData`, as the example does: Flutter's `MaterialPageRoute` reads Flutter's
-/// theme, which Comic doesn't reach, and would fly in. See [ComicPageTransitionsBuilder]. On iOS the cut stands in
+/// theme, which Comic doesn't reach, and would fly in. See [ComicPageTransitionsBuilder]. On iOS the wipe stands in
 /// ui_core's `SwipeBackPageTransitionsBuilder`, so the swipe from the screen's leading edge still takes a page
-/// back, the page following the finger.
+/// back, the wipe following the finger.
 ///
 /// ```dart
 /// MaterialApp(
@@ -2278,7 +2486,7 @@ ThemeData _comicMaterialOf(ComicColors c, ComicTypeface face) => ThemeData(
 const Map<TargetPlatform, PageTransitionsBuilder> comicPageTransitions = {
   TargetPlatform.android: ComicPageTransitionsBuilder(),
   TargetPlatform.fuchsia: ComicPageTransitionsBuilder(),
-  // iOS's swipe back from the screen's edge, round Comic's cut.
+  // iOS's swipe back from the screen's edge, round Comic's wipe.
   TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(
     ComicPageTransitionsBuilder(),
   ),
@@ -2287,21 +2495,25 @@ const Map<TargetPlatform, PageTransitionsBuilder> comicPageTransitions = {
   TargetPlatform.windows: ComicPageTransitionsBuilder(),
 };
 
-/// Comic's page change: a cut, as the eye jumps to the next panel. A page pushed or popped stands in its place at full
-/// ink in its first frame: nothing travels in from a side, fades or zooms (laws 1 and 3). [ComicTheme] gives it to the
-/// routes it reaches (Comic's own pages among them); an app's `MaterialApp` gives [comicPageTransitions] to its own
-/// theme, so a `MaterialPageRoute` it pushes cuts too. The cut alone takes no swipe: [comicPageTransitions] wraps it on
-/// iOS in ui_core's `SwipeBackPageTransitionsBuilder`, which keeps the swipe from the leading edge; a map of your
-/// own does the same.
+/// Comic's page change: a panel wipe, as a motion comic turns to its next panel. The page pushed is drawn whole, at full
+/// ink in every frame, and revealed from the reading start behind a hard ink rule across [transitionDuration]; popped,
+/// it is wiped back the other way, quicker, in [reverseTransitionDuration]. Nothing travels in from a side, fades or
+/// zooms (laws 1 and 3); under Reduce Motion the change is a cut. [ComicTheme] gives it to the routes it reaches (Comic's
+/// own pages among them); an app's `MaterialApp` gives [comicPageTransitions] to its own theme, so a
+/// `MaterialPageRoute` it pushes wipes too. [comicPageTransitions] wraps it on iOS in ui_core's
+/// `SwipeBackPageTransitionsBuilder`, which keeps the swipe from the leading edge, the wipe following the finger;
+/// a map of your own does the same.
 class ComicPageTransitionsBuilder extends PageTransitionsBuilder {
   /// Creates Comic's page change.
   const ComicPageTransitionsBuilder();
 
+  /// [ComicMotion.move]'s 160 ms: the page's turn, as a plate moving within it.
   @override
-  Duration get transitionDuration => Duration.zero;
+  Duration get transitionDuration => const Duration(milliseconds: 160);
 
+  /// [ComicMotion.leave]'s 110 ms: going is quicker than coming.
   @override
-  Duration get reverseTransitionDuration => Duration.zero;
+  Duration get reverseTransitionDuration => const Duration(milliseconds: 110);
 
   @override
   Widget buildTransitions<T>(
@@ -2310,7 +2522,112 @@ class ComicPageTransitionsBuilder extends PageTransitionsBuilder {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
     Widget child,
-  ) => child;
+  ) => rawReduceMotionOf(context)
+      ? child
+      : _PanelWipe(animation: animation, child: child);
+}
+
+// The page revealed from the reading start up to [animation]'s share of its width, a hard ink rule on the edge; whole,
+// with no clip, once it stands.
+class _PanelWipe extends StatefulWidget {
+  const _PanelWipe({required this.animation, required this.child});
+
+  final Animation<double> animation;
+  final Widget child;
+
+  @override
+  State<_PanelWipe> createState() => _PanelWipeState();
+}
+
+class _PanelWipeState extends State<_PanelWipe> {
+  late CurvedAnimation _curve = _curved();
+
+  CurvedAnimation _curved() => CurvedAnimation(
+    parent: widget.animation,
+    curve: Curves.easeOutCubic,
+    reverseCurve: Curves.easeInCubic,
+  );
+
+  @override
+  void didUpdateWidget(_PanelWipe old) {
+    super.didUpdateWidget(old);
+    if (old.animation != widget.animation) {
+      _curve.dispose();
+      _curve = _curved();
+    }
+  }
+
+  @override
+  void dispose() {
+    _curve.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    final ink =
+        ComicTheme.maybeOf(context)?.colors.onPaper ?? const Color(0xFF000000);
+    return AnimatedBuilder(
+      animation: _curve,
+      child: widget.child,
+      builder: (context, child) {
+        final share = _curve.value.clamp(0.0, 1.0);
+        if (share >= 1) return child!;
+        return CustomPaint(
+          foregroundPainter: _WipeRule(share: share, rtl: rtl, ink: ink),
+          child: ClipRect(
+            clipper: _WipeClip(share: share, rtl: rtl),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _WipeClip extends CustomClipper<Rect> {
+  const _WipeClip({required this.share, required this.rtl});
+
+  final double share;
+  final bool rtl;
+
+  @override
+  Rect getClip(Size size) {
+    final w = size.width * share;
+    return rtl
+        ? Rect.fromLTWH(size.width - w, 0, w, size.height)
+        : Rect.fromLTWH(0, 0, w, size.height);
+  }
+
+  @override
+  bool shouldReclip(_WipeClip old) => old.share != share || old.rtl != rtl;
+}
+
+class _WipeRule extends CustomPainter {
+  const _WipeRule({required this.share, required this.rtl, required this.ink});
+
+  final double share;
+  final bool rtl;
+  final Color ink;
+
+  // A rim's weight: the panel's own border.
+  static const double _width = 3;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (share <= 0) return;
+    final edge = rtl ? size.width * (1 - share) : size.width * share;
+    final x = rtl ? edge : edge - _width;
+    canvas.drawRect(
+      Rect.fromLTWH(x.clamp(0.0, size.width - _width), 0, _width, size.height),
+      Paint()..color = ink,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_WipeRule old) =>
+      old.share != share || old.rtl != rtl || old.ink != ink;
 }
 
 /// Animates to a new [data] over [duration] (200 ms, Material's `AnimatedTheme` default), as `AnimatedTheme` does:
@@ -2474,7 +2791,7 @@ class ComicLetteringScope extends StatelessWidget {
   }
 }
 
-/// `context.comicTheme`: the theme in scope.
+/// The theme in scope as `context.comicTheme`.
 extension ComicThemeContext on BuildContext {
   /// The Comic theme in scope: `ComicTheme.of(this)`.
   ComicThemeData get comicTheme => ComicTheme.of(this);

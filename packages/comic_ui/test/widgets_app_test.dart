@@ -62,7 +62,7 @@ void main() {
                     ),
                     ComicCheckbox(
                       value: copy,
-                      label: 'Send me a copy',
+                      semanticLabel: 'Send me a copy',
                       onChanged: (v) => setState(() => copy = v ?? false),
                     ),
                     ComicButton.filled(

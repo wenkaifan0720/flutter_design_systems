@@ -73,7 +73,7 @@ void main() {
         Center(
           child: ComicIconButton(
             ComicGlyphs.bell,
-            label: 'Pin',
+            semanticLabel: 'Pin',
             isSelected: true,
             onPressed: () {},
           ),

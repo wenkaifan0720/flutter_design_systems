@@ -166,7 +166,7 @@ class ComicBareEditor extends StatelessWidget {
     required this.focusNode,
     this.controller,
     this.hint,
-    this.label,
+    this.semanticLabel,
     this.semanticHint,
     this.enabled = true,
     this.onChanged,
@@ -183,8 +183,8 @@ class ComicBareEditor extends StatelessWidget {
   /// The editor's text.
   final TextEditingController? controller;
 
-  /// [hint]: the prompt. [label]: its spoken name. [semanticHint]: what a screen reader hears after the name.
-  final String? hint, label, semanticHint;
+  /// [hint]: the prompt. [semanticLabel]: its spoken name. [semanticHint]: what a screen reader hears after the name.
+  final String? hint, semanticLabel, semanticHint;
 
   /// Whether it takes input.
   final bool enabled;
@@ -214,8 +214,8 @@ class ComicBareEditor extends StatelessWidget {
         (style.height ?? 1.3);
     final reach = math.max(0.0, (ComicTapTarget.targetOf(context) - words) / 2);
     return Semantics(
-      label: label ?? hint,
-      hint: semanticHint ?? (label == null ? null : hint),
+      label: semanticLabel ?? hint,
+      hint: semanticHint ?? (semanticLabel == null ? null : hint),
       // A tag input's editor reads whether its list shows.
       expanded: ComicListOpen.maybeOf(context),
       // Its capitals on its line's middle, as the text field's.
@@ -275,7 +275,7 @@ class ComicBareEditor extends StatelessWidget {
         ),
       )
       ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(StringProperty('semanticHint', semanticHint, defaultValue: null))
       ..add(
         FlagProperty(
@@ -516,7 +516,7 @@ class _ComicPasswordFieldState extends State<ComicPasswordField>
               password.obscured ? ComicGlyphs.show : ComicGlyphs.hide,
               style: comicInFieldIcon,
               targetAlignment: AlignmentDirectional.centerEnd,
-              label: password.toggleLabel,
+              semanticLabel: password.toggleLabel,
               onPressed: widget.enabled ? password.toggle : null,
             ),
           ),
@@ -698,7 +698,7 @@ class _ComicInputGroupState extends State<ComicInputGroup>
                 autofocus: widget.autofocus,
                 focusNode: focus,
                 controller: widget.controller,
-                label: widget.labelText,
+                semanticLabel: widget.labelText,
                 hint: widget.hintText,
                 semanticHint: widget.errorText ?? widget.helperText,
                 enabled: widget.enabled,
@@ -943,7 +943,7 @@ class _ComicMultiSelectState<T extends Object>
                 focusNode: field.focusNode,
                 autofocus: widget.autofocus,
                 controller: field.controller,
-                label: widget.labelText,
+                semanticLabel: widget.labelText,
                 // The typing row says what it takes, under the tags too, so it doesn't read as an empty band.
                 hint:
                     widget.maxTags == null ||
@@ -990,7 +990,7 @@ class _ComicMultiSelectState<T extends Object>
         );
       },
     );
-    // From 600 up the field keeps to its own width (at most 320) at its column's start.
+    // The field takes its column's width, as a text field does.
     return comicDropdownWidth(
       context,
       _fieldColumn(
@@ -1317,7 +1317,10 @@ class _RailInk extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
+    // The track's box stands the knob's inset in from each end; the rail's ink reaches the slider's edges, as
+    // ComicSlider's does, its rim inside them.
+    final reach = ComicSlider.inset - rim.width / 2;
+    final rect = Rect.fromLTRB(-reach, 0, size.width + reach, size.height);
     final path = shape.getOuterPath(rect);
     final paint = Paint();
     canvas.drawPath(path, paint..color = rail);
@@ -1417,7 +1420,8 @@ class ComicCalendar extends StatelessWidget {
             Directionality.of(context) == TextDirection.rtl
                 ? ComicGlyphs.chevronRight
                 : ComicGlyphs.chevronLeft,
-            label: RawWidgetsLocalizations.of(context).previousMonthTooltip,
+            semanticLabel: RawWidgetsLocalizations.of(context)
+                .previousMonthTooltip,
             // The arrows stand on the header's keylines, their targets growing inward.
             targetAlignment: AlignmentDirectional.centerStart,
             onPressed: header.previous,
@@ -1441,7 +1445,7 @@ class ComicCalendar extends StatelessWidget {
             Directionality.of(context) == TextDirection.rtl
                 ? ComicGlyphs.chevronLeft
                 : ComicGlyphs.chevronRight,
-            label: RawWidgetsLocalizations.of(context).nextMonthTooltip,
+            semanticLabel: RawWidgetsLocalizations.of(context).nextMonthTooltip,
             targetAlignment: AlignmentDirectional.centerEnd,
             onPressed: header.next,
           ),
@@ -1914,13 +1918,13 @@ Future<RawDateRange?> showComicDateRangePicker(
 /// typing jumps to a value's words; a screen reader hears it as an adjustable value.
 ///
 /// ```dart
-/// ComicWheelPicker<int>(label: 'Copies', values: const [1, 2, 3, 4, 5], value: copies, labelOf: (n) => '$n', onChanged: (n) => setState(() => copies = n))
+/// ComicWheelPicker<int>(semanticLabel: 'Copies', values: const [1, 2, 3, 4, 5], value: copies, labelOf: (n) => '$n', onChanged: (n) => setState(() => copies = n))
 /// ```
 class ComicWheelPicker<T> extends StatefulWidget {
   /// Creates a [ComicWheelPicker]. Null [onChanged] disables it.
   const ComicWheelPicker({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.values,
     required this.value,
     required this.labelOf,
@@ -1932,7 +1936,7 @@ class ComicWheelPicker<T> extends StatefulWidget {
   }) : assert(visible > 0 && visible % 2 == 1);
 
   /// What it picks, for a screen reader.
-  final String label;
+  final String semanticLabel;
 
   /// The values on the drum, in order.
   final List<T> values;
@@ -1965,7 +1969,7 @@ class ComicWheelPicker<T> extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<T>('values', values))
       ..add(DiagnosticsProperty<T>('value', value))
       ..add(
@@ -2024,7 +2028,7 @@ class _ComicWheelPickerState<T> extends State<ComicWheelPicker<T>>
         RawPickerColumn(
           itemCount: widget.values.length,
           itemLabel: (i) => widget.labelOf(widget.values[i]),
-          semanticLabel: widget.label,
+          semanticLabel: widget.semanticLabel,
         ),
       ],
       selection: [_index],

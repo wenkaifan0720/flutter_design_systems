@@ -1,7 +1,6 @@
 // A snack bar with no heading keeps its actions on the message's line while the words fit beside them, as a Material
 // SnackBar does; long words with a wide action stand over the actions. On a phone the actions always stood under the
 // words: "Changes saved" and its dismiss made a tall box.
-import 'package:comic_ui/comic_host.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';

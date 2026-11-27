@@ -42,8 +42,8 @@ class _RingPainter extends CustomPainter {
 }
 
 /// A person in a ring: a picture from a media slot if you have one, a portrait widget if you supply one, or else their initials. Any
-/// name goes in [label]. [isCurrentUser] is the viewer, marked in the act colour. [out] is someone who isn't coming: a dashed ghost.
-/// It keeps its size at its column's start.
+/// name goes in [semanticLabel], for a screen reader. [isCurrentUser] is the viewer, marked in the act colour. [out] is someone who isn't coming: a dashed ghost.
+/// It keeps its size at its column's start, grown with the reader's text as the name beside it is ([sizeIn]).
 /// Use `ComicPerson.seeded('Sam Doe')` to derive the initials from a name.
 ///
 /// ```dart
@@ -59,7 +59,7 @@ class ComicPerson extends StatelessWidget {
     this.isCurrentUser = false,
     this.out = false,
     this.size = 36,
-    this.label,
+    this.semanticLabel,
     this.fillIndex = 0,
   });
 
@@ -82,11 +82,11 @@ class ComicPerson extends StatelessWidget {
     isCurrentUser: isCurrentUser,
     out: out,
     size: size,
-    label: name,
+    semanticLabel: name,
   );
 
-  /// [initials]: letters shown when no portrait is supplied. [slotId]: the host image slot supplying this picture. [label]: the visible or spoken name of the component.
-  final String? initials, slotId, label;
+  /// [initials]: letters shown when no portrait is supplied. [slotId]: the host image slot supplying this picture. [semanticLabel]: the person's name, for a screen reader; the ring draws only their picture or initials.
+  final String? initials, slotId, semanticLabel;
 
   /// An optional caller-supplied portrait widget.
   final Widget? portrait;
@@ -94,8 +94,13 @@ class ComicPerson extends StatelessWidget {
   /// [isCurrentUser]: marks content that belongs to the current viewer. [out]: marks a person as unavailable with a dashed ring.
   final bool isCurrentUser, out;
 
-  /// The visual size in logical pixels.
+  /// Its size at the reader's usual text size, in logical pixels; [sizeIn] is the size it draws.
   final double size;
+
+  /// The size it draws in [context]: [size] grown with the reader's text, as the name beside it grows, to twice at
+  /// most.
+  double sizeIn(BuildContext context) =>
+      MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 2).scale(size);
 
   /// With initials: which of three fills (lamp, shade's tint, you).
   final int fillIndex;
@@ -103,7 +108,9 @@ class ComicPerson extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
     final c = t.colors;
-    final ring = size <= 30 ? t.rule(2) : t.rim(2.5);
+    // The ring's weight goes by the size asked for; the head grows with the reader's text.
+    final ring = this.size <= 30 ? t.rule(2) : t.rim(2.5);
+    final size = sizeIn(context);
     final fill = isCurrentUser ? c.currentUserHead : c.head;
     final monoFill = switch (fillIndex % 3) {
       0 => c.caption,
@@ -125,6 +132,8 @@ class ComicPerson extends StatelessWidget {
           child: Text(
             (initials ?? '?').toUpperCase(),
             maxLines: 1,
+            // The head has grown with the reader's text already; its letters keep their share of it.
+            textScaler: TextScaler.noScaling,
             style: t.type.letter(
               size * .44,
               lineHeight: 1,
@@ -154,7 +163,7 @@ class ComicPerson extends StatelessWidget {
       height: size,
       child: Semantics(
         image: true,
-        label: label ?? initials,
+        label: semanticLabel ?? initials,
         child: ComicScreened(
           on: out,
           amount: c.dark ? .28 : .45,
@@ -172,7 +181,7 @@ class ComicPerson extends StatelessWidget {
     properties
       ..add(StringProperty('initials', initials, defaultValue: null))
       ..add(StringProperty('slotId', slotId, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         FlagProperty(
           'isCurrentUser',

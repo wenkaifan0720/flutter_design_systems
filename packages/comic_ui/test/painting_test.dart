@@ -7,6 +7,8 @@ import 'package:comic_ui/comic_ui.dart';
 
 import 'support.dart';
 
+import 'package:comic_ui/src/comic/theme.dart' show comicThemeWith;
+
 class _CountedDrawing extends CustomPainter {
   _CountedDrawing(this.painted, this.color) : super(repaint: color);
   final VoidCallback painted;
@@ -111,7 +113,7 @@ void main() {
       await tester.pumpWidget(
         comicApp(
           ComicTheme(
-            data: ComicThemeData.offset().copyWith(motion: motion),
+            data: comicThemeWith(ComicThemeData.offset(), motion: motion),
             child: Column(
               children: [
                 ComicCircularProgressIndicator(),
@@ -205,7 +207,7 @@ void main() {
   _repaints(
     '_ChartInk',
     (changed) => ComicChart(
-      label: 'Pages',
+      semanticLabel: 'Pages',
       series: [
         ComicChartSeries('Pages', [1, changed ? 2 : 3, 4]),
       ],

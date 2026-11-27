@@ -1,7 +1,6 @@
 // A snack bar's action is the act and its dismiss a plain key, as a Material SnackBarAction takes the accent and its
 // close icon does not: Undo stands on the act's fill, the dismiss on a plain key's, by day and by night, either way
 // round.
-import 'package:comic_ui/comic_host.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';

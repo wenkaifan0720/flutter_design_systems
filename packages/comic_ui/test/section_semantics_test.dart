@@ -9,7 +9,7 @@ import 'package:comic_ui/comic_ui.dart';
 import 'package:comic_ui/comic_host.dart' show ComicPreview;
 
 // ignore_for_file: avoid_relative_lib_imports
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import '../example/lib/kit_gallery/live_pages.dart';
 import 'gallery_support.dart';
 import 'support.dart';

@@ -291,7 +291,7 @@ void main() {
           ComicListTile(
             title: 'Route change',
             subtitle: 'Read',
-            label: 'Open route details',
+            semanticLabel: 'Open route details',
             onPressed: () {},
           ),
         ),

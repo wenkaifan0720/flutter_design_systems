@@ -85,7 +85,7 @@ void main() {
               data: ComicThemeData.pulp(),
               child: Builder(
                 builder: (context) => ComicPressable(
-                  label: 'Open',
+                  semanticLabel: 'Open',
                   focusNode: focus,
                   autofocus: true,
                   child: const Text('Open'),
@@ -395,7 +395,7 @@ void main() {
       _host(
         Builder(
           builder: (context) => ComicPressable(
-            label: 'Explain',
+            semanticLabel: 'Explain',
             focusNode: focus,
             autofocus: true,
             child: const Text('Explain'),

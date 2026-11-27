@@ -10,7 +10,6 @@
 /// {@canonicalFor chrome_metrics.ComicChromeMetrics}
 /// {@canonicalFor host}
 /// {@canonicalFor host.ComicChromeScope}
-/// {@canonicalFor host.ComicHost}
 /// {@canonicalFor host.ComicPage}
 /// {@canonicalFor host.ComicPresentation}
 /// {@canonicalFor host.ComicPreview}

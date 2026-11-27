@@ -386,9 +386,9 @@ class _ModalPanel extends StatelessWidget {
               explicitChildNodes: true,
               child: SingleChildScrollView(
                 // The panel stands on its print, which the scroll view would clip: the print's room is inside it.
-                padding: const EdgeInsetsDirectional.only(
-                  end: comicRaisedPlate,
-                  bottom: comicRaisedPlate,
+                padding: EdgeInsetsDirectional.only(
+                  end: comicRaisedPlate * t.depth,
+                  bottom: comicRaisedPlate * t.depth,
                 ),
                 child: _RaisedFrame(
                   style: style,
@@ -691,7 +691,7 @@ class ComicBottomSheet extends StatelessWidget {
                           if (onClose != null || showClose)
                             ComicIconButton(
                               ComicGlyphs.close,
-                              label:
+                              semanticLabel:
                                   closeLabel ??
                                   RawWidgetsLocalizations.of(context)
                                       .closeButtonLabel,
@@ -1109,7 +1109,7 @@ class _ComicMenuState<T> extends State<ComicMenu<T>> {
                 focusNode: _nodes[i],
                 autofocus:
                     widget.autofocus && i == first && widget.onSelected != null,
-                label: widget.items[i].label,
+                semanticLabel: widget.items[i].label,
                 selected: widget.items[i].selected,
                 onPressed: !widget.items[i].enabled || widget.onSelected == null
                     ? null
@@ -1644,7 +1644,7 @@ ComicRaised showComicTooltip(
 /// left below. A screen reader hears [message] as the child's tooltip.
 ///
 /// ```dart
-/// ComicTooltip(message: 'Save this issue', child: ComicIconButton(icon, label: 'Save', onPressed: save))
+/// ComicTooltip(message: 'Save this issue', child: ComicIconButton(icon, semanticLabel: 'Save', onPressed: save))
 /// ```
 class ComicTooltip extends StatelessWidget {
   /// Creates a tooltip. Its child keeps its own semantics and activation.
@@ -1924,7 +1924,7 @@ class ComicSnackBar extends StatelessWidget {
           style: actionStyle,
           // Its size takes the density again: the field's height before it.
           size: ComicTrack.fieldHeight(context) - t.density.heightDelta,
-          label: dismissLabel ?? ComicLocalizations.of(context).dismiss,
+          semanticLabel: dismissLabel ?? ComicLocalizations.of(context).dismiss,
           onPressed: onDismiss,
         ),
     ];
@@ -2411,6 +2411,7 @@ class _RaisedFrame extends StatelessWidget {
             outline ?? const RoundedRectangleBorder(),
             rim.color,
             direction,
+            comicRaisedPlate * ComicTheme.of(context).depth,
           ),
           child: face,
         );
@@ -2419,21 +2420,19 @@ class _RaisedFrame extends StatelessWidget {
   }
 }
 
-/// Paints a surface's plate behind it: its outline, [comicRaisedPlate] down and to the end, in its rim's ink (the
-/// line by day, the lit line by night, so it reads on either ground).
+/// Paints a surface's plate behind it: its outline, [plate] down and to the end ([comicRaisedPlate] at a theme's depth
+/// of 1), in its rim's ink (the line by day, the lit line by night, so it reads on either ground).
 class _PlatePainter extends CustomPainter {
-  const _PlatePainter(this.outline, this.ink, this.direction);
+  const _PlatePainter(this.outline, this.ink, this.direction, this.plate);
   final ShapeBorder outline;
   final Color ink;
   final TextDirection direction;
+  final double plate;
   @override
   void paint(Canvas canvas, Size size) => canvas.drawPath(
     outline.getOuterPath(
       (Offset.zero & size).shift(
-        Offset(
-          direction == TextDirection.rtl ? -comicRaisedPlate : comicRaisedPlate,
-          comicRaisedPlate,
-        ),
+        Offset(direction == TextDirection.rtl ? -plate : plate, plate),
       ),
       textDirection: direction,
     ),
@@ -2445,7 +2444,10 @@ class _PlatePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_PlatePainter old) =>
-      old.outline != outline || old.ink != ink || old.direction != direction;
+      old.outline != outline ||
+      old.ink != ink ||
+      old.direction != direction ||
+      old.plate != plate;
 }
 
 /// A menu or popover frame with a themed fill, rim and inner [padding].
@@ -2927,9 +2929,13 @@ class _ComicComboboxState<T extends Object> extends State<ComicCombobox<T>> {
         Padding(
           padding: EdgeInsets.only(
             // Opened below: the field's print, then a plate's depth of paper.
-            top: ComicTheme.of(context).focus.width + comicRaisedPlate,
+            top:
+                ComicTheme.of(context).focus.width +
+                comicRaisedPlate * ComicTheme.of(context).depth,
             // Opened above: the list's own print, a plate's depth of paper, then the field's lift.
-            bottom: 2 * comicRaisedPlate + comicFocusLift,
+            bottom:
+                (2 * comicRaisedPlate + comicFocusLift) *
+                ComicTheme.of(context).depth,
           ),
           child: ComicRaisedFrame(style: widget.style, child: list),
         ),

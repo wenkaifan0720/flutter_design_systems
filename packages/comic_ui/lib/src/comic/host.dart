@@ -1,18 +1,30 @@
-// Comic's part of the host an app runs its pages under: the app's host around the navigator, its pages and sheets, the
-// shell's action, the scope its chrome reads, and the preview frame. The package exports it from its host library, not
-// the main one: an app draws its screens from the main library.
+// Comic's part of the host library: the router's pages and sheets, the router shell's action, the scope its chrome reads,
+// and the preview frame. The package exports it from its host library, not the main one: an app mounts `ComicHost`
+// and `ComicAppShell` and draws its screens from the main library, which needs none of this.
 import 'package:flutter/foundation.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/host.dart';
 
+import 'app_host.dart';
 import 'chrome.dart';
 import 'nav.dart';
-import 'press.dart';
 import 'raised.dart' show ComicBottomSheetRoute, ComicDialogRoute;
 import 'theme.dart';
 
 ComicBrand _brand(String? name) => ComicBrand(name: name ?? '');
+
+// [action], a router's act, as the bar draws it; it runs with [context], under the router.
+ComicAppAction? _appAction(ShellAction? action, BuildContext context) =>
+    action == null
+    ? null
+    : ComicAppAction(
+        icon: action.icon,
+        label: action.label ?? '',
+        accent: action.accent,
+        key: action.key,
+        onPressed: () => action.onPressed(context),
+      );
 
 /// The app-level act beside the tabs: a small balloon in the tab bar's middle on a phone, at the masthead's end on a desktop.
 /// Quieter (a plain square) when [accent] is off.
@@ -28,7 +40,7 @@ class ComicShellAction extends ShellAction {
   });
 }
 
-/// What every page under the shell reads: the app's name and its places.
+/// What every page under the app's shell reads: the app's name and its places. [ComicAppShell] mounts it.
 ///
 /// ```dart
 /// ComicChromeScope(brand: const ComicBrand(name: 'The Issue'), nav: const [], active: 0, child: page)
@@ -41,6 +53,7 @@ class ComicChromeScope extends InheritedWidget {
     required this.nav,
     required this.active,
     this.action,
+    this.shellDrawn = false,
     required super.child,
   });
 
@@ -56,6 +69,9 @@ class ComicChromeScope extends InheritedWidget {
   /// The optional action beside this content.
   final ShellAction? action;
 
+  /// Whether the app's shell draws its places and its act ([ComicAppShell]): a page's top bar leaves them out.
+  final bool shellDrawn;
+
   /// The nearest chrome scope, or null when none is installed.
   static ComicChromeScope? maybeOf(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<ComicChromeScope>();
@@ -64,7 +80,8 @@ class ComicChromeScope extends InheritedWidget {
       old.active != active ||
       old.brand != brand ||
       old.nav != nav ||
-      old.action != action;
+      old.action != action ||
+      old.shellDrawn != shellDrawn;
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -75,77 +92,14 @@ class ComicChromeScope extends InheritedWidget {
       ..add(IntProperty('active', active))
       ..add(
         DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
-      );
-  }
-}
-
-/// The app's host, mounted once around the router's navigator: Comic's theme, ground and text defaults.
-///
-/// ```dart
-/// ComicHost(light: ComicThemeData.offset(), child: page)
-/// ```
-class ComicHost extends StatelessWidget {
-  /// Creates a [ComicHost].
-  const ComicHost({
-    super.key,
-    this.light,
-    this.dark,
-    this.brightness,
-    required this.child,
-  });
-
-  /// [light]: the theme for the light appearance. [dark]: the theme or flag for the dark appearance.
-  final ComicThemeData? light, dark;
-
-  /// The requested light or dark appearance.
-  final Brightness? brightness;
-
-  /// Content placed inside this widget.
-  final Widget child;
-  @override
-  Widget build(BuildContext context) {
-    final wanted =
-        brightness ??
-        PreviewFrame.maybeOf(context)?.brightness ??
-        MediaQuery.platformBrightnessOf(context);
-    final theme =
-        (wanted == Brightness.dark ? dark : light) ??
-        ComicTheme.preset(ComicThemeData.presets.first, wanted);
-    // Day to night (and one preset to another) moves: every colour of the page lerps to the new palette.
-    return AnimatedComicTheme(
-      data: theme,
-      duration: ComicMotion.of(context).raise,
-      curve: comicStateCurve,
-      child: Builder(
-        builder: (context) {
-          final t = ComicTheme.of(context);
-          return ColoredBox(
-            color: t.colors.background,
-            child: DefaultTextStyle(
-              style: t.type.body,
-              child: IconTheme(
-                data: IconThemeData(color: t.colors.text, size: 22),
-                child: child,
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(
-        DiagnosticsProperty<ComicThemeData>('light', light, defaultValue: null),
       )
       ..add(
-        DiagnosticsProperty<ComicThemeData>('dark', dark, defaultValue: null),
-      )
-      ..add(
-        EnumProperty<Brightness>('brightness', brightness, defaultValue: null),
+        FlagProperty(
+          'shellDrawn',
+          value: shellDrawn,
+          ifTrue: 'drawn by the app shell',
+          defaultValue: false,
+        ),
       );
   }
 }
@@ -390,7 +344,7 @@ class ComicPreview extends StatelessWidget {
                           ComicNavigationBar(
                             destinations: nav,
                             selectedIndex: activeIndex,
-                            action: action,
+                            action: _appAction(action, context),
                           ),
                       ],
                     ),

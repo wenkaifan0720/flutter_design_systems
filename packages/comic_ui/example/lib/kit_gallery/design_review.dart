@@ -97,7 +97,7 @@ Widget reviewCorners(Brightness brightness) => _screen(
             kitState(
               0,
               (context, value, change) => ComicSegmentedButton<int>(
-                label: 'View',
+                semanticLabel: 'View',
                 value: value,
                 segments: const [
                   ComicButtonSegment(0, 'Day'),
@@ -139,7 +139,10 @@ Widget reviewCorners(Brightness brightness) => _screen(
               (context, value, change) =>
                   ComicSlider(label: 'Volume', value: value, onChanged: change),
             ),
-            const ComicLinearProgressIndicator(value: .45, label: 'Download'),
+            const ComicLinearProgressIndicator(
+              value: .45,
+              semanticLabel: 'Download',
+            ),
             kitState(
               3,
               (context, value, change) => ComicNumberField(
@@ -203,7 +206,7 @@ Widget reviewCorners(Brightness brightness) => _screen(
             kitState(
               1,
               (context, value, change) => ComicListSection(
-                label: 'Issues',
+                semanticLabel: 'Issues',
                 children: [
                   for (final (i, title) in const [
                     (0, 'The first issue'),
@@ -355,7 +358,7 @@ Widget reviewList(Brightness brightness) =>
 /// The screen's body alone, for the live example's page of the same name.
 Widget reviewListBody() => Builder(
   builder: (context) => ComicListSection(
-    label: 'Team members',
+    semanticLabel: 'Team members',
     children: [
       for (final (initials, name, role) in [
         ('AM', 'Alex Morgan', 'Project owner'),
@@ -370,7 +373,7 @@ Widget reviewListBody() => Builder(
           leading: ComicAvatar(initials, name: name),
           action: ComicIconButton(
             ComicGlyphs.more,
-            label: 'Options for $name',
+            semanticLabel: 'Options for $name',
             onPressed: () => kitFeedback(context, '$name selected.'),
           ),
         ),
@@ -474,7 +477,7 @@ Widget reviewSettingsBody() => ComicColumn(
   children: [
     const Text('Choose when you hear from us.'),
     ComicListSection(
-      label: 'Notification preferences',
+      semanticLabel: 'Notification preferences',
       children: [
         for (final (label, note, initial) in [
           ('Weekly summary', 'A short update every Monday', true),

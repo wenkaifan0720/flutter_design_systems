@@ -92,3 +92,15 @@ void check(String name, Widget Function() child) {
     }
   }
 }
+
+/// A rounded corner scale on [radius]: Comic is square, and its tests try its parts in rounded corners too.
+ComicShapes comicRounded(double radius) {
+  OutlinedBorder border(double value) =>
+      RoundedRectangleBorder(borderRadius: BorderRadius.circular(value));
+  return ComicShapes(
+    small: border(radius),
+    medium: border(radius),
+    large: border(radius * 1.5),
+    capsule: const StadiumBorder(),
+  );
+}

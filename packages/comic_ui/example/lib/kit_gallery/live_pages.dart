@@ -185,6 +185,7 @@ final List<LivePage> livePages = [
       kitSection('Select', children: [kitSpecimenSelect()]),
       kitSection('A value to change', children: [kitSpecimenSelectField()]),
       kitSection('A date', children: [kitSpecimenDate()]),
+      kitSection('A date in a form', children: [kitSpecimenDateField()]),
       kitSection('A time', children: [kitSpecimenTime()]),
       kitSection('Autocomplete', children: [kitSpecimenAutocomplete()]),
       kitSection('Several at once', children: [kitSpecimenMultiSelect()]),
@@ -202,6 +203,7 @@ final List<LivePage> livePages = [
     sections: () => [
       kitSection('The app bar', children: [kitSpecimenTopBar()]),
       kitSection('The masthead', children: [_masthead()]),
+      kitSection('The app\'s frame', children: [kitSpecimenAppShell()]),
       kitSection('The bottom nav', children: [kitSpecimenTabBar()]),
       kitSection('The side nav', children: [kitSpecimenSideNav()]),
       kitSection('The rail', children: [kitSpecimenRail()]),
@@ -737,7 +739,7 @@ Widget _easing() => kitState<bool>(
     children: [
       ComicSwitch(
         value: night,
-        label: kitSay(context, 'Night'),
+        semanticLabel: kitSay(context, 'Night'),
         onChanged: change,
       ),
       _eased(night, ComicTheme.of(context).colors.nightLine),

@@ -70,34 +70,36 @@ final Map<String, DocExample> _examples = {
   'ComicPop': (context) => const ComicPop('4', width: 40, height: 34),
   'ComicStamp': (context) => const ComicStamp('Paid'),
   'ComicChart': (context) => const ComicChart(
-    label: 'Weekly pages',
+    semanticLabel: 'Weekly pages',
     series: [
       ComicChartSeries('Pages', [12, 18, 16]),
     ],
   ),
   'ComicLineChart': (context) => const ComicLineChart(
-    label: 'Pages read',
+    semanticLabel: 'Pages read',
     labels: ['Mon', 'Tue', 'Wed'],
     series: [
       ComicChartSeries('You', [12, 18, 16]),
     ],
   ),
   'ComicAreaChart': (context) => const ComicAreaChart(
-    label: 'Visitors',
+    semanticLabel: 'Visitors',
     labels: ['Wk 1', 'Wk 2'],
     series: [
       ComicChartSeries('Visitors', [310, 402]),
     ],
   ),
   'ComicBarChart': (context) => const ComicBarChart(
-    label: 'Orders',
+    semanticLabel: 'Orders',
     labels: ['Wk 1', 'Wk 2'],
     series: [
       ComicChartSeries('Online', [42, 51]),
     ],
   ),
-  'ComicSparkline': (context) =>
-      const ComicSparkline(label: 'Sales this week', values: [3, 5, 4, 8, 7]),
+  'ComicSparkline': (context) => const ComicSparkline(
+    semanticLabel: 'Sales this week',
+    values: [3, 5, 4, 8, 7],
+  ),
   'ComicLogo': (context) => const ComicLogo('Saucepot!'),
   'ComicGroupChip': (context) => ComicGroupChip(
     'The Six',
@@ -112,6 +114,55 @@ final Map<String, DocExample> _examples = {
       ],
       selectedIndex: 0,
       onDestinationSelected: select,
+    );
+  },
+  'ComicAppShell': (context) {
+    var place = 0;
+    void setState(VoidCallback change) => change();
+    return ComicAppShell.branches(
+      destinations: const [
+        ComicNavItem(label: 'Home', short: 'Home', icon: ComicGlyphs.house),
+        ComicNavItem(label: 'Alerts', short: 'Alerts', icon: ComicGlyphs.bell),
+      ],
+      selectedIndex: place,
+      onDestinationSelected: (index) => setState(() => place = index),
+      branches: [
+        (context) => const Text('Home'),
+        (context) => const Text('Alerts'),
+      ],
+    );
+  },
+  'ComicAppAction': (context) {
+    void add() {}
+    return ComicNavigationBar(
+      destinations: const [
+        ComicNavItem(label: 'Home', short: 'Home', icon: ComicGlyphs.house),
+      ],
+      action: ComicAppAction(
+        icon: ComicGlyphs.plus,
+        label: 'Add',
+        onPressed: add,
+      ),
+    );
+  },
+  'ComicThemeData (palette)': (context) => ComicTheme(
+    data: ComicThemeData(
+      palette: ComicThemeData.palettes[3],
+      brightness: Brightness.dark,
+    ),
+    child: const Text('Pulp by night'),
+  ),
+  'ComicHost (palette)': (context) => MaterialApp(
+    builder: (context, child) =>
+        ComicHost(palette: ComicThemeData.palettes[1], child: child!),
+    home: const Text('Home'),
+  ),
+  'ComicThemeData.palettes': (context) {
+    const saved = 'pulp';
+    const app = Text('Home');
+    return ComicHost(
+      palette: ComicThemeData.palettes.firstWhere((p) => p.id == saved),
+      child: app,
     );
   },
   'ComicTab': (context) =>
@@ -147,15 +198,20 @@ final Map<String, DocExample> _examples = {
   'ComicAppBar': (context) => ComicAppBar(
     title: 'The plan',
     leading: ComicAppBar.autoLeading(context, key: const ValueKey('back')),
-    actions: [const ComicIconButton(ComicGlyphs.share2, label: 'Share')],
+    actions: [
+      const ComicIconButton(ComicGlyphs.share2, semanticLabel: 'Share'),
+    ],
   ),
   'ComicInput': (context) => ComicInput(
     key: const ValueKey('name'),
     hintText: 'Your name',
     onChanged: (text) {},
   ),
-  'ComicMedia': (context) =>
-      const ComicMedia(slotId: 'item-1', aspect: 1, label: 'First piece'),
+  'ComicMedia': (context) => const ComicMedia(
+    slotId: 'item-1',
+    aspect: 1,
+    semanticLabel: 'First piece',
+  ),
   'ComicPictureCard': (context) => ComicPictureCard(
     slotId: 'item-1',
     title: 'First piece',
@@ -164,7 +220,7 @@ final Map<String, DocExample> _examples = {
     onPressed: () {},
   ),
   'ComicLoadingState': (context) =>
-      const ComicLoadingState(label: 'Loading issue'),
+      const ComicLoadingState(semanticLabel: 'Loading issue'),
   'ComicErrorState': (context) => ComicErrorState(
     title: 'Could not load',
     message: 'Check your connection.',
@@ -188,8 +244,11 @@ final Map<String, DocExample> _examples = {
   ),
   'ComicButton': (context) =>
       ComicButton.filled('New plan', icon: ComicGlyphs.plus, onPressed: () {}),
-  'ComicIconButton': (context) =>
-      ComicIconButton(ComicGlyphs.bell, label: 'Alerts', onPressed: () {}),
+  'ComicIconButton': (context) => ComicIconButton(
+    ComicGlyphs.bell,
+    semanticLabel: 'Alerts',
+    onPressed: () {},
+  ),
   'ComicTextField': (context) =>
       ComicTextField(hintText: 'Your name', onChanged: (text) {}),
   'ComicSendButton': (context) => ComicSendButton(onPressed: () {}),
@@ -199,10 +258,22 @@ final Map<String, DocExample> _examples = {
     helperText: 'Change',
     onPressed: () {},
   ),
+  'ComicDateField': (context) {
+    DateTime? started;
+    void setState(VoidCallback change) => change();
+    return ComicDateField(
+      labelText: 'Started',
+      value: started,
+      onChanged: (day) => setState(() => started = day),
+    );
+  },
   'ComicChip (2)': (context) =>
       ComicChip('Fish', selected: true, onPressed: () {}),
-  'ComicCheckbox': (context) =>
-      ComicCheckbox(label: 'Keep issue', value: true, onChanged: (v) {}),
+  'ComicCheckbox': (context) => ComicCheckbox(
+    semanticLabel: 'Keep issue',
+    value: true,
+    onChanged: (v) {},
+  ),
   'ComicChoiceBox': (context) => ComicChoiceBox(
     selected: true,
     onPressed: () {},
@@ -263,10 +334,19 @@ final Map<String, DocExample> _examples = {
       onChanged: change,
     );
   },
+  'ComicRadio': (context) {
+    void change([Object? a, Object? b]) {}
+    return ComicRadioGroup<String>(
+      labelText: 'Format',
+      options: const [ComicRadio('print', 'Print', note: 'Posted each month')],
+      groupValue: 'print',
+      onChanged: change,
+    );
+  },
   'ComicSegmentedButton': (context) {
     void change([Object? a, Object? b]) {}
     return ComicSegmentedButton<String>(
-      label: 'View',
+      semanticLabel: 'View',
       segments: const [
         ComicButtonSegment('all', 'All'),
         ComicButtonSegment('saved', 'Saved'),
@@ -370,7 +450,7 @@ final Map<String, DocExample> _examples = {
     var rating = 3;
     void setState(VoidCallback fn) => fn();
     return ComicRating(
-      label: 'Rate this issue',
+      semanticLabel: 'Rate this issue',
       value: 3,
       onChanged: (v) => setState(() => rating = v),
     );
@@ -418,7 +498,7 @@ final Map<String, DocExample> _examples = {
     void copy([Object? a, Object? b]) {}
     void paste([Object? a, Object? b]) {}
     return ComicButtonGroup(
-      label: 'Text',
+      semanticLabel: 'Text',
       items: [
         ComicButtonGroupItem('Copy', onPressed: copy),
         ComicButtonGroupItem('Paste', onPressed: paste),
@@ -429,7 +509,7 @@ final Map<String, DocExample> _examples = {
     var on = {'Bold'};
     void setState(VoidCallback fn) => fn();
     return ComicToggleGroup<String>(
-      label: 'Style',
+      semanticLabel: 'Style',
       values: const ['Bold', 'Italic'],
       selected: on,
       multiSelectionEnabled: true,
@@ -520,7 +600,7 @@ final Map<String, DocExample> _examples = {
     var copies = 2;
     void setState(VoidCallback fn) => fn();
     return ComicWheelPicker<int>(
-      label: 'Copies',
+      semanticLabel: 'Copies',
       values: const [1, 2, 3, 4, 5],
       value: copies,
       labelOf: (n) => '$n',
@@ -725,8 +805,17 @@ final Map<String, DocExample> _examples = {
   },
   'ComicThemeData': (context) {
     void example() {
-      final theme = ComicThemeData.offset().copyWith(
-        strokes: ComicStrokes.bold,
+      final rounder = ComicThemeData(
+        shapeScheme: comicShapeScheme.copyWith(
+          corners: comicShapeScheme.corners.copyWith(
+            extraSmall: 6,
+            small: 6,
+            medium: 10,
+            large: 14,
+          ),
+          stroke: 3,
+          depth: 1.25,
+        ),
       );
     }
 
@@ -821,7 +910,7 @@ final Map<String, DocExample> _examples = {
     return ComicPageDots(
       pageCount: 4,
       selectedIndex: 1,
-      label: 'Pages',
+      semanticLabel: 'Pages',
       onPageChanged: select,
     );
   },
@@ -924,7 +1013,11 @@ final Map<String, DocExample> _examples = {
   'ComicPressable': (context) {
     const tile = Text('Issue 12');
     void open([Object? a, Object? b]) {}
-    return ComicPressable(onPressed: open, label: 'Issue 12', child: tile);
+    return ComicPressable(
+      onPressed: open,
+      semanticLabel: 'Issue 12',
+      child: tile,
+    );
   },
   'ComicHighlight': (context) {
     final theme = ComicTheme.of(context);
@@ -1063,7 +1156,7 @@ final Map<String, DocExample> _examples = {
     void save([Object? a, Object? b]) {}
     return ComicTooltip(
       message: 'Save this issue',
-      child: ComicIconButton(icon, label: 'Save', onPressed: save),
+      child: ComicIconButton(icon, semanticLabel: 'Save', onPressed: save),
     );
   },
   'ComicSnackBar': (context) {
@@ -1159,13 +1252,13 @@ final Map<String, DocExample> _examples = {
   'ComicAvatarGroup': (context) => const ComicAvatarGroup([
     ComicFace('NW'),
     ComicFace('AK'),
-  ], label: 'Contributors'),
+  ], semanticLabel: 'Contributors'),
   'ComicMeter': (context) =>
       const ComicMeter(label: 'Capacity', value: 35, max: 100, unit: 'pages'),
   'ComicCarouselView': (context) {
     final picks = [(slotId: 'item-1', title: 'First piece')];
     return ComicCarouselView(
-      label: 'This week',
+      semanticLabel: 'This week',
       children: [
         for (final p in picks)
           ComicPictureCard(slotId: p.slotId, title: p.title),
@@ -1384,11 +1477,18 @@ final Map<String, DocExample> _examples = {
   'ComicBanner': (context) =>
       const ComicBanner('Your issue is ready', tone: ComicTone.success),
   'ComicCircularProgressIndicator': (context) =>
-      const ComicCircularProgressIndicator(value: .6, label: 'Uploading'),
+      const ComicCircularProgressIndicator(
+        value: .6,
+        semanticLabel: 'Uploading',
+      ),
   'ComicLinearProgressIndicator': (context) =>
-      const ComicLinearProgressIndicator(value: .4, label: 'Reading progress'),
+      const ComicLinearProgressIndicator(
+        value: .4,
+        semanticLabel: 'Reading progress',
+      ),
   'ComicSkeleton': (context) => const ComicSkeleton(width: 160, height: 20),
-  'ComicBadge': (context) => const ComicBadge(12, label: 'Unread issues'),
+  'ComicBadge': (context) =>
+      const ComicBadge(12, semanticLabel: 'Unread issues'),
   'ComicSuccessState': (context) =>
       const ComicSuccessState(title: 'All set', message: 'Your issue is saved'),
   'ComicThemeData (5)': (context) {

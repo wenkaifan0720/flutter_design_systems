@@ -8,6 +8,8 @@ import 'support.dart';
 import 'shape_fit_support.dart';
 import 'tiers.dart';
 
+import 'package:comic_ui/src/comic/theme.dart' show comicThemeWith;
+
 final _parts = <String, Widget Function()>{
   'act': () => ComicButton.filled('Save', onPressed: () {}),
   'small act': () =>
@@ -25,10 +27,13 @@ final _parts = <String, Widget Function()>{
     icon: ComicGlyphs.trash2,
     onPressed: () {},
   ),
-  'icon': () =>
-      ComicIconButton(ComicGlyphs.search, label: 'Search', onPressed: () {}),
+  'icon': () => ComicIconButton(
+    ComicGlyphs.search,
+    semanticLabel: 'Search',
+    onPressed: () {},
+  ),
   'checkbox': () =>
-      ComicCheckbox(label: 'Keep', value: true, onChanged: (_) {}),
+      ComicCheckbox(semanticLabel: 'Keep', value: true, onChanged: (_) {}),
   'check row': () =>
       ComicCheckRow(label: 'Keep', value: true, onChanged: (_) {}),
   'radio': () => ComicRadioGroup(
@@ -55,7 +60,7 @@ final _parts = <String, Widget Function()>{
   'option': () =>
       ComicChoiceBox(onPressed: () {}, child: const Text('Your content')),
   'segments': () => ComicSegmentedButton(
-    label: 'View',
+    semanticLabel: 'View',
     value: 1,
     segments: const [
       ComicButtonSegment(1, 'Day'),
@@ -122,9 +127,9 @@ void main() {
   setUpAll(loadComicFonts);
   final sets = {
     'square': const ComicShapes(),
-    'small': ComicShapes.rounded(4),
-    'medium': ComicShapes.rounded(8),
-    'large': ComicShapes.rounded(12),
+    'small': comicRounded(4),
+    'medium': comicRounded(8),
+    'large': comicRounded(12),
   };
   for (final (s, MapEntry(key: set, value: shapes)) in sets.entries.indexed) {
     for (final (w, width) in [120.0, 240.0, 390.0].indexed) {
@@ -142,9 +147,9 @@ void main() {
             testWidgets(
               '$name / $set / $width / ${density.vertical} / $scale',
               (tester) async {
-                final theme = ComicThemeData.offset().copyWith(
+                final theme = comicThemeWith(
+                  ComicThemeData.offset().copyWith(density: density),
                   shapes: shapes,
-                  density: density,
                 );
                 await tester.pumpWidget(
                   MaterialApp(

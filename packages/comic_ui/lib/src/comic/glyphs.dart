@@ -21,6 +21,9 @@ abstract final class ComicGlyphs {
   /// The bell mark.
   static const IconData bell = LucideIcons.bell;
 
+  /// The book mark: an open book, for a library or a reading list.
+  static const IconData book = LucideIcons.bookOpen;
+
   /// The calendar mark.
   static const IconData calendar = LucideIcons.calendar;
 
@@ -62,6 +65,9 @@ abstract final class ComicGlyphs {
 
   /// The devices mark.
   static const IconData devices = LucideIcons.monitorSmartphone;
+
+  /// The edit mark: a pencil.
+  static const IconData edit = LucideIcons.pencil;
 
   /// The email mark.
   static const IconData email = LucideIcons.mail;
@@ -140,6 +146,9 @@ abstract final class ComicGlyphs {
 
   /// The sendHorizontal mark; it flies the other way right to left.
   static const IconData sendHorizontal = LucideIcons.sendHorizontalDir;
+
+  /// The settings mark: a cog.
+  static const IconData settings = LucideIcons.settings;
 
   /// The share mark.
   static const IconData share = LucideIcons.share2;

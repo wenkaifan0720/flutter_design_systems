@@ -16,19 +16,20 @@ import 'styled.dart';
 import 'internal/style_guard.dart';
 import 'knobs.dart' show ComicSpace;
 
-/// Who a filled label belongs to: `lamp` is the narrator and today, `ink` a fact in full contour, `you` is yours, `shade` the
-/// group, `paper` a plain box. Each brings its own letters.
+/// Who a filled label belongs to: [narrator] is the narrator and today, [fact] a fact in full contour, [currentUser] is
+/// yours, [group] the group, [plain] a plain box. Each brings its own letters, and each follows the print run: the
+/// palette's captions, act and group ink.
 enum ComicSpeaker {
-  /// The warm narration fill.
+  /// The narrator's caption fill (`ComicColors.caption`).
   narrator,
 
-  /// A full-ink label.
+  /// A full-ink label: the contour's ink by day, a lit control by night.
   fact,
 
-  /// The viewer's action color.
+  /// Yours: the act's fill (`ComicColors.primary`).
   currentUser,
 
-  /// The secondary print color.
+  /// The group's ink (`ComicColors.shade`).
   group,
 
   /// Plain paper and its reading ink.
@@ -320,7 +321,7 @@ class ComicPanel extends StatelessWidget {
     this.compact = false,
     this.shrinkWrap = false,
     this.onPressed,
-    this.label,
+    this.semanticLabel,
     this.selected,
     this.focusNode,
     this.autofocus = false,
@@ -357,7 +358,7 @@ class ComicPanel extends StatelessWidget {
   final VoidCallback? onPressed;
 
   /// What a screen reader says of a pressable panel.
-  final String? label;
+  final String? semanticLabel;
 
   /// The selection state of a selectable panel; null omits that state.
   final bool? selected;
@@ -384,7 +385,7 @@ class ComicPanel extends StatelessWidget {
           : Semantics(
               container: true,
               selected: selected,
-              label: label,
+              label: semanticLabel,
               child: face,
             );
     }
@@ -392,7 +393,7 @@ class ComicPanel extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: label ?? caption,
+      semanticLabel: semanticLabel ?? caption,
       selected: selected,
       outline: look.shapes(t.shapes.medium),
       overlay: look.overlay,
@@ -594,7 +595,7 @@ class ComicPanel extends StatelessWidget {
         ),
       )
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(

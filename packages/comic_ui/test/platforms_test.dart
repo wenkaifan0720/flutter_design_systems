@@ -51,11 +51,19 @@ Widget _controls() => ComicColumn(
       ('off', const ComicButton.filled('Off', onPressed: null)),
       (
         'icon button',
-        ComicIconButton(ComicGlyphs.bell, label: 'Alerts', onPressed: () {}),
+        ComicIconButton(
+          ComicGlyphs.bell,
+          semanticLabel: 'Alerts',
+          onPressed: () {},
+        ),
       ),
       (
         'checkbox',
-        ComicCheckbox(label: 'Keep issue', value: true, onChanged: (_) {}),
+        ComicCheckbox(
+          semanticLabel: 'Keep issue',
+          value: true,
+          onChanged: (_) {},
+        ),
       ),
       ('switch', ComicSwitch(value: true, onChanged: (_) {})),
       ('link', ComicLink('Read the issue', onPressed: () {})),

@@ -15,6 +15,8 @@ import 'glyphs.dart';
 
 import 'controls.dart';
 import 'entries.dart';
+import 'format.dart';
+import 'rows.dart' show ComicFormField;
 import 'localizations.dart';
 import 'press.dart';
 import 'raised.dart';
@@ -301,7 +303,7 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
       final live = widget.onChanged != null && _can(date);
       _nodes[day - 1].skipTraversal = date != _cursor;
       return ComicPressable(
-        label: DateFormat.yMMMMd(locale).format(date),
+        semanticLabel: DateFormat.yMMMMd(locale).format(date),
         selected: selected,
         focusNode: _nodes[day - 1],
         autofocus: widget.autofocus && date == _cursor,
@@ -413,7 +415,12 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
                                     look.foreground ??
                                     (selected
                                         ? t.colors.onCaption
-                                        : t.colors.text),
+                                        // A day the calendar doesn't offer is printed in the second ink before
+                                        // it is screened back, as a disabled field's label is: the screen alone
+                                        // left it near the days that can be chosen.
+                                        : _can(date)
+                                        ? t.colors.text
+                                        : t.colors.textSecondary),
                               ),
                         ),
                       ),
@@ -443,7 +450,7 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final previous = ComicIconButton(
       rtl ? ComicGlyphs.chevronRight : ComicGlyphs.chevronLeft,
-      label:
+      semanticLabel:
           widget.previousLabel ??
           RawWidgetsLocalizations.of(context).previousMonthTooltip,
       // The arrows stand on the header's keylines, their targets growing inward.
@@ -454,7 +461,7 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
     );
     final next = ComicIconButton(
       rtl ? ComicGlyphs.chevronLeft : ComicGlyphs.chevronRight,
-      label:
+      semanticLabel:
           widget.nextLabel ??
           RawWidgetsLocalizations.of(context).nextMonthTooltip,
       targetAlignment: AlignmentDirectional.centerEnd,
@@ -868,6 +875,222 @@ const double _narrowestDay = 40;
 
 /// The least room between a day's number and its outline, as every Comic face keeps round its content.
 const double _dayClearance = 4;
+
+/// A date in a field's box, under its label: the day as [ComicFormat.date] shows it ("14 Mar 2026"), or [hintText]
+/// while [value] is null. A press (or Enter, Space, Down) raises [showComicDatePicker], and the day chosen goes to
+/// [onChanged]; a dismissed calendar changes nothing. It takes its column's width, as a text field does.
+///
+/// With a [validator] it takes part in the `RawForm` above it, as `ComicTextField` does: the error shows under it,
+/// its rim turns to the danger tone, and a failed submit moves focus to it.
+///
+/// ```dart
+/// ComicDateField(labelText: 'Started', value: started, onChanged: (day) => setState(() => started = day))
+/// ```
+class ComicDateField extends StatefulWidget {
+  /// Creates a date field showing [value], or [hintText] while it is null.
+  const ComicDateField({
+    super.key,
+    this.style,
+    required this.value,
+    this.onChanged,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
+    this.semanticLabel,
+    this.required = false,
+    this.firstDate,
+    this.lastDate,
+    this.validator,
+    this.onSaved,
+    this.autovalidateMode,
+    this.focusNode,
+    this.autofocus = false,
+  });
+
+  /// Per-state field appearance.
+  final ComicStyle? style;
+
+  /// The day shown; null: none yet, and [hintText] stands in the box.
+  final DateTime? value;
+
+  /// Called with the day chosen in the calendar. Null: the field is disabled.
+  final ValueChanged<DateTime>? onChanged;
+
+  /// The field's name, drawn above its box and spoken as its name. Null: no line above the box.
+  final String? labelText;
+
+  /// What the box says while [value] is null. Null: the localized "Choose a date".
+  final String? hintText;
+
+  /// Supporting text under the box; an error takes its place.
+  final String? helperText;
+
+  /// What is wrong, in the danger tone under the box, its rim in the danger tone too. With a [validator], the form's
+  /// error shows when this is null.
+  final String? errorText;
+
+  /// The name a screen reader speaks when there is no [labelText].
+  final String? semanticLabel;
+
+  /// Whether it must be filled: a mark beside the label, and said aloud.
+  final bool required;
+
+  /// The first day the calendar offers; null: no limit.
+  final DateTime? firstDate;
+
+  /// The last day the calendar offers; null: no limit.
+  final DateTime? lastDate;
+
+  /// Checks [value] in the form above, as a text field's validator does; it is given the day shown, or null.
+  final FormFieldValidator<DateTime>? validator;
+
+  /// Called with the day shown when the form above saves.
+  final FormFieldSetter<DateTime>? onSaved;
+
+  /// When [validator] runs before the form is submitted; null: as the form says.
+  final AutovalidateMode? autovalidateMode;
+
+  /// {@macro comic.focusNode}
+  final FocusNode? focusNode;
+
+  /// {@macro comic.autofocus}
+  final bool autofocus;
+
+  @override
+  State<ComicDateField> createState() => _ComicDateFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(DiagnosticsProperty<DateTime>('value', value))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
+      )
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'required',
+          value: required,
+          ifTrue: 'required',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'firstDate',
+          firstDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>('lastDate', lastDate, defaultValue: null),
+      )
+      ..add(
+        ObjectFlagProperty<FormFieldValidator<DateTime>>.has(
+          'validator',
+          validator,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<FormFieldSetter<DateTime>>.has('onSaved', onSaved),
+      )
+      ..add(
+        EnumProperty<AutovalidateMode>(
+          'autovalidateMode',
+          autovalidateMode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
+  }
+}
+
+class _ComicDateFieldState extends State<ComicDateField> {
+  FocusNode? _own;
+
+  FocusNode get _node => widget.focusNode ?? (_own ??= FocusNode());
+
+  @override
+  void dispose() {
+    _own?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pick(FormFieldState<DateTime> field) async {
+    final day = await showComicDatePicker(
+      context,
+      value: widget.value,
+      firstDate: widget.firstDate,
+      lastDate: widget.lastDate,
+      title: widget.labelText,
+    );
+    if (day == null || !mounted) return;
+    field.didChange(day);
+    widget.onChanged?.call(day);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final value = widget.value;
+    return RawFormField<DateTime>(
+      focusNode: _node,
+      initialValue: value,
+      // The day the field shows is the app's: the form checks and saves that one.
+      validator: widget.validator == null
+          ? null
+          : (_) => widget.validator!(widget.value),
+      onSaved: widget.onSaved == null
+          ? null
+          : (_) => widget.onSaved!(widget.value),
+      autovalidateMode: widget.autovalidateMode,
+      enabled: widget.onChanged != null,
+      builder: (field) {
+        final box = ComicSelectField(
+          style: widget.style,
+          value: value == null
+              ? widget.hintText ?? ComicLocalizations.of(context).chooseDate
+              : ComicFormat.date(value),
+          semanticLabel: widget.labelText == null ? widget.semanticLabel : null,
+          focusNode: _node,
+          autofocus: widget.autofocus,
+          onPressed: widget.onChanged == null ? null : () => _pick(field),
+        );
+        final label = widget.labelText;
+        if (label == null) return box;
+        return ComicFormField(
+          label,
+          helperText: widget.helperText,
+          errorText: widget.errorText ?? field.errorText,
+          required: widget.required,
+          enabled: widget.onChanged != null,
+          focusNode: _node,
+          child: box,
+        );
+      },
+    );
+  }
+}
 
 /// Raises a calendar and returns the confirmed day, or null on dismissal.
 ///

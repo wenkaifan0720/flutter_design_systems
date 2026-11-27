@@ -3,7 +3,6 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:comic_ui/comic_host.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -78,7 +77,7 @@ void main() {
       (
         'wheel picker',
         ComicWheelPicker<int>(
-          label: 'Hour',
+          semanticLabel: 'Hour',
           values: const [6, 7, 8, 9, 10, 11, 12],
           value: 9,
           labelOf: (hour) => '$hour',

@@ -43,13 +43,13 @@ const Set<WidgetState> _focused = {WidgetState.focused};
 /// ```
 class ComicMenuBar extends StatelessWidget {
   /// Creates a [ComicMenuBar].
-  const ComicMenuBar({super.key, required this.menus, this.label});
+  const ComicMenuBar({super.key, required this.menus, this.semanticLabel});
 
   /// The menus, in order; each one's `children` are its commands.
   final List<RawMenuEntry> menus;
 
   /// What a screen reader calls the bar.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +63,8 @@ class ComicMenuBar extends StatelessWidget {
     );
     return RawMenuBar(
       menus: menus,
-      semanticLabel: label ?? RawWidgetsLocalizations.of(context).menuBarLabel,
+      semanticLabel:
+          semanticLabel ?? RawWidgetsLocalizations.of(context).menuBarLabel,
       barBuilder: (context, items) => DecoratedBox(
         decoration: ShapeDecoration(color: look.fill ?? c.card, shape: shape),
         child: Padding(
@@ -156,7 +157,7 @@ class ComicMenuBar extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<RawMenuEntry>('menus', menus))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -202,7 +203,7 @@ RawCommandPalette _palette(
               child: ComicBareEditor(
                 focusNode: field.focusNode,
                 controller: field.controller,
-                label:
+                semanticLabel:
                     label ??
                     RawWidgetsLocalizations.of(context).commandPaletteLabel,
                 hint: hint ?? ComicLocalizations.of(context).searchCommands,
@@ -299,7 +300,7 @@ class ComicCommand extends StatelessWidget {
     super.key,
     required this.commands,
     this.hintText,
-    this.label,
+    this.semanticLabel,
     this.onRun,
     this.controller,
     this.focusNode,
@@ -314,7 +315,7 @@ class ComicCommand extends StatelessWidget {
   final String? hintText;
 
   /// What a screen reader calls the field and its results.
-  final String? label;
+  final String? semanticLabel;
 
   /// Runs a chosen command; null runs its own `onPressed`.
   final ValueChanged<RawCommand>? onRun;
@@ -346,7 +347,7 @@ class ComicCommand extends StatelessWidget {
           autofocus: autofocus,
           maxHeight: maxHeight,
           hint: hintText,
-          label: label,
+          label: semanticLabel,
           onRun: onRun,
           controller: controller,
         ),
@@ -360,7 +361,7 @@ class ComicCommand extends StatelessWidget {
     properties
       ..add(IterableProperty<RawCommand>('commands', commands))
       ..add(StringProperty('hintText', hintText, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<RawCommand>>.has('onRun', onRun))
       ..add(
         DiagnosticsProperty<TextEditingController>(
@@ -546,7 +547,7 @@ class ComicDataTable<R> extends StatelessWidget {
                       RawDataTableSelection.all => true,
                     },
                     tristate: true,
-                    label: words.selectPage,
+                    semanticLabel: words.selectPage,
                     onChanged: (_) => controller.togglePage(),
                   ),
                 ),
@@ -588,7 +589,7 @@ class ComicDataTable<R> extends StatelessWidget {
                       child: ExcludeSemantics(
                         child: ComicCheckbox(
                           value: row.selected,
-                          label: words.selectRow,
+                          semanticLabel: words.selectRow,
                           onChanged: (_) => row.toggle(),
                         ),
                       ),
@@ -656,7 +657,7 @@ class ComicDataTable<R> extends StatelessWidget {
 }
 
 /// A scrolling region whose bar is drawn in Comic's ink and stays out of the way until it is wanted. Give [child] a
-/// scroll view on [controller]; arrow keys scroll it when [label]led.
+/// scroll view on [controller]; arrow keys scroll it when it has a [semanticLabel].
 ///
 /// ```dart
 /// ComicScrollArea(controller: scroll, child: ListView(controller: scroll, children: rows))
@@ -669,7 +670,7 @@ class ComicScrollArea extends StatelessWidget {
     required this.child,
     this.axis = Axis.vertical,
     this.visibility = RawScrollbarVisibility.auto,
-    this.label,
+    this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
   });
@@ -687,7 +688,7 @@ class ComicScrollArea extends StatelessWidget {
   final RawScrollbarVisibility visibility;
 
   /// What a screen reader calls the region.
-  final String? label;
+  final String? semanticLabel;
 
   /// {@macro comic.focusNode}
   final FocusNode? focusNode;
@@ -704,7 +705,7 @@ class ComicScrollArea extends StatelessWidget {
       controller: controller,
       axis: axis,
       visibility: visibility,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       // The thumb is there or it isn't: a cut, not a fade (law 6).
       thumbBuilder: (context, thumb) => Visibility.maintain(
         visible: thumb.visible,
@@ -743,7 +744,7 @@ class ComicScrollArea extends StatelessWidget {
           defaultValue: RawScrollbarVisibility.auto,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(
           'focusNode',
@@ -779,7 +780,7 @@ class ComicResizable extends StatelessWidget {
     this.onChanged,
     this.minFirst = 0,
     this.minSecond = 0,
-    this.label,
+    this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
   }) : assert(
@@ -809,7 +810,7 @@ class ComicResizable extends StatelessWidget {
   final double minFirst, minSecond;
 
   /// What a screen reader calls the rule.
-  final String? label;
+  final String? semanticLabel;
 
   /// {@macro comic.focusNode}
   final FocusNode? focusNode;
@@ -834,7 +835,7 @@ class ComicResizable extends StatelessWidget {
       minSecond: minSecond,
       dividerThickness: thickness,
       hitExtent: 20,
-      semanticLabel: label ?? ComicLocalizations.of(context).resize,
+      semanticLabel: semanticLabel ?? ComicLocalizations.of(context).resize,
       dividerBuilder: (context, states, axis) {
         final lit = _lit(states);
         final across = axis == Axis.horizontal;
@@ -881,7 +882,7 @@ class ComicResizable extends StatelessWidget {
       )
       ..add(DoubleProperty('minFirst', minFirst, defaultValue: 0))
       ..add(DoubleProperty('minSecond', minSecond, defaultValue: 0))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(
           'focusNode',
@@ -1368,7 +1369,7 @@ class ComicTreeView<T extends Object> extends StatelessWidget {
     required this.controller,
     required this.labelOf,
     this.onActivate,
-    this.label,
+    this.semanticLabel,
   });
 
   /// The nodes, what is open and what is picked.
@@ -1381,7 +1382,7 @@ class ComicTreeView<T extends Object> extends StatelessWidget {
   final ValueChanged<T>? onActivate;
 
   /// What a screen reader calls the tree.
-  final String? label;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -1390,7 +1391,7 @@ class ComicTreeView<T extends Object> extends StatelessWidget {
       controller: controller,
       labelOf: labelOf,
       onActivate: onActivate,
-      semanticLabel: label,
+      semanticLabel: semanticLabel,
       levelHint: RawWidgetsLocalizations.of(context).treeLevelHint,
       // A tree keeps a picked row, chosen as Comic prints every chosen thing (the caption's yellow, a press's dots on it),
       // and the keyboard's row wears the ring: lit by focus as a menu's row is, it could not be told from a pointer's.
@@ -1437,6 +1438,6 @@ class ComicTreeView<T extends Object> extends StatelessWidget {
       ..add(DiagnosticsProperty<RawTreeController<T>>('controller', controller))
       ..add(ObjectFlagProperty<String Function(T node)>.has('labelOf', labelOf))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onActivate', onActivate))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }

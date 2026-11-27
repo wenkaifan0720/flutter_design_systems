@@ -98,7 +98,7 @@ void main() {
         tester,
         scale,
         ComicWheelPicker<int>(
-          label: 'Copies',
+          semanticLabel: 'Copies',
           values: const [1, 2, 3, 4, 5],
           value: 3,
           labelOf: (n) => '$n',

@@ -31,7 +31,7 @@ void main() {
                       onPressed: () {},
                       action: ComicIconButton(
                         ComicGlyphs.more,
-                        label: 'More',
+                        semanticLabel: 'More',
                         onPressed: () {},
                       ),
                     ),
@@ -41,7 +41,7 @@ void main() {
                       onPressed: () {},
                       action: ComicIconButton(
                         ComicGlyphs.more,
-                        label: 'More',
+                        semanticLabel: 'More',
                         onPressed: () {},
                       ),
                     ),

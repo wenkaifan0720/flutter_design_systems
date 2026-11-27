@@ -66,7 +66,9 @@ List<String> _unstyled(WidgetTester tester) {
           .evaluate()) {
     final ro = element.renderObject;
     final owner =
-        element.findAncestorWidgetOfExactType<ComicPressable>()?.label ??
+        element
+            .findAncestorWidgetOfExactType<ComicPressable>()
+            ?.semanticLabel ??
         element.toStringShort();
     if (ro is RenderParagraph) {
       final style = ro.text.style;

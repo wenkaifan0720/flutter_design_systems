@@ -36,7 +36,7 @@ void main() {
             builder: (context, setState) => ComicCheckbox(
               value: value,
               tristate: true,
-              label: 'Select issues',
+              semanticLabel: 'Select issues',
               onChanged: (next) {
                 values.add(next);
                 setState(() => value = next);
@@ -202,7 +202,7 @@ void main() {
         ),
       );
       final next = find.byWidgetPredicate(
-        (w) => w is ComicIconButton && w.label == 'Next month',
+        (w) => w is ComicIconButton && w.semanticLabel == 'Next month',
       );
       await tester.tap(next);
       await tester.pump();
@@ -258,7 +258,8 @@ void main() {
       tester
           .widget<ComicIconButton>(
             find.byWidgetPredicate(
-              (w) => w is ComicIconButton && w.label == 'Previous month',
+              (w) =>
+                  w is ComicIconButton && w.semanticLabel == 'Previous month',
             ),
           )
           .onPressed,
@@ -441,14 +442,14 @@ void main() {
     );
     await tester.tap(
       find.byWidgetPredicate(
-        (w) => w is ComicIconButton && w.label == 'Dismiss',
+        (w) => w is ComicIconButton && w.semanticLabel == 'Dismiss',
       ),
     );
     await tester.pump();
     // The chip's cross is its own press inside the chip's face, not an icon button beside it.
     await tester.tap(
       find.byWidgetPredicate(
-        (w) => w is ComicPressable && w.label == 'Delete History',
+        (w) => w is ComicPressable && w.semanticLabel == 'Delete History',
       ),
     );
     await tester.pump();
@@ -562,7 +563,7 @@ void main() {
               width: 360,
               height: 240,
               child: ComicChart(
-                label: name,
+                semanticLabel: name,
                 series: [ComicChartSeries('One', values)],
                 band: band,
               ),
@@ -616,7 +617,7 @@ void main() {
                 width: 360,
                 height: 220,
                 child: ComicChart(
-                  label: 'Flat',
+                  semanticLabel: 'Flat',
                   labels: ['A', 'B', 'C'],
                   series: [
                     ComicChartSeries('Yellow', [5, 5, 5]),
@@ -702,7 +703,7 @@ void main() {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: ComicChart(
-                    label: 'Orders',
+                    semanticLabel: 'Orders',
                     labels: weeks,
                     type: bars ? ComicChartType.bar : ComicChartType.line,
                     series: const [

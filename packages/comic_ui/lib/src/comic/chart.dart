@@ -78,13 +78,13 @@ enum ComicChartType {
 /// touch or the arrow keys show a point's values in a plate. With no values it says so; [loading] holds its place.
 ///
 /// ```dart
-/// ComicChart(label: 'Weekly pages', series: [ComicChartSeries('Pages', [12, 18, 16])])
+/// ComicChart(semanticLabel: 'Weekly pages', series: [ComicChartSeries('Pages', [12, 18, 16])])
 /// ```
 class ComicChart extends StatefulWidget {
   /// Creates an inked plot; labels and legend stand outside the plot height.
   const ComicChart({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.series,
     this.labels = const [],
     this.type = ComicChartType.line,
@@ -97,7 +97,7 @@ class ComicChart extends StatefulWidget {
   });
 
   /// The chart's accessible name.
-  final String label;
+  final String semanticLabel;
 
   /// Series in legend order.
   final List<ComicChartSeries> series;
@@ -136,7 +136,7 @@ class ComicChart extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<ComicChartSeries>('series', series))
       ..add(IterableProperty<String>('labels', labels, defaultValue: const []))
       ..add(
@@ -174,13 +174,13 @@ class ComicChart extends StatefulWidget {
 /// bars. Each takes [ComicChart]'s own arguments, the form aside.
 ///
 /// ```dart
-/// ComicLineChart(label: 'Pages read', labels: const ['Mon', 'Tue', 'Wed'], series: [ComicChartSeries('You', [12, 18, 16])])
+/// ComicLineChart(semanticLabel: 'Pages read', labels: const ['Mon', 'Tue', 'Wed'], series: [ComicChartSeries('You', [12, 18, 16])])
 /// ```
 class ComicLineChart extends StatelessWidget {
   /// Creates a [ComicLineChart].
   const ComicLineChart({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.series,
     this.labels = const [],
     this.band,
@@ -191,8 +191,8 @@ class ComicLineChart extends StatelessWidget {
     this.empty,
   });
 
-  /// See [ComicChart.label].
-  final String label;
+  /// See [ComicChart.semanticLabel].
+  final String semanticLabel;
 
   /// See [ComicChart.series].
   final List<ComicChartSeries> series;
@@ -220,7 +220,7 @@ class ComicLineChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ComicChart(
-    label: label,
+    semanticLabel: semanticLabel,
     series: series,
     labels: labels,
     band: band,
@@ -235,7 +235,7 @@ class ComicLineChart extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<ComicChartSeries>('series', series))
       ..add(IterableProperty<String>('labels', labels, defaultValue: const []))
       ..add(
@@ -265,13 +265,13 @@ class ComicLineChart extends StatelessWidget {
 /// A [ComicChart] with the area under each line filled: a running total, a level over time.
 ///
 /// ```dart
-/// ComicAreaChart(label: 'Visitors', labels: const ['Wk 1', 'Wk 2'], series: [ComicChartSeries('Visitors', [310, 402])])
+/// ComicAreaChart(semanticLabel: 'Visitors', labels: const ['Wk 1', 'Wk 2'], series: [ComicChartSeries('Visitors', [310, 402])])
 /// ```
 class ComicAreaChart extends ComicLineChart {
   /// Creates a [ComicAreaChart].
   const ComicAreaChart({
     super.key,
-    required super.label,
+    required super.semanticLabel,
     required super.series,
     super.labels,
     super.band,
@@ -284,7 +284,7 @@ class ComicAreaChart extends ComicLineChart {
 
   @override
   Widget build(BuildContext context) => ComicChart(
-    label: label,
+    semanticLabel: semanticLabel,
     series: series,
     labels: labels,
     type: ComicChartType.area,
@@ -300,13 +300,13 @@ class ComicAreaChart extends ComicLineChart {
 /// A [ComicChart] of grouped bars: amounts side by side, one group a label.
 ///
 /// ```dart
-/// ComicBarChart(label: 'Orders', labels: const ['Wk 1', 'Wk 2'], series: [ComicChartSeries('Online', [42, 51])])
+/// ComicBarChart(semanticLabel: 'Orders', labels: const ['Wk 1', 'Wk 2'], series: [ComicChartSeries('Online', [42, 51])])
 /// ```
 class ComicBarChart extends ComicLineChart {
   /// Creates a [ComicBarChart].
   const ComicBarChart({
     super.key,
-    required super.label,
+    required super.semanticLabel,
     required super.series,
     super.labels,
     super.band,
@@ -319,7 +319,7 @@ class ComicBarChart extends ComicLineChart {
 
   @override
   Widget build(BuildContext context) => ComicChart(
-    label: label,
+    semanticLabel: semanticLabel,
     series: series,
     labels: labels,
     type: ComicChartType.bar,
@@ -435,7 +435,7 @@ class _ComicChartState extends State<ComicChart> {
       height: widget.height,
       child: RawChart(
         focusNode: _focus,
-        semanticLabel: widget.label,
+        semanticLabel: widget.semanticLabel,
         semanticSummary: read,
         xAxis: widget._bars ? RawChartXAxis.band : RawChartXAxis.linear,
         categories: widget._bars
@@ -1023,13 +1023,13 @@ class _ChartInk extends CustomPainter {
 /// value marked. [values] may hold gaps; a run of continuous values reads best (120 x 32 is a legible size).
 ///
 /// ```dart
-/// ComicSparkline(label: 'Sales this week', values: const [3, 5, 4, 8, 7])
+/// ComicSparkline(semanticLabel: 'Sales this week', values: const [3, 5, 4, 8, 7])
 /// ```
 class ComicSparkline extends StatelessWidget {
   /// Creates a sparkline.
   const ComicSparkline({
     super.key,
-    required this.label,
+    required this.semanticLabel,
     required this.values,
     this.width = 96,
     this.height = 28,
@@ -1038,7 +1038,7 @@ class ComicSparkline extends StatelessWidget {
   });
 
   /// Its accessible name.
-  final String label;
+  final String semanticLabel;
 
   /// The values in order; null is a gap.
   final List<double?> values;
@@ -1075,7 +1075,7 @@ class ComicSparkline extends StatelessWidget {
           ].join(digits.listSeparator);
     return Semantics(
       container: true,
-      label: label,
+      label: semanticLabel,
       value: read,
       excludeSemantics: true,
       child: comicOwnSize(
@@ -1098,7 +1098,7 @@ class ComicSparkline extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('semanticLabel', semanticLabel))
       ..add(IterableProperty<double?>('values', values))
       ..add(DoubleProperty('width', width, defaultValue: 96))
       ..add(DoubleProperty('height', height, defaultValue: 28))

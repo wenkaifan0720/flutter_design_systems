@@ -7,7 +7,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_test/ui_core_test.dart';
 import 'package:comic_ui/comic_ui.dart';
-import 'package:comic_ui/comic_host.dart';
 
 import 'moving_states.dart';
 
@@ -16,11 +15,17 @@ void main() {
     'filled button': () => ComicButton.filled('Save', onPressed: () {}),
     'button': () => ComicButton('Cancel', onPressed: () {}),
     'text button': () => ComicButton.text('More', onPressed: () {}),
-    'icon button': () =>
-        ComicIconButton(ComicGlyphs.bell, label: 'Alerts', onPressed: () {}),
+    'icon button': () => ComicIconButton(
+      ComicGlyphs.bell,
+      semanticLabel: 'Alerts',
+      onPressed: () {},
+    ),
     'chip': () => ComicChip('Fish', onPressed: () {}),
-    'checkbox': () =>
-        ComicCheckbox(label: 'Keep issue', value: true, onChanged: (_) {}),
+    'checkbox': () => ComicCheckbox(
+      semanticLabel: 'Keep issue',
+      value: true,
+      onChanged: (_) {},
+    ),
     'switch': () => ComicSwitch(value: true, onChanged: (_) {}),
     'field': () => const ComicTextField(hintText: 'Your name'),
     'link': () => ComicLink('Read the issue', onPressed: () {}),

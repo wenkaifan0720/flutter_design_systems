@@ -132,7 +132,8 @@ class ComicBanner extends StatelessWidget {
             if (onDismiss != null)
               ComicIconButton(
                 ComicGlyphs.x,
-                label: dismissLabel ?? ComicLocalizations.of(context).dismiss,
+                semanticLabel:
+                    dismissLabel ?? ComicLocalizations.of(context).dismiss,
                 onPressed: onDismiss,
               ),
           ],
@@ -159,7 +160,7 @@ class ComicBanner extends StatelessWidget {
 /// A twelve-point burst whose ink advances with progress, or turns while waiting.
 ///
 /// ```dart
-/// ComicCircularProgressIndicator(value: .6, label: 'Uploading')
+/// ComicCircularProgressIndicator(value: .6, semanticLabel: 'Uploading')
 /// ```
 class ComicCircularProgressIndicator extends StatefulWidget {
   /// Creates a progress burst. Null value means indeterminate.
@@ -167,7 +168,7 @@ class ComicCircularProgressIndicator extends StatefulWidget {
     super.key,
     this.value,
     this.size = 32,
-    this.label,
+    this.semanticLabel,
     this.color,
   }) : assert(value == null || value >= 0 && value <= 1),
        assert(size > 0);
@@ -179,7 +180,7 @@ class ComicCircularProgressIndicator extends StatefulWidget {
   final double size;
 
   /// Overrides the localized loading label.
-  final String? label;
+  final String? semanticLabel;
 
   /// Overrides the ink.
   final Color? color;
@@ -193,7 +194,7 @@ class ComicCircularProgressIndicator extends StatefulWidget {
     properties
       ..add(DoubleProperty('value', value, defaultValue: null))
       ..add(DoubleProperty('size', size, defaultValue: 32))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(ColorProperty('color', color, defaultValue: null));
   }
 }
@@ -230,7 +231,9 @@ class _ComicCircularProgressState extends State<ComicCircularProgressIndicator>
     final t = ComicTheme.of(context);
     final c = t.colors;
     return Semantics(
-      label: widget.label ?? RawWidgetsLocalizations.of(context).loadingLabel,
+      label:
+          widget.semanticLabel ??
+          RawWidgetsLocalizations.of(context).loadingLabel,
       value: widget.value == null ? null : '${(widget.value! * 100).round()}%',
       child: RepaintBoundary(
         child: AnimatedBuilder(
@@ -340,14 +343,14 @@ class _BurstProgress extends CustomPainter {
 /// A ruled progress strip. Unknown progress advances a small inked segment.
 ///
 /// ```dart
-/// ComicLinearProgressIndicator(value: .4, label: 'Reading progress')
+/// ComicLinearProgressIndicator(value: .4, semanticLabel: 'Reading progress')
 /// ```
 class ComicLinearProgressIndicator extends StatefulWidget {
   /// Creates a progress strip.
   const ComicLinearProgressIndicator({
     super.key,
     this.value,
-    this.label,
+    this.semanticLabel,
     this.height = 12,
   }) : assert(value == null || value >= 0 && value <= 1);
 
@@ -355,7 +358,7 @@ class ComicLinearProgressIndicator extends StatefulWidget {
   final double? value;
 
   /// Overrides the localized loading label.
-  final String? label;
+  final String? semanticLabel;
 
   /// Strip height.
   final double height;
@@ -368,7 +371,7 @@ class ComicLinearProgressIndicator extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DoubleProperty('value', value, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DoubleProperty('height', height, defaultValue: 12));
   }
 }
@@ -406,7 +409,9 @@ class _ComicLinearProgressIndicatorState
     final t = ComicTheme.of(context);
     final c = t.colors;
     return Semantics(
-      label: widget.label ?? RawWidgetsLocalizations.of(context).loadingLabel,
+      label:
+          widget.semanticLabel ??
+          RawWidgetsLocalizations.of(context).loadingLabel,
       value: widget.value == null ? null : '${(widget.value! * 100).round()}%',
       child: RepaintBoundary(
         child: AnimatedBuilder(
@@ -454,7 +459,12 @@ class _ComicLinearProgressIndicatorState
 /// ```
 class ComicSkeleton extends StatefulWidget {
   /// Creates a placeholder.
-  const ComicSkeleton({super.key, this.width, this.height = 20, this.label});
+  const ComicSkeleton({
+    super.key,
+    this.width,
+    this.height = 20,
+    this.semanticLabel,
+  });
 
   /// Width, or the available width.
   final double? width;
@@ -463,7 +473,7 @@ class ComicSkeleton extends StatefulWidget {
   final double height;
 
   /// Optional accessible loading label; null is decorative.
-  final String? label;
+  final String? semanticLabel;
   @override
   State<ComicSkeleton> createState() => _ComicSkeletonState();
 
@@ -473,7 +483,7 @@ class ComicSkeleton extends StatefulWidget {
     properties
       ..add(DoubleProperty('width', width, defaultValue: null))
       ..add(DoubleProperty('height', height, defaultValue: 20))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -506,7 +516,7 @@ class _ComicSkeletonState extends State<ComicSkeleton>
   Widget build(BuildContext context) {
     _sync();
     return Semantics(
-      label: widget.label,
+      label: widget.semanticLabel,
       child: ExcludeSemantics(
         child: RepaintBoundary(
           child: SizedBox(
@@ -542,11 +552,11 @@ class _ComicSkeletonState extends State<ComicSkeleton>
 /// A count in a small square caption, with room for large text.
 ///
 /// ```dart
-/// ComicBadge(12, label: 'Unread issues')
+/// ComicBadge(12, semanticLabel: 'Unread issues')
 /// ```
 class ComicBadge extends StatelessWidget {
   /// Creates a count badge.
-  const ComicBadge(this.count, {super.key, this.label, this.style})
+  const ComicBadge(this.count, {super.key, this.semanticLabel, this.style})
     : assert(count >= 0, 'a badge\'s count is never below nothing');
 
   /// Appearance above the badge component theme.
@@ -556,7 +566,7 @@ class ComicBadge extends StatelessWidget {
   final int count;
 
   /// What is being counted.
-  final String? label;
+  final String? semanticLabel;
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
@@ -568,7 +578,7 @@ class ComicBadge extends StatelessWidget {
           2,
         );
     return Semantics(
-      label: label,
+      label: semanticLabel,
       value: '$count',
       child: ExcludeSemantics(
         child: AnimatedComicShape(
@@ -619,7 +629,7 @@ class ComicBadge extends StatelessWidget {
     properties
       ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
       ..add(IntProperty('count', count))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 

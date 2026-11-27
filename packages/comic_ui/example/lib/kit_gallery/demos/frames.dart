@@ -200,6 +200,9 @@ Widget kitSpecimenIndicia() => Builder(
 
 Widget kitSpecimenRating() => kitState(
   3,
-  (context, value, change) =>
-      ComicRating(label: 'Rate this issue', value: value, onChanged: change),
+  (context, value, change) => ComicRating(
+    semanticLabel: 'Rate this issue',
+    value: value,
+    onChanged: change,
+  ),
 );

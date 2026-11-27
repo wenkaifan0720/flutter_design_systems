@@ -129,7 +129,7 @@ void main() {
             builder: (context, setState) => Padding(
               padding: const EdgeInsets.all(12),
               child: ComicWheelPicker<int>(
-                label: 'Copies',
+                semanticLabel: 'Copies',
                 values: [for (var i = 1; i <= 20; i++) i],
                 value: copies,
                 labelOf: (n) => '$n',
@@ -164,7 +164,7 @@ void main() {
           const Padding(
             padding: EdgeInsets.all(12),
             child: ComicChart(
-              label: 'Weekly pages',
+              semanticLabel: 'Weekly pages',
               labels: ['Mon', 'Tue', 'Wed'],
               series: [
                 ComicChartSeries('Pages', [12, 18, 16]),

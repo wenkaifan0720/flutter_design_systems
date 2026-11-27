@@ -3,8 +3,8 @@
 /// The shapes and digits are English in every language; an app's own time in its language and digits is
 /// `RawWidgetsLocalizations.formatTimeOfDay` (or `formatHour` and `formatMinute`).
 ///
-/// [time] uses `19:30`, [range] uses `19:30–23:00`, and [day] uses
-/// `Thursday 14 March`. [sum] returns a number with two decimal places so
+/// [time] uses `19:30`, [range] uses `19:30–23:00`, [day] uses
+/// `Thursday 14 March`, and [date] uses `14 Mar 2026`. [sum] returns a number with two decimal places so
 /// the caller can place a currency symbol or unit alongside it.
 /// [dayWord] takes an explicit reference date.
 ///
@@ -63,6 +63,10 @@ abstract final class ComicFormat {
   static String dayShort(DateTime at) =>
       '${_days[at.weekday - 1].substring(0, 3)} ${at.day} '
       '${_months[at.month - 1].substring(0, 3)}';
+
+  /// "14 Mar 2026": a day with its year, as a date field shows it ([ComicDateField]).
+  static String date(DateTime at) =>
+      '${at.day} ${_months[at.month - 1].substring(0, 3)} ${at.year}';
 
   /// "March 2027", a month's head.
   static String month(DateTime at) => '${_months[at.month - 1]} ${at.year}';

@@ -17,6 +17,7 @@ import 'internal/lettered.dart';
 import 'internal/pop.dart';
 import 'internal/reach.dart';
 import 'theme.dart';
+import 'internal/field_label.dart';
 
 /// A press's states read by name, for a face that draws its own: `states.hovered`, `states.pressed` and so on.
 extension ComicPressStates on Set<WidgetState> {
@@ -249,11 +250,11 @@ class ComicStateDecoration extends StatelessWidget {
 /// lets it sink when pressed. Keyboard focus draws an outline around the face.
 /// Enter and Space activate it. A null [onPressed] disables it.
 ///
-/// Supply [label] to name the control or omit it to merge the child's semantics.
+/// Supply [semanticLabel] to name the control or omit it to merge the child's semantics.
 /// [busy] temporarily suspends activation while retaining focus.
 ///
 /// ```dart
-/// ComicPressable(onPressed: open, label: 'Issue 12', child: tile)
+/// ComicPressable(onPressed: open, semanticLabel: 'Issue 12', child: tile)
 /// ```
 class ComicPressable extends StatelessWidget {
   /// Creates a [ComicPressable].
@@ -263,7 +264,7 @@ class ComicPressable extends StatelessWidget {
     this.builder,
     this.onPressed,
     this.onLongPress,
-    this.label,
+    this.semanticLabel,
     this.hint,
     this.value,
     this.button = true,
@@ -306,7 +307,7 @@ class ComicPressable extends StatelessWidget {
   final VoidCallback? onLongPress;
 
   /// The control's one name. Null: its own words are its name.
-  final String? label;
+  final String? semanticLabel;
 
   /// What a press does, read after the name: 'Opens the menu'. Null: none.
   final String? hint;
@@ -414,7 +415,7 @@ class ComicPressable extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onKeyEvent: keys,
-      semanticLabel: label,
+      semanticLabel: ComicFieldLabel.unsaid(context, semanticLabel),
       semanticHint: hint,
       semanticValue: value,
       button: button,
@@ -425,7 +426,7 @@ class ComicPressable extends StatelessWidget {
       toggled: toggled,
       expanded: expanded,
       inMutuallyExclusiveGroup: inGroup,
-      excludeSemantics: label != null,
+      excludeSemantics: semanticLabel != null,
       enableFeedback: false,
       mouseCursor:
           mouseCursor ??
@@ -469,7 +470,7 @@ class ComicPressable extends StatelessWidget {
       )
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
       ..add(ObjectFlagProperty<VoidCallback>.has('onLongPress', onLongPress))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(StringProperty('hint', hint, defaultValue: null))
       ..add(StringProperty('value', value, defaultValue: null))
       ..add(
@@ -920,7 +921,10 @@ class ComicHighlight extends StatelessWidget {
           final ink = ground == null ? t.colors.text : _printInk(t, ground);
           final inside = popped && PopInside.of(context);
           final lift = popped && !inside
-              ? Offset(-end * comicFocusLift * r, -comicFocusLift * r)
+              ? Offset(
+                  -end * comicFocusLift * t.depth * r,
+                  -comicFocusLift * t.depth * r,
+                )
               : Offset.zero;
           final step = t.focus.width * r;
           // One tree in every state, only its paint and offset change, so the part (a field, a scrolling list) keeps
@@ -1078,7 +1082,7 @@ class _InsetPrint extends CustomPainter {
       o.direction != direction;
 }
 
-/// The distance between a raised control and its hard shadow, in logical pixels.
+/// The distance between a raised control and its hard shadow, in logical pixels, at a theme's depth of 1.
 const double comicPressPlate = 3;
 
 /// How far a disabled face is screened back toward its paper: half way, opaque.
@@ -1112,10 +1116,9 @@ class ComicPlated extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
     final direction = Directionality.of(context);
-    final step = Offset(
-      direction == TextDirection.rtl ? -comicPressPlate : comicPressPlate,
-      comicPressPlate,
-    );
+    // The print's depth: the theme's share of the plate as drawn.
+    final plate = comicPressPlate * t.depth;
+    final step = Offset(direction == TextDirection.rtl ? -plate : plate, plate);
     return CustomPaint(
       painter: _PrintPainter(
         shape.copyWith(side: BorderSide.none),

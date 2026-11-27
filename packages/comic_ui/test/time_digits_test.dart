@@ -3,7 +3,6 @@
 // either direction. A pager too narrow for its numbers says where it stands in the app's words and digits, as
 // Material's pageRowsInfoTitle does. English reads as before. The hour stays left of the minutes in every language,
 // as Material's time picker keeps them; AM or PM keeps its place on the reading side.
-import 'package:comic_ui/comic_host.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';

@@ -4,7 +4,6 @@ import 'dart:ui' show Tristate, SemanticsValidationResult;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
-import 'package:comic_ui/comic_host.dart';
 
 import 'support.dart';
 
@@ -79,12 +78,14 @@ void main() {
     expect(changed, ['m']);
   });
 
-  testWidgets('shell action adapts onPressed to the runtime', (tester) async {
+  testWidgets('the bar\'s act is pressed at every count of places', (
+    tester,
+  ) async {
     var calls = 0;
-    final action = ComicShellAction(
+    final action = ComicAppAction(
       icon: Icons.add,
       label: 'New',
-      onPressed: (_) => calls++,
+      onPressed: () => calls++,
     );
     const destinations = [
       ComicNavItem(label: 'Home', short: 'Home', icon: Icons.home),
@@ -100,7 +101,7 @@ void main() {
         ),
       );
       final button = find.byWidgetPredicate(
-        (w) => w is ComicPressable && w.label == 'New',
+        (w) => w is ComicPressable && w.semanticLabel == 'New',
       );
       expect(button, findsOneWidget, reason: '$count destinations');
       await tester.tap(button);
@@ -117,7 +118,7 @@ void main() {
       await tester.pumpWidget(
         comicApp(
           ComicCheckbox(
-            label: 'Accept terms',
+            semanticLabel: 'Accept terms',
             value: false,
             isError: true,
             onChanged: (_) {},
@@ -175,10 +176,10 @@ void main() {
         await tester.pumpWidget(comicApp(Center(child: chip(true))));
         expect(find.byIcon(ComicGlyphs.search), findsOneWidget);
         final label = find.byWidgetPredicate(
-          (w) => w is ComicPressable && w.label == 'Issue 12',
+          (w) => w is ComicPressable && w.semanticLabel == 'Issue 12',
         );
         final remove = find.byWidgetPredicate(
-          (w) => w is ComicPressable && w.label == 'Remove issue',
+          (w) => w is ComicPressable && w.semanticLabel == 'Remove issue',
         );
         // The press's own node: getSemantics on the pressable starts at its reach box, which owns none, and walks up.
         expect(

@@ -9,7 +9,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
-import 'package:comic_ui/comic_host.dart';
 import 'package:ui_core_review/ui_core_review.dart' show DesignKeylineCheck;
 import 'package:ui_core_test/ui_core_test.dart';
 
@@ -18,7 +17,7 @@ import '../example/lib/kit_gallery/gate_screens.dart';
 import '../example/lib/kit_gallery/demos/controls.dart'
     show kitSpecimenSelectField;
 import '../example/lib/kit_gallery/kit.dart' show kitState;
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import 'gallery_support.dart';
 import 'support.dart';
 
@@ -217,7 +216,7 @@ void main() {
               'select ${(e.widget as ComicSelectField).value}':
                   left(selectWords(e)) - left(e),
             for (final e in find.byType(ComicChoiceBox).evaluate())
-              'choice ${(e.widget as ComicChoiceBox).label}':
+              'choice ${(e.widget as ComicChoiceBox).semanticLabel}':
                   left(within(e, find.byType(RichText)).evaluate().first) -
                   left(e),
           };
@@ -255,9 +254,9 @@ void main() {
     );
   });
 
-  // Every select and dropdown at 600, 1024, 1440 and 1920: closed, its face at most about 320 at its column's start;
-  // open, its list at least as wide as the face (a typed field's as drawn, lifted by its focus) and on its leading
-  // edge.
+  // Every select and dropdown at 600, 1024, 1440 and 1920: closed, its face the column's width from its start, as a
+  // field in a form column is; open, its list at least as wide as the face (a typed field's as drawn, lifted by its
+  // focus) and on its leading edge.
   for (final width in [600.0, 1024.0, 1440.0, 1920.0]) {
     testWidgets('dropdowns keep their width at ${width.toInt()}', (
       tester,
@@ -307,6 +306,7 @@ void main() {
       );
       await settle(tester);
       final column = tester.getTopLeft(find.byType(ComicColumn).first).dx;
+      final columnWidth = tester.getSize(find.byType(ComicColumn).first).width;
       // A select field's drawn face (its press), not the room it stands in.
       Finder face(int i) => find
           .descendant(
@@ -323,9 +323,9 @@ void main() {
       for (final MapEntry(key: name, value: face) in faces.entries) {
         final rect = tester.getRect(face);
         expect(
-          rect.width,
-          lessThanOrEqualTo(320.5),
-          reason: '$name closed: ${rect.width} wide',
+          (rect.width - columnWidth).abs(),
+          lessThan(0.5),
+          reason: '$name closed: ${rect.width} wide, the column $columnWidth',
         );
         expect(
           (rect.left - column).abs(),

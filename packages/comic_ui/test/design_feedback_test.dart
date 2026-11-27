@@ -158,7 +158,11 @@ void main() {
       final theme = ComicThemeData.preset(preset, Brightness.dark);
       final examples = <(Widget, Finder, Offset)>[
         (
-          ComicIconButton(ComicGlyphs.more, label: 'More', onPressed: () {}),
+          ComicIconButton(
+            ComicGlyphs.more,
+            semanticLabel: 'More',
+            onPressed: () {},
+          ),
           find.byType(ComicIconButton),
           const Offset(10, 10),
         ),
@@ -198,7 +202,11 @@ void main() {
         await tester.pumpWidget(
           _host(
             theme,
-            ComicSwitch(value: value, label: 'Updates', onChanged: (_) {}),
+            ComicSwitch(
+              value: value,
+              semanticLabel: 'Updates',
+              onChanged: (_) {},
+            ),
           ),
         );
         await tester.pumpAndSettle();
