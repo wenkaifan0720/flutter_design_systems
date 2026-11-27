@@ -10,6 +10,7 @@ export 'package:ui_core/ui_core.dart'
 import '../../chrome_metrics.dart';
 import '../../internal/chosen_plate.dart';
 import '../../internal/dim.dart';
+import '../../internal/footer_band.dart';
 import '../../internal/face.dart';
 import '../../internal/sliding_pill.dart';
 import '../../theme.dart';
@@ -155,30 +156,33 @@ class _FrostedAppShellState extends State<FrostedAppShell> {
   }
 
   @override
-  Widget build(BuildContext context) => RawAdaptiveShell.branches(
-    destinations: widget.destinations,
-    branches: widget.branches,
-    navigatorKeys: widget.navigatorKeys,
-    backBehavior: widget.backBehavior,
+  Widget build(BuildContext context) => FrostedShellFoot(
     hideBarOnPush: widget.hideBarOnPush,
-    selectedIndex: _selected,
-    onDestinationSelected: _select,
-    // The tab bar to a desktop's width, the sidebar from there.
-    modeForWidth: (width) => width < FrostedBreakpoints.wide
-        ? RawNavigationMode.bar
-        : RawNavigationMode.sidebar,
-    destinationBuilder: (context, destination, details) =>
-        details.mode.isHorizontal
-        ? _Tab(destination: destination, states: details.states)
-        : _Link(destination: destination, states: details.states),
-    navigationBuilder: (context, details) => details.mode.isHorizontal
-        ? _Bar(details: details)
-        : _Sidebar(
-            details: details,
-            width: widget.sidebarWidth,
-            header: widget.header,
-            footer: widget.footer,
-          ),
+    child: RawAdaptiveShell.branches(
+      destinations: widget.destinations,
+      branches: widget.branches,
+      navigatorKeys: widget.navigatorKeys,
+      backBehavior: widget.backBehavior,
+      hideBarOnPush: widget.hideBarOnPush,
+      selectedIndex: _selected,
+      onDestinationSelected: _select,
+      // The tab bar to a desktop's width, the sidebar from there.
+      modeForWidth: (width) => width < FrostedBreakpoints.wide
+          ? RawNavigationMode.bar
+          : RawNavigationMode.sidebar,
+      destinationBuilder: (context, destination, details) =>
+          details.mode.isHorizontal
+          ? _Tab(destination: destination, states: details.states)
+          : _Link(destination: destination, states: details.states),
+      navigationBuilder: (context, details) => details.mode.isHorizontal
+          ? _Bar(details: details)
+          : _Sidebar(
+              details: details,
+              width: widget.sidebarWidth,
+              header: widget.header,
+              footer: widget.footer,
+            ),
+    ),
   );
 }
 
@@ -196,14 +200,17 @@ class _Bar extends StatelessWidget {
     final t = context.frostedTheme;
     final count = details.destinations.length;
     const edges = EdgeInsets.all(FrostedStrokes.regular);
-    const radius = FrostedChromeMetrics.slabRadius;
+    final radius = t.corner(
+      RawCorner.extraLarge,
+      FrostedChromeMetrics.slabRadius,
+    );
     const plateInset =
         FrostedChromeMetrics.selectionInset + FrostedStrokes.regular;
     final slab = SizedBox(
       height: FrostedChromeMetrics.slabHeight,
       child: FrostedFace(
         material: FrostedMaterial.bar,
-        radius: const BorderRadius.all(Radius.circular(radius)),
+        radius: BorderRadius.circular(radius),
         edge: t.glass.edge,
         edges: edges,
         sheen: t.glass.rim,
@@ -283,7 +290,7 @@ class _Tab extends StatelessWidget {
     return FrostedFocusRing(
       shown: states.contains(WidgetState.focused),
       hovered: states.contains(WidgetState.hovered),
-      radius: FrostedCorners.r10,
+      radius: t.corner(RawCorner.small, FrostedCorners.r10),
       insets: const EdgeInsets.all(FrostedStrokes.heavy),
       inside: true,
       child: FrostedEase<(Color, TextStyle)>(

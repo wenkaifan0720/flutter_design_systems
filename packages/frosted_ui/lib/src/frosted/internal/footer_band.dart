@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../chrome_metrics.dart';
 import '../theme.dart';
 import 'face.dart';
 
@@ -67,6 +68,70 @@ class FrostedFootGlass extends StatelessWidget {
       sheen: const Color(0x00000000),
       padding: padding.copyWith(
         top: (padding.top - FrostedStrokes.regular).clamp(0.0, double.infinity),
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Marks the app shell's places, so a page's footer knows a tab bar stands
+/// under it. Plumbing of the components; pages never place one.
+class FrostedShellFoot extends InheritedWidget {
+  /// Creates a [FrostedShellFoot].
+  const FrostedShellFoot({
+    required this.hideBarOnPush,
+    required super.child,
+    super.key,
+  });
+
+  /// Whether the shell's tab bar steps away while a page is pushed.
+  final bool hideBarOnPush;
+
+  /// Whether the shell's tab bar stands under the page at [context]: at a
+  /// phone's or a tablet's width, on its place's [root] page, or on any page
+  /// while the bar stays through a push.
+  static bool barUnder(BuildContext context, {required bool root}) {
+    final shell = context
+        .dependOnInheritedWidgetOfExactType<FrostedShellFoot>();
+    return shell != null &&
+        !FrostedBreakpoints.isWide(context) &&
+        (root || !shell.hideBarOnPush);
+  }
+
+  @override
+  bool updateShouldNotify(FrostedShellFoot oldWidget) =>
+      hideBarOnPush != oldWidget.hideBarOnPush;
+}
+
+/// The slab a footer floats on where its page doesn't own the window's foot:
+/// over the app shell's tab bar on a phone, in the page's column at desktop
+/// width. The tab bar's slab, as glass and as corners (the bar's glass lit
+/// all round, its shadow, [FrostedChromeMetrics.slabRadius] at the extra
+/// large corner), its acts [FrostedChromeMetrics.footSlabInset] in, so a row
+/// of buttons stands it as tall as the tab bar. Plumbing of the components;
+/// pages never place one.
+class FrostedFootSlab extends StatelessWidget {
+  /// Creates a [FrostedFootSlab].
+  const FrostedFootSlab({required this.child, super.key});
+
+  /// What stands on the slab.
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.frostedTheme;
+    return FrostedFace(
+      material: FrostedMaterial.bar,
+      radius: BorderRadius.circular(
+        t.corner(RawCorner.extraLarge, FrostedChromeMetrics.slabRadius),
+      ),
+      edge: t.glass.edge,
+      edges: const EdgeInsets.all(FrostedStrokes.regular),
+      sheen: t.glass.rim,
+      shadows: t.shadows.bar,
+      // The edge counted in the room.
+      padding: const EdgeInsets.all(
+        FrostedChromeMetrics.footSlabInset - FrostedStrokes.regular,
       ),
       child: child,
     );

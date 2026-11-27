@@ -7,6 +7,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
+import 'package:frosted_ui/frosted_host.dart';
 import 'package:frosted_ui/src/frosted/internal/face.dart';
 import 'package:frosted_ui/src/frosted/internal/footer_band.dart';
 import 'package:frosted_ui/src/frosted/internal/measure.dart';
@@ -161,10 +162,16 @@ void main() {
         final field = t.getRect(find.byType(FrostedTextField));
         final save = t.getRect(_save());
         expect(save.width, moreOrLessEquals(frostedControlMeasure));
+        // At desktop width the footer floats on its slab, the column's
+        // width: the acts stand its inset in from the column's end.
+        const inset = FrostedChromeMetrics.footSlabInset;
         if (ltr) {
-          expect(save.right, moreOrLessEquals(field.right, epsilon: .5));
+          expect(
+            save.right,
+            moreOrLessEquals(field.right - inset, epsilon: .5),
+          );
         } else {
-          expect(save.left, moreOrLessEquals(field.left, epsilon: .5));
+          expect(save.left, moreOrLessEquals(field.left + inset, epsilon: .5));
         }
         // A pair keeps its order, the gap between, the last at the end.
         await _pump(
@@ -182,10 +189,13 @@ void main() {
         final pair = t.getRect(_save());
         final cancel = t.getRect(find.widgetWithText(FrostedButton, 'Cancel'));
         if (ltr) {
-          expect(pair.right, moreOrLessEquals(field.right, epsilon: .5));
+          expect(
+            pair.right,
+            moreOrLessEquals(field.right - inset, epsilon: .5),
+          );
           expect(cancel.right, lessThan(pair.left));
         } else {
-          expect(pair.left, moreOrLessEquals(field.left, epsilon: .5));
+          expect(pair.left, moreOrLessEquals(field.left + inset, epsilon: .5));
           expect(cancel.left, greaterThan(pair.right));
         }
       },

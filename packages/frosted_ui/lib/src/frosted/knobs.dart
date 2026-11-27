@@ -25,9 +25,13 @@ abstract final class FrostedStrokes {
 }
 
 /// How compact the controls stand, as Material's `VisualDensity`: each step
-/// of [vertical] takes 4 from a control's height and each step of
-/// [horizontal] 2 from its padding at either side, from -4 (tightest) to 4
-/// (roomiest). The touch target does not move: the floor (40), whatever
+/// of [vertical] takes 4 from a control's height (a key, a chip, a segment,
+/// a toggle) and from a row's (a list's, a setting's, a form's, a menu's
+/// option), and each step of [horizontal] 2 from its padding at either side,
+/// from -4 (tightest) to 4 (roomiest). A field's well keeps its line's
+/// height. As Flutter names them, [comfortable] is one step tighter than
+/// [standard] and [compact] two. `FrostedHost.density` sets it for both
+/// appearances. The touch target does not move: the floor (40), whatever
 /// the density, so a compact face stands in the same target with room
 /// around it.
 ///

@@ -21,6 +21,34 @@ export '../materials.dart' show FrostedMaterial;
 Color frostedLitEdge(FrostedThemeData t, Color night) =>
     t.isDark ? night : FrostedChromeMetrics.litEdge;
 
+/// An empty opening's glass by day (an unchosen radio, an unchecked box, a
+/// switch turned off): its well a step deeper, the room behind the glass
+/// tinted with the ink as a shaded glass act is, so it reads on a pale
+/// canvas (the white well alone stood at 1.0-1.1:1 on it); its rim stays the
+/// lit hairline, never a dark line. One that takes no input stands on paint
+/// ([frostedOpeningMaterial]) at a smaller step, fainter than a live one. By
+/// night the well's own dark glass reads: null.
+Color? frostedOpening(FrostedThemeData t, {bool enabled = true}) => t.isDark
+    ? null
+    : t.colorScheme.textPrimary.withValues(
+        alpha: enabled
+            ? FrostedChromeMetrics.openingStepDay
+            : FrostedChromeMetrics.openingStepOffDay,
+      );
+
+/// What an opening is made of (a radio's bead, a box's, a switch's track):
+/// glass, or by day, where it takes no input, paint. At the disabled
+/// share a well loses its milk and stands darker than an enabled empty one,
+/// more present than the live part; paint at the same step (an empty one's ink
+/// over it, a chosen one's frost) steps back toward the canvas, fainter than
+/// the enabled opening, as Material's disabled control stands at 38%. By night
+/// the dimmed well's own dark glass already stands back.
+FrostedMaterial frostedOpeningMaterial(
+  FrostedThemeData t,
+  FrostedMaterial glass, {
+  required bool enabled,
+}) => enabled || t.isDark ? glass : FrostedMaterial.paint;
+
 /// The ring just inside a dialog's lit edge: by day none (the slab's own
 /// ring, a dark hairline, would stand inside the light), by night the
 /// slab's own light ring, lit from above with its edge
@@ -724,8 +752,23 @@ class FrostedFace extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // A change of outline from one state to another (an app's corners, a
+    // style's shape) eases with the paint, as the rest of the face does:
+    // the clip, the blur and the paint follow the eased outline, so no
+    // corner snaps.
+    final outline = shape ?? RoundedRectangleBorder(borderRadius: radius);
+    final motion = FrostedMotion.of(context);
+    return TweenAnimationBuilder<ShapeBorder?>(
+      tween: _OutlineTween(end: outline),
+      duration: motion.fast,
+      curve: motion.curve,
+      builder: (context, eased, _) =>
+          _drawn(context, eased is OutlinedBorder ? eased : outline),
+    );
+  }
+
+  Widget _drawn(BuildContext context, OutlinedBorder cut) {
     final direction = Directionality.maybeOf(context);
-    final cut = shape;
     final corners = cut is RoundedRectangleBorder
         ? cut.borderRadius.resolve(direction)
         : radius;
@@ -962,6 +1005,14 @@ class _FaceStyle {
     glint,
     Object.hashAll(shadows),
   );
+}
+
+// Between two outlines, as ShapeBorder.lerp eases them.
+class _OutlineTween extends Tween<ShapeBorder?> {
+  _OutlineTween({super.end});
+
+  @override
+  ShapeBorder? lerp(double t) => ShapeBorder.lerp(begin, end, t);
 }
 
 class _FaceStyleTween extends Tween<_FaceStyle> {

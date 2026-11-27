@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../chrome_metrics.dart';
 import '../components/pressable/pressable.dart';
@@ -53,11 +54,16 @@ class FrostedPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    final s = FrostedStyleLayers(null, t.components.menu);
+    final s = FrostedStyleLayers(
+      null,
+      t.components.menu,
+      const <WidgetState>{},
+      t,
+    );
     final (cut, corner) = s.surface(
       FrostedCorners.medium,
       FrostedStyleLayers.stockMedium,
-      FrostedChromeMetrics.menuRadius,
+      t.corner(RawCorner.large, FrostedChromeMetrics.menuRadius),
     );
     // A menu floats: the thick glass.
     final face = FrostedFace(
@@ -227,7 +233,9 @@ class FrostedPanelRow extends StatelessWidget {
     final pressed = states.contains(WidgetState.pressed);
     final lit = pressed || held;
     final off = states.contains(WidgetState.disabled);
-    final corner = BorderRadius.circular(FrostedChromeMetrics.menuItemRadius);
+    final corner = BorderRadius.circular(
+      t.corner(RawCorner.large, FrostedChromeMetrics.menuItemRadius),
+    );
     const inset = EdgeInsets.symmetric(
       horizontal: FrostedChromeMetrics.menuItemInset,
     );

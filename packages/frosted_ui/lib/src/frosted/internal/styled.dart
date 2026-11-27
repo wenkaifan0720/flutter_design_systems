@@ -1,8 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
-import '../component_themes.dart';
+import '../theme.dart';
 import 'corner.dart';
 
 /// A part's style layers read at its states: its own `style:`, then its
@@ -11,11 +12,13 @@ import 'corner.dart';
 /// to the theme's knobs and then the look's own. Plumbing of the components.
 @immutable
 class FrostedStyleLayers {
-  /// The layers of [own] over [theme], read at [states].
+  /// The layers of [own] over [theme], read at [states]; [look], the theme
+  /// a style's `corners` are drawn in (none drawn without it).
   const FrostedStyleLayers(
     this.own,
     this.theme, [
     this.states = const <WidgetState>{},
+    this.look,
   ]);
 
   /// The widget's own style.
@@ -27,9 +30,13 @@ class FrostedStyleLayers {
   /// The states the slots resolve against.
   final Set<WidgetState> states;
 
+  /// The theme a style's `corners` are drawn in: its scale and Frosted's
+  /// limits.
+  final FrostedThemeData? look;
+
   /// These layers read at [states].
   FrostedStyleLayers at(Set<WidgetState> states) =>
-      FrostedStyleLayers(own, theme, states);
+      FrostedStyleLayers(own, theme, states, look);
 
   /// Whether neither layer sets a slot.
   bool get isEmpty => (own?.isEmpty ?? true) && theme.isEmpty;
@@ -52,8 +59,103 @@ class FrostedStyleLayers {
   /// The whole edge.
   BorderSide? get side => _first((s) => s.side);
 
-  /// The outline.
+  /// The outline the style gives (its `shape`), as given.
   OutlinedBorder? get shape => _first((s) => s.shape);
+
+  /// The corners the style gives (its `corners`), each its own step.
+  RawCorners? get corners => _first((s) => s.corners);
+
+  /// The outline an app gives a part whose own outline is [knob] (a
+  /// [FrostedCorners] outline, or a stadium), [own] its radius where the
+  /// part's differs from [knob]'s: the style's [shape], as given; else the
+  /// style's [corners] over the part's own (each corner it leaves out keeps
+  /// the part's), held to [FrostedThemeData.shapeLimits] and drawn in
+  /// [look]'s scale, start and end following the reading direction; else
+  /// null.
+  ///
+  /// A piece of a strip of them (a segment, the plate sliding under it)
+  /// takes only the corners on the strip's ends: the start ones where it
+  /// [starts] the strip, the end ones where it [ends] it; the joins keep the
+  /// piece's own.
+  OutlinedBorder? given(
+    OutlinedBorder knob, {
+    double? own,
+    bool starts = true,
+    bool ends = true,
+  }) {
+    final given = shape;
+    if (given != null) return given;
+    final t = look;
+    final override = _sides(corners, starts: starts, ends: ends);
+    if (override == null || override.isEmpty || t == null) return null;
+    final step = frostedStepOf(knob);
+    final scale = t.shapeScheme.corners;
+    final at = own ?? t.corner(step, frostedCornerOf(knob) ?? 0);
+    return _at(scale, step, at).borderOf(_held(override, step));
+  }
+
+  /// The outline of a piece standing [by] inside a part this style cuts
+  /// ([knob] the part's own outline; [own] the piece's own corner), as a
+  /// menu's row stands in its menu: each corner the style gives on the
+  /// piece's sides ([tops], [bottoms]) concentric with the part's, [by]
+  /// less; the others the piece's own. Null where the style gives no
+  /// corners there, or gives a shape (the piece keeps its own).
+  OutlinedBorder? within(
+    OutlinedBorder knob, {
+    required double own,
+    required double by,
+    bool tops = true,
+    bool bottoms = true,
+  }) {
+    final t = look;
+    if (shape != null || t == null) return null;
+    final override = _sides(corners, tops: tops, bottoms: bottoms);
+    if (override == null || override.isEmpty) return null;
+    final step = frostedStepOf(knob);
+    final s = t.shapeScheme.corners;
+    double less(double r) => math.max(0, r - by);
+    final inner = s.copyWith(
+      extraSmall: less(s.extraSmall),
+      small: less(s.small),
+      medium: less(s.medium),
+      large: less(s.large),
+      extraLarge: less(s.extraLarge),
+    );
+    return _at(inner, step, own).borderOf(_held(override, step));
+  }
+
+  // [given] held to Frosted's bands over [step] on every corner.
+  static RawCorners _held(RawCorners given, RawCorner step) => FrostedThemeData
+      .shapeLimits
+      .clampCorners(given, base: RawCorners.all(step), look: 'Frosted');
+
+  // [scale] with [step] at [at]: a part's own corner where it is not its
+  // step's.
+  static RawCornerScale _at(RawCornerScale scale, RawCorner step, double at) =>
+      switch (step) {
+        RawCorner.extraSmall => scale.copyWith(extraSmall: at),
+        RawCorner.small => scale.copyWith(small: at),
+        RawCorner.medium => scale.copyWith(medium: at),
+        RawCorner.large => scale.copyWith(large: at),
+        RawCorner.extraLarge => scale.copyWith(extraLarge: at),
+        RawCorner.none || RawCorner.full => scale,
+      };
+
+  // The corners of [c] on the sides named, the others left to the part.
+  static RawCorners? _sides(
+    RawCorners? c, {
+    bool starts = true,
+    bool ends = true,
+    bool tops = true,
+    bool bottoms = true,
+  }) => c == null
+      ? null
+      : RawCorners(
+          topStart: starts && tops ? c.topStart : null,
+          topEnd: ends && tops ? c.topEnd : null,
+          bottomStart: starts && bottoms ? c.bottomStart : null,
+          bottomEnd: ends && bottoms ? c.bottomEnd : null,
+        );
 
   /// The room inside the face.
   EdgeInsetsGeometry? get padding => _first((s) => s.padding);
@@ -70,9 +172,19 @@ class FrostedStyleLayers {
   /// The outline the part is cut to: the style's, else [knob] (the look's
   /// corner the part reads, a [FrostedCorners] outline). Null for a stadium, which the
   /// part draws round by its own height as the look does.
-  OutlinedBorder? cut(OutlinedBorder knob) {
-    final shape = this.shape ?? knob;
+  OutlinedBorder? cut(OutlinedBorder knob, {bool corners = true}) {
+    final shape = (corners ? given(knob) : this.shape) ?? knob;
     return shape is StadiumBorder ? null : shape;
+  }
+
+  /// [knob] (a [FrostedCorners] outline) as [t]'s shapes move it
+  /// ([FrostedThemeData.corner]): its corner at its step of [t]'s scale.
+  static OutlinedBorder moved(FrostedThemeData t, OutlinedBorder knob) {
+    final r = frostedCornerOf(knob);
+    if (r == null || knob is! RoundedRectangleBorder) return knob;
+    return knob.copyWith(
+      borderRadius: BorderRadius.circular(t.corner(frostedStepOf(knob), r)),
+    );
   }
 
   /// [FrostedCorners.medium]'s and [FrostedCorners.large]'s radii: what a
@@ -91,6 +203,8 @@ class FrostedStyleLayers {
   ) {
     final own = shape;
     if (own != null) return (own, radiusOf(own, 0, look));
+    final cornered = given(step, own: look);
+    if (cornered != null) return (cornered, look);
     final r = frostedCornerOf(step);
     if (r == null) return (step, look);
     final at = math.max(0.0, look + r - stock);
@@ -153,6 +267,9 @@ class FrostedStyleLayers {
       final BeveledRectangleBorder b => b.copyWith(
         borderRadius: grow(b.borderRadius),
       ),
+      // An app's corners: concentric as ui_core draws them, a square corner
+      // staying square.
+      final RawCornerBorder b => b.outset(EdgeInsets.all(by)),
       _ => cut,
     };
   }

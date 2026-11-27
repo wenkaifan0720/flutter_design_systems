@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../../chrome_metrics.dart';
 import '../../internal/face.dart';
@@ -187,7 +188,7 @@ class FrostedKbd extends StatelessWidget {
   Widget _ltrBuild(BuildContext context) {
     final t = context.frostedTheme;
     Widget cap(String key) {
-      const r = FrostedCorners.r10;
+      final r = t.corner(RawCorner.small, FrostedCorners.r10);
       return Container(
         constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
         padding: const EdgeInsets.symmetric(horizontal: FrostedSpacing.s6),

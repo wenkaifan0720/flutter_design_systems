@@ -604,7 +604,9 @@ class _FrostedMultiSelectState<T extends Object>
           final type = t.textTheme.labelLarge;
           final chip = FrostedFace(
             material: FrostedMaterial.paint,
-            radius: BorderRadius.circular(FrostedCorners.r10),
+            radius: BorderRadius.circular(
+              t.corner(RawCorner.small, FrostedCorners.r10),
+            ),
             color: tag.focused ? t.colorScheme.accentSubtle : t.glass.fillHigh,
             ring: tag.focused ? t.colorScheme.accent : t.glass.edge,
             padding: const EdgeInsetsDirectional.only(start: FrostedSpacing.s10)
@@ -623,7 +625,7 @@ class _FrostedMultiSelectState<T extends Object>
                     child: FrostedPressable(
                       onPressed: tag.onDeleted,
                       semanticLabel: '${words.remove} $name',
-                      radius: FrostedCorners.r10,
+                      radius: t.corner(RawCorner.small, FrostedCorners.r10),
                       builder: (context, states, _) => SizedBox(
                         width: 28,
                         height: 28,

@@ -122,10 +122,12 @@ class FrostedSlider extends StatelessWidget {
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final s = FrostedStyleLayers(style, t.components.slider, {
       if (!live) WidgetState.disabled,
-    });
+    }, t);
     final active = s.fill ?? t.colorScheme.accentText;
     final thumb = s.shape;
-    final cut = thumb is CircleBorder ? null : s.cut(FrostedCorners.full);
+    final cut = thumb is CircleBorder
+        ? null
+        : s.cut(FrostedCorners.full, corners: false);
     const knob = FrostedChromeMetrics.sliderThumb;
     // The knob is bounded by its shadow and a white reflection on its rim,
     // never a dark traced edge.

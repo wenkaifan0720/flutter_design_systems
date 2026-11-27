@@ -408,6 +408,7 @@ class _GalleryAppState extends State<GalleryApp> {
                               spacing: 16,
                               children: [
                                 _Overview(onOpen: () => _openHarbor(context)),
+                                const _OwnCorners(),
                                 _Sections(
                                   onOpen: (i) => setState(() => _page = i),
                                 ),
@@ -709,6 +710,57 @@ class _Overview extends StatelessWidget {
           ),
           FrostedButton('Open Harbor', onPressed: onOpen),
         ],
+      ),
+    );
+  }
+}
+
+/// A part's own corners: a style's `corners` squares two diagonal corners
+/// of a card and of the glass button on it, the others keeping their own
+/// (mirrored right to left); the ink act beside it keeps its pill.
+class _OwnCorners extends StatelessWidget {
+  const _OwnCorners();
+
+  static const _cut = FrostedStyle(
+    corners: WidgetStatePropertyAll(
+      RawCorners(topStart: RawCorner.none, bottomEnd: RawCorner.none),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.frostedTheme;
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: FrostedCard(
+          style: _cut,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 12,
+            children: [
+              Text(
+                'Corners of its own',
+                style: t.textTheme.titleMedium.c(t.colorScheme.textPrimary),
+              ),
+              Text(
+                "A style's corners square two of this card's corners and two "
+                "of its glass button's; the others keep their own. The ink "
+                'act keeps its pill.',
+                style: t.textTheme.bodyMedium.c(t.colorScheme.textSecondary),
+              ),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  FrostedButton.glass('Share', onPressed: () {}, style: _cut),
+                  FrostedButton('Save', onPressed: () {}),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

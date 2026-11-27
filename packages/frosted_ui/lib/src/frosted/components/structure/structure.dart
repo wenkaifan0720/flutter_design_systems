@@ -25,6 +25,7 @@ import '../../internal/css_shadow.dart';
 import '../../internal/ellipse.dart';
 import '../../internal/face.dart';
 import '../../internal/flush_end.dart';
+import '../../internal/row_height.dart';
 import '../../internal/row_line.dart';
 import '../../internal/styled.dart';
 import '../../theme.dart';
@@ -325,21 +326,33 @@ class FrostedFacedCard extends StatelessWidget {
     final wide = FrostedBreakpoints.isWide(context);
     final hue = this.hue;
     final pad = FrostedBreakpoints.pad(context);
-    final layers = FrostedStyleLayers(style, t.components.card);
+    final layers = FrostedStyleLayers(
+      style,
+      t.components.card,
+      const <WidgetState>{},
+      t,
+    );
     // FrostedCorners.medium is a card's corner on a phone; the
     // desktop rounds it 2 further, as the look does (18 and 20 in opal).
     const knob = FrostedCorners.medium;
+    final own = face == FrostedCardFace.ghost
+        ? t.corner(RawCorner.medium, FrostedChromeMetrics.ghostRadius)
+        : t.corner(
+            RawCorner.large,
+            wide ? FrostedCorners.r20 : FrostedCorners.r18,
+          );
     OutlinedBorder? cutOf(FrostedStyleLayers s) =>
-        s.shape ??
+        s.given(knob, own: own) ??
         (face == FrostedCardFace.ghost || knob is RoundedRectangleBorder
             ? null
             : knob);
     double radiusOf(OutlinedBorder? cut) => cut != null
-        ? FrostedStyleLayers.radiusOf(cut, 0, FrostedCorners.r18)
-        : face == FrostedCardFace.ghost
-        ? FrostedChromeMetrics.ghostRadius
-        : FrostedCorners.r18 +
-              (wide ? FrostedCorners.r20 - FrostedCorners.r18 : 0);
+        ? FrostedStyleLayers.radiusOf(
+            cut,
+            0,
+            t.corner(RawCorner.large, FrostedCorners.r18),
+          )
+        : own;
     final lookInset = switch (face) {
       FrostedCardFace.ghost => const EdgeInsets.all(
         FrostedChromeMetrics.ghostInset,
@@ -873,10 +886,13 @@ class FrostedListTile extends StatelessWidget {
     final s = FrostedStyleLayers(style, t.components.listTile, {
       if (selected) WidgetState.selected,
       if (!enabled) WidgetState.disabled,
-    });
+    }, t);
     // .row { align-items: center; gap: 12px; min-height: 52px; padding: 6px 0 }
     Widget row = ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: FrostedChromeMetrics.row),
+      // At the theme's density, as Material's list tile.
+      constraints: BoxConstraints(
+        minHeight: frostedRowHeight(context, FrostedChromeMetrics.row),
+      ),
       child: Padding(
         padding:
             s.padding ??
@@ -968,6 +984,11 @@ class FrostedListTile extends StatelessWidget {
   /// [row] over the chosen row's plate, while [selected].
   Widget _marked(FrostedThemeData t, FrostedStyleLayers s, Widget row) {
     if (!selected) return row;
+    final plateCorner = t.corner(
+      RawCorner.medium,
+      FrostedChromeMetrics.rowMarkRadius,
+    );
+    final plate = s.given(FrostedCorners.small, own: plateCorner);
     // .rows--mark .row.this { margin: 0 -10px; padding: 0 10px;
     // border-radius: 12px; background: rgba(255,255,255,.7); box-shadow:
     // inset 0 0 0 1px var(--line) }
@@ -982,13 +1003,9 @@ class FrostedListTile extends StatelessWidget {
           child: FrostedFace(
             material: FrostedMaterial.paint,
             radius: BorderRadius.circular(
-              FrostedStyleLayers.radiusOf(
-                s.shape,
-                0,
-                FrostedChromeMetrics.rowMarkRadius,
-              ),
+              FrostedStyleLayers.radiusOf(plate, 0, plateCorner),
             ),
-            shape: s.shape,
+            shape: plate,
             color: s.fill ?? t.glass.plane.withValues(alpha: _markFill),
             wash: s.overlay,
             ring: s.edge ?? frostedLitEdge(t, t.colorScheme.border),
@@ -1009,6 +1026,11 @@ class FrostedListTile extends StatelessWidget {
   }) {
     if (dim) row = FrostedDim(off: !enabled, child: row);
     final onPressed = this.onPressed;
+    final plateCorner = t.corner(
+      RawCorner.medium,
+      FrostedChromeMetrics.rowMarkRadius,
+    );
+    final plate = s.given(FrostedCorners.small, own: plateCorner);
     return MergeSemantics(
       child: onPressed == null && enabled
           ? row
@@ -1019,12 +1041,8 @@ class FrostedListTile extends StatelessWidget {
               role: FrostedPressRole.link,
               // The ring traces the chosen row's plate, which bleeds past
               // the row on both sides, chosen or not.
-              radius: FrostedStyleLayers.radiusOf(
-                s.shape,
-                0,
-                FrostedChromeMetrics.rowMarkRadius,
-              ),
-              shape: s.shape,
+              radius: FrostedStyleLayers.radiusOf(plate, 0, plateCorner),
+              shape: plate,
               ringInsets: const EdgeInsets.symmetric(
                 horizontal: -FrostedChromeMetrics.rowMarkBleed,
               ),
@@ -2457,7 +2475,9 @@ class FrostedSuggestion extends StatelessWidget {
     // .suggest .row-t { color: var(--k); font-weight: 600 }
     final face = FrostedFace(
       material: FrostedMaterial.paint,
-      radius: BorderRadius.circular(FrostedChromeMetrics.suggestRadius),
+      radius: BorderRadius.circular(
+        t.corner(RawCorner.medium, FrostedChromeMetrics.suggestRadius),
+      ),
       color: t.glass.plane.withValues(alpha: _suggestFill),
       gradients: [
         _radial(hue.tintSolid, rx: 1, ry: 1.2, cx: 0, cy: 0, to: 0.8),
@@ -2471,7 +2491,10 @@ class FrostedSuggestion extends StatelessWidget {
             FrostedFace(
               material: FrostedMaterial.paint,
               radius: BorderRadius.circular(
-                FrostedChromeMetrics.suggestMarkRadius,
+                t.corner(
+                  RawCorner.small,
+                  FrostedChromeMetrics.suggestMarkRadius,
+                ),
               ),
               color: t.glass.plane,
               ring: hue.edge,
@@ -2510,7 +2533,7 @@ class FrostedSuggestion extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         onPressed: onPressed,
-        radius: FrostedChromeMetrics.suggestRadius,
+        radius: t.corner(RawCorner.medium, FrostedChromeMetrics.suggestRadius),
         child: face,
       ),
     );
@@ -2894,7 +2917,9 @@ class FrostedNudge extends StatelessWidget {
     const inset = FrostedChromeMetrics.nudgeInset;
     return FrostedFace(
       material: FrostedMaterial.paint,
-      radius: BorderRadius.circular(FrostedChromeMetrics.nudgeRadius),
+      radius: BorderRadius.circular(
+        t.corner(RawCorner.medium, FrostedChromeMetrics.nudgeRadius),
+      ),
       color: ok
           ? t.colorScheme.moneyInTint
           : t.colorScheme.warning.withValues(alpha: _nudgeFill),
@@ -3120,7 +3145,9 @@ class FrostedBrowseCard extends StatelessWidget {
     // white-space: nowrap; text-overflow: ellipsis } .browse-c .row-s { 12px }
     final face = FrostedFace(
       material: FrostedMaterial.paint,
-      radius: BorderRadius.circular(FrostedChromeMetrics.browseRadius),
+      radius: BorderRadius.circular(
+        t.corner(RawCorner.medium, FrostedChromeMetrics.browseRadius),
+      ),
       color: t.glass.plane.withValues(alpha: _browseFill),
       gradients: [_radial(hue.tint, rx: 1.2, ry: 1, cx: 0, cy: 0, to: 0.8)],
       ring: hue.edge,
@@ -3174,7 +3201,10 @@ class FrostedBrowseCard extends StatelessWidget {
               autofocus: autofocus,
               onPressed: onPressed,
               role: FrostedPressRole.link,
-              radius: FrostedChromeMetrics.browseRadius,
+              radius: t.corner(
+                RawCorner.medium,
+                FrostedChromeMetrics.browseRadius,
+              ),
               child: face,
             ),
     );
@@ -3445,7 +3475,9 @@ class FrostedTicket extends StatelessWidget {
     // 12px/1.25; color: var(--ink-2); nowrap }
     final face = FrostedFace(
       material: FrostedMaterial.paint,
-      radius: BorderRadius.circular(FrostedChromeMetrics.ticketRadius),
+      radius: BorderRadius.circular(
+        t.corner(RawCorner.small, FrostedChromeMetrics.ticketRadius),
+      ),
       color: t.glass.plane.withValues(alpha: _ticketFill),
       ring: t.glass.plane.withValues(alpha: _ticketRing),
       shadows: t.shadows.ticket,
@@ -3498,7 +3530,10 @@ class FrostedTicket extends StatelessWidget {
               autofocus: autofocus,
               onPressed: onPressed,
               role: FrostedPressRole.link,
-              radius: FrostedChromeMetrics.ticketRadius,
+              radius: t.corner(
+                RawCorner.small,
+                FrostedChromeMetrics.ticketRadius,
+              ),
               child: face,
             ),
     );

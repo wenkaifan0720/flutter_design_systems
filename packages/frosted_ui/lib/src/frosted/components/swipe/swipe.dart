@@ -257,7 +257,9 @@ class _Tile extends StatelessWidget {
     };
     final face = FrostedFace(
       material: FrostedMaterial.paint,
-      radius: BorderRadius.circular(FrostedCorners.r14),
+      radius: BorderRadius.circular(
+        t.corner(RawCorner.medium, FrostedCorners.r14),
+      ),
       color: fill,
       gradients: gradients,
       ring: ring,
@@ -289,7 +291,7 @@ class _Tile extends StatelessWidget {
           states.contains(WidgetState.pressed)
               ? Opacity(opacity: 0.7, child: face)
               : face,
-          radius: FrostedCorners.r14,
+          radius: t.corner(RawCorner.medium, FrostedCorners.r14),
         ),
       ),
     );

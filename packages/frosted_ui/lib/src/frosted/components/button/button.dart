@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawCornerBorder;
 
 import '../../chrome_metrics.dart';
 import '../../internal/act_row.dart';
@@ -38,6 +39,7 @@ bool _isPill(OutlinedBorder? cut, double height) {
     null || StadiumBorder() => true,
     RoundedRectangleBorder(:final borderRadius) ||
     RoundedSuperellipseBorder(:final borderRadius) => round(borderRadius),
+    final RawCornerBorder b => b.full || round(b.borderRadius),
     _ => false,
   };
 }
@@ -217,19 +219,29 @@ class FrostedButton extends StatelessWidget {
           ),
         )
         .left;
-    final layers = FrostedStyleLayers(style, t.components.button);
+    final layers = FrostedStyleLayers(
+      style,
+      t.components.button,
+      const <WidgetState>{},
+      t,
+    );
     // On another glass (a sheet, a dialog, a card) the capsule is shaded a
     // step with the page's ink, not raised white: a white step vanished on a
     // light sheet and left only the word to read as the button.
     final shaded = FrostedOnGlass.of(context) && !frostedOpaqueAt(context);
-    // The ink act keeps its pill (law 6). A shape of its own `style:` that
-    // squares its ends fails a debug assert; the theme's button shape, which
-    // shapes the glass buttons too, passes the act by. Either way the act is
-    // drawn a pill.
+    // The ink act keeps its pill (law 6), as a bead keeps its round. A shape
+    // or corners of its own `style:` that square its ends fail a debug
+    // assert; the theme's button shape and corners, which shape the glass
+    // buttons too, pass the act by. Either way the act is drawn a pill.
     OutlinedBorder? cutOf(FrostedStyleLayers s) {
       final cut = s.cut(FrostedCorners.full);
       if (_face == _Face.glass || _isPill(cut, height)) return cut;
-      final own = style?.shape?.resolve(s.states);
+      final own = FrostedStyleLayers(
+        style,
+        const FrostedStyle(),
+        s.states,
+        t,
+      ).given(FrostedCorners.full);
       assert(
         own == null || _isPill(own is StadiumBorder ? null : own, height),
         "Frosted's ink act keeps its pill (law 6, the ink pill): "

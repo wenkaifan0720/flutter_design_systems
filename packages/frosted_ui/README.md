@@ -12,8 +12,11 @@ Frosted is a Flutter component library for translucent forms, transaction lists,
 flutter pub add frosted_ui material_ui
 ```
 
-Every snippet on this page compiles after that line. The icons in them are `FrostedGlyphs`, the glyphs Frosted draws
-with; for an icon of your own, add `lucide_icons_flutter`, the set they come from.
+Every snippet on this page compiles after that line (on a Flutter 3.50 template `material_ui` is already there, and
+`flutter pub add frosted_ui` is enough). The icons in them are `FrostedGlyphs`, the glyphs Frosted draws with, an
+app's everyday ones among them (`book`, `settings`, `heart`, `star`, `edit`); for an icon of your own, add
+`lucide_icons_flutter`, the set they come from (`import 'package:lucide_icons_flutter/lucide_icons.dart';`, then
+`LucideIcons.bookmark`).
 
 Each file imports the look and the Material it is built on:
 
@@ -116,7 +119,8 @@ class _HomeState extends State<Home> {
 ### A list, and its page
 
 A page is a `FrostedScaffold`: its bar, its body and a footer for its acts. `maxWidth` holds all three to one
-column on a wide window. A row pushes its record's page in the same place; the pushed page's bar names where back
+column on a wide window. Where the page doesn't own the window's foot (over the app shell's tab bar, at desktop
+width) the footer floats on a slab of the tab bar's glass. A row pushes its record's page in the same place; the pushed page's bar names where back
 goes.
 
 ```dart
@@ -428,9 +432,15 @@ tree with a nested `FrostedTheme`, and animate between themes with `AnimatedFros
   shadows and the glass, pearl and sheen tints come with the palette and the theme's `copyWith` doesn't take them: a
   free shadow could make the soft lift a hard one, and an opaque tint would turn glass into paint.
   `opaqueMaterials: true` is the solid form, for high contrast.
-- **Density**: `FrostedDensity.standard`, `.comfortable` or `.compact`. Unset, it follows the platform
-  (`FrostedDensity.adaptivePlatformDensity`: compact on macOS, Windows and Linux, standard on touch); compact tightens
-  faces, and no target goes under the 40 px floor.
+- **Density**: `FrostedDensity.standard`, `.comfortable` (one step tighter, as Flutter's `VisualDensity` names
+  it) or `.compact` (two steps). Set it on the host beside the palette (`FrostedHost(palette: p, density: d)`), or on
+  a theme. Unset, it follows the platform (`FrostedDensity.adaptivePlatformDensity`: compact on macOS, Windows and
+  Linux, standard on touch). Each step takes 4 off a key's, a chip's, a segment's and a toggle's height, and off a
+  list's, a setting's, a form's and a menu's rows; a field's well keeps its line's height; no target goes under the
+  40 px floor.
+- **Shapes**: `shapeScheme`, the corner scale (`RawShapeScheme`), held to Frosted's bands
+  (`FrostedThemeData.shapeLimits`) so every end still reads as glass: a field from 8 to 16, a card from 12 to 24, a
+  sheet from 16 to 28. `theme.corner(step, own)` moves a corner of your own part as Frosted's move.
 - **Typeface**: `FrostedTypeface` for a brand's own faces (`FrostedTypeface.app`) or a script the bundled faces lack.
 - **Tokens**: `FrostedCorners` (the radii, and the look's outlines `extraSmall`, `small`, `medium`, `large` and `full`),
   `FrostedSpacing`, `FrostedStrokes` and `FrostedMotion` (its timings, which Reduce Motion turns to cuts) are constants
@@ -455,8 +465,12 @@ own. `style:` takes a `FrostedStyle` with the slots of Material's `ButtonStyle` 
 `overlay`, `side`, `shape`, `padding`, `minimumSize`, `textStyle`, `iconSize`), each a `WidgetStateProperty` resolved
 per state (pressed, hovered, focused, selected, disabled, error). A `shape` takes any `OutlinedBorder`: a rounded border
 is drawn at its radius; a superellipse, a bevel or any other is cut to its outline, fill, edge, glass and focus
-clearing alike. The ink act (`FrostedButton`) keeps its pill: a shape of its own that squares its ends fails a debug assert, and
-the theme's button shape, which shapes the glass buttons, passes it by.
+clearing alike. `corners` names a step per corner (`RawCorners`): `RawCorners(topStart: RawCorner.none, bottomEnd: RawCorner.none)`
+squares a card's top start and bottom end, start and end mirroring right to left; a corner left out keeps the part's
+own. A part of several pieces (a segmented strip, a menu) takes them on its outer corners, and a `shape` wins over
+them. The ink act (`FrostedButton`) keeps its pill: a shape or corners of its own that square its ends fail a debug
+assert, and the theme's button shape and corners, which shape the glass buttons, pass it by. A bead (a switch, a
+slider's thumb, a radio, a calendar's day) stays round.
 
 ```dart
 import 'package:frosted_ui/frosted_ui.dart';
@@ -521,10 +535,11 @@ costs no blur at all. The canvas's washes are painted once and cached.
   where it falls on pale glass (about 1.1:1 by day), so focus does not hold 3:1 on every part. By day the lift darkens
   the ground in the 16 px round a focused part by about 1.1:1 to 1.4:1, most round a field, a list row or a menu row.
   A chosen part's printed check, dot or tick stands 9.7:1 or more against the part unchosen, by day and by night.
-  Glass has no dark edge: an unchosen part at rest (an empty check, an unchosen radio, an empty star, an off switch, a
-  segmented strip) is a bead of glass whose darkest pixel stands no darker on the glass than a field's edge, about
-  1.2:1 by day. It shows by its lit rim and inner shade, so its boundary does not hold WCAG 1.4.11's 3:1; its label
-  and its state, once chosen, do.
+  Glass has no dark edge: an unchosen part at rest (an empty star, a segmented strip) is a bead of glass whose darkest
+  pixel stands no darker on the glass than a field's edge, about 1.2:1 by day. An empty opening (an empty check, an
+  unchosen radio, an off switch) stands a grey step of glass deeper by day: 1.25:1 to 1.37:1 against the canvas
+  across the six palettes. Neither holds WCAG 1.4.11's 3:1 at its boundary; each shows by its lit rim and inner shade,
+  and its label and its state, once chosen, do.
 - **Motion.** Every change of state eases from where it is; Reduce Motion makes each one a cut. The dialog and the
   sheets ride ui_core's critically damped springs: nothing overshoots, and a sheet let go mid-drag carries the finger's
   speed. A page pushed over

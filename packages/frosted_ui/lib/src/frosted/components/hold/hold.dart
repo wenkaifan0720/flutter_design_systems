@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../../chrome_metrics.dart';
 import '../../glyphs.dart';
@@ -198,7 +199,12 @@ class FrostedBadge extends StatelessWidget {
     final count = this.count;
     final shown = isLabelVisible && (count == null || count > 0);
     const gap = FrostedChromeMetrics.unreadDotRing;
-    final s = FrostedStyleLayers(style, t.components.badge);
+    final s = FrostedStyleLayers(
+      style,
+      t.components.badge,
+      const <WidgetState>{},
+      t,
+    );
     final fill = s.fill ?? t.colorScheme.unreadDot;
     final direction = Directionality.of(context);
     final Widget mark;
@@ -241,7 +247,7 @@ class FrostedBadge extends StatelessWidget {
         (painter.height + padding.vertical).clamp(18, double.infinity),
       );
       painter.dispose();
-      outline = s.shape ?? FrostedCorners.full;
+      outline = s.given(FrostedCorners.full) ?? FrostedCorners.full;
       mark = Container(
         width: size.width,
         height: size.height,
@@ -482,7 +488,7 @@ class _FrostedDisclosureState extends State<FrostedDisclosure> {
           semanticLabel: widget.title,
           value: widget.meta,
           expanded: open,
-          radius: FrostedCorners.r12,
+          radius: t.corner(RawCorner.medium, FrostedCorners.r12),
           child: head,
         ),
         ClipRect(
@@ -740,7 +746,9 @@ class FrostedTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    final radius = frostedRadiusOf(FrostedCorners.medium);
+    final radius = frostedRadiusOf(
+      FrostedStyleLayers.moved(t, FrostedCorners.medium),
+    );
     Widget cell(Object value, FrostedTableColumn column, {bool head = false}) {
       final style = head
           ? t.textTheme.labelMedium.c(t.colorScheme.textSecondary)

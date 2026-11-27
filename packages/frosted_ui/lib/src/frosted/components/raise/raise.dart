@@ -173,7 +173,9 @@ class FrostedActionSheet<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    final radius = BorderRadius.circular(FrostedCorners.r22);
+    final radius = BorderRadius.circular(
+      t.corner(RawCorner.extraLarge, FrostedCorners.r22),
+    );
     final rule = BorderSide(
       color: t.colorScheme.border,
       width: FrostedStrokes.hairline,
@@ -426,7 +428,12 @@ class FrostedTooltip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    final bubble = FrostedStyleLayers(style, t.components.tooltip);
+    final bubble = FrostedStyleLayers(
+      style,
+      t.components.tooltip,
+      const <WidgetState>{},
+      t,
+    );
     final (cut, corner) = bubble.surface(
       FrostedCorners.medium,
       FrostedStyleLayers.stockMedium,

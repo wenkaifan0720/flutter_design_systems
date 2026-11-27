@@ -5,6 +5,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
+import 'package:frosted_ui/frosted_host.dart';
 
 Future<void> _pump(
   WidgetTester t, {
@@ -66,12 +67,25 @@ void main() {
           expect(field.right, lessThanOrEqualTo(720));
           expect(title.left, moreOrLessEquals(field.left, epsilon: 1));
           expect(more.right, lessThanOrEqualTo(field.right + .5));
-          expect(save.right, moreOrLessEquals(field.right, epsilon: 1));
+          // The footer's slab spans the column; its acts stand its inset in.
+          expect(
+            save.right,
+            moreOrLessEquals(
+              field.right - FrostedChromeMetrics.footSlabInset,
+              epsilon: 1,
+            ),
+          );
         } else {
           expect(field.left, greaterThanOrEqualTo(1440 - 720));
           expect(title.right, moreOrLessEquals(field.right, epsilon: 1));
           expect(more.left, greaterThanOrEqualTo(field.left - .5));
-          expect(save.left, moreOrLessEquals(field.left, epsilon: 1));
+          expect(
+            save.left,
+            moreOrLessEquals(
+              field.left + FrostedChromeMetrics.footSlabInset,
+              epsilon: 1,
+            ),
+          );
         }
       },
     );

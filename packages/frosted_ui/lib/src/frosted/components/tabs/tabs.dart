@@ -143,7 +143,12 @@ class _FrostedTabBarState extends State<FrostedTabBar>
     final label =
         widget.semanticLabel ?? FrostedLocalizations.of(context).sections;
     final t = context.frostedTheme;
-    final layers = FrostedStyleLayers(widget.style, t.components.tabBar);
+    final layers = FrostedStyleLayers(
+      widget.style,
+      t.components.tabBar,
+      const <WidgetState>{},
+      t,
+    );
     final cut = layers.cut(FrostedCorners.full);
     const height = FrostedChromeMetrics.tabHeight;
     final corner = FrostedStyleLayers.radiusOf(cut, height, height / 2);

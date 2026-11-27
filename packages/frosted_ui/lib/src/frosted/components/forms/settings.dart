@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../../glyphs.dart';
 
@@ -16,6 +17,7 @@ import 'forms.dart';
 import '../../internal/dim.dart';
 import '../../internal/flush_end.dart';
 import '../../internal/hit_slop.dart';
+import '../../internal/row_height.dart';
 import '../../internal/cap.dart';
 
 /// A tile's head: the title at 20 point, at least 24 tall, [gap] over what
@@ -100,8 +102,8 @@ class _SetRow extends StatelessWidget {
     );
     // At least 52 with its hairline (a row under another), 8 inside it.
     return Container(
-      constraints: const BoxConstraints(
-        minHeight: FrostedChromeMetrics.settingRow,
+      constraints: BoxConstraints(
+        minHeight: frostedRowHeight(context, FrostedChromeMetrics.settingRow),
       ),
       // Drawn over the row, taking no room: the words keep the middle.
       foregroundDecoration: _Ruled.of(context)
@@ -320,7 +322,7 @@ class FrostedValueRow extends StatelessWidget {
       semanticLabel: title,
       value: value,
       role: FrostedPressRole.link,
-      radius: FrostedCorners.r14,
+      radius: t.corner(RawCorner.medium, FrostedCorners.r14),
       // A row lights from inside its edge, its plate bleeding past the row
       // into the group's inset as a list row's does: the light stays off the
       // row's words (flush with its edge), its neighbours and the group's
@@ -464,8 +466,8 @@ class FrostedFormRow extends StatelessWidget {
       ],
     );
     final row = ConstrainedBox(
-      constraints: const BoxConstraints(
-        minHeight: FrostedChromeMetrics.formRow,
+      constraints: BoxConstraints(
+        minHeight: frostedRowHeight(context, FrostedChromeMetrics.formRow),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -519,7 +521,7 @@ class FrostedFormRow extends StatelessWidget {
         semanticLabel: label,
         value: value,
         role: FrostedPressRole.link,
-        radius: FrostedCorners.r14,
+        radius: t.corner(RawCorner.medium, FrostedCorners.r14),
         // Lit from inside, as a settings row is.
         ringInsets: const EdgeInsets.symmetric(
           horizontal: -FrostedChromeMetrics.rowMarkBleed,

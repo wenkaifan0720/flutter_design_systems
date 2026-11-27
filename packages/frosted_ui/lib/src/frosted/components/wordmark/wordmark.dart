@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../../glyphs.dart';
 
@@ -181,7 +182,9 @@ class FrostedMark extends StatelessWidget {
         dimension: size,
         child: FrostedFace(
           material: FrostedMaterial.paint,
-          radius: BorderRadius.circular(FrostedChromeMetrics.inkMarkRadius * k),
+          radius: BorderRadius.circular(
+            t.corner(RawCorner.small, FrostedChromeMetrics.inkMarkRadius) * k,
+          ),
           gradients: [t.colorScheme.buttonFill],
           sheen: t.colorScheme.buttonSheen,
           child: Center(

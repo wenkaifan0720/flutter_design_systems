@@ -298,16 +298,24 @@ class FrostedWell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    final s = (layers ?? FrostedStyleLayers(null, t.components.textField)).at({
-      if (focused) WidgetState.focused,
-      if (error) WidgetState.error,
-      if (!enabled) WidgetState.disabled,
-    });
+    final s =
+        (layers ??
+                FrostedStyleLayers(
+                  null,
+                  t.components.textField,
+                  const <WidgetState>{},
+                  t,
+                ))
+            .at({
+              if (focused) WidgetState.focused,
+              if (error) WidgetState.error,
+              if (!enabled) WidgetState.disabled,
+            });
     const knob = FrostedCorners.small;
+    final corner = radius ?? t.corner(RawCorner.medium, FrostedCorners.r12);
     final cut =
-        s.shape ??
+        s.given(knob, own: corner) ??
         (radius != null || knob is RoundedRectangleBorder ? null : knob);
-    final corner = radius ?? FrostedCorners.r12;
     final side = s.side;
     // .inp { background: rgba(255,255,255,.82);
     //   box-shadow: inset 0 0 0 1px rgba(21,21,45,.08) }

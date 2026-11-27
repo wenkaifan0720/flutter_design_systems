@@ -154,11 +154,16 @@ class FrostedDialog extends StatelessWidget {
         this.confirmLabel ?? RawWidgetsLocalizations.of(context).okButtonLabel;
     final t = context.frostedTheme;
     final decline = cancelLabel;
-    final s = FrostedStyleLayers(style, t.components.dialog);
+    final s = FrostedStyleLayers(
+      style,
+      t.components.dialog,
+      const <WidgetState>{},
+      t,
+    );
     final (cut, corner) = s.surface(
       FrostedCorners.large,
       FrostedStyleLayers.stockLarge,
-      FrostedChromeMetrics.sheetWideRadius,
+      t.corner(RawCorner.extraLarge, FrostedChromeMetrics.sheetWideRadius),
     );
     final fill = s.fill;
     // By day the lit hairline round the glass, never a dark line (law 2).

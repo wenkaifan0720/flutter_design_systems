@@ -295,4 +295,19 @@ abstract final class FrostedGlyphs {
 
   /// Quick, a bolt.
   static const IconData zap = LucideIcons.zap;
+
+  /// A book, a reading list.
+  static const IconData book = LucideIcons.bookOpen;
+
+  /// Settings.
+  static const IconData settings = LucideIcons.settings;
+
+  /// A favourite.
+  static const IconData heart = LucideIcons.heart;
+
+  /// A rating, a starred item.
+  static const IconData star = LucideIcons.star;
+
+  /// Edits.
+  static const IconData edit = LucideIcons.pencil;
 }

@@ -8,6 +8,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../../glyphs.dart';
 
@@ -233,6 +234,7 @@ class FrostedCreditCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.frostedTheme;
     final kind = this.kind ?? FrostedLocalizations.of(context).credit;
     final balanceLabel =
         this.balanceLabel ?? FrostedLocalizations.of(context).balance;
@@ -240,8 +242,8 @@ class FrostedCreditCard extends StatelessWidget {
     // From 600 up the card keeps a card's size (at most 408 wide).
     final measured = MediaQuery.sizeOf(context).width >= frostedMeasureFrom;
     final radius = wide
-        ? FrostedChromeMetrics.cardRadiusWide
-        : FrostedChromeMetrics.cardRadius;
+        ? t.corner(RawCorner.large, FrostedChromeMetrics.cardRadiusWide)
+        : t.corner(RawCorner.large, FrostedChromeMetrics.cardRadius);
     final words =
         label ??
         '${frozen ? 'Frozen card' : 'Card'} ·· $mask, '
@@ -1015,7 +1017,7 @@ class FrostedDebitCard extends StatelessWidget {
           child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(
-                FrostedChromeMetrics.debitCardRadius,
+                t.corner(RawCorner.small, FrostedChromeMetrics.debitCardRadius),
               ),
               gradient: LinearGradient(
                 colors: [t.hues.cyan.a, t.hues.cyan.b, t.hues.iris.a],
@@ -1036,7 +1038,10 @@ class FrostedDebitCard extends StatelessWidget {
               child: FrostedFace(
                 material: FrostedMaterial.paint,
                 radius: BorderRadius.circular(
-                  FrostedChromeMetrics.debitCardRadius -
+                  t.corner(
+                        RawCorner.small,
+                        FrostedChromeMetrics.debitCardRadius,
+                      ) -
                       FrostedChromeMetrics.outline,
                 ),
                 gradients: [
@@ -1231,7 +1236,9 @@ class FrostedCardNumber extends StatelessWidget {
         children: [
           FrostedFace(
             material: FrostedMaterial.paint,
-            radius: BorderRadius.circular(FrostedChromeMetrics.numberRadius),
+            radius: BorderRadius.circular(
+              t.corner(RawCorner.medium, FrostedChromeMetrics.numberRadius),
+            ),
             color: t.glass.well,
             ring: frostedLitEdge(t, t.glass.wellEdge),
             padding: FrostedChromeMetrics.numberInset,
@@ -1777,7 +1784,7 @@ class FrostedNewGoal extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(
-            FrostedChromeMetrics.newGoalPlusRadius,
+            t.corner(RawCorner.small, FrostedChromeMetrics.newGoalPlusRadius),
           ),
           gradient: t.colorScheme.buttonFill,
           boxShadow: t.shadows.button,
@@ -1814,7 +1821,9 @@ class FrostedNewGoal extends StatelessWidget {
     );
     final face = FrostedFace(
       material: FrostedMaterial.paint,
-      radius: BorderRadius.circular(FrostedChromeMetrics.ghostRadius),
+      radius: BorderRadius.circular(
+        t.corner(RawCorner.medium, FrostedChromeMetrics.ghostRadius),
+      ),
       color: t.sheens.newGoalFill,
       ring: t.sheens.newGoalRing,
       shadows: [
@@ -1857,7 +1866,7 @@ class FrostedNewGoal extends StatelessWidget {
       onPressed: onPressed,
       semanticLabel: '$title, $subtitle',
       role: FrostedPressRole.link,
-      radius: FrostedChromeMetrics.ghostRadius,
+      radius: t.corner(RawCorner.medium, FrostedChromeMetrics.ghostRadius),
       child: face,
     );
   }

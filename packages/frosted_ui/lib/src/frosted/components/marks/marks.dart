@@ -92,7 +92,9 @@ class _Squircle extends StatelessWidget {
       dimension: size.side * growth,
       child: FrostedFace(
         material: FrostedMaterial.paint,
-        radius: BorderRadius.circular(size.radius * growth),
+        radius: BorderRadius.circular(
+          t.corner(RawCorner.small, size.radius) * growth,
+        ),
         color: hue?.tintSolid ?? t.glass.wash,
         ring: hue?.edge,
         child: Center(child: child),
@@ -304,7 +306,8 @@ class FrostedDateBlock extends StatelessWidget {
           child: FrostedFace(
             material: FrostedMaterial.paint,
             radius: BorderRadius.circular(
-              FrostedChromeMetrics.dateBlockRadius * growth,
+              t.corner(RawCorner.small, FrostedChromeMetrics.dateBlockRadius) *
+                  growth,
             ),
             color: lit?.tintSolid ?? t.glass.wash,
             ring: lit?.edge,
@@ -897,7 +900,7 @@ class FrostedCheckbox extends StatelessWidget {
       if (on) WidgetState.selected,
       if (error) WidgetState.error,
       if (!live) WidgetState.disabled,
-    });
+    }, t);
     final cut = s.cut(FrostedCorners.full);
     final fill = s.fill;
     final side = s.side;
@@ -915,7 +918,9 @@ class FrostedCheckbox extends StatelessWidget {
     Widget disc(bool down) => SizedBox.square(
       dimension: FrostedChromeMetrics.check,
       child: FrostedFace(
-        material: fill == null ? FrostedMaterial.well : FrostedMaterial.paint,
+        material: fill == null
+            ? frostedOpeningMaterial(t, FrostedMaterial.well, enabled: live)
+            : FrostedMaterial.paint,
         radius: BorderRadius.circular(
           FrostedStyleLayers.radiusOf(
             cut,
@@ -924,7 +929,7 @@ class FrostedCheckbox extends StatelessWidget {
           ),
         ),
         shape: cut,
-        color: fill,
+        color: fill ?? (on ? null : frostedOpening(t, enabled: live)),
         wash: _frost(t, on: on, down: down),
         edge: side?.color,
         edges: side == null
@@ -979,6 +984,8 @@ class FrostedCheckbox extends StatelessWidget {
             : SemanticsValidationResult.none,
         excludeSemantics: true,
         child: GestureDetector(
+          // The node above takes the tap for assistive tech.
+          excludeFromSemantics: true,
           onTap: live ? flip : null,
           child: FrostedPressArea(
             enabled: live,
@@ -988,26 +995,30 @@ class FrostedCheckbox extends StatelessWidget {
                 // A bare one starts on its column's keyline.
                 alignment: AlignmentDirectional.centerStart,
 
-                child: FrostedKeyFocus(
-                  focusNode: focusNode,
-                  autofocus: autofocus,
-                  enabled: live,
-                  radius: FrostedStyleLayers.radiusOf(
-                    cut,
-                    FrostedChromeMetrics.check,
-                    FrostedChromeMetrics.check / 2,
-                  ),
-                  keys: {
-                    if (live) ...{
-                      LogicalKeyboardKey.enter: flip,
-                      LogicalKeyboardKey.space: flip,
+                // The bead is read by its box: by day its lit top lip is
+                // near the page's light, so its drawn top is not its edge.
+                child: RawKeylineFace(
+                  child: FrostedKeyFocus(
+                    focusNode: focusNode,
+                    autofocus: autofocus,
+                    enabled: live,
+                    radius: FrostedStyleLayers.radiusOf(
+                      cut,
+                      FrostedChromeMetrics.check,
+                      FrostedChromeMetrics.check / 2,
+                    ),
+                    keys: {
+                      if (live) ...{
+                        LogicalKeyboardKey.enter: flip,
+                        LogicalKeyboardKey.space: flip,
+                      },
                     },
-                  },
-                  child: FrostedPressedFace(
-                    child: Builder(
-                      builder: (context) => FrostedDim(
-                        off: !live,
-                        child: disc(FrostedPressArea.isDown(context)),
+                    child: FrostedPressedFace(
+                      child: Builder(
+                        builder: (context) => FrostedDim(
+                          off: !live,
+                          child: disc(FrostedPressArea.isDown(context)),
+                        ),
                       ),
                     ),
                   ),

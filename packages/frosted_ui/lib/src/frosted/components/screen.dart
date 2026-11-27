@@ -48,9 +48,11 @@ import 'top_bar.dart';
 /// [FrostedAppShell] lays its pages out above its tab bar, so they keep
 /// clear of the inset alone. In scroll mode the room is scroll padding; with
 /// `scroll: false` it is published as MediaQuery bottom padding for the
-/// page's own scrollable. A root page never owns the bottom edge: a
-/// [footer] belongs to pushed, sheet and shell-free pages, standing on the
-/// canvas with the page fading into it above.
+/// page's own scrollable. A [footer] on a page that owns the window's foot
+/// (a phone's pushed page, a sheet, a shell-free page) stands on a band of
+/// the bar's glass along it; where the page doesn't, it floats on a slab of
+/// the tab bar's glass: 8 over [FrostedAppShell]'s tab bar on a root page,
+/// and at desktop width the column's width, 12 over the window's foot.
 ///
 /// On a sheet's card the page is the sheet: no light, the card's room, the
 /// grabber on a phone, its bar as the head, the body 12 under it and the
@@ -80,8 +82,9 @@ class FrostedScaffold extends StatefulWidget {
 
   /// Pinned above the bottom edge: a page's one act. Stands on the footer's
   /// band of the bar's glass, the safe-area inset in it, with the page
-  /// passing under it; from 600 wide a [FrostedButtonRow]'s acts stand at
-  /// the column's end there.
+  /// passing under it; over the app shell's tab bar and at desktop width on
+  /// a slab of the tab bar's glass, the column's width (see above). From 600
+  /// wide a [FrostedButtonRow]'s acts stand at the column's end there.
   final Widget? footer;
 
   /// Wrap the page in a scroll view.
@@ -191,6 +194,22 @@ class _FrostedScaffoldState extends State<FrostedScaffold> {
       'there; move the footer to a pushed, sheet, or shell-free page',
     );
     final wide = FrostedBreakpoints.isWide(context);
+    // Where the page doesn't own the window's foot (a tab bar under it, a
+    // desktop's column), the footer floats on a slab.
+    final barUnder = FrostedShellFoot.barUnder(
+      context,
+      root: register == RoutePresentation.root,
+    );
+    final floats = footer != null && (wide || barUnder);
+    // An open keyboard swallows the home-indicator region, so the footer
+    // hugs it.
+    final safe = (mq.viewPadding.bottom - mq.viewInsets.bottom).clamp(
+      0.0,
+      double.infinity,
+    );
+    final slabFoot = barUnder
+        ? 0.0
+        : math.max(FrostedChromeMetrics.tabBarBottom, safe);
     final side = FrostedSideInset.of(context);
     final top = mq.padding.top;
     // The shell's allowance already spans the device inset: a max, never a
@@ -200,12 +219,14 @@ class _FrostedScaffoldState extends State<FrostedScaffold> {
     final reserve = footer == null
         ? math.max(mq.padding.bottom, shellAllowance)
         : _foot ??
-              FrostedScaffold.footerInsets.top +
-                  FrostedChromeMetrics.buttonHeight +
-                  math.max(
-                    FrostedScaffold.footerInsets.bottom,
-                    mq.viewPadding.bottom,
-                  );
+              (floats
+                  ? FrostedChromeMetrics.slabHeight + slabFoot
+                  : FrostedScaffold.footerInsets.top +
+                        FrostedChromeMetrics.buttonHeight +
+                        math.max(
+                          FrostedScaffold.footerInsets.bottom,
+                          mq.viewPadding.bottom,
+                        ));
     final room =
         widget.padding?.resolve(Directionality.of(context)) ??
         (wide ? FrostedInsets.screenWide : FrostedInsets.screen);
@@ -354,17 +375,36 @@ class _FrostedScaffoldState extends State<FrostedScaffold> {
               right:
                   (rtl ? side : past) +
                   (wide ? room.right : FrostedScaffold.footerInsets.right),
-              bottom: math.max(
-                FrostedScaffold.footerInsets.bottom,
-                // An open keyboard swallows the home-indicator region, so
-                // the footer hugs it.
-                (mq.viewPadding.bottom - mq.viewInsets.bottom).clamp(
-                  0.0,
-                  double.infinity,
-                ),
-              ),
+              bottom: math.max(FrostedScaffold.footerInsets.bottom, safe),
             ),
             child: FrostedFooterBand(child: footer),
+          ),
+        ),
+      ),
+    );
+
+    // The footer floats on the tab bar's slab, its edges on the column's
+    // (a gutter's in from the window's on a phone), the tab bar's own room
+    // over the bar under it, 12 (or the system's inset) over the window's
+    // foot at desktop width; the page rests a margin over it.
+    Widget footSlab(Widget footer) => Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: FrostedReportHeight(
+        onHeight: _measuredFoot,
+        child: FrostedBottomStand(
+          child: Padding(
+            padding: EdgeInsets.only(
+              left:
+                  (rtl ? past : side) +
+                  (wide ? room.left : FrostedChromeMetrics.tabBarSide),
+              right:
+                  (rtl ? side : past) +
+                  (wide ? room.right : FrostedChromeMetrics.tabBarSide),
+              bottom: slabFoot,
+            ),
+            child: FrostedFootSlab(child: FrostedFooterBand(child: footer)),
           ),
         ),
       ),
@@ -378,7 +418,7 @@ class _FrostedScaffoldState extends State<FrostedScaffold> {
         if (widget.lights) const FrostedBackdropView(),
         BackdropGroup(child: content),
         if (pinned) pinnedBar(),
-        if (footer != null) footBand(footer),
+        if (footer != null) floats ? footSlab(footer) : footBand(footer),
       ],
     );
 

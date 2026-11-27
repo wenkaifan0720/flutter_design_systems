@@ -9,6 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'components/pressable/pressable.dart';
+import 'internal/styled.dart';
 import 'localizations.dart';
 import 'theme.dart';
 
@@ -169,7 +170,7 @@ class FrostedTextContextMenu extends StatelessWidget {
         FrostedPressable(
           onPressed: item.onPressed,
           semanticLabel: labelOf(context, item),
-          radius: FrostedCorners.r12,
+          radius: t.corner(RawCorner.medium, FrostedCorners.r12),
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: floor, minWidth: floor),
             child: Padding(
@@ -198,7 +199,7 @@ class FrostedTextContextMenu extends StatelessWidget {
       decoration: ShapeDecoration(
         color: t.glass.menu,
         shadows: t.shadows.menu,
-        shape: FrostedCorners.medium.copyWith(
+        shape: FrostedStyleLayers.moved(t, FrostedCorners.medium).copyWith(
           side: BorderSide(
             color: t.glass.menuEdge,
             width: FrostedStrokes.hairline,

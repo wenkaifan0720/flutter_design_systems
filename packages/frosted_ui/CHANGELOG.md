@@ -1,3 +1,37 @@
+## 0.8.2
+
+- Requires ui_core 0.8.5.
+- A part's own corners: every Frosted part with a shape takes its style's `corners` (ui_core 0.8.5's
+  `RawStyle.corners`), each corner on a step of its own (`FrostedThemeData.shapeLimits.cornerFreedom` is
+  `perCorner`). `FrostedCard(style: FrostedStyle(corners: WidgetStatePropertyAll(RawCorners(topStart:
+  RawCorner.none, bottomEnd: RawCorner.none))))` squares a card's top start and bottom end corners;
+  `RawCorners.only(topStart: RawCorner.large)` rounds only the top start one. A corner left out keeps the part's own;
+  each step is drawn in the theme's scale, and start and end mirror right to left. A style's `shape` wins as given,
+  as Material's does. The ink act (`FrostedButton`, and its destructive form) keeps its pill: own corners or a shape
+  on it fail an assert. A bead stays round: a switch's, a slider's thumb, a radio's, a calendar's day. A checkbox
+  takes them, as Material's does.
+- A part of several pieces takes them on its outer corners and keeps its joins: a segmented control's ends (its chosen
+  plate eases into them as it slides) and a menu's first and last rows, concentric inside the menu. The frost, the
+  rim, the press's light and the hit follow the outline, and a change of corners from one state to another eases,
+  with no snap.
+- New `FrostedThemeData.shapeScheme`: the theme's corner scale (6, 10, 12, 18 and 22 from small to extra large), held
+  to Frosted's bands at both ends (4 to 8, 6 to 14, 8 to 16, 12 to 24, 16 to 28). `FrostedThemeData.corner` reads a
+  step for a part of an app's own. A theme switched from one scale to another eases.
+- New `FrostedHost.density`: one density for both appearances. A list's rows, a setting's and a form's rows and a
+  menu's options move 4 a step with it, as Material's do, where they stood still; the touch floor (40) holds. A theme
+  that sets no density follows the platform (`FrostedDensity.adaptivePlatformDensity`), so a desktop app that sets
+  none now gets compact rows (a one-line row 44 where it stood 52), as Material's list tile does on a desktop.
+- A footer where its page doesn't own the window's foot floats on a slab of the tab bar's glass: 8 over
+  `FrostedAppShell`'s tab bar on a root page, where it stood as a second bar on it, and at desktop width the column's
+  width, 12 over the window's foot, where it spanned the window. A phone's pushed page keeps its band along the foot.
+- By day an empty opening (an unchosen radio, an unchecked box, a switch turned off) stands a grey step of glass
+  deeper, the ink at 16% over its well (`FrostedChromeMetrics.openingStepDay`): 1.25:1 to 1.37:1 against the canvas,
+  where it stood at 1.00:1 to 1.09:1. No ring is added; the chosen stays the brighter glass. One that takes no input
+  stands on paint by day, the ink at 8% (`FrostedChromeMetrics.openingStepOffDay`), then at the disabled share, so it
+  stands back toward the canvas, fainter than a live one (1.07:1), where the dimmed well stood darker than the live
+  opening; chosen, its mark shows on the same faint paint. By night the dimmed well already stood back.
+- New glyphs: `FrostedGlyphs.book`, `settings`, `heart`, `star` and `edit`.
+
 ## 0.8.1
 
 - Requires ui_core 0.8.3.

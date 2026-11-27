@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart'
     show Material, MaterialLocalizations, MaterialType;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../../glyphs.dart';
 
@@ -18,6 +19,7 @@ import '../host.dart';
 import '../pressable/pressable.dart';
 import '../../internal/dim.dart';
 import '../../internal/cap.dart';
+import '../../internal/row_height.dart';
 
 /// One choice in a sheet its options: an optional [hue] swatch (a category's
 /// light) or [lead] mark, the [label] in the body type, a quiet [trailing] note
@@ -98,7 +100,7 @@ class FrostedOption extends StatelessWidget {
     final s = FrostedStyleLayers(style, t.components.option, {
       if (selected) WidgetState.selected,
       if (onPressed == null) WidgetState.disabled,
-    });
+    }, t);
     final fill = s.fill;
     return FrostedPressable(
       focusNode: focusNode,
@@ -106,10 +108,16 @@ class FrostedOption extends StatelessWidget {
       onPressed: onPressed,
       semanticLabel: label,
       selected: selected,
-      radius: FrostedCorners.r10,
+      radius: t.corner(RawCorner.small, FrostedCorners.r10),
+      // An app's corners for the row's plate (its press and its focus); the
+      // check stays a bead.
+      shape: s.given(
+        FrostedCorners.small,
+        own: t.corner(RawCorner.small, FrostedCorners.r10),
+      ),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          minHeight: FrostedChromeMetrics.option,
+        constraints: BoxConstraints(
+          minHeight: frostedRowHeight(context, FrostedChromeMetrics.option),
         ),
         child: Padding(
           padding:
@@ -436,11 +444,28 @@ class FrostedMenu<T> extends StatelessWidget {
     final head = title;
     // The theme's menu style: its fill, edge colour, shape (the corner
     // scale's medium step) and padding.
-    final s = FrostedStyleLayers(null, t.components.menu);
+    final s = FrostedStyleLayers(
+      null,
+      t.components.menu,
+      const <WidgetState>{},
+      t,
+    );
     final (cut, corner) = s.surface(
       FrostedCorners.medium,
       FrostedStyleLayers.stockMedium,
-      FrostedChromeMetrics.menuRadius,
+      t.corner(RawCorner.large, FrostedChromeMetrics.menuRadius),
+    );
+    final pad =
+        s.padding?.resolve(Directionality.of(context)) ??
+        const EdgeInsets.all(FrostedChromeMetrics.menuInset);
+    // An app's corners for the menu: its first and last rows take them
+    // concentric, the menu's inset less; the rows between keep their own.
+    OutlinedBorder? rowCut(int i) => s.within(
+      FrostedCorners.medium,
+      own: t.corner(RawCorner.large, FrostedChromeMetrics.menuItemRadius),
+      by: math.min(pad.left, pad.top),
+      tops: i == 0 && head == null,
+      bottoms: i == items.length - 1,
     );
     return Semantics(
       scopesRoute: true,
@@ -466,9 +491,7 @@ class FrostedMenu<T> extends StatelessWidget {
                 spreadRadius: FrostedStrokes.regular,
               ),
             ],
-            padding:
-                s.padding?.resolve(Directionality.of(context)) ??
-                const EdgeInsets.all(FrostedChromeMetrics.menuInset),
+            padding: pad,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -498,6 +521,7 @@ class FrostedMenu<T> extends StatelessWidget {
                     focusNode: _rows?[i],
                     autofocus: i == _focused,
                     label: item.label,
+                    outline: rowCut(i),
                     hue: item.hue,
                     end: item.trailing,
                     checked: item.checked,
@@ -539,6 +563,7 @@ class _MenuRow extends StatelessWidget {
     required this.checked,
     this.destructive = false,
     this.index = 0,
+    this.outline,
     this.place,
     this.hue,
     this.end,
@@ -552,6 +577,8 @@ class _MenuRow extends StatelessWidget {
   // Whether the row takes the focus as it mounts.
   final bool autofocus;
   final int index;
+  // The row's corners where an app's corners for the menu reach it.
+  final OutlinedBorder? outline;
   final _MenuPlace? place;
   final FocusNode? focusNode;
   final String label;
@@ -564,7 +591,9 @@ class _MenuRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     final swatch = hue;
-    final corner = BorderRadius.circular(FrostedChromeMetrics.menuItemRadius);
+    final corner = BorderRadius.circular(
+      t.corner(RawCorner.large, FrostedChromeMetrics.menuItemRadius),
+    );
     // Room above and below for a name that wraps at large text; a line's
     // row stands at its least height.
     const inset = EdgeInsets.symmetric(
@@ -630,7 +659,8 @@ class _MenuRow extends StatelessWidget {
         autofocus: autofocus,
         semanticLabel: label,
         selected: checked,
-        radius: FrostedChromeMetrics.menuItemRadius,
+        radius: t.corner(RawCorner.large, FrostedChromeMetrics.menuItemRadius),
+        shape: outline,
         ringInside: true,
         builder: (context, states, _) {
           final at = place;
@@ -670,17 +700,20 @@ class _MenuRow extends StatelessWidget {
                 lit: level == 1 && (at == null || FrostedLastInput.keyed)
                     ? 1
                     : 0,
-                outline: RoundedRectangleBorder(borderRadius: corner),
+                outline:
+                    outline ?? RoundedRectangleBorder(borderRadius: corner),
                 inside: true,
                 child: checked
                     ? FrostedChosenPlate(
                         radius: corner,
+                        shape: outline,
                         padding: inset,
                         child: row(lit),
                       )
                     : FrostedFace(
                         material: FrostedMaterial.paint,
                         radius: corner,
+                        shape: outline,
                         color: pressed ? t.glass.wash : null,
                         padding: inset,
                         child: row(lit),

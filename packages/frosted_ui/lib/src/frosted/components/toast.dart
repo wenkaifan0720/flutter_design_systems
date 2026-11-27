@@ -124,11 +124,16 @@ class FrostedSnackBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    final s = FrostedStyleLayers(style, t.components.snackBar);
+    final s = FrostedStyleLayers(
+      style,
+      t.components.snackBar,
+      const <WidgetState>{},
+      t,
+    );
     final (cut, corner) = s.surface(
       FrostedCorners.medium,
       FrostedStyleLayers.stockMedium,
-      FrostedChromeMetrics.toastRadius,
+      t.corner(RawCorner.large, FrostedChromeMetrics.toastRadius),
     );
     final fill = s.fill;
     final side = s.side;

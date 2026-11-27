@@ -182,6 +182,11 @@ abstract final class FrostedChromeMetrics {
   /// See [slabHeight].
   static const double slabRadius = 22;
 
+  /// A footer's slab (FrostedFootSlab, where a page's footer floats): its
+  /// acts this far inside its edge, so a row of buttons (44) stands it as
+  /// tall as the tab bar's slab ([slabHeight]).
+  static const double footSlabInset = 10;
+
   /// See [slabHeight].
   static const double slabBlur = 24;
 
@@ -364,6 +369,16 @@ abstract final class FrostedChromeMetrics {
   /// a dialog, a card) is shaded by in a light theme: the capsule parts from
   /// the glass it stands on, whatever that glass shows.
   static const double glassStepDay = .07;
+
+  /// An empty opening's step by day (an unchosen radio, an unchecked box, a
+  /// switch turned off): the ink at 16% over its well, so the opening
+  /// reads on a pale canvas.
+  static const double openingStepDay = .16;
+
+  /// A disabled empty opening's step by day: the ink at 8% over paint, then
+  /// drawn at [disabledOpacity] as every part that takes no input, so it
+  /// stands fainter than a live empty opening and the live one reads first.
+  static const double openingStepOffDay = .08;
 
   /// [glassStepDay] in a dark theme, the ink being light.
   static const double glassStepNight = .12;

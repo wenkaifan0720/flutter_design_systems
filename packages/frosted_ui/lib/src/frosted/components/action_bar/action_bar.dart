@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../../chrome_metrics.dart';
 import '../../internal/face.dart';
@@ -135,7 +136,9 @@ class FrostedActionBar extends StatelessWidget {
           ),
           child: FrostedFace(
             material: FrostedMaterial.bar,
-            radius: BorderRadius.circular(FrostedCorners.r22),
+            radius: BorderRadius.circular(
+              t.corner(RawCorner.extraLarge, FrostedCorners.r22),
+            ),
             edge: t.glass.edge,
             sheen: t.glass.rim,
             shadows: t.shadows.tile,

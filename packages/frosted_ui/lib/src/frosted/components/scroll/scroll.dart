@@ -392,6 +392,7 @@ class FrostedCarouselView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.frostedTheme;
     final words = FrostedLocalizations.of(context);
     final shared = RawWidgetsLocalizations.of(context);
     final slides = children;
@@ -420,7 +421,9 @@ class FrostedCarouselView extends StatelessWidget {
                 horizontal: FrostedSpacing.s4,
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(FrostedCorners.r18),
+                borderRadius: BorderRadius.circular(
+                  t.corner(RawCorner.large, FrostedCorners.r18),
+                ),
                 child: slide(context, i),
               ),
             )
@@ -442,13 +445,15 @@ class FrostedCarouselView extends StatelessWidget {
         Widget slides = SizedBox(height: height, child: viewport);
         if (viewportFraction >= 1) {
           slides = ClipRRect(
-            borderRadius: BorderRadius.circular(FrostedCorners.r18),
+            borderRadius: BorderRadius.circular(
+              t.corner(RawCorner.large, FrostedCorners.r18),
+            ),
             child: slides,
           );
         }
         slides = FrostedFocusRing(
           shown: controls.focused,
-          radius: FrostedCorners.r18,
+          radius: t.corner(RawCorner.large, FrostedCorners.r18),
           child: slides,
         );
         return Column(
@@ -621,7 +626,9 @@ class FrostedReorderableListView<T extends Object> extends StatelessWidget {
             scale: 1 + .02 * animation.value,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(FrostedCorners.r12),
+                borderRadius: BorderRadius.circular(
+                  t.corner(RawCorner.medium, FrostedCorners.r12),
+                ),
                 boxShadow: t.shadows.menu,
               ),
               child: child,
@@ -634,7 +641,9 @@ class FrostedReorderableListView<T extends Object> extends StatelessWidget {
         child: _LiftedFace(
           material: (lifted) =>
               lifted ? FrostedMaterial.slab : FrostedMaterial.pane,
-          radius: BorderRadius.circular(FrostedCorners.r12),
+          radius: BorderRadius.circular(
+            t.corner(RawCorner.medium, FrostedCorners.r12),
+          ),
           ring: t.glass.edge,
           padding: const EdgeInsetsDirectional.only(start: FrostedSpacing.s14)
               .resolve(Directionality.of(context)),

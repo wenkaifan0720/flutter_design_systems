@@ -10,6 +10,7 @@ import 'package:material_ui/material_ui.dart'
         VisualDensity;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../../glyphs.dart';
 
@@ -327,7 +328,9 @@ class _FrostedComposerState extends State<FrostedComposer>
     final box = FrostedFace(
       material: FrostedMaterial.well,
       radius: BorderRadius.circular(
-        assistant ? FrostedCorners.r22 : FrostedChromeMetrics.composer / 2,
+        assistant
+            ? t.corner(RawCorner.extraLarge, FrostedCorners.r22)
+            : FrostedChromeMetrics.composer / 2,
       ),
       // Focused, the edge takes the accent, as a field's well does.
       edge: fieldFocus.hasFocus ? t.colorScheme.accent : t.glass.edge,

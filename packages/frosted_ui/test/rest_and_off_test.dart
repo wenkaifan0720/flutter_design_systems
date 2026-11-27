@@ -7,7 +7,11 @@
 //   shade) but by the step a field's own tint makes on a flat ground,
 //   measured from the pixels drawn, in every preset by day and by night, on
 //   the page, the surface and the wash. Glass has no dark edge; it still
-//   shows.
+//   shows. By day an empty opening (an empty check, an unchosen radio, an
+//   off switch) stands a grey step of glass deeper (the ink at 16% over its
+//   well, 0.8.2): on the page and a surface its darkest at least 1.2:1, so
+//   it reads (on a wash it still shows), and at most 1.8:1, a step and not
+//   a dark edge.
 // - Off is one share, once: a settings row that is off dims its words and
 //   its switch together, and nothing inside it is dimmed a second time.
 import 'package:material_ui/material_ui.dart';
@@ -74,6 +78,9 @@ final _parts = <String, Widget>{
 };
 
 const _field = FrostedWell(child: SizedBox(width: 200, height: 40));
+
+/// The openings that stand a step deeper by day.
+const _openings = {'round check', 'square check', 'radio', 'off switch'};
 
 double _contrast(Color a, Color b) {
   final la = a.computeLuminance();
@@ -192,6 +199,16 @@ void main() {
           for (final MapEntry(key: name, value: part) in _parts.entries) {
             final m = await _measure(tester, t, ground, part);
             final where = '$preset ${brightness.name} $name on the $on';
+            if (brightness == Brightness.light && _openings.contains(name)) {
+              if ((on != 'wash' && m.dark < 1.2) || m.dark > 1.8) {
+                faults.add(
+                  '$where: an empty opening\'s darkest '
+                  '${m.dark.toStringAsFixed(2)}:1, not a step of 1.2:1 to '
+                  '1.8:1',
+                );
+              }
+              continue;
+            }
             // On a flat ground a field's own tint lifts it a little, where a
             // bead's or a star's body is the well's raised tone alone: a step
             // of up to 0.1 is the same glass (on Frosted's backdrop the two

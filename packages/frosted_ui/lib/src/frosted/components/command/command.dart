@@ -103,7 +103,9 @@ class FrostedMenuBar extends StatelessWidget {
               bottom: (reach - item) / 2 - inset,
               child: FrostedFace(
                 material: FrostedMaterial.paint,
-                radius: BorderRadius.circular(FrostedCorners.r12),
+                radius: BorderRadius.circular(
+                  t.corner(RawCorner.medium, FrostedCorners.r12),
+                ),
                 color: t.glass.fill,
                 ring: frostedLitEdge(t, t.colorScheme.border),
               ),
@@ -129,7 +131,9 @@ class FrostedMenuBar extends StatelessWidget {
             height: item,
             child: FrostedFace(
               material: FrostedMaterial.paint,
-              radius: BorderRadius.circular(FrostedCorners.r10),
+              radius: BorderRadius.circular(
+                t.corner(RawCorner.small, FrostedCorners.r10),
+              ),
               color: on ? t.glass.wash : null,
               padding: const EdgeInsets.symmetric(
                 horizontal: FrostedSpacing.s10,
@@ -153,7 +157,11 @@ class FrostedMenuBar extends StatelessWidget {
               widthFactor: 1,
               child: ConstrainedBox(
                 constraints: BoxConstraints(minWidth: target),
-                child: frostedRingFor(states, face, radius: FrostedCorners.r10),
+                child: frostedRingFor(
+                  states,
+                  face,
+                  radius: t.corner(RawCorner.small, FrostedCorners.r10),
+                ),
               ),
             ),
           );

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../chrome_metrics.dart';
 import '../internal/css_shadow.dart';
@@ -232,15 +233,22 @@ class FrostedNavigationBar extends StatelessWidget {
     if (act != null) {
       cellTabs.insert(FrostedNavigationBar.actIndex(items.length), null);
     }
-    final s = FrostedStyleLayers(style, t.components.navigationBar);
+    final s = FrostedStyleLayers(
+      style,
+      t.components.navigationBar,
+      const <WidgetState>{},
+      t,
+    );
     final (edge, edges) = s.edgeOf(t.glass.edge, FrostedStrokes.regular);
     // How far the chosen plate stands inside the slab's outline, on every
     // side: its own inset past the slab's edge.
     final plateInset = FrostedChromeMetrics.selectionInset + edges.top;
+    final own = t.corner(RawCorner.extraLarge, FrostedChromeMetrics.slabRadius);
+    final cut = s.given(FrostedCorners.large, own: own);
     final radius = FrostedStyleLayers.radiusOf(
-      s.shape,
+      cut,
       FrostedChromeMetrics.slabHeight,
-      FrostedChromeMetrics.slabRadius,
+      own,
     );
     final slab = SizedBox(
       height: FrostedChromeMetrics.slabHeight,
@@ -249,7 +257,7 @@ class FrostedNavigationBar extends StatelessWidget {
       child: FrostedFace(
         material: solid ? FrostedMaterial.paint : FrostedMaterial.bar,
         radius: BorderRadius.circular(radius),
-        shape: s.shape,
+        shape: cut,
         color: s.fill ?? (solid ? t.colorScheme.surface : null),
         edge: edge,
         edges: edges,
@@ -267,7 +275,7 @@ class FrostedNavigationBar extends StatelessWidget {
           // The plate follows the slab's outline, set in by its inset and
           // the slab's edge (which takes room inside the face).
           radius: math.max(0, radius - plateInset),
-          shape: FrostedStyleLayers.around(s.shape, -plateInset),
+          shape: FrostedStyleLayers.around(cut, -plateInset),
           children: cells,
         ),
       ),
@@ -455,7 +463,7 @@ class _Tab extends StatelessWidget {
       // stands inside the cell, so the slab never clips it.
       child: FrostedKeyFocus(
         enabled: tap != null,
-        radius: FrostedCorners.r10,
+        radius: t.corner(RawCorner.small, FrostedCorners.r10),
         ringInsets: const EdgeInsets.all(FrostedStrokes.heavy),
         ringInside: true,
         keys: {

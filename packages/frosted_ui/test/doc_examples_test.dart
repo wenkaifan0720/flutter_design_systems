@@ -50,6 +50,23 @@ void main() {
         );
         return null;
       },
+      'FrostedThemeData.shapeScheme': (context) {
+        final theme = FrostedThemeData.opal().copyWith(
+          shapeScheme: FrostedThemeData.defaultShapeScheme.copyWith(
+            corners: FrostedThemeData.defaultShapeScheme.corners.scaled(1.25),
+          ),
+        );
+        return null;
+      },
+      'FrostedThemeData.corner': (context) {
+        final corner = context.frostedTheme.corner(RawCorner.medium, 14);
+        return null;
+      },
+      'FrostedHost.density': (context) => MaterialApp(
+        builder: (context, child) =>
+            FrostedHost(density: FrostedDensity.compact, child: child!),
+        home: const Text('Home'),
+      ),
       'FrostedAccount': (context) => FrostedAccount(
         name: 'Maren Holt',
         initials: 'MH',

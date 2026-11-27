@@ -319,7 +319,12 @@ class _FrostedTextFieldState extends State<FrostedTextField>
     // .inp { height: 48px; padding: 0 14px; border-radius: 12px;
     //   font: 400 16px/1.2 var(--font-t); color: var(--ink) }
     // .inp::placeholder { color: var(--ink-3) }
-    final layers = FrostedStyleLayers(widget.style, t.components.textField);
+    final layers = FrostedStyleLayers(
+      widget.style,
+      t.components.textField,
+      const <WidgetState>{},
+      t,
+    );
     final style = layers
         .at({
           if (fieldFocus.hasFocus) WidgetState.focused,
@@ -922,8 +927,11 @@ class _FrostedAmountFieldState extends State<FrostedAmountField>
       ),
       child: FrostedWell(
         radius: small
-            ? FrostedChromeMetrics.amountWellSmallRadius
-            : FrostedChromeMetrics.amountWellRadius,
+            ? t.corner(
+                RawCorner.medium,
+                FrostedChromeMetrics.amountWellSmallRadius,
+              )
+            : t.corner(RawCorner.medium, FrostedChromeMetrics.amountWellRadius),
         focused: fieldFocus.hasFocus,
         padding: EdgeInsets.symmetric(
           horizontal: small
@@ -1583,7 +1591,7 @@ class FrostedPickerRow extends StatelessWidget {
     final well = ConstrainedBox(
       constraints: const BoxConstraints(minHeight: FrostedChromeMetrics.picker),
       child: FrostedWell(
-        radius: FrostedChromeMetrics.pickerRadius,
+        radius: t.corner(RawCorner.medium, FrostedChromeMetrics.pickerRadius),
         padding: FrostedChromeMetrics.pickerInset,
         child: Row(
           spacing: FrostedChromeMetrics.pickerGap,
@@ -1636,7 +1644,7 @@ class FrostedPickerRow extends StatelessWidget {
           semanticLabel: subtitle == null
               ? '$label: $title'
               : '$label: $title, $subtitle',
-          radius: FrostedChromeMetrics.pickerRadius,
+          radius: t.corner(RawCorner.medium, FrostedChromeMetrics.pickerRadius),
           child: well,
         ),
       ],
@@ -2350,13 +2358,18 @@ class _FrostedSelectState<T> extends State<FrostedSelect<T>> {
           // with no label the press names itself.
           semanticLabel: label == null ? words.select : null,
           value: chosen?.label,
-          radius: FrostedCorners.r12,
+          radius: t.corner(RawCorner.medium, FrostedCorners.r12),
           child: ConstrainedBox(
             constraints: const BoxConstraints(
               minHeight: FrostedChromeMetrics.field,
             ),
             child: FrostedWell(
-              layers: FrostedStyleLayers(style, t.components.textField),
+              layers: FrostedStyleLayers(
+                style,
+                t.components.textField,
+                const <WidgetState>{},
+                t,
+              ),
               error: wrong != null,
               enabled: change != null,
               padding: const EdgeInsets.symmetric(
@@ -2512,7 +2525,7 @@ class FrostedDateField extends StatelessWidget {
       onPressed: change == null ? null : () => pick(change),
       // Under its label the field names the press; the day is its value.
       value: day == null ? null : words.shortDate(day),
-      radius: FrostedCorners.r12,
+      radius: t.corner(RawCorner.medium, FrostedCorners.r12),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
           minHeight: FrostedChromeMetrics.field,

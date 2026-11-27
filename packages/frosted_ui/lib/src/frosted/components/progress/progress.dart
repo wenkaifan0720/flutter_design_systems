@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
 import '../../internal/face.dart';
+import '../../internal/styled.dart';
 import '../../theme.dart';
 
 import 'package:ui_core/ui_core.dart';
@@ -442,7 +443,12 @@ class FrostedSkeleton extends StatelessWidget {
         ),
       );
     }
-    return ExcludeSemantics(child: bone(width, shape ?? FrostedCorners.small));
+    return ExcludeSemantics(
+      child: bone(
+        width,
+        shape ?? FrostedStyleLayers.moved(t, FrostedCorners.small),
+      ),
+    );
   }
 
   @override

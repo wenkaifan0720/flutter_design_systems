@@ -351,6 +351,7 @@ class _FrostedInputGroupState extends State<FrostedInputGroup>
 
   @override
   Widget build(BuildContext context) {
+    final t = context.frostedTheme;
     final error = widget.errorText;
     return RawInputDecorator(
       labelText: widget.labelText,
@@ -377,7 +378,9 @@ class _FrostedInputGroupState extends State<FrostedInputGroup>
           ),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(FrostedCorners.r12),
+          borderRadius: BorderRadius.circular(
+            t.corner(RawCorner.medium, FrostedCorners.r12),
+          ),
           // The well reads left to right in any language, as the amount
           // well does: its add-ons are a value's parts (https:// and .com,
           // a currency, a unit). Under a right-to-left page the website
@@ -572,14 +575,18 @@ class FrostedInputOtp extends StatelessWidget {
                   // wrong one says so in the message under the boxes.
                   child: FrostedCleared(
                     level: lit ? 1 : 0,
-                    outline: const RoundedRectangleBorder(
+                    outline: RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(
-                        Radius.circular(FrostedCorners.r12),
+                        Radius.circular(
+                          t.corner(RawCorner.medium, FrostedCorners.r12),
+                        ),
                       ),
                     ),
                     child: FrostedFace(
                       material: FrostedMaterial.well,
-                      radius: BorderRadius.circular(FrostedCorners.r12),
+                      radius: BorderRadius.circular(
+                        t.corner(RawCorner.medium, FrostedCorners.r12),
+                      ),
                       ring: frostedLitEdge(t, t.controlEdge),
                       edges: const EdgeInsets.all(FrostedStrokes.heavy),
                       child: Center(

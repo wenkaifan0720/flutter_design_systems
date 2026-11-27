@@ -249,14 +249,22 @@ class FrostedSheetCard extends StatelessWidget {
     final wide = !FrostedBreakpoints.isCompact(context);
     // The theme's sheet style: a phone's sheet is open at its foot, so only
     // the dialog a sheet becomes on a tablet or the desktop takes its shape.
-    final s = FrostedStyleLayers(null, t.components.sheet);
+    final s = FrostedStyleLayers(
+      null,
+      t.components.sheet,
+      const <WidgetState>{},
+      t,
+    );
     final (cut, corner) = wide
         ? s.surface(
             FrostedCorners.large,
             FrostedStyleLayers.stockLarge,
-            FrostedChromeMetrics.sheetWideRadius,
+            t.corner(
+              RawCorner.extraLarge,
+              FrostedChromeMetrics.sheetWideRadius,
+            ),
           )
-        : (null, FrostedCorners.r22);
+        : (null, t.corner(RawCorner.extraLarge, FrostedCorners.r22));
     final radius = wide
         ? BorderRadius.circular(corner)
         : BorderRadius.vertical(top: Radius.circular(corner));
@@ -407,8 +415,15 @@ class FrostedSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    final s = FrostedStyleLayers(null, t.components.sheet);
-    const inner = Radius.circular(FrostedCorners.r22);
+    final s = FrostedStyleLayers(
+      null,
+      t.components.sheet,
+      const <WidgetState>{},
+      t,
+    );
+    final inner = Radius.circular(
+      t.corner(RawCorner.extraLarge, FrostedCorners.r22),
+    );
     final ltr = Directionality.of(context) == TextDirection.ltr;
     final atLeft = (edge == RawSheetEdge.start) == ltr;
     final radius = BorderRadius.horizontal(

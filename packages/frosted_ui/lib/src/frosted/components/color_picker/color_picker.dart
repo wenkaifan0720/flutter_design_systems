@@ -89,7 +89,9 @@ class _FrostedColorPickerState extends State<FrostedColorPicker> {
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     final words = FrostedLocalizations.of(context);
-    final corner = BorderRadius.circular(FrostedCorners.r12);
+    final corner = BorderRadius.circular(
+      t.corner(RawCorner.medium, FrostedCorners.r12),
+    );
     Widget knob(Set<WidgetState> states, {Color? fill}) {
       final face = SizedBox.square(
         dimension: 22,
@@ -178,13 +180,17 @@ class _FrostedColorPickerState extends State<FrostedColorPicker> {
                 children: [
                   if (channel == RawColorChannel.alpha)
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(
+                        t.corner(RawCorner.extraSmall, 6),
+                      ),
                       child: const CustomPaint(painter: _Checker()),
                     ),
                   DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: gradient,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(
+                        t.corner(RawCorner.extraSmall, 6),
+                      ),
                       border: Border.all(color: t.glass.edge),
                     ),
                   ),

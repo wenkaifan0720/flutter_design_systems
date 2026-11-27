@@ -130,7 +130,9 @@ class FrostedDataTable<R> extends StatelessWidget {
       builder: (context, _) {
         final table = FrostedFace(
           material: FrostedMaterial.paint,
-          radius: BorderRadius.circular(FrostedCorners.r18),
+          radius: BorderRadius.circular(
+            t.corner(RawCorner.large, FrostedCorners.r18),
+          ),
           color: t.glass.fill,
           ring: t.glass.edge,
           clipChild: true,
@@ -405,7 +407,9 @@ class FrostedTreeView<T extends Object> extends StatelessWidget {
           ),
           child: FrostedFace(
             material: FrostedMaterial.paint,
-            radius: BorderRadius.circular(FrostedChromeMetrics.menuItemRadius),
+            radius: BorderRadius.circular(
+              t.corner(RawCorner.large, FrostedChromeMetrics.menuItemRadius),
+            ),
             color: item.selected
                 ? t.colorScheme.accentSubtle
                 : (lit ? t.glass.wash : null),
@@ -468,7 +472,10 @@ class FrostedTreeView<T extends Object> extends StatelessWidget {
         return frostedRingFor(
           states,
           face,
-          radius: FrostedChromeMetrics.menuItemRadius,
+          radius: t.corner(
+            RawCorner.large,
+            FrostedChromeMetrics.menuItemRadius,
+          ),
         );
       },
     );

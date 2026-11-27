@@ -37,6 +37,7 @@ class FrostedHost extends StatelessWidget {
     this.theme,
     this.darkTheme,
     this.brightness,
+    this.density,
     super.key,
   });
 
@@ -46,11 +47,28 @@ class FrostedHost extends StatelessWidget {
   /// the new.
   final RawNamedPalette? palette;
 
-  /// The light theme; null is [palette]'s.
+  /// The light theme; null is [palette]'s. Given, it is the light theme
+  /// whatever [palette] says, and [palette] names it only for the eased
+  /// change from one palette to another.
   final FrostedThemeData? theme;
 
   /// The dark theme; null is [theme]'s night, else [palette]'s.
   final FrostedThemeData? darkTheme;
+
+  /// How compact both appearances stand (the app's stored choice beside
+  /// [palette], say), over [theme]'s and [darkTheme]'s own; null keeps
+  /// theirs, which follow the platform unless set
+  /// ([FrostedDensity.adaptivePlatformDensity]: compact on a desktop).
+  /// Controls and rows take it: a key, a chip, a segment and a toggle 4 a
+  /// step off their height, a list's, a setting's, a form's and a menu's
+  /// rows 4 a step off theirs, never under the touch target (40). As
+  /// Flutter's `VisualDensity`, [FrostedDensity.comfortable] is one step
+  /// tighter than [FrostedDensity.standard], [FrostedDensity.compact] two.
+  ///
+  /// ```dart
+  /// MaterialApp(builder: (context, child) => FrostedHost(density: FrostedDensity.compact, child: child!), home: const Text('Home'))
+  /// ```
+  final FrostedDensity? density;
 
   /// Pins the appearance; null follows the platform (or the preview frame).
   final Brightness? brightness;
@@ -100,13 +118,17 @@ class FrostedHost extends StatelessWidget {
         PreviewFrame.maybeOf(context)?.brightness ??
         MediaQuery.platformBrightnessOf(context);
     final id = (palette ?? FrostedThemeData.palettes.first).id;
-    final night =
-        darkTheme ??
-        theme?.darkTwin ??
-        FrostedThemeData.preset(id, Brightness.dark);
+    final dense = density;
+    FrostedThemeData packed(FrostedThemeData t) =>
+        dense == null ? t : t.copyWith(density: dense);
+    final night = packed(
+      darkTheme ??
+          theme?.darkTwin ??
+          FrostedThemeData.preset(id, Brightness.dark),
+    );
     final t = wanted == Brightness.dark
         ? night
-        : theme ?? FrostedThemeData.preset(id, Brightness.light);
+        : packed(theme ?? FrostedThemeData.preset(id, Brightness.light));
     final motion = FrostedMotion.of(context);
     // One light under the whole app: every page's backdrop paints its part.
     final app = FrostedLightFrame(
@@ -175,6 +197,13 @@ class FrostedHost extends StatelessWidget {
       )
       ..add(
         EnumProperty<Brightness>('brightness', brightness, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<FrostedDensity>(
+          'density',
+          density,
+          defaultValue: null,
+        ),
       );
   }
 }

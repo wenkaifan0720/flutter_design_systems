@@ -436,10 +436,26 @@ class FrostedSegmentedButton<T> extends StatelessWidget {
       ),
       base,
     );
-    final layers = FrostedStyleLayers(style, t.components.segmentedButton);
+    final layers = FrostedStyleLayers(
+      style,
+      t.components.segmentedButton,
+      const <WidgetState>{},
+      t,
+    );
     final cut = layers.cut(FrostedCorners.full);
     final plateRadius = FrostedStyleLayers.radiusOf(cut, height, height / 2);
-    Widget segment(FrostedButtonSegment<T> item) {
+    // An app's corners are the strip's: a segment (and the plate under it)
+    // takes the start ones at the strip's start and the end ones at its end,
+    // the joins between segments round as the look draws them. A style's
+    // shape cuts every segment.
+    OutlinedBorder? cutAt(int i) => layers.shape != null
+        ? cut
+        : layers.given(
+            FrostedCorners.full,
+            starts: i == 0,
+            ends: i == segments.length - 1,
+          );
+    Widget segment(int i, FrostedButtonSegment<T> item) {
       final on = item.value == value;
       Widget draw(Set<WidgetState> states) {
         final s = layers.at(states);
@@ -475,7 +491,7 @@ class FrostedSegmentedButton<T> extends StatelessWidget {
           child: FrostedFace(
             material: FrostedMaterial.paint,
             radius: BorderRadius.circular(plateRadius),
-            shape: cut,
+            shape: cutAt(i),
             color: s.fill,
             wash: s.overlay,
             edge: edge,
@@ -498,7 +514,7 @@ class FrostedSegmentedButton<T> extends StatelessWidget {
         semanticLabel: item.label,
         selected: on,
         radius: plateRadius,
-        shape: cut,
+        shape: cutAt(i),
         builder: (context, states, _) => draw(states),
       );
     }
@@ -529,16 +545,18 @@ class FrostedSegmentedButton<T> extends StatelessWidget {
         inset: EdgeInsets.symmetric(vertical: reach),
         // The chosen word's pill: the thickest, brightest glass on the
         // strip, raised off its well.
+        // At an end of the strip it takes that end's corners, easing to
+        // them as it slides there.
         pill: FrostedChosenPlate(
           radius: BorderRadius.circular(plateRadius),
-          shape: cut,
+          shape: chosen < 0 ? cut : cutAt(chosen),
         ),
         // Use the same moving plate when the choices need several rows.
         builder: (context, keys) => _SegmentShares(
           fill: share,
           children: [
             for (final (i, item) in segments.indexed)
-              KeyedSubtree(key: keys[i], child: segment(item)),
+              KeyedSubtree(key: keys[i], child: segment(i, item)),
           ],
         ),
       ),
@@ -831,8 +849,10 @@ class FrostedSwitch extends StatelessWidget {
     final s = FrostedStyleLayers(style, t.components.switchTheme, {
       if (value) WidgetState.selected,
       if (!shown) WidgetState.disabled,
-    });
-    final cut = s.cut(FrostedCorners.full);
+    }, t);
+    // A switch's track takes no corners of an app's, as Material's Switch
+    // takes no shape: it is a capsule round its knob.
+    final cut = s.cut(FrostedCorners.full, corners: false);
     final radius = FrostedStyleLayers.radiusOf(cut, height, height / 2);
     final fill = s.fill;
     final side = s.side;
@@ -956,9 +976,15 @@ class FrostedSwitch extends StatelessWidget {
       // than the glass it stands on, its rim the lit hairline by day and the
       // night glass's rim by night, never a dark line.
       track = FrostedFace(
-        material: FrostedMaterial.well,
+        material: frostedOpeningMaterial(
+          t,
+          FrostedMaterial.well,
+          enabled: shown,
+        ),
         radius: BorderRadius.circular(radius),
         shape: cut,
+        // Off, an empty opening: the well a step deeper by day.
+        color: value ? null : frostedOpening(t, enabled: shown),
         wash: s.overlay,
         ring: frostedLitEdge(t, t.controlEdge),
         child: inside,
@@ -1376,7 +1402,7 @@ class FrostedQuickActions extends StatelessWidget {
       onPressed: a.onPressed,
       semanticLabel: a.label,
       role: FrostedPressRole.link,
-      radius: FrostedCorners.r12,
+      radius: t.corner(RawCorner.medium, FrostedCorners.r12),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         spacing: FrostedChromeMetrics.actionWordGap,
@@ -1538,10 +1564,15 @@ class FrostedActionTiles extends StatelessWidget {
           onPressed: a.onPressed,
           role: FrostedPressRole.link,
           excludeChild: false,
-          radius: FrostedChromeMetrics.moveActRadius,
+          radius: t.corner(
+            RawCorner.medium,
+            FrostedChromeMetrics.moveActRadius,
+          ),
           child: FrostedFace(
             material: FrostedMaterial.paint,
-            radius: BorderRadius.circular(FrostedChromeMetrics.moveActRadius),
+            radius: BorderRadius.circular(
+              t.corner(RawCorner.medium, FrostedChromeMetrics.moveActRadius),
+            ),
             color: t.glass.fill,
             ring: t.glass.edge,
             padding: EdgeInsets.all(
@@ -1730,7 +1761,9 @@ class FrostedQuickAmounts extends StatelessWidget {
       // its top corner, in the room over its figure, never a fill of ink.
       final face = FrostedFace(
         material: FrostedMaterial.paint,
-        radius: BorderRadius.circular(FrostedChromeMetrics.quickAmountRadius),
+        radius: BorderRadius.circular(
+          t.corner(RawCorner.medium, FrostedChromeMetrics.quickAmountRadius),
+        ),
         color: t.glass.well,
         wash: on ? t.glass.wash : null,
         ring: frostedLitEdge(t, t.glass.wellEdge),
@@ -1770,7 +1803,10 @@ class FrostedQuickAmounts extends StatelessWidget {
         onPressed: onChanged == null ? null : () => onChanged!(item.amount),
         semanticLabel: '$figure, ${item.label}',
         selected: on,
-        radius: FrostedChromeMetrics.quickAmountRadius,
+        radius: t.corner(
+          RawCorner.medium,
+          FrostedChromeMetrics.quickAmountRadius,
+        ),
         child: _chosenDot(t, on, face),
       );
     }
@@ -1905,7 +1941,7 @@ class FrostedIconPicker extends StatelessWidget {
         onPressed: onChanged == null ? null : () => onChanged!(choice.label),
         semanticLabel: choice.label,
         selected: on,
-        radius: FrostedChromeMetrics.iconWellRadius,
+        radius: t.corner(RawCorner.medium, FrostedChromeMetrics.iconWellRadius),
         child: SizedBox(
           height: FrostedChromeMetrics.iconWell,
           // Chosen, the well stays glass: a little clearer, its glyph in the
@@ -1916,7 +1952,7 @@ class FrostedIconPicker extends StatelessWidget {
             FrostedFace(
               material: FrostedMaterial.paint,
               radius: BorderRadius.circular(
-                FrostedChromeMetrics.iconWellRadius,
+                t.corner(RawCorner.medium, FrostedChromeMetrics.iconWellRadius),
               ),
               color: t.glass.well,
               wash: on ? t.glass.wash : null,

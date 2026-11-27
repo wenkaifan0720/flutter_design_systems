@@ -80,7 +80,12 @@ class FrostedRadio<T> extends StatelessWidget {
     final t = context.frostedTheme;
     final motion = FrostedMotion.of(context);
     const d = 22.0;
-    final layers = FrostedStyleLayers(style, t.components.radio);
+    final layers = FrostedStyleLayers(
+      style,
+      t.components.radio,
+      const <WidgetState>{},
+      t,
+    );
     Widget draw(Set<WidgetState> states, bool on) {
       final s = layers.at(states);
       final shape = s.shape;
@@ -95,12 +100,18 @@ class FrostedRadio<T> extends StatelessWidget {
       final mark = SizedBox.square(
         dimension: d,
         child: FrostedFace(
-          material: fill == null ? FrostedMaterial.well : FrostedMaterial.paint,
+          material: fill == null
+              ? frostedOpeningMaterial(
+                  t,
+                  FrostedMaterial.well,
+                  enabled: enabled,
+                )
+              : FrostedMaterial.paint,
           radius: BorderRadius.circular(
             FrostedStyleLayers.radiusOf(shape, d, d / 2),
           ),
           shape: shape,
-          color: fill,
+          color: fill ?? (on ? null : frostedOpening(t, enabled: enabled)),
           wash: on ? t.glass.wash : null,
           edge: side?.color,
           edges: side == null
@@ -200,7 +211,7 @@ class FrostedRadio<T> extends StatelessWidget {
                     context,
                     states,
                     draw(states, radio.value ?? false),
-                    radius: FrostedCorners.r12,
+                    radius: t.corner(RawCorner.medium, FrostedCorners.r12),
                   ),
                 ),
               ),
@@ -471,7 +482,12 @@ class FrostedChip extends StatelessWidget {
     final on = selected ?? false;
     final close = onDeleted;
     final words = FrostedLocalizations.of(context);
-    final layers = FrostedStyleLayers(style, t.components.chip);
+    final layers = FrostedStyleLayers(
+      style,
+      t.components.chip,
+      const <WidgetState>{},
+      t,
+    );
     // Large text grows the pill by its words' extra line, as a button's: at
     // 200% the words would fill a 32 pill to its rim.
     final h = frostedGrownHeight(
@@ -987,7 +1003,7 @@ class FrostedFileUpload extends StatelessWidget {
     final t = context.frostedTheme;
     final words = FrostedLocalizations.of(context);
     final well = FrostedWell(
-      radius: FrostedCorners.r18,
+      radius: t.corner(RawCorner.large, FrostedCorners.r18),
       focused: dragging,
       error: errorText != null,
       child: Padding(
@@ -1096,7 +1112,9 @@ class _FileRow extends StatelessWidget {
     final progress = file.progress;
     return FrostedFace(
       material: FrostedMaterial.pane,
-      radius: BorderRadius.circular(FrostedCorners.r12),
+      radius: BorderRadius.circular(
+        t.corner(RawCorner.medium, FrostedCorners.r12),
+      ),
       ring: frostedLitEdge(t, t.colorScheme.border),
       padding: const EdgeInsetsDirectional.fromSTEB(
         14,
@@ -1258,7 +1276,7 @@ class FrostedCheckRow extends StatelessWidget {
       role: FrostedPressRole.control,
       checked: value ?? false,
       excludeChild: true,
-      radius: FrostedCorners.r10,
+      radius: t.corner(RawCorner.small, FrostedCorners.r10),
       child: row,
     );
   }

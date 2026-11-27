@@ -121,8 +121,8 @@ class FrostedAvatar extends StatelessWidget {
     final d = size.diameter;
     final s = FrostedStyleLayers(style, t.components.avatar, {
       if (selected) WidgetState.selected,
-    });
-    final cut = s.shape;
+    }, t);
+    final cut = s.given(FrostedCorners.full);
     final fill = s.fill;
     final (edge, edges) = s.edgeOf(t.glass.edge, FrostedStrokes.regular);
     // Not chosen ([dimmed]), the disc stands at the quieter share, washed

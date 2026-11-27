@@ -199,13 +199,25 @@ class _WheelBand extends StatelessWidget {
         builder: (context) {
           // The time picker's theme style dresses the band the chosen row
           // stands in: its fill, edge or side and shape.
-          final s = FrostedStyleLayers(null, t.components.timePicker);
-          final cut = s.shape;
+          final s = FrostedStyleLayers(
+            null,
+            t.components.timePicker,
+            const <WidgetState>{},
+            t,
+          );
+          final cut = s.given(
+            FrostedCorners.small,
+            own: t.corner(RawCorner.medium, FrostedCorners.r12),
+          );
           final (edge, edges) = s.edgeOf(t.glass.edge, FrostedStrokes.regular);
           return FrostedFace(
             material: FrostedMaterial.paint,
             radius: BorderRadius.circular(
-              FrostedStyleLayers.radiusOf(cut, _wheelRow, FrostedCorners.r12),
+              FrostedStyleLayers.radiusOf(
+                cut,
+                _wheelRow,
+                t.corner(RawCorner.medium, FrostedCorners.r12),
+              ),
             ),
             shape: cut,
             color: s.fill ?? t.glass.fillHigh,
@@ -313,7 +325,7 @@ Widget _wheels(
           ).createShader(bounds),
           child: wheel,
         ),
-        radius: FrostedCorners.r12,
+        radius: t.corner(RawCorner.medium, FrostedCorners.r12),
       ),
     ),
   );
@@ -819,8 +831,15 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
     // The date picker's theme style dresses the day cells: fill (selected
     // for the chosen day), words, edge (today's ring) or side, overlay and
     // shape, each per state.
-    final dayStyle = FrostedStyleLayers(null, t.components.datePicker);
-    final dayCut = dayStyle.cut(FrostedCorners.full);
+    final dayStyle = FrostedStyleLayers(
+      null,
+      t.components.datePicker,
+      const <WidgetState>{},
+      t,
+    );
+    // A day stays a round bead: a calendar's days take no corners of an
+    // app's.
+    final dayCut = dayStyle.cut(FrostedCorners.full, corners: false);
     final dayCorner = FrostedStyleLayers.radiusOf(dayCut, 38, 19);
     Widget cell(int n) {
       final day = DateTime(_month.year, _month.month, n);
@@ -1081,7 +1100,9 @@ class _PickerCard extends StatelessWidget {
   Widget _face(BuildContext context, FrostedThemeData t, double inset) =>
       FrostedFace(
         material: FrostedMaterial.slab,
-        radius: BorderRadius.circular(FrostedChromeMetrics.sheetWideRadius),
+        radius: BorderRadius.circular(
+          t.corner(RawCorner.extraLarge, FrostedChromeMetrics.sheetWideRadius),
+        ),
         // The dialog's rim: the lit hairline by day, lit from above by
         // night (law 2).
         edge: frostedLitEdge(t, t.glass.sheetEdge),

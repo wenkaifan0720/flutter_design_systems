@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../../chrome_metrics.dart';
 import '../../theme.dart';
@@ -64,7 +65,9 @@ class FrostedMedia extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     final night = FrostedTheme.darkOf(context);
-    final corners = BorderRadius.circular(radius ?? FrostedCorners.r14);
+    final corners = BorderRadius.circular(
+      radius ?? t.corner(RawCorner.medium, FrostedCorners.r14),
+    );
     final duration = FrostedMotion.of(context).base;
     final photo = image;
     Widget picture = ClipRRect(

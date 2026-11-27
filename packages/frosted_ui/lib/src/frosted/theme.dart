@@ -106,7 +106,9 @@ abstract final class FrostedSpacing {
 }
 
 /// Corner radii, and the look's outlines at four of them ([extraSmall],
-/// [small], [medium], [large]) and round ([full]). Frosted's language is the
+/// [small], [medium], [large]) and round ([full]), in Frosted's own shapes
+/// ([FrostedThemeData.defaultShapeScheme]): a part draws them as its theme's
+/// [FrostedThemeData.shapeScheme] moves them ([FrostedThemeData.corner]). Frosted's language is the
 /// tile (18 on a phone, 20 on the desktop), the inner pane (10, 12 on the
 /// desktop), the field well (12), the squircle of a monogram (11, 17 large),
 /// the sheet (22; 20 as a dialog), the menu and the toast (16), the ticket (10)
@@ -471,13 +473,21 @@ abstract final class FrostedBreakpoints {
   static double pad(BuildContext context) =>
       isWide(context) ? FrostedSpacing.s20 : FrostedSpacing.s16;
 
-  /// A tile's corner: 18 on a phone, 20 on the desktop.
-  static double tileRadius(BuildContext context) =>
-      isWide(context) ? FrostedCorners.r20 : FrostedCorners.r18;
+  /// A tile's corner: 18 on a phone, 20 on the desktop, as the theme's
+  /// large step moves them ([FrostedThemeData.corner]).
+  static double tileRadius(BuildContext context) => FrostedTheme.of(context)
+      .corner(
+        RawCorner.large,
+        isWide(context) ? FrostedCorners.r20 : FrostedCorners.r18,
+      );
 
-  /// An inner pane's corner: 10 on a phone, 12 on the desktop.
-  static double innerRadius(BuildContext context) =>
-      isWide(context) ? FrostedCorners.r12 : FrostedCorners.r10;
+  /// An inner pane's corner: 10 on a phone, 12 on the desktop, as the
+  /// theme's small step moves them ([FrostedThemeData.corner]).
+  static double innerRadius(BuildContext context) => FrostedTheme.of(context)
+      .corner(
+        RawCorner.small,
+        isWide(context) ? FrostedCorners.r12 : FrostedCorners.r10,
+      );
 }
 
 /// Which way money moved: how a figure is inked and an amount is signed.
@@ -1845,6 +1855,7 @@ class FrostedThemeData with Diagnosticable {
     required this.backdrop,
     required this.opaqueMaterials,
     this.fontFamilyFallback = const [],
+    this.shapeScheme = defaultShapeScheme,
   });
 
   /// A theme from every value by name, as the presets and the token rules set
@@ -2921,6 +2932,7 @@ class FrostedThemeData with Diagnosticable {
     FrostedBackdrop? backdrop,
     bool? opaqueMaterials,
     List<String>? fontFamilyFallback,
+    RawShapeScheme? shapeScheme,
   }) => preset((palette ?? palettes.first).id, brightness).copyWith(
     density: density,
     typeface: typeface,
@@ -2928,6 +2940,7 @@ class FrostedThemeData with Diagnosticable {
     backdrop: backdrop,
     opaqueMaterials: opaqueMaterials,
     fontFamilyFallback: fontFamilyFallback,
+    shapeScheme: shapeScheme,
   );
 
   /// Opal, the default: the look as it was drawn, a pale canvas under
@@ -3754,6 +3767,81 @@ class FrostedThemeData with Diagnosticable {
   /// ```
   final List<String> fontFamilyFallback;
 
+  /// The corners an app can change, held to [shapeLimits]. Each of
+  /// Frosted's corners follows the step nearest it: a swatch and a card's
+  /// small mark [RawCorner.extraSmall]; an inner pane, a picture, a menu's
+  /// row, a ticket and a monogram [RawCorner.small]; a field's well, an
+  /// option and a picker (14) [RawCorner.medium]; a tile (20 on the desktop),
+  /// a card, the menu and the toast (16) [RawCorner.large]; a sheet, the tab
+  /// bar's slab and a dialog (20) [RawCorner.extraLarge]. A corner that is
+  /// not its step's own (a picker's 14, the menu's 16) moves as far as its
+  /// step moves, so the gaps between Frosted's corners stay. Capsules (a
+  /// button, a chip, a tab, a switch) stay round by their height: the
+  /// capsule is Frosted's control. A grabber's and a beam's 2 is a hairline's
+  /// round end, not a corner. Frosted's edge is a rim of light on the glass
+  /// and its depth is blur and light, so it opens no stroke and no depth.
+  ///
+  /// ```dart
+  /// FrostedThemeData.opal().copyWith(shapeScheme: FrostedThemeData.defaultShapeScheme.copyWith(corners: FrostedThemeData.defaultShapeScheme.corners.scaled(1.25)))
+  /// ```
+  final RawShapeScheme shapeScheme;
+
+  /// Frosted's own corners: round, of 6, 10, 12, 18 and 22.
+  static const RawShapeScheme defaultShapeScheme = RawShapeScheme(
+    corners: RawCornerScale(
+      extraSmall: 6,
+      small: 10,
+      medium: 12,
+      large: 18,
+      extraLarge: 22,
+    ),
+  );
+
+  /// The bands Frosted holds a [shapeScheme] to, so that every end still
+  /// reads as glass: round corners alone (the glass blurs through a rounded
+  /// clip and its rim of light runs along a round fillet; a bevel or a notch
+  /// isn't glass), a small bead from 4 to 8, an inner pane from 6 to 14
+  /// (inside its tile, concentric), a field from 8 (under it the glass reads
+  /// as acrylic tiles) to 16 (over it a field turns pill-like), a tile from
+  /// 12 to 24 (the glass card's softness is the look) and a sheet from 16 to
+  /// 28 (the raised slab stays the roundest pane). A part's own outline
+  /// stays open as before: a style's `shape` (a continuous
+  /// [RoundedSuperellipseBorder] among them) wins.
+  ///
+  /// A part's corners each take their own step (cornerFreedom perCorner): a
+  /// style's `corners` can square two diagonal corners of a card or round
+  /// only a button's top start one, since the blur clips to any round outline
+  /// and the rim of light runs along each fillet as it finds it, square
+  /// corners among them (a docked sheet's foot, a grouped list's inner rows
+  /// already are). Every step is open, a square corner and a capsule's end
+  /// among them. A bead stays round (a switch's, a slider's, a radio's, a
+  /// calendar's day): the bead is a drop of glass, and Material's Radio and
+  /// Switch take no shape either.
+  static const RawShapeLimits shapeLimits = RawShapeLimits(
+    extraSmall: RawBand(4, 8),
+    small: RawBand(6, 14),
+    medium: RawBand(8, 16),
+    large: RawBand(12, 24),
+    extraLarge: RawBand(16, 28),
+    cornerFreedom: RawCornerFreedom.perCorner,
+  );
+
+  /// [own], a corner Frosted draws at [step] in its own shapes
+  /// ([defaultShapeScheme]), moved as far as this theme's [step] stands from
+  /// Frosted's own: the corner a part of an app's own takes to follow
+  /// [shapeScheme] as Frosted's parts do. Never under 0.
+  ///
+  /// ```dart
+  /// context.frostedTheme.corner(RawCorner.medium, 14)
+  /// ```
+  double corner(RawCorner step, double own) {
+    if (step == RawCorner.none || step == RawCorner.full) return own;
+    final moved =
+        shapeScheme.corners.radius(step) -
+        defaultShapeScheme.corners.radius(step);
+    return math.max(0, own + moved);
+  }
+
   /// The theme's glass ([FrostedMaterials.derive]): each material's
   /// blur, tint, rim and shadow, its tint derived from the text.
   FrostedMaterials get materials => _materials[this] ??= frostedMaterialsOf(
@@ -3928,6 +4016,7 @@ class FrostedThemeData with Diagnosticable {
     FrostedBackdrop? backdrop,
     bool? opaqueMaterials,
     List<String>? fontFamilyFallback,
+    RawShapeScheme? shapeScheme,
   }) {
     final from = this.typeface;
     final to = typeface ?? from;
@@ -3963,6 +4052,9 @@ class FrostedThemeData with Diagnosticable {
       backdrop: backdrop ?? this.backdrop,
       opaqueMaterials: opaqueMaterials ?? this.opaqueMaterials,
       fontFamilyFallback: fallback,
+      shapeScheme: shapeScheme == null
+          ? this.shapeScheme
+          : shapeLimits.clamp(shapeScheme, look: 'Frosted'),
     );
   }
 
@@ -4008,6 +4100,7 @@ class FrostedThemeData with Diagnosticable {
       backdrop: t < .5 ? a.backdrop : b.backdrop,
       opaqueMaterials: t < .5 ? a.opaqueMaterials : b.opaqueMaterials,
       fontFamilyFallback: t < .5 ? a.fontFamilyFallback : b.fontFamilyFallback,
+      shapeScheme: RawShapeScheme.lerp(a.shapeScheme, b.shapeScheme, t),
     );
   }
 
@@ -4030,6 +4123,7 @@ class FrostedThemeData with Diagnosticable {
     backdrop,
     opaqueMaterials,
     fontFamilyFallback,
+    shapeScheme,
   ];
 
   @override
@@ -4098,6 +4192,13 @@ class FrostedThemeData with Diagnosticable {
           'fontFamilyFallback',
           fontFamilyFallback,
           defaultValue: const <String>[],
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<RawShapeScheme>(
+          'shapeScheme',
+          shapeScheme,
+          defaultValue: defaultShapeScheme,
         ),
       );
   }
