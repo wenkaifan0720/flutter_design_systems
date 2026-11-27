@@ -9,9 +9,11 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 
-// The gallery is the example app; a test reads its pages from there.
+// The gallery and Shelf, the reading list, are the example's apps; a test
+// reads their pages from there.
 // ignore_for_file: avoid_relative_lib_imports
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
+import '../example/lib/main.dart' show Shelf, ShelfApp;
 import 'flutter_test_config.dart' show longWalkLeakTesting;
 import 'gallery_support.dart';
 import 'overlay_fixtures.dart';
@@ -179,6 +181,13 @@ void main() {
         read(name);
       },
     );
+
+    // Shelf, the example's app: the shell holds its places.
+    await tester.pumpWidget(ShelfApp(shelf: Shelf.sample()));
+    await settle(tester);
+    expect(tester.takeException(), isNull, reason: 'Shelf');
+    see();
+    read('Shelf');
 
     expect(tofu, isEmpty, reason: 'icons outside the bundled subset');
     expect(

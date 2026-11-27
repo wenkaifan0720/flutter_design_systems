@@ -11,7 +11,6 @@ library;
 import 'package:flutter/foundation.dart' show SynchronousFuture;
 import 'package:flutter/widgets.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
-import 'package:material_expressive_ui/material_expressive_host.dart';
 
 /// One shared thing's words: its name, its line in a list, and its facts.
 typedef TripItemWords = ({

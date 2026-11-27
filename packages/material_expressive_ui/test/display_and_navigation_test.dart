@@ -129,10 +129,12 @@ void main() {
       await tester.pumpWidget(
         _kit(const ExpressiveDescriptionList(items: items), width: 900),
       );
-      final term = tester.getTopLeft(find.text('Order'));
-      final value = tester.getTopLeft(find.text('#4821'));
-      expect(value.dy, term.dy);
-      expect(value.dx, greaterThan(term.dx + 200));
+      final term = tester.getRect(find.text('Order'));
+      final value = tester.getRect(find.text('#4821'));
+      // On the value's line (round_080_test sets them on one baseline).
+      expect(term.top, greaterThanOrEqualTo(value.top));
+      expect(term.bottom, lessThanOrEqualTo(value.bottom));
+      expect(value.left, greaterThan(term.left + 200));
     });
 
     testWidgets('each row is read as one node, term and value', (tester) async {

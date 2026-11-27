@@ -1,0 +1,9 @@
+// Each name material_expressive_ui 0.8.0 renamed or replaced, used once; dart fix moves it
+// (material_expressive_ui_080.dart.expect).
+import 'package:material_expressive_ui/material_expressive_ui.dart';
+
+dynamic d;
+
+void functions() {
+  RawPalette.contrastRatio(d, d);
+}

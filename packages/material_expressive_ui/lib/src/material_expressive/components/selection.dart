@@ -789,6 +789,7 @@ class ExpressiveRadioOption<T> {
     required this.value,
     required this.label,
     this.supportingText,
+    this.leading,
     this.enabled = true,
   });
 
@@ -800,6 +801,11 @@ class ExpressiveRadioOption<T> {
 
   /// A second line under the label.
   final String? supportingText;
+
+  /// A part between the radio and the label: a palette's swatch beside its
+  /// name, say. It is not read out (the label names the option), and it
+  /// grows with the text only if it is drawn to.
+  final Widget? leading;
 
   /// Whether the option can be chosen.
   final bool enabled;
@@ -902,6 +908,7 @@ class ExpressiveRadioGroup<T> extends StatelessWidget {
                         contentPadding: contentPadding,
                         label: option.label,
                         supportingText: option.supportingText,
+                        leading: option.leading,
                         selected: chosen,
                         enabled: enabled,
                         onPressed: enabled
@@ -1558,6 +1565,7 @@ class _ControlRow extends StatelessWidget {
     required this.enabled,
     required this.onPressed,
     this.supportingText,
+    this.leading,
     this.controlLeads = true,
     this.contentPadding,
     this.controlInset = 0,
@@ -1570,6 +1578,9 @@ class _ControlRow extends StatelessWidget {
   final String label;
   final String? supportingText;
   final Widget control;
+
+  /// Between the control and the words ([ExpressiveRadioRow.leading]).
+  final Widget? leading;
 
   /// What takes the focus over the row ([ExpressivePressable.focusTarget]).
   final Widget? focusTarget;
@@ -1723,6 +1734,8 @@ class _ControlRow extends StatelessWidget {
               spacing: ExpressiveSpacing.s16,
               children: [
                 if (controlLeads) control,
+                if (leading case final leading?)
+                  ExcludeSemantics(child: leading),
                 Expanded(child: text(scope)),
                 if (!controlLeads) control,
               ],
@@ -1870,6 +1883,7 @@ class ExpressiveRadioRow extends StatelessWidget {
     required this.selected,
     this.onPressed,
     this.supportingText,
+    this.leading,
     this.enabled = true,
     this.contentPadding,
     this.style,
@@ -1886,6 +1900,7 @@ class ExpressiveRadioRow extends StatelessWidget {
     required Widget this._focusTarget,
     this.onPressed,
     this.supportingText,
+    this.leading,
     this.enabled = true,
     this.contentPadding,
     this.style,
@@ -1915,6 +1930,11 @@ class ExpressiveRadioRow extends StatelessWidget {
   /// Whether this option is selected.
   final bool selected;
 
+  /// A part between the radio and the label: a palette's swatch beside its
+  /// name, say. It is not read out (the label names the option), and it
+  /// grows with the text only if it is drawn to.
+  final Widget? leading;
+
   /// What a tap does (select this option); null disables the row (as
   /// Flutter's `RadioListTile`).
   final VoidCallback? onPressed;
@@ -1936,6 +1956,7 @@ class ExpressiveRadioRow extends StatelessWidget {
     style: style,
     label: label,
     supportingText: supportingText,
+    leading: leading,
     role: ExpressivePressRole.radio,
     selected: selected,
     enabled: enabled && onPressed != null,

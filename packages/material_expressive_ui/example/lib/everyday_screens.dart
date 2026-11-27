@@ -6,7 +6,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'kit_gallery/trip.dart';
-import 'main.dart';
+import 'gallery.dart';
 
 /// One screen: its [id] and the app opened on it.
 typedef EverydayScreen = ({

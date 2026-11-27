@@ -276,7 +276,8 @@ class ExpressivePressable extends StatefulWidget {
   /// What a screen reader says, over the content's own text.
   final String? semanticLabel;
 
-  /// A tooltip message, announced as the pressable's hint.
+  /// A tooltip message: what a screen reader calls the pressable when it
+  /// has no [semanticLabel] (a [semanticLabel] names it alone).
   final String? tooltip;
 
   /// The outline stroke (outlined components).
@@ -796,7 +797,9 @@ class _ExpressivePressableState extends State<ExpressivePressable> {
             ? (widget.busy ? _wait : widget.onPressed)
             : null,
         label: widget.semanticLabel,
-        tooltip: widget.tooltip,
+        // A semanticLabel names the control alone: its tooltip, often the
+        // shorter word ("Delete" by "Delete Dune"), is not said after it.
+        tooltip: widget.semanticLabel == null ? widget.tooltip : null,
         child: pressable,
       ),
     );

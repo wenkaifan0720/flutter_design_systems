@@ -9,7 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_test/ui_core_test.dart';
 
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import '../example/lib/kit_gallery/theme.dart';
 import 'gallery_support.dart';
 import 'support/tiers.dart';

@@ -992,12 +992,14 @@ class _RenderItemLayout extends RenderBox
   RenderBox? get _supporting => childForSlot(_Slot.supporting);
 
   @override
+  // In reading order: a screen reader hears the row as it reads, its
+  // trailing part (a status tag) after its title and line.
   Iterable<RenderBox> get children => <RenderBox?>[
     _leading,
-    _trailing,
     _overline,
     _headline,
     _supporting,
+    _trailing,
   ].whereType<RenderBox>();
 
   /// `ListItemType`'s minimum container height for the lines present.

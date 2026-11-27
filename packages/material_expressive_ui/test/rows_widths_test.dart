@@ -13,7 +13,7 @@ import 'package:material_expressive_ui/material_expressive_ui.dart';
 
 // The gallery is the example app; a test reads its pages from there.
 // ignore_for_file: avoid_relative_lib_imports
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import '../example/lib/kit_gallery/trip.dart';
 import 'gallery_support.dart';
 
@@ -64,8 +64,9 @@ const _ladders = <String>{'buttons', 'icon-buttons', 'fab', 'split-button'};
 /// dimensions.
 String? _misread(String where, String problem) {
   final page = where.split(' ').first;
-  final width = RegExp(r'^a (button|select) "([^"]*)": [\d.]+ px wide')
-      .firstMatch(problem);
+  final width = RegExp(
+    r'^a (button|select) "([^"]*)": (a field of a form, )?[\d.]+ px wide',
+  ).firstMatch(problem);
   if (width != null && _spanningRows.contains(width.group(2))) {
     return 'a row spans its list or section (list rows, disclosure rows, the '
         'collapsed search bar)';

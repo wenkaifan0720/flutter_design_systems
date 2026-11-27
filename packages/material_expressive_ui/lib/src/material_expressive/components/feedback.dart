@@ -25,12 +25,13 @@ import '../internal/style_layers.dart';
 /// The tones a banner or a tag is drawn in: the container roles it wears,
 /// its content in the matching `on…` role.
 enum ExpressiveTone {
-  /// `surfaceContainerHighest` under `onSurfaceVariant`: a kind, a status at
-  /// rest, a note.
+  /// A status at rest, a kind, a note: `onSurfaceVariant` words; a tag is
+  /// outlined in `outlineVariant` (Material's outlined chip), a banner or a
+  /// state on `surfaceContainerHighest`.
   neutral,
 
-  /// The secondary container, as M3 draws what is chosen or new: news, a
-  /// tip.
+  /// The palette's own: what is chosen, new or in hand (news, a tip, a book
+  /// being read). A tag wears the primary container.
   primary,
 
   /// The error container: something failed, is overdue or needs fixing.

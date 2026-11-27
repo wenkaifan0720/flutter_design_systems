@@ -1,3 +1,20 @@
+## 0.8.0
+
+- Requires ui_core 0.8.2.
+- New `ExpressiveAppShell`, in the main library: the app's places on ui_core's `RawAdaptiveShell` at every width, the navigation bar under 600, the rail from 600 and the expanded rail from 1200. `ExpressiveAppShell.branches` keeps each place's own pages (`branches`, `navigatorKeys`, `backBehavior`): a page pushed on a place stands beside the rail, a phone's bar steps away for it (`hideBarOnPush`), back pops it, and choosing the place again goes back to its first page. The bar is one Tab stop, the arrows moving along it. An `action` (a FAB) floats over a phone's pages 16dp above the bar and heads the rail, and a snackbar stands above the bar and the action, as over a `Scaffold`'s.
+- **Breaking:** `ExpressiveNavItem.fromTab` is gone: no part of the main library names a type from the host library. Write `ExpressiveNavItem(tab.icon, tab.label, selectedIcon: tab.selectedIcon)`.
+- Palettes: `ExpressiveThemeData.palettes` holds the six presets as ui_core's `RawNamedPalette` (an id to store, a label to show, the primary and surface by day and by night); `ExpressiveThemeData.fromPalette` builds a theme from one, or seeds one from an app's own. `ExpressiveHost(palette:)` wears it by day and by night, and a change of palette or appearance moves across on the theme's motion.
+- **Breaking:** `expressiveContrastRatio`, deprecated in 0.7.0, is gone; `dart fix --apply` writes ui_core's `RawPalette.contrastRatio`.
+- **Breaking:** a docked date picker's field prints the medium date with its year in English, 3 Oct 2026 (`ExpressiveFormat.date`), never read as another day; it printed 10/03/2026. Another language keeps its short date. `ExpressiveFormat` is in the main library.
+- **Breaking:** `ExpressiveSelect` and `ExpressiveCombobox` take their column's width at every window width, as a text field does (Material's `DropdownMenu` in a form). From 600 wide they stood at most 320, at the column's start. Give one a width of its own with a `SizedBox`.
+- A list tile reads in its reading order: overline, headline, supporting text, then the trailing part (a tag read after the title it marks). It read the trailing part first.
+- An icon button with a `semanticLabel` is named by it alone; its `tooltip` still shows on hover and long press. It was named twice.
+- Tags keep their tones apart in all six palettes, day and night: `ExpressiveTone.neutral` is outlined in `outlineVariant` (Material's outlined chip), so no palette's grey matches it, and `ExpressiveTone.primary` wears the palette's own `primaryContainer`. It wore `secondaryContainer`, which slate's grey matched.
+- `ExpressiveDescriptionList` sets a term on its value's first baseline from 600 wide. The smaller term stood 2.5 above the value's line.
+- `ExpressiveRadioRow.leading` and `ExpressiveRadioOption.leading`: a part between the radio and the label, a palette's swatch beside its name.
+- The example is Shelf, a reading list to copy: the host by day, by night or as the device is, in any of the six palettes; the shell with three places; a list with a pushed page; a form that checks its answers, with an optional date; a dialog popped with its answer; and the settings. The gallery is `example/lib/gallery.dart`.
+- The README shows how to build an app: the mount, the shell, list to detail, forms, dialogs, the palette picker, and a table of the building blocks.
+
 ## 0.7.1
 
 - `ExpressiveTextTheme.fontFamilyFallback`: the families that draw a script the look's faces lack, an app's own Noto Sans JP or Noto Sans Arabic say. Every style of the type scale names them, and so do the text an `ExpressiveTheme` sets and the Material theme `ExpressiveHost` lays under the parts, as Material's `ThemeData.fontFamilyFallback` does: on the web a face the app loads draws only where a style names it. Empty by default, so every style is as before. The look's faces keep their package's name; the fallback families are the app's and are not prefixed.

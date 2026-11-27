@@ -554,7 +554,9 @@ class ExpressiveIconButton extends StatelessWidget {
   /// What a screen reader says.
   final String? semanticLabel;
 
-  /// A tooltip message, announced as the button's hint.
+  /// A tooltip message: what a screen reader calls the button when it has no
+  /// [semanticLabel] (a [semanticLabel] names it alone, the tooltip not said
+  /// after it).
   final String? tooltip;
 
   /// The focus node; one is made when null.
@@ -752,7 +754,9 @@ class ExpressiveIconToggleButton extends StatelessWidget {
   /// What a screen reader says.
   final String? semanticLabel;
 
-  /// A tooltip message, announced as the button's hint.
+  /// A tooltip message: what a screen reader calls the button when it has no
+  /// [semanticLabel] (a [semanticLabel] names it alone, the tooltip not said
+  /// after it).
   final String? tooltip;
 
   /// The focus node; one is made when null.

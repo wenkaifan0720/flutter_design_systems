@@ -11,10 +11,11 @@ import 'package:flutter/widgets.dart';
 import '../components/menus.dart' show ExpressiveMenu;
 import '../components/select.dart' show ExpressiveSelect;
 
-/// [face], a choice's field: in a window [ExpressiveSelect.wideFrom] or
+/// [face], an expanded button: in a window [ExpressiveSelect.wideFrom] or
 /// wider, at most [ExpressiveSelect.wideMaxWidth] wide at its column's start
 /// (a form grid's narrower cell bounds it as before); on a phone, its
-/// column's width.
+/// column's width. A field (a select, a combobox) takes its column's width
+/// at every window width.
 ///
 /// [fitContent], never narrower than [face] needs for its content on one
 /// line (a segmented control's labels, read from its intrinsic width; its

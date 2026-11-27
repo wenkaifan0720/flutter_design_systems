@@ -16,8 +16,8 @@ import '../theme.dart';
 import 'overlays.dart' show ExpressiveBackHandleRoute;
 import 'page_transitions.dart';
 
-/// The go_router [Page] for a route pushed off a root, keyed by go_router's
-/// page key. The page's chrome is derived, never authored: a screen inside
+/// A [Page] for a route pushed off a root, for `Navigator.pages` or a
+/// router's page builder. The page's chrome is derived, never authored: a screen inside
 /// reads the pushed register (`RoutePresentation.of`) from the route's place.
 ///
 /// On Android the push is fade-forwards and the back gesture predictive; on

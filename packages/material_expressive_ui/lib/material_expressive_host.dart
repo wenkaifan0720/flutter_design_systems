@@ -31,8 +31,6 @@
 /// {@canonicalFor shell_insets.ExpressiveShellInsets}
 /// {@canonicalFor shell_scaffold}
 /// {@canonicalFor shell_scaffold.ExpressiveShellScaffold}
-/// {@canonicalFor format}
-/// {@canonicalFor format.ExpressiveFormat}
 /// {@canonicalFor inventory}
 /// {@canonicalFor inventory.ExpressiveInventoryGallery}
 /// {@canonicalFor inventory.expressiveInventory}
@@ -49,5 +47,4 @@ export 'src/material_expressive/components/sheet_page.dart';
 export 'src/material_expressive/components/shell_action.dart';
 export 'src/material_expressive/components/shell_insets.dart';
 export 'src/material_expressive/components/shell_scaffold.dart';
-export 'src/material_expressive/format.dart';
 export 'src/material_expressive/inventory.dart';

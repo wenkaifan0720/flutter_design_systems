@@ -265,7 +265,9 @@ abstract class ExpressiveButton extends StatelessWidget {
   /// [label] stays the button's name for assistive technology.
   final Widget? child;
 
-  /// Fill the available width (a sticky bottom action).
+  /// Fill the available width on a phone (a sticky bottom action). From
+  /// 600dp wide the button keeps at most 320dp at its column's start, as a
+  /// button stays button-sized on a larger screen.
   final bool expand;
 
   /// What a screen reader says instead of [label].
@@ -644,7 +646,9 @@ class ExpressiveToggleButton extends StatelessWidget {
   /// Shapes in place of the size's (a connected group's position shapes).
   final ExpressivePressShapes? shapes;
 
-  /// Fill the available width.
+  /// Fill the available width on a phone. From 600dp wide the button keeps
+  /// at most 320dp at its column's start, as a button stays button-sized on
+  /// a larger screen.
   final bool expand;
 
   /// What a screen reader says instead of [label].

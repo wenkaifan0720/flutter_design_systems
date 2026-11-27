@@ -8,6 +8,72 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 
 void main() {
+  test('six palettes by name, the presets, baseline first', () {
+    expect([
+      for (final p in ExpressiveThemeData.palettes) p.id,
+    ], ExpressiveThemeData.presets);
+    expect(
+      [for (final p in ExpressiveThemeData.palettes) p.label],
+      ['Baseline', 'Slate', 'Bloom', 'Grove', 'Ember', 'Tide'],
+    );
+  });
+
+  for (final b in Brightness.values) {
+    test('${b.name}: a palette shows its preset\'s primary and surface', () {
+      for (final p in ExpressiveThemeData.palettes) {
+        final colors = ExpressiveThemeData.preset(p.id, b).colors;
+        expect(p.swatchesFor(b), [
+          colors.primary,
+          colors.surface,
+        ], reason: p.id);
+        expect(
+          ExpressiveThemeData.fromPalette(p, b),
+          ExpressiveThemeData.preset(p.id, b),
+        );
+      }
+    });
+  }
+
+  test("an app's own palette seeds its scheme", () {
+    const own = RawNamedPalette(
+      id: 'teal',
+      label: 'Teal',
+      swatches: [Color(0xFF00695C)],
+      darkSwatches: [Color(0xFF80CBC4)],
+    );
+    expect(
+      ExpressiveThemeData.fromPalette(own, Brightness.dark),
+      ExpressiveThemeData.from(
+        seed: const Color(0xFF80CBC4),
+        brightness: Brightness.dark,
+      ),
+    );
+  });
+
+  testWidgets('the host wears its palette by day and by night', (tester) async {
+    late ExpressiveThemeData seen;
+    Widget host(Brightness b) => ExpressiveHost(
+      brightness: b,
+      palette: ExpressiveThemeData.palettes[3],
+      child: Builder(
+        builder: (context) {
+          seen = ExpressiveTheme.of(context);
+          return const SizedBox();
+        },
+      ),
+    );
+    for (final b in Brightness.values) {
+      await tester.pumpWidget(
+        Directionality(textDirection: TextDirection.ltr, child: host(b)),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        seen.colors.primary,
+        ExpressiveThemeData.preset('grove', b).colors.primary,
+      );
+    }
+  });
+
   test('six presets, baseline first and the default', () {
     expect(ExpressiveThemeData.presets, [
       'baseline',

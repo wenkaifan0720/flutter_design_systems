@@ -17,7 +17,6 @@ import '../component_themes.dart';
 import '../elevation.dart';
 import '../icons.dart';
 import '../internal/cap_label.dart';
-import '../internal/choice_width.dart';
 import '../internal/group_tap_target.dart';
 import '../internal/tokens/behavior.g.dart';
 import '../internal/tokens/chips_tokens.g.dart';
@@ -3881,138 +3880,133 @@ class _ExpressiveMultiSelectState<T extends Object>
         t.shapes.of(InputChipTokens.containerShape).topStart.dp + inset,
       ),
     );
-    // A choice as a select is: from [ExpressiveSelect.wideFrom], at most
-    // [ExpressiveSelect.wideMaxWidth] at its column's start.
-    return expressiveChoiceWidth(
-      context,
-      RawInputGroup(
+    // A field: it takes its column's width, as a select does.
+    return RawInputGroup(
+      focusNode: _node,
+      enabled: enabled,
+      isError: widget.isError,
+      // The frame's inset lies inside the tags' layout ([layoutBuilder]):
+      // the suggestions open from the field's outline, its width.
+      builder: (context, states, child) => ExpressiveFieldFrame(
+        states: states,
+        shape: shape,
+        padding: EdgeInsets.zero,
+        child: child,
+      ),
+      child: RawTagInput<T>(
+        values: widget.values,
+        onChanged: onChanged ?? (_) {},
         focusNode: _node,
-        enabled: enabled,
-        isError: widget.isError,
-        // The frame's inset lies inside the tags' layout ([layoutBuilder]):
-        // the suggestions open from the field's outline, its width.
-        builder: (context, states, child) => ExpressiveFieldFrame(
-          states: states,
-          shape: shape,
-          padding: EdgeInsets.zero,
-          child: child,
+        options: <T>[for (final option in widget.options) option.value],
+        search: widget.search == null ? null : _search,
+        debounceDuration: widget.debounceDuration,
+        // The search's states as menu rows on the same panel: a spinner
+        // while it runs, and a failure the arrows can reach to try again.
+        loadingBuilder: (context) => _optionFace(
+          context,
+          states: const <WidgetState>{},
+          label: RawWidgetsLocalizations.of(context).loadingLabel,
+          selectable: false,
+          trailing: const SizedBox.square(
+            dimension: ExpressiveSpacing.s20,
+            child: FittedBox(child: ExpressiveCircularProgressIndicator()),
+          ),
         ),
-        child: RawTagInput<T>(
-          values: widget.values,
-          onChanged: onChanged ?? (_) {},
-          focusNode: _node,
-          options: <T>[for (final option in widget.options) option.value],
-          search: widget.search == null ? null : _search,
-          debounceDuration: widget.debounceDuration,
-          // The search's states as menu rows on the same panel: a spinner
-          // while it runs, and a failure the arrows can reach to try again.
-          loadingBuilder: (context) => _optionFace(
+        // Pressed as the options above it are (ui_core's pressable), and
+        // lit when the arrows reach it.
+        errorBuilder: (context, error) => RawButton(
+          onPressed: error.retry,
+          builder: (context, states, _) => _optionFace(
             context,
-            states: const <WidgetState>{},
-            label: RawWidgetsLocalizations.of(context).loadingLabel,
+            states: <WidgetState>{
+              ...states,
+              if (error.focused) WidgetState.focused,
+            },
+            // What to do, over what went wrong: a two-line row, wrapping
+            // as a narrow panel needs.
+            label: RawWidgetsLocalizations.of(context).retryButtonLabel,
+            supporting: RawWidgetsLocalizations.of(context).searchFailedMessage,
+            icon: ExpressiveSymbols.refresh,
             selectable: false,
-            trailing: const SizedBox.square(
-              dimension: ExpressiveSpacing.s20,
-              child: FittedBox(child: ExpressiveCircularProgressIndicator()),
-            ),
           ),
-          // Pressed as the options above it are (ui_core's pressable), and
-          // lit when the arrows reach it.
-          errorBuilder: (context, error) => RawButton(
-            onPressed: error.retry,
-            builder: (context, states, _) => _optionFace(
-              context,
-              states: <WidgetState>{
-                ...states,
-                if (error.focused) WidgetState.focused,
-              },
-              // What to do, over what went wrong: a two-line row, wrapping
-              // as a narrow panel needs.
-              label: RawWidgetsLocalizations.of(context).retryButtonLabel,
-              supporting: RawWidgetsLocalizations.of(context)
-                  .searchFailedMessage,
-              icon: ExpressiveSymbols.refresh,
-              selectable: false,
-            ),
-          ),
-          isOptionEnabled: _enabled,
-          // One place: the pointer moves ui_core's highlight. After a pointer
-          // opens the list, the highlight draws as the hover layer
-          // ([_highlightStates]), so a second, the pointer's own, would read
-          // as two current options.
-          highlightFollowsPointer: true,
-          displayStringForOption: _label,
-          onCreate: widget.onCreate,
-          maxTags: widget.maxValues,
-          semanticLabel: widget.labelText,
-          deleteLabel: ExpressiveLocalizations.of(context).removeTag,
-          // Its own width (what is typed, or the placeholder), at least
-          // 120dp: beside the chips while it fits, under them only when it
-          // does not. A field that fills the row always sat on a line of its
-          // own, an empty line under the chips.
-          // Its line is the tags' touch target, and the tag group reads the
-          // tags' face on its middle ([_TagFieldFace]): a line it shares
-          // with tags keeps their 8dp rhythm.
-          fieldBuilder: (context, field) => _TagFieldFace(
-            face: face,
-            child: IntrinsicWidth(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: 120),
-                child: ExpressiveBareField(
-                  controller: field.controller,
-                  focusNode: field.focusNode,
-                  enabled: enabled,
-                  minHeight: tagLine,
-                  hintText: widget.values.isEmpty ? widget.hintText : null,
-                  semanticLabel: widget.labelText,
-                  // The entry says whether its list stands open.
-                  expanded: field.isOpen,
-                  // Enter adds a value and the field keeps the focus for the
-                  // next: onEditingComplete, never onSubmitted, whose restart
-                  // of the text input a browser types into no more.
-                  onEditingComplete: field.submit,
-                ),
+        ),
+        isOptionEnabled: _enabled,
+        // One place: the pointer moves ui_core's highlight. After a pointer
+        // opens the list, the highlight draws as the hover layer
+        // ([_highlightStates]), so a second, the pointer's own, would read
+        // as two current options.
+        highlightFollowsPointer: true,
+        displayStringForOption: _label,
+        onCreate: widget.onCreate,
+        maxTags: widget.maxValues,
+        semanticLabel: widget.labelText,
+        deleteLabel: ExpressiveLocalizations.of(context).removeTag,
+        // Its own width (what is typed, or the placeholder), at least
+        // 120dp: beside the chips while it fits, under them only when it
+        // does not. A field that fills the row always sat on a line of its
+        // own, an empty line under the chips.
+        // Its line is the tags' touch target, and the tag group reads the
+        // tags' face on its middle ([_TagFieldFace]): a line it shares
+        // with tags keeps their 8dp rhythm.
+        fieldBuilder: (context, field) => _TagFieldFace(
+          face: face,
+          child: IntrinsicWidth(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 120),
+              child: ExpressiveBareField(
+                controller: field.controller,
+                focusNode: field.focusNode,
+                enabled: enabled,
+                minHeight: tagLine,
+                hintText: widget.values.isEmpty ? widget.hintText : null,
+                semanticLabel: widget.labelText,
+                // The entry says whether its list stands open.
+                expanded: field.isOpen,
+                // Enter adds a value and the field keeps the focus for the
+                // next: onEditingComplete, never onSubmitted, whose restart
+                // of the text input a browser types into no more.
+                onEditingComplete: field.submit,
               ),
             ),
           ),
-          // The tags' faces stand [inset] from the outline on every side:
-          // above and below, the frame's padding is what their lines leave.
-          layoutBuilder: (context, tags, field) => Padding(
-            padding: EdgeInsetsDirectional.symmetric(
-              horizontal: inset,
-              vertical: vertical,
-            ),
-            child: RawChipGroup(
-              spacing: ExpressiveSpacing.s8,
-              runSpacing: ExpressiveSpacing.s8,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: <Widget>[...tags, field],
-            ),
+        ),
+        // The tags' faces stand [inset] from the outline on every side:
+        // above and below, the frame's padding is what their lines leave.
+        layoutBuilder: (context, tags, field) => Padding(
+          padding: EdgeInsetsDirectional.symmetric(
+            horizontal: inset,
+            vertical: vertical,
           ),
-          // The ring round the chip's face, not its taller touch target:
-          // inside the field's outline.
-          tagBuilder: (context, value, tag) => ExpressiveFocusRingBox(
-            focused: tag.focused,
-            faceHeight: face,
-            shape: t.shapes.small,
-            // A disabled chip keeps its remove glyph, dimmed and inert (M3's
-            // disabled input chip): the field keeps its size.
-            child: ExpressiveChip(
-              _label(value),
-              onDeleted: tag.onDeleted,
-              enabled: enabled,
-            ),
+          child: RawChipGroup(
+            spacing: ExpressiveSpacing.s8,
+            runSpacing: ExpressiveSpacing.s8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: <Widget>[...tags, field],
           ),
-          optionBuilder: (context, option, states) =>
-              _optionFace(context, states: states, label: _label(option)),
-          // Clear of the outline below it, as a select's menu stands.
-          // 4dp from the field on whichever side the list opens: below it,
-          // or above it when the screen has no room under the field. The
-          // other 4dp is clear and takes no taps.
-          surfaceBuilder: (context, list) => Padding(
-            padding: const EdgeInsets.symmetric(vertical: ExpressiveSpacing.s4),
-            child: _panel(list),
+        ),
+        // The ring round the chip's face, not its taller touch target:
+        // inside the field's outline.
+        tagBuilder: (context, value, tag) => ExpressiveFocusRingBox(
+          focused: tag.focused,
+          faceHeight: face,
+          shape: t.shapes.small,
+          // A disabled chip keeps its remove glyph, dimmed and inert (M3's
+          // disabled input chip): the field keeps its size.
+          child: ExpressiveChip(
+            _label(value),
+            onDeleted: tag.onDeleted,
+            enabled: enabled,
           ),
+        ),
+        optionBuilder: (context, option, states) =>
+            _optionFace(context, states: states, label: _label(option)),
+        // Clear of the outline below it, as a select's menu stands.
+        // 4dp from the field on whichever side the list opens: below it,
+        // or above it when the screen has no room under the field. The
+        // other 4dp is clear and takes no taps.
+        surfaceBuilder: (context, list) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: ExpressiveSpacing.s4),
+          child: _panel(list),
         ),
       ),
     );

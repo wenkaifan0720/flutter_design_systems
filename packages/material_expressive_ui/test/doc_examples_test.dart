@@ -1026,6 +1026,33 @@ final Map<String, DocExample> _examples = {
       child: child,
     );
   },
+  'ExpressiveThemeData.palettes': (context) {
+    const id = 'grove';
+    const app = ExpressiveFilledButton('Save');
+    return ExpressiveHost(
+      palette: ExpressiveThemeData.palettes.firstWhere((p) => p.id == id),
+      child: app,
+    );
+  },
+  'ExpressiveAppShell.branches': (context) {
+    var index = 0;
+    return StatefulBuilder(
+      builder: (context, setState) => ExpressiveAppShell.branches(
+        destinations: const [
+          ExpressiveNavItem(ExpressiveSymbols.home, 'Home'),
+          ExpressiveNavItem(ExpressiveSymbols.search, 'Search'),
+          ExpressiveNavItem(ExpressiveSymbols.settings, 'Settings'),
+        ],
+        selectedIndex: index,
+        onDestinationSelected: (i) => setState(() => index = i),
+        branches: [
+          (context) => const HomePage(),
+          (context) => const SearchPage(),
+          (context) => const SettingsPage(),
+        ],
+      ),
+    );
+  },
   'ExpressiveTextTheme': (context) {
     final type = const ExpressiveTextTheme().copyWith(textFamily: 'Inter');
     const world = ExpressiveTextTheme(
@@ -1209,4 +1236,28 @@ void main() {
       'lib/src/material_expressive',
     ].firstWhere((path) => Directory(path).existsSync()),
   );
+}
+
+/// A place's first page, for the shell's example.
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Text('Home');
+}
+
+/// A place's first page, for the shell's example.
+class SearchPage extends StatelessWidget {
+  const SearchPage({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Text('Search');
+}
+
+/// A place's first page, for the shell's example.
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Text('Settings');
 }

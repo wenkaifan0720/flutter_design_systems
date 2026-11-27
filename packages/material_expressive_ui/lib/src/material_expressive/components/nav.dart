@@ -8,13 +8,14 @@ import 'package:material_ui/material_ui.dart' show MaterialLocalizations;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
-import 'package:ui_core/host.dart' show NavTab;
 
 import '../icons.dart';
 import '../component_themes.dart';
 import '../elevation.dart';
 import '../internal/badge_anchor.dart';
 import '../internal/cap_label.dart';
+import '../internal/shell_destinations.dart';
+import 'app_shell.dart' show ExpressiveAppShell;
 import '../internal/styled_content.dart';
 import '../internal/whole_words.dart';
 import 'select.dart' show ExpressiveSelect;
@@ -60,18 +61,6 @@ class ExpressiveNavItem {
     this.enabled = true,
     this.style,
   });
-
-  /// The shared tab as a navigation item: its glyph, label, selected
-  /// glyph and key.
-  ExpressiveNavItem.fromTab(
-    NavTab tab, {
-    this.badge,
-    this.enabled = true,
-    this.style,
-  }) : icon = tab.icon,
-       label = tab.label,
-       key = tab.key,
-       selectedIcon = tab.selectedIcon;
 
   /// Stateful visual overrides for this destination.
   final ExpressiveComponentThemeData? style;
@@ -226,7 +215,43 @@ class ExpressiveNavigationBar extends StatelessWidget {
         ),
       );
     }
-    return ExpressiveSurface(
+    // Under [ExpressiveAppShell] ui_core's shell presses the destinations
+    // (one tab stop, the arrows along them, a tab bar to a screen reader)
+    // and the bar paints them.
+    final shell = ExpressiveShellDestinations.maybeOf(context);
+    final content = _navigationContentStyle(visual)
+        .layeredUnder(t.navigationItemTheme);
+    Widget item(int index, {Set<WidgetState>? states}) => _NavItem(
+      item: destinations[index],
+      componentStyle: content,
+      selected: index == selectedIndex,
+      onTap: () => onDestinationSelected(index),
+      geometry: top ? _NavItemGeometry.barTop : _NavItemGeometry.barStart,
+      colors: _NavItemColors.bar(t, top: top),
+      animateLabelColor: false,
+      shellStates: states,
+    );
+    final layout = ExpressiveWholeWordsGroup(
+      child: _NavBarLayout(
+        arrangement: arrangement,
+        minimumHeight: t.density.height(
+          ShortNavigationBarBehavior.minHeight,
+          floor: ExpressiveSpacing.s48,
+        ),
+        devicePixelRatio: MediaQuery.devicePixelRatioOf(context),
+        children: <Widget>[
+          for (var index = 0; index < destinations.length; index++)
+            if (shell != null && index < shell.destinations.length)
+              KeyedSubtree(
+                key: destinations[index].key,
+                child: shell.destinations[index],
+              )
+            else
+              item(index),
+        ],
+      ),
+    );
+    final Widget bar = ExpressiveSurface(
       componentStyle: visual,
       shape: t.shapes.none,
       color: t.colors.role(NavigationBarTokens.containerColor),
@@ -243,42 +268,26 @@ class ExpressiveNavigationBar extends StatelessWidget {
           explicitChildNodes: true,
           child: _NavigationViewport(
             minimumWidth: minimumWidth,
-            // Flutter's NavigationBar: a tab bar of tabs.
-            child: Semantics(
-              role: SemanticsRole.tabBar,
-              container: true,
-              explicitChildNodes: true,
-              // The destinations share the width equally: a word too wide
-              // for its item shrinks every item's label alike.
-              child: ExpressiveWholeWordsGroup(
-                child: _NavBarLayout(
-                  arrangement: arrangement,
-                  minimumHeight: t.density.height(
-                    ShortNavigationBarBehavior.minHeight,
-                    floor: ExpressiveSpacing.s48,
+            // Flutter's NavigationBar: a tab bar of tabs (the shell's
+            // group under the shell). The destinations share the width
+            // equally: a word too wide for its item shrinks every item's
+            // label alike.
+            child: shell != null
+                ? shell.group(layout)
+                : Semantics(
+                    role: SemanticsRole.tabBar,
+                    container: true,
+                    explicitChildNodes: true,
+                    child: layout,
                   ),
-                  devicePixelRatio: MediaQuery.devicePixelRatioOf(context),
-                  children: <Widget>[
-                    for (final (index, item) in destinations.indexed)
-                      _NavItem(
-                        item: item,
-                        componentStyle: _navigationContentStyle(visual)
-                            .layeredUnder(t.navigationItemTheme),
-                        selected: index == selectedIndex,
-                        onTap: () => onDestinationSelected(index),
-                        geometry: top
-                            ? _NavItemGeometry.barTop
-                            : _NavItemGeometry.barStart,
-                        colors: _NavItemColors.bar(t, top: top),
-                        animateLabelColor: false,
-                      ),
-                  ],
-                ),
-              ),
-            ),
           ),
         ),
       ),
+    );
+    if (shell == null) return bar;
+    return ExpressiveDestinationFaces(
+      paint: (context, index, states) => item(index, states: states),
+      child: bar,
     );
   }
 
@@ -523,8 +532,8 @@ class _RenderNavBar extends RenderBox
 /// large widths (1200dp and up, where the shell expands it). [showExpressiveNavigationDrawer] raises
 /// the same rail modally, the drawer of a phone.
 ///
-/// The shell draws the collapsed rail instead of the bar from 600dp, and
-/// the expanded one from 1200dp.
+/// [ExpressiveAppShell] stands the collapsed rail instead of the bar from
+/// 600dp, and the expanded one from 1200dp.
 class ExpressiveNavigationRail extends StatelessWidget {
   /// A navigation rail of [destinations] with [selectedIndex] active.
   const ExpressiveNavigationRail({
@@ -607,7 +616,33 @@ class ExpressiveNavigationRail extends StatelessWidget {
         ? insets.left
         : insets.right;
     final header = this.header;
-    return ExpressiveSurface(
+    final shell = ExpressiveShellDestinations.maybeOf(context);
+    final content = _navigationContentStyle(visual)
+        .layeredUnder(t.navigationItemTheme);
+    Widget item(int index, {Set<WidgetState>? states}) => _NavItem(
+      item: destinations[index],
+      componentStyle: content,
+      selected: index == selectedIndex,
+      onTap: () => onDestinationSelected(index),
+      geometry: expanded
+          ? _NavItemGeometry.railStart
+          : _NavItemGeometry.railTop,
+      colors: expanded
+          ? _NavItemColors.rail(t, start: true)
+          : _NavItemColors.rail(t),
+      animateLabelColor: true,
+      spans: expanded && _drawer,
+      shellStates: states,
+    );
+    // Under [ExpressiveAppShell] the shell's destination, which paints its
+    // face through the rail's painter.
+    Widget cell(int index) => shell != null && index < shell.destinations.length
+        ? KeyedSubtree(
+            key: destinations[index].key,
+            child: shell.destinations[index],
+          )
+        : item(index);
+    final Widget rail = ExpressiveSurface(
       componentStyle: visual,
       shape: _modal
           ? t.shapes.of(NavigationRailExpandedTokens.modalContainerShape).end()
@@ -643,8 +678,9 @@ class ExpressiveNavigationRail extends StatelessWidget {
                         : CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      for (final (index, item)
-                          in destinations.indexed) ...<Widget>[
+                      for (final index in Iterable<int>.generate(
+                        destinations.length,
+                      )) ...<Widget>[
                         if (index > 0 && !expanded)
                           const SizedBox(
                             height:
@@ -668,17 +704,7 @@ class ExpressiveNavigationRail extends StatelessWidget {
                               constraints: const BoxConstraints(
                                 minHeight: ExpressiveSpacing.s48,
                               ),
-                              child: _NavItem(
-                                item: item,
-                                componentStyle: _navigationContentStyle(visual)
-                                    .layeredUnder(t.navigationItemTheme),
-                                selected: index == selectedIndex,
-                                onTap: () => onDestinationSelected(index),
-                                geometry: _NavItemGeometry.railStart,
-                                colors: _NavItemColors.rail(t, start: true),
-                                animateLabelColor: true,
-                                spans: _drawer,
-                              ),
+                              child: cell(index),
                             ),
                           )
                         else
@@ -690,16 +716,7 @@ class ExpressiveNavigationRail extends StatelessWidget {
                                 floor: ExpressiveSpacing.s48,
                               ),
                             ),
-                            child: _NavItem(
-                              item: item,
-                              componentStyle: _navigationContentStyle(visual)
-                                  .layeredUnder(t.navigationItemTheme),
-                              selected: index == selectedIndex,
-                              onTap: () => onDestinationSelected(index),
-                              geometry: _NavItemGeometry.railTop,
-                              colors: _NavItemColors.rail(t),
-                              animateLabelColor: true,
-                            ),
+                            child: cell(index),
                           ),
                       ],
                     ],
@@ -734,6 +751,11 @@ class ExpressiveNavigationRail extends StatelessWidget {
           ),
         ),
       ),
+    );
+    if (shell == null) return rail;
+    return ExpressiveDestinationFaces(
+      paint: (context, index, states) => item(index, states: states),
+      child: rail,
     );
   }
 
@@ -1205,6 +1227,7 @@ class _NavItem extends StatelessWidget {
     required this.colors,
     required this.animateLabelColor,
     this.spans = false,
+    this.shellStates,
   });
 
   final ExpressiveNavItem item;
@@ -1219,11 +1242,27 @@ class _NavItem extends StatelessWidget {
   /// label at its start, a badge at its end instead of on the icon.
   final bool spans;
 
+  /// The states of the shell's press round this face, under
+  /// [ExpressiveAppShell]; null when the item presses itself.
+  ///
+  /// The shell's press holds the focus, the keys and the node a screen
+  /// reader hears; the face keeps the ripple and its state layers from the
+  /// pointer, a tap going to the shell's press (so choosing the place again
+  /// goes back to its first page), and shows the shell's keyboard focus.
+  final Set<WidgetState>? shellStates;
+
   @override
   Widget build(BuildContext context) => _NavigationStates(builder: _build);
 
   Widget _build(BuildContext context, WidgetStatesController controller) {
     final t = context.expressiveTheme;
+    final shell = shellStates;
+    if (shell != null) {
+      final focused = shell.contains(WidgetState.focused);
+      if (controller.value.contains(WidgetState.focused) != focused) {
+        controller.update(WidgetState.focused, focused);
+      }
+    }
     final enabled = item.enabled;
     final states = <WidgetState>{
       ...controller.value,
@@ -1310,6 +1349,67 @@ class _NavItem extends StatelessWidget {
             ],
           )
         : words;
+    final press = ExpressivePressable(
+      statesController: controller,
+      style: ExpressiveComponentThemeData(
+        overlayColor: visual.overlayColor,
+        shape: visual.shape,
+      ),
+      shapes: ExpressivePressShapes.all(indicatorShape),
+      motion: NavigationItemBehavior.indicatorMotion,
+      color: const Color(_transparent),
+      contentColor: foreground ?? colors.ripple,
+      role: ExpressivePressRole.none,
+      semanticsRole: SemanticsRole.tab,
+      selected: selected,
+      minimumInteractiveSize: false,
+      // The expanded rail's destinations stack flush: a ring outside
+      // the pill ran under the next item, and a selected next
+      // item's indicator covered its lower edge. Inside, as a
+      // list row draws it; the item paints this layer over its
+      // indicator, so the ring shows on a selected pill too.
+      focusInward: identical(geometry, _NavItemGeometry.railStart),
+      onPressed: !enabled
+          ? null
+          : shell == null
+          ? onTap
+          // The shell's press chooses: the same act as its keys.
+          : () => Actions.maybeInvoke(context, const ActivateIntent()),
+      child: const SizedBox.expand(),
+    );
+    final face = ExpressiveSpringValue(
+      value: selected ? 1 : 0,
+      motion: NavigationItemBehavior.indicatorMotion,
+      builder: (context, progress, _) => ConstrainedBox(
+        constraints: BoxConstraints(
+          minWidth: minimum?.width ?? ExpressiveSpacing.s48,
+          minHeight: minimum?.height ?? ExpressiveSpacing.s48,
+        ),
+        child: _NavItemLayout(
+          geometry: g,
+          fill: spans,
+          progress: fill != null || side.style != BorderStyle.none
+              ? 1
+              : math.max(0, progress),
+          devicePixelRatio: MediaQuery.devicePixelRatioOf(context),
+          children: <Widget>[
+            // Under the shell the focus is the shell's press's.
+            if (shell != null) ExcludeFocus(child: press) else press,
+            _Indicator(
+              color: fill ?? colors.indicator,
+              shape: indicatorShape.copyWith(side: side),
+              progress: fill != null || side.style != BorderStyle.none
+                  ? 1
+                  : progress,
+            ),
+            icon,
+            label,
+          ],
+        ),
+      ),
+    );
+    // Under the shell its press speaks for the face, and holds the key.
+    if (shell != null) return face;
     return KeyedSubtree(
       key: item.key,
       // The item states its own selection: its pressable is the hit layer
@@ -1317,64 +1417,7 @@ class _NavItem extends StatelessWidget {
       // pressable takes no role of its own (a role's tap would make that
       // empty layer the control a reader takes).
       child: MergeSemantics(
-        child: Semantics(
-          selected: selected,
-          child: ExpressiveSpringValue(
-            value: selected ? 1 : 0,
-            motion: NavigationItemBehavior.indicatorMotion,
-            builder: (context, progress, _) => ConstrainedBox(
-              constraints: BoxConstraints(
-                minWidth: minimum?.width ?? ExpressiveSpacing.s48,
-                minHeight: minimum?.height ?? ExpressiveSpacing.s48,
-              ),
-              child: _NavItemLayout(
-                geometry: g,
-                fill: spans,
-                progress: fill != null || side.style != BorderStyle.none
-                    ? 1
-                    : math.max(0, progress),
-                devicePixelRatio: MediaQuery.devicePixelRatioOf(context),
-                children: <Widget>[
-                  ExpressivePressable(
-                    statesController: controller,
-                    style: ExpressiveComponentThemeData(
-                      overlayColor: visual.overlayColor,
-                      shape: visual.shape,
-                    ),
-                    shapes: ExpressivePressShapes.all(indicatorShape),
-                    motion: NavigationItemBehavior.indicatorMotion,
-                    color: const Color(_transparent),
-                    contentColor: foreground ?? colors.ripple,
-                    role: ExpressivePressRole.none,
-                    semanticsRole: SemanticsRole.tab,
-                    selected: selected,
-                    minimumInteractiveSize: false,
-                    // The expanded rail's destinations stack flush: a ring outside
-                    // the pill ran under the next item, and a selected next
-                    // item's indicator covered its lower edge. Inside, as a
-                    // list row draws it; the item paints this layer over its
-                    // indicator, so the ring shows on a selected pill too.
-                    focusInward: identical(
-                      geometry,
-                      _NavItemGeometry.railStart,
-                    ),
-                    onPressed: enabled ? onTap : null,
-                    child: const SizedBox.expand(),
-                  ),
-                  _Indicator(
-                    color: fill ?? colors.indicator,
-                    shape: indicatorShape.copyWith(side: side),
-                    progress: fill != null || side.style != BorderStyle.none
-                        ? 1
-                        : progress,
-                  ),
-                  icon,
-                  label,
-                ],
-              ),
-            ),
-          ),
-        ),
+        child: Semantics(selected: selected, child: face),
       ),
     );
   }

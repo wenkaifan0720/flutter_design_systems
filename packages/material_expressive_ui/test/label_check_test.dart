@@ -10,7 +10,7 @@ import 'package:ui_core_test/ui_core_test.dart';
 
 // The gallery is the example app; a test reads its pages from there.
 // ignore_for_file: avoid_relative_lib_imports
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import '../example/lib/kit_gallery/trip.dart';
 import 'gallery_support.dart';
 

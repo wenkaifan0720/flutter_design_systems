@@ -203,9 +203,15 @@ class ExpressiveTag extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
     final c = t.colors;
+    // The neutral tag is outlined (Material's outlined chip): no palette's
+    // grey container can then match it. The filled tones wear their own
+    // containers, the primary the palette's own.
     final (container, content) = switch (tone) {
-      ExpressiveTone.neutral => (c.surfaceContainerHighest, c.onSurfaceVariant),
-      ExpressiveTone.primary => (c.secondaryContainer, c.onSecondaryContainer),
+      ExpressiveTone.neutral => (
+        c.surfaceContainerHighest.withValues(alpha: 0),
+        c.onSurfaceVariant,
+      ),
+      ExpressiveTone.primary => (c.primaryContainer, c.onPrimaryContainer),
       ExpressiveTone.error => (c.errorContainer, c.onErrorContainer),
       ExpressiveTone.success => (
         t.status.success.container,
@@ -230,6 +236,9 @@ class ExpressiveTag extends StatelessWidget {
         shape: t.shapes.of(ChipsTokens.pressedShape),
         color: container,
         contentColor: content,
+        side: tone == ExpressiveTone.neutral
+            ? BorderSide(color: c.outlineVariant)
+            : BorderSide.none,
         padding: const EdgeInsetsDirectional.symmetric(
           horizontal: ExpressiveSpacing.s12,
           vertical: ExpressiveSpacing.s4,

@@ -4,6 +4,7 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/host.dart';
 
 import '../color.dart';
@@ -35,6 +36,7 @@ class ExpressiveHost extends StatefulWidget {
     this.highContrastTheme,
     this.highContrastDarkTheme,
     this.brightness,
+    this.palette,
     super.key,
   });
 
@@ -71,6 +73,12 @@ class ExpressiveHost extends StatefulWidget {
 
   /// The brightness to wear; null follows the platform's.
   final Brightness? brightness;
+
+  /// The palette by day and by night where [theme] or [darkTheme] is null:
+  /// one of [ExpressiveThemeData.palettes] (the app's stored choice) or the
+  /// app's own ([ExpressiveThemeData.fromPalette]); null is Baseline. A
+  /// change of palette springs across, as a change of brightness does.
+  final RawNamedPalette? palette;
 
   /// The thin Material [ThemeData] the primitives read under [theme] on
   /// [platform]: built once per pair, since a [ThemeData] is costly to make.
@@ -249,6 +257,13 @@ class ExpressiveHost extends StatefulWidget {
           brightness,
           defaultValue: null,
         ),
+      )
+      ..add(
+        DiagnosticsProperty<RawNamedPalette?>(
+          'palette',
+          palette,
+          defaultValue: null,
+        ),
       );
   }
 }
@@ -267,9 +282,10 @@ class _ExpressiveHostDark extends InheritedWidget {
 /// A subtree on a media ground (design_kit's `ChromeGround.media`): the
 /// host's dark theme ([ExpressiveHost.mediaThemeOf]), the primitives it
 /// reads and its system bars — light icons — whatever brightness the app
-/// is in. The shell mounts it around its bar on a media tab and
-/// `ExpressiveScaffold` around a page that stands on media, so a feed's bar
-/// and a pushed player's back arrow are drawn in the dark scheme.
+/// is in. The host library's `ExpressiveShellScaffold` mounts it around its
+/// bar on a media tab and `ExpressiveScaffold` around a page that stands on
+/// media, so a feed's bar and a pushed player's back arrow are drawn in the
+/// dark scheme; wrap a part of your own that stands on media the same way.
 class ExpressiveMediaGround extends StatelessWidget {
   /// A media ground around [child].
   const ExpressiveMediaGround({required this.child, super.key});
@@ -320,12 +336,18 @@ class _ExpressiveHostState extends State<ExpressiveHost> {
     // The platform's high contrast picks the high-contrast pair, as
     // MaterialApp does; the default preset has its own, baked.
     final high = MediaQuery.maybeHighContrastOf(context) ?? false;
-    ExpressiveThemeData preset(Brightness brightness) =>
-        ExpressiveThemeData.preset(
-          ExpressiveThemeData.defaultPreset,
-          brightness,
-          contrastLevel: high ? 1 : 0,
-        );
+    final palette = widget.palette;
+    ExpressiveThemeData preset(Brightness brightness) => palette == null
+        ? ExpressiveThemeData.preset(
+            ExpressiveThemeData.defaultPreset,
+            brightness,
+            contrastLevel: high ? 1 : 0,
+          )
+        : ExpressiveThemeData.fromPalette(
+            palette,
+            brightness,
+            contrastLevel: high ? 1 : 0,
+          );
     final dark =
         (high ? widget.highContrastDarkTheme : null) ??
         widget.darkTheme ??

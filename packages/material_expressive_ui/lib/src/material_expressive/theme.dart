@@ -703,7 +703,76 @@ class ExpressiveThemeData with Diagnosticable {
     return theme.copyWith(colors: colors);
   }
 
-  /// Available preset IDs, starting with the default.
+  /// Expressive's six palettes, for an app's palette picker: the [presets]
+  /// by name, each with its primary and its surface by day and by night.
+  /// The first, Baseline (Compose's own scheme), is the default.
+  ///
+  /// ```dart
+  /// ExpressiveHost(
+  ///   palette: ExpressiveThemeData.palettes.firstWhere((p) => p.id == id),
+  ///   child: app,
+  /// )
+  /// ```
+  static const List<RawNamedPalette> palettes = [
+    RawNamedPalette(
+      id: 'baseline',
+      label: 'Baseline',
+      swatches: [Color(0xFF6750A4), Color(0xFFFEF7FF)],
+      darkSwatches: [Color(0xFFD0BCFF), Color(0xFF141218)],
+    ),
+    RawNamedPalette(
+      id: 'slate',
+      label: 'Slate',
+      swatches: [Color(0xFF595F66), Color(0xFFFCF9F9)],
+      darkSwatches: [Color(0xFFC2C7CF), Color(0xFF0E0E0F)],
+    ),
+    RawNamedPalette(
+      id: 'bloom',
+      label: 'Bloom',
+      swatches: [Color(0xFFAB1C69), Color(0xFFFFF4F7)],
+      darkSwatches: [Color(0xFFFF87BA), Color(0xFF20021A)],
+    ),
+    RawNamedPalette(
+      id: 'grove',
+      label: 'Grove',
+      swatches: [Color(0xFF2F6A4F), Color(0xFFF7FAF5)],
+      darkSwatches: [Color(0xFFA3D1B7), Color(0xFF0B0F0D)],
+    ),
+    RawNamedPalette(
+      id: 'ember',
+      label: 'Ember',
+      swatches: [Color(0xFF994719), Color(0xFFFFF8F5)],
+      darkSwatches: [Color(0xFFFFBD9F), Color(0xFF1A0A02)],
+    ),
+    RawNamedPalette(
+      id: 'tide',
+      label: 'Tide',
+      swatches: [Color(0xFF2E6581), Color(0xFFF7F9FD)],
+      darkSwatches: [Color(0xFFA5CCE5), Color(0xFF0B0F11)],
+    ),
+  ];
+
+  /// The theme of [palette] in [brightness] at [contrastLevel]: one of
+  /// [palettes] is that preset ([ExpressiveThemeData.preset]); an app's own
+  /// is [ExpressiveThemeData.from] its first swatch (by day from
+  /// [RawNamedPalette.swatches], by night from
+  /// [RawNamedPalette.darkSwatches]), Material's tonal scheme round it.
+  factory ExpressiveThemeData.fromPalette(
+    RawNamedPalette palette,
+    Brightness brightness, {
+    double contrastLevel = 0,
+  }) {
+    if (palettes.any((p) => p == palette)) {
+      return preset(palette.id, brightness, contrastLevel: contrastLevel);
+    }
+    return ExpressiveThemeData.from(
+      seed: palette.swatchesFor(brightness).first,
+      brightness: brightness,
+      contrastLevel: contrastLevel,
+    );
+  }
+
+  /// Available preset IDs, starting with the default: the [palettes]' ids.
   static List<String> get presets =>
       expressiveBakedThemes.keys.toList(growable: false);
 

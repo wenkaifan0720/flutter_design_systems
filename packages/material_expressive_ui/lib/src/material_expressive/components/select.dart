@@ -7,9 +7,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../internal/choice_width.dart';
 import '../component_themes.dart';
 import '../icons.dart';
-import '../internal/choice_width.dart';
 import '../internal/field_node.dart';
 import '../internal/tokens/behavior.g.dart';
 import '../states.dart';
@@ -80,10 +80,9 @@ class ExpressiveSelectTrailingIcon extends StatelessWidget {
 /// through [onChanged]. Disabled when [onChanged] is null or [enabled] is
 /// false.
 ///
-/// A choice, not an entry: in a window [wideFrom] or wider it is at most
-/// [wideMaxWidth] wide, at its column's start, however wide the column (a
-/// form's grid cell narrower than that bounds it as before); on a phone it
-/// takes its column's width.
+/// In a column it takes the column's width at every window width, as a
+/// text field does (Material's `DropdownMenu` in a form); give it a width
+/// of its own with a `SizedBox`.
 class ExpressiveSelect<T> extends StatefulWidget {
   /// A select of [options] with [value] chosen, reporting a choice through [onChanged].
   const ExpressiveSelect({
@@ -166,7 +165,8 @@ class ExpressiveSelect<T> extends StatefulWidget {
   /// Material's medium window class, where the shell's rail stands in.
   static const double wideFrom = ExpressiveChromeMetrics.railMinWindowWidth;
 
-  /// A select's widest in a window [wideFrom] or wider.
+  /// An expanded button's widest (a primary act's at a form's foot) in a
+  /// window [wideFrom] or wider; a select itself takes its column's width.
   static const double wideMaxWidth = 320;
 
   @override
@@ -313,7 +313,8 @@ class _ExpressiveSelectState<T> extends State<ExpressiveSelect<T>>
   Widget build(BuildContext context) {
     final open = _menu.isOpen;
     measureValueStart();
-    return expressiveChoiceWidth(context, _select(context, open));
+    // A field: it takes its column's width, as a text field does.
+    return _select(context, open);
   }
 
   Widget _select(BuildContext context, bool open) {
@@ -795,71 +796,67 @@ class _ExpressiveComboboxState<T> extends State<ExpressiveCombobox<T>>
     final matches = _matches;
     final chosen = _chosen;
     measureValueStart();
-    // A choice as a select is: from [ExpressiveSelect.wideFrom], at most
-    // [ExpressiveSelect.wideMaxWidth] at its column's start.
-    return expressiveChoiceWidth(
-      context,
-      ExpressiveMenu(
-        controller: _menu,
-        modal: false,
-        matchAnchorWidth: true,
-        wordsStart: valueStart,
-        maxHeight: widget.menuMaxHeight,
-        label: widget.semanticLabel ?? widget.labelText,
-        entries: <ExpressiveMenuEntry>[
-          for (final option in matches)
-            // As a select's: the row's fill marks the choice, no check, so
-            // every option's words start where the field's do.
-            ExpressiveMenuRadioItem(
-              option.label,
-              selected: identical(option, chosen),
-              check: false,
-              icon: option.icon,
-              supportingText: option.supportingText,
-              onSelected: option.enabled ? () => _choose(option) : null,
+    // A field: it takes its column's width, as a text field does.
+    return ExpressiveMenu(
+      controller: _menu,
+      modal: false,
+      matchAnchorWidth: true,
+      wordsStart: valueStart,
+      maxHeight: widget.menuMaxHeight,
+      label: widget.semanticLabel ?? widget.labelText,
+      entries: <ExpressiveMenuEntry>[
+        for (final option in matches)
+          // As a select's: the row's fill marks the choice, no check, so
+          // every option's words start where the field's do.
+          ExpressiveMenuRadioItem(
+            option.label,
+            selected: identical(option, chosen),
+            check: false,
+            icon: option.icon,
+            supportingText: option.supportingText,
+            onSelected: option.enabled ? () => _choose(option) : null,
+          ),
+        if (_saysNoMatch(matches))
+          ExpressiveMenuNote(widget.emptyBuilder ?? _noMatch),
+      ],
+      builder: (context, menu) => ExpressiveFieldNodeHost(
+        expanded: open,
+        child: Focus(
+          canRequestFocus: false,
+          skipTraversal: true,
+          onKeyEvent: _onKey,
+          child: ExpressiveTextField(
+            key: valueFace,
+            controller: _text,
+            focusNode: _focus,
+            kind: widget.kind,
+            style: context.expressiveTheme.selectTheme.layeredUnder(
+              widget.style,
             ),
-          if (_saysNoMatch(matches))
-            ExpressiveMenuNote(widget.emptyBuilder ?? _noMatch),
-        ],
-        builder: (context, menu) => ExpressiveFieldNodeHost(
-          expanded: open,
-          child: Focus(
-            canRequestFocus: false,
-            skipTraversal: true,
-            onKeyEvent: _onKey,
-            child: ExpressiveTextField(
-              key: valueFace,
-              controller: _text,
-              focusNode: _focus,
-              kind: widget.kind,
-              style: context.expressiveTheme.selectTheme.layeredUnder(
-                widget.style,
-              ),
-              rounded: widget.rounded,
-              tonal: widget.tonal,
-              labelText: widget.labelText,
-              hintText: widget.hintText,
-              leading: widget.leading,
-              trailing: _ComboboxToggle(
-                expanded: open,
-                enabled: widget.enabled,
-                onToggle: _toggle,
-              ),
-              helperText: widget.helperText,
-              errorText: widget.errorText,
+            rounded: widget.rounded,
+            tonal: widget.tonal,
+            labelText: widget.labelText,
+            hintText: widget.hintText,
+            leading: widget.leading,
+            trailing: _ComboboxToggle(
+              expanded: open,
               enabled: widget.enabled,
-              autofocus: widget.autofocus,
-              keyboardType: widget.keyboardType,
-              textInputAction: widget.textInputAction,
-              textCapitalization: widget.textCapitalization,
-              onChanged: _typed,
-              // Enter keeps the focus in the field (its menu stays at hand):
-              // onEditingComplete, never onSubmitted, whose restart of the
-              // text input a browser types into no more.
-              onEditingComplete: () => widget.onSubmitted?.call(_text.text),
-              onTap: _toggle,
-              semanticLabel: widget.semanticLabel,
+              onToggle: _toggle,
             ),
+            helperText: widget.helperText,
+            errorText: widget.errorText,
+            enabled: widget.enabled,
+            autofocus: widget.autofocus,
+            keyboardType: widget.keyboardType,
+            textInputAction: widget.textInputAction,
+            textCapitalization: widget.textCapitalization,
+            onChanged: _typed,
+            // Enter keeps the focus in the field (its menu stays at hand):
+            // onEditingComplete, never onSubmitted, whose restart of the
+            // text input a browser types into no more.
+            onEditingComplete: () => widget.onSubmitted?.call(_text.text),
+            onTap: _toggle,
+            semanticLabel: widget.semanticLabel,
           ),
         ),
       ),

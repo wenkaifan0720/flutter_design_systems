@@ -265,8 +265,11 @@ class ExpressiveDescriptionList extends StatelessWidget {
               vertical: ExpressiveSpacing.s12,
             ),
             child: wide
+                // The term on the value's first baseline, as a label
+                // and its text share a line.
                 ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
                     children: <Widget>[
                       Expanded(child: Text(item.term, style: termStyle)),
                       const SizedBox(width: ExpressiveSpacing.s16),

@@ -35,6 +35,7 @@ export 'src/material_expressive/internal/shape/baked_shapes.dart';
 export 'src/material_expressive/internal/shape/graphics/graphics.dart';
 export 'src/material_expressive/internal/shape/library.dart';
 export 'src/material_expressive/internal/shape/library_shapes.g.dart';
+export 'src/material_expressive/internal/shell_destinations.dart';
 export 'src/material_expressive/internal/snack_host.dart';
 export 'src/material_expressive/internal/spacing/spacing.g.dart';
 export 'src/material_expressive/internal/state_face.dart';

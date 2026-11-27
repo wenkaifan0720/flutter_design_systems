@@ -88,8 +88,9 @@ String _headlineDay(BuildContext context, DateTime d) {
 String _inputText(DateTime d) =>
     '${_two(d.month)}/${_two(d.day)}/${d.year.toString().padLeft(4, '0')}';
 
-/// [d] as a docked field prints it: MM/DD/YYYY ([_inputText], Compose's
-/// sample) where the app's language writes a short date as English does
+/// [d] as a docked field prints it: the look's medium date with the year
+/// ([ExpressiveFormat.date]: 3 Oct 2026), which reads as one day to every
+/// reader, where the app's language writes a short date as English does
 /// (month, day, year, in Western digits), else that language's short date
 /// ([RawWidgetsLocalizations.dateFieldPattern]) in its digits, as Material's
 /// date field prints `formatCompactDate`. The year is the bare figure,
@@ -99,7 +100,7 @@ String _fieldDate(BuildContext context, DateTime d) {
   if (words.dateFieldPattern ==
           const DefaultRawWidgetsLocalizations().dateFieldPattern &&
       words.formatDecimal(0) == '0') {
-    return _inputText(d);
+    return ExpressiveFormat.date(d);
   }
   String digits(int n, int width) {
     final said = words.formatDecimal(n);
@@ -2675,8 +2676,9 @@ class _RangeCalendarState extends State<_RangeCalendar> {
 /// The docked date picker (Compose's docked sample): a read-only text field
 /// of [kind] (filled, as [ExpressiveTextField] is, so a date sits among a
 /// form's fields; Compose's sample draws it outlined) showing [value] as
-/// MM/DD/YYYY in English, the locale's short date in another language (or
-/// as [format] prints it), whose tap (or calendar button)
+/// the look's medium date with the year in English ([ExpressiveFormat.date]:
+/// 3 Oct 2026, never read as another day), the locale's short date in
+/// another language (or as [format] prints it), whose tap (or calendar button)
 /// raises the calendar in a popover below it — no header, no toggle. A
 /// chosen day is reported through [onChanged] at once; the popover stays
 /// until a tap outside, Escape or the system back closes it.
@@ -2701,12 +2703,11 @@ class ExpressiveDockedDatePicker extends StatefulWidget {
   /// The chosen day, or none.
   final DateTime? value;
 
-  /// How the read-only field prints [value] — an app whose dates are day
-  /// first passes its own (`(d) => ExpressiveFormat.date(d)`, "3 Oct
-  /// 2026"), so the field never reads as another day. When null, Compose's
-  /// MM/DD/YYYY in English, and in another language the locale's short date
-  /// ([RawWidgetsLocalizations.dateFieldPattern]) in its digits, as Material's
-  /// date field.
+  /// How the read-only field prints [value]. When null, the look's medium
+  /// date with the year in English ([ExpressiveFormat.date]: "3 Oct 2026",
+  /// which no reader takes for another day), and in another language the
+  /// locale's short date ([RawWidgetsLocalizations.dateFieldPattern]) in its
+  /// digits, as Material's date field.
   final String Function(DateTime day)? format;
 
   /// Called with the day the user chooses; disabled when null.

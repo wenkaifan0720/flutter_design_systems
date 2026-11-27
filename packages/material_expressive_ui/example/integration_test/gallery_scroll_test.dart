@@ -7,7 +7,7 @@
 // without a vsync, so its raster time is real.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:material_expressive_ui_example/main.dart'
+import 'package:material_expressive_ui_example/gallery.dart'
     show galleryBuildPage, galleryExamplePages;
 import 'package:material_expressive_ui/material_expressive_ui.dart'
     show expressiveLoadFonts;

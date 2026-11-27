@@ -9,7 +9,7 @@ import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 
 // The gallery is the example app; a test reads its pages from there.
 // ignore_for_file: avoid_relative_lib_imports
-import '../example/lib/main.dart';
+import '../example/lib/gallery.dart';
 import '../example/lib/kit_gallery/kit.dart';
 import 'flutter_test_config.dart' show pageWalkLeakTesting;
 import 'gallery_guidelines_test.dart' show galleryGuidelineFailures;

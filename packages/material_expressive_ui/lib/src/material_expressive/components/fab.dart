@@ -210,8 +210,9 @@ _extendedGeometry(ExpressiveFabSize size) => switch (size) {
 /// 56, 80 or 96dp rounded square (Compose's `FloatingActionButton`,
 /// `MediumFloatingActionButton`, `LargeFloatingActionButton`).
 ///
-/// One FAB per screen; in a shell, give the act to the shell
-/// (`ExpressiveShellAction`) rather than placing a FAB yourself.
+/// One FAB per screen; in an `ExpressiveAppShell`, give the act to its
+/// `action` rather than placing a FAB yourself: it floats over a phone's
+/// pages, clear of the bar, and heads the rail.
 class ExpressiveFloatingActionButton extends StatelessWidget {
   /// A floating action button showing [icon] that runs [onPressed].
   const ExpressiveFloatingActionButton({

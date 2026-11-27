@@ -12,11 +12,11 @@
 /// the button and the accessory (or the rail) are drawn in the host's dark
 /// theme ([ExpressiveMediaGround]), and the body ends at the bar's top.
 ///
-/// `ExpressiveShell` is this under a go_router `StatefulShellRoute` (the
-/// host app's template); an app on a plain `Navigator` stands its branches in
-/// [body] itself (an `IndexedStack` of navigators, one per tab), says which
-/// is [selectedIndex], and hides the bar with [barVisible] while a page is
-/// pushed over a branch root.
+/// An app takes `ExpressiveAppShell`, in the main library, which keeps each
+/// place's pages itself. This scaffold is the host layer's, for a router that
+/// keeps the branches (go_router's `StatefulShellRoute`): the branches stand
+/// in [body], [selectedIndex] says which one shows, and [barVisible] hides the
+/// bar while a page is pushed over a branch root.
 library;
 
 import 'dart:math' as math;
@@ -201,7 +201,13 @@ class _ExpressiveShellScaffoldState extends State<ExpressiveShellScaffold> {
       _barShown = visible;
     }
     final destinations = <ExpressiveNavItem>[
-      for (final tab in widget.tabs) ExpressiveNavItem.fromTab(tab),
+      for (final tab in widget.tabs)
+        ExpressiveNavItem(
+          tab.icon,
+          tab.label,
+          key: tab.key,
+          selectedIcon: tab.selectedIcon,
+        ),
     ];
     final select = widget.onDestinationSelected;
     // ui_core's window classes: the bar while compact, the rail from

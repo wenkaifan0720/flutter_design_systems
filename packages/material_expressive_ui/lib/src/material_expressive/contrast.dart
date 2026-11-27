@@ -6,15 +6,6 @@ import 'package:ui_core/ui_core.dart';
 
 import 'color.dart';
 
-/// WCAG 2's contrast ratio of two opaque colours: from 1 (the same
-/// luminance) to 21 (black on white), whichever is lighter. Moved to ui_core
-/// as [RawPalette.contrastRatio] in material_expressive_ui 0.7.0.
-@Deprecated(
-  'Use RawPalette.contrastRatio. To be removed in material_expressive_ui 0.8.0. This feature was deprecated after material_expressive_ui 0.7.0.',
-)
-double expressiveContrastRatio(Color a, Color b) =>
-    RawPalette.contrastRatio(a, b);
-
 /// The pairs a scheme is held to, read together.
 extension ExpressiveContrast on ExpressiveColorScheme {
   /// Every pair that reads below its floor, by name (`content on primary`,

@@ -32,8 +32,9 @@ ScrollViewKeyboardDismissBehavior _keyboardDismiss(BuildContext context) =>
 /// Root of every page: its background, the bar its route derives, a
 /// scrolling body by default, and the bottom edge's chrome.
 ///
-/// Top: when [topBar] is unset the route derives the bar from [title]
-/// (see the library doc); an authored bar always wins, and
+/// Top: when [topBar] is unset the route derives the bar from [title] (a
+/// small bar with the title and the route's way back,
+/// [ExpressiveAppBar.autoLeading]); an authored bar always wins, and
 /// `topBar: ExpressiveAppBar.none` declines any. A collapsing flexible bar
 /// (`large: true, collapsing: true`) collapses with the body; any other bar
 /// is docked above it and fills its colour on scroll.

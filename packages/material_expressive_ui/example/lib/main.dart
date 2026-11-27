@@ -1,1174 +1,716 @@
-// The Material Expressive example: every component, live, in an app built
-// on the look itself, and the trip planner, a small app built from it.
-// Destinations stand in the wide navigation rail on a wide window and in
-// the modal drawer on a phone; the look's app bar names the destination,
-// and its secondary tabs pick the page within it. The trip planner opens
-// over the whole window with its own navigation, as a study does.
-// Customize re-themes every page, the example's own chrome included.
-import 'dart:math' as math;
-
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:material_ui/material_ui.dart';
-import 'package:flutter/services.dart';
+// Shelf, a reading list built on Material Expressive: one app you can copy.
+// ExpressiveHost over MaterialApp (by day, by night or as the device is, in
+// any of the six palettes), ExpressiveAppShell with three places (the
+// navigation bar along a phone's foot, the rail from 600 wide and the
+// expanded rail from 1200), each keeping its own pages; the list of books
+// with a pushed page for each, a form that checks its answers, a dialog
+// popped with its answer, and the settings. The gallery, every component on
+// a page of its own, is lib/gallery.dart: `flutter run -t lib/gallery.dart`.
 import 'package:material_expressive_ui/material_expressive_ui.dart';
-import 'package:material_expressive_ui/material_expressive_host.dart';
-
-import 'gallery_pages.dart';
-import 'kit_gallery/demos/buttons.dart';
-import 'kit_gallery/demos/loading.dart';
-import 'kit_gallery/demos/split_button.dart';
-import 'kit_gallery/demos/toolbar.dart';
-import 'kit_gallery/everyday.dart';
-import 'kit_gallery/kit.dart';
-import 'kit_gallery/trip.dart';
-
-/// Every page of the example: the ordinary screens, then the component
-/// references.
-const List<GalleryPage> galleryExamplePages = [
-  ...everydayGalleryPages,
-  ...galleryPages,
-];
-
-/// One destination of the example's navigation: its [title] (the rail's
-/// label and the app bar's title), [about] (what its pages show, its
-/// overview card's second line), its [icon], and the [pages] its tabs pick
-/// from, by id; the first opens.
-typedef GalleryDestination = ({
-  String title,
-  String about,
-  IconData icon,
-  List<String> pages,
-});
-
-/// The overview's id: the one page that is the example's own.
-const String galleryOverview = 'overview';
-
-/// Pages kept as plain routes, out of the navigation: they exist for the
-/// package's own checks (the inventory of components every look shares,
-/// the host and the preview frame), not for a reader.
-const List<String> galleryPlainRoutes = ['inventory', 'host', 'preview'];
-
-/// The example's destinations in their order: the overview, the trip
-/// planner, then the component families. Every page of
-/// [galleryExamplePages] but [galleryPlainRoutes] stands in exactly one.
-const List<GalleryDestination> galleryDestinations = [
-  (
-    title: 'Overview',
-    about: 'What the package adds to Material, and the trip planner.',
-    icon: ExpressiveSymbols.home,
-    pages: [galleryOverview],
-  ),
-  (
-    title: 'Trip planner',
-    about:
-        'A small app built from the look: a home, a form, a list beside '
-        'its detail, a checkout and preferences, at every size.',
-    icon: ExpressiveSymbols.hiking,
-    pages: TripScreens.all,
-  ),
-  (
-    title: 'Buttons',
-    about: 'Filled to text buttons in five sizes, toggle groups, split buttons, the FAB and toolbars.',
-    icon: ExpressiveSymbols.radioButtonChecked,
-    pages: ['buttons', 'icon-buttons', 'split-button', 'fab', 'toolbar'],
-  ),
-  (
-    title: 'Text fields',
-    about: 'Filled and outlined fields, passwords, input groups, labelled form fields and the select.',
-    icon: ExpressiveSymbols.keyboard,
-    pages: ['text-fields', 'select'],
-  ),
-  (
-    title: 'Selection',
-    about: 'Checkboxes, radios and switches, choice tiles, chips and sliders.',
-    icon: ExpressiveSymbols.checkBox,
-    pages: ['selection', 'choice', 'chips', 'sliders'],
-  ),
-  (
-    title: 'Pickers',
-    about: 'Date, range and time pickers, the calendar, scroll wheels and the colour picker.',
-    icon: ExpressiveSymbols.calendarMonth,
-    pages: ['pickers'],
-  ),
-  (
-    title: 'Navigation',
-    about: 'The navigation bar, rail and drawer, app bars, tabs, the shell, screens and pages.',
-    icon: ExpressiveSymbols.explore,
-    pages: ['nav', 'app-bar', 'everyday-tabs', 'shell', 'screen', 'page'],
-  ),
-  (
-    title: 'Lists and tables',
-    about: 'List items that reorder and swipe, tables, the data table, scroll areas, resizable panes and the side sheet.',
-    icon: ExpressiveSymbols.list,
-    pages: ['lists', 'table', 'panes'],
-  ),
-  (
-    title: 'Cards and media',
-    about: 'Cards, the carousel, images, text and numbers, the hero moment and badges.',
-    icon: ExpressiveSymbols.gridView,
-    pages: [
-      'cards',
-      'everyday-cards',
-      'carousel',
-      'media',
-      'content',
-      'hero',
-      'badge',
-    ],
-  ),
-  (
-    title: 'Dialogs and sheets',
-    about: 'A dialog, the overlays, the bottom sheet, menus and the menu bar.',
-    icon: ExpressiveSymbols.article,
-    pages: ['everyday-dialog', 'overlays', 'sheet', 'menus'],
-  ),
-  (
-    title: 'Feedback',
-    about: 'Snackbars, progress and loading indicators, status views and the splash.',
-    icon: ExpressiveSymbols.notifications,
-    pages: ['feedback', 'toast', 'progress', 'loading', 'splash'],
-  ),
-  (
-    title: 'Charts',
-    about: 'Line, area, bar and pie charts, and sparklines.',
-    icon: ExpressiveSymbols.barChart,
-    pages: ['chart'],
-  ),
-  (
-    title: 'Type and colour',
-    about: 'The colour roles, type scale, shapes, icons, motion, spacing, elevation and states.',
-    icon: ExpressiveSymbols.palette,
-    pages: [
-      'color',
-      'type',
-      'shape',
-      'icons',
-      'motion',
-      'spacing',
-      'elevation',
-      'states',
-      'foundations',
-    ],
-  ),
-];
-
-/// A tab's label: the page's own title, plainer where a destination already
-/// says what kind of page it is.
-String galleryTabLabel(String id) => switch (id) {
-  'everyday-tabs' => 'Tabs',
-  'everyday-cards' => 'Card grid',
-  'everyday-dialog' => 'Dialog',
-  'fab' => 'FAB',
-  'states' => 'States',
-  _ => galleryExamplePages.firstWhere((p) => p.id == id).title,
-};
-
-/// The window width from which the example stands its destinations in the
-/// wide rail rather than the drawer (Material's expanded window class).
-const double galleryRailWidth = 840;
-
-/// The same page builder the live example and its performance check use.
-Widget galleryBuildPage(GalleryPage page, Brightness brightness) =>
-    _GalleryAssetsScope(child: KitLiveViewport(child: page.build(brightness)));
-
-// This example intentionally shows the components' pending-media placeholders.
-// Consult the actual asset manifest before asking the web host for optional
-// demo photos, while preserving any bundled pictures and caller asset bundle.
-class _GalleryAssetsScope extends StatelessWidget {
-  const _GalleryAssetsScope({required this.child});
-
-  final Widget child;
-  static final _bundles = Expando<_GalleryAssets>();
-
-  @override
-  Widget build(BuildContext context) {
-    final parent = DefaultAssetBundle.of(context);
-    return DefaultAssetBundle(
-      bundle: _bundles[parent] ??= _GalleryAssets(parent),
-      child: child,
-    );
-  }
-}
-
-class _GalleryAssets extends CachingAssetBundle {
-  _GalleryAssets(this.parent);
-
-  final AssetBundle parent;
-  late final Future<Set<String>?> _keys = () async {
-    try {
-      return (await AssetManifest.loadFromAssetBundle(parent))
-          .listAssets()
-          .toSet();
-    } catch (_) {
-      // A caller's custom bundle need not provide an asset manifest.
-      return null;
-    }
-  }();
-
-  @override
-  Future<ByteData> load(String key) async {
-    if (key.startsWith('assets/media/')) {
-      final keys = await _keys;
-      if (keys != null && !keys.contains(key)) {
-        throw FlutterError('The example does not bundle demo media: $key');
-      }
-    }
-    return parent.load(key);
-  }
-}
+import 'package:material_ui/material_ui.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await expressiveLoadFonts();
-  runApp(const GalleryApp());
+  runApp(ShelfApp(shelf: Shelf.sample()));
 }
 
-/// The example panel's settings, shared with its accessibility and pixel tests.
-class GalleryCustom {
-  /// Unset choices keep the preset as drawn.
-  const GalleryCustom({
-    this.density = 'auto',
-    this.motion = 'preset',
-    this.seed = 'preset',
-    this.direction = 'ltr',
-    this.textSize = '100',
-  });
+/// The app: Expressive over the whole of it, in the reader's appearance and
+/// palette.
+class ShelfApp extends StatelessWidget {
+  const ShelfApp({super.key, required this.shelf});
 
-  /// The platform's density (`auto`: compact with a pointer, standard on
-  /// touch) or a fixed one; touch targets keep their size.
-  final String density;
-
-  /// The preset's own motion scheme, or Expressive or Standard springs.
-  final String motion;
-
-  /// Preset, teal, plum or grey seed colours.
-  final String seed;
-
-  /// The reading direction: `ltr` or `rtl`. Every page mirrors, its
-  /// previews and overlays included; right to left, the trip planner reads
-  /// in Arabic.
-  final String direction;
-
-  /// The text size in percent of the platform's: `100`, `150` or `200`.
-  final String textSize;
-
-  /// [direction] as a [TextDirection].
-  TextDirection get textDirection =>
-      direction == 'rtl' ? TextDirection.rtl : TextDirection.ltr;
-
-  /// [textSize] as a [TextScaler] over the platform's [base].
-  TextScaler textScaler(TextScaler base) => switch (textSize) {
-    '150' => TextScaler.linear(1.5),
-    '200' => TextScaler.linear(2),
-    _ => base,
-  };
-
-  /// Applies the choices to an existing preset and brightness.
-  ExpressiveThemeData apply(ExpressiveThemeData base) {
-    final color = switch (seed) {
-      'teal' => const Color(0xff00695c),
-      'plum' => const Color(0xff7a1f5c),
-      'grey' => const Color(0xff888888),
-      _ => null,
-    };
-    final theme = color == null
-        ? base
-        : ExpressiveThemeData.from(seed: color, brightness: base.brightness);
-    final scheme = switch (motion) {
-      'expressive' => ExpressiveMotionScheme.expressive,
-      'standard' => ExpressiveMotionScheme.standard,
-      _ => base.motion.scheme,
-    };
-    return theme.copyWith(
-      motion: theme.motion.copyWith(scheme: scheme),
-      density: switch (density) {
-        'standard' => ExpressiveDensity.standard,
-        'comfortable' => ExpressiveDensity.comfortable,
-        'compact' => ExpressiveDensity.compact,
-        _ => null,
-      },
-    );
-  }
-}
-
-/// The example app.
-class GalleryApp extends StatefulWidget {
-  /// The example, opening on [initialPage] (the overview by default) in the
-  /// default preset, light.
-  const GalleryApp({
-    this.initialPage = galleryOverview,
-    this.initialBrightness = Brightness.light,
-    this.initialCustom = const GalleryCustom(),
-    super.key,
-  });
-
-  /// The page opened when the example starts: [galleryOverview] or a
-  /// [galleryExamplePages] id.
-  final String initialPage;
-
-  /// The brightness the example starts in.
-  final Brightness initialBrightness;
-
-  /// The Customize choices the example starts with.
-  final GalleryCustom initialCustom;
+  final Shelf shelf;
 
   @override
-  State<GalleryApp> createState() => _GalleryAppState();
+  Widget build(BuildContext context) => ShelfScope(
+    shelf: shelf,
+    child: ListenableBuilder(
+      listenable: shelf,
+      builder: (context, _) => MaterialApp(
+        title: 'Shelf',
+        debugShowCheckedModeBanner: false,
+        localizationsDelegates: const [
+          DefaultRawWidgetsLocalizations.delegate,
+          ExpressiveLocalizations.delegate,
+          DefaultMaterialLocalizations.delegate,
+          DefaultWidgetsLocalizations.delegate,
+        ],
+        builder: (context, child) => ExpressiveHost(
+          brightness: shelf.appearance.brightness,
+          palette: shelf.palette,
+          child: child!,
+        ),
+        home: const ShelfShell(),
+      ),
+    ),
+  );
 }
 
-class _GalleryAppState extends State<GalleryApp> {
-  late var _page = _firstPage();
+/// The app's three places. Each keeps its own pages: a book opened from
+/// Books stands beside the rail, and back closes it.
+class ShelfShell extends StatefulWidget {
+  const ShelfShell({super.key});
 
-  /// The pages that read in Arabic right to left (the others stay English).
-  static const Set<String> _arabicPages = {
-    galleryOverview,
-    ...TripScreens.all,
-    'everyday-dialog',
-    'everyday-tabs',
-    'everyday-cards',
-    'feedback',
-  };
-  var _preset = kitShownPreset;
-  late var _brightness = _query['theme'] == 'dark'
-      ? Brightness.dark
-      : widget.initialBrightness;
-  var _customize = false;
-  late var _custom = GalleryCustom(
-    density: widget.initialCustom.density,
-    motion: widget.initialCustom.motion,
-    seed: widget.initialCustom.seed,
-    direction: _query['dir'] ?? widget.initialCustom.direction,
-    textSize: _query['text'] ?? widget.initialCustom.textSize,
+  @override
+  State<ShelfShell> createState() => _ShelfShellState();
+}
+
+class _ShelfShellState extends State<ShelfShell> {
+  int _place = 0;
+
+  @override
+  Widget build(BuildContext context) => ExpressiveAppShell.branches(
+    destinations: const [
+      ExpressiveNavItem(ExpressiveSymbols.book, 'Books'),
+      ExpressiveNavItem(ExpressiveSymbols.add, 'Add'),
+      ExpressiveNavItem(ExpressiveSymbols.settings, 'Settings'),
+    ],
+    selectedIndex: _place,
+    onDestinationSelected: (place) => setState(() => _place = place),
+    branches: [
+      (context) => const BooksPage(),
+      (context) => AddBookPage(onAdded: () => setState(() => _place = 0)),
+      (context) => const SettingsPage(),
+    ],
   );
+}
 
-  /// The opening link's query: `theme=dark`, `dir=rtl`, `text=150` or
-  /// `200` open the page that way (`/#/chips?theme=dark&dir=rtl`).
-  Map<String, String> get _query =>
-      Uri.tryParse(_link)?.queryParameters ?? const <String, String>{};
+/// A page's column: the width a list or a form reads at, from the page's
+/// start, where the app bar's title stands.
+class ShelfColumn extends StatelessWidget {
+  const ShelfColumn({super.key, required this.children});
 
-  /// The route the example was opened on: the platform's, else on the web
-  /// the address's fragment (`/#/chips?theme=dark` → `/chips?theme=dark`),
-  /// which the platform's route does not always carry.
-  String get _link {
-    final route = WidgetsBinding.instance.platformDispatcher.defaultRouteName;
-    if (route != '/' || !kIsWeb) return route;
-    final fragment = Uri.base.fragment;
-    return fragment.startsWith('/') ? fragment : route;
-  }
+  final List<Widget> children;
 
-  ExpressiveThemeData _shownTheme(ExpressiveThemeData base) =>
-      _custom.apply(base);
-
-  int get _destination => math.max(
-    0,
-    galleryDestinations.indexWhere((d) => d.pages.contains(_page)),
+  @override
+  Widget build(BuildContext context) => Align(
+    alignment: AlignmentDirectional.topStart,
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 640),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: ExpressiveSpacing.s24,
+        children: children,
+      ),
+    ),
   );
+}
 
-  void _open(int destination) =>
-      _show(galleryDestinations[destination].pages.first);
+/// A part's name over it, in the title type.
+class ShelfHeading extends StatelessWidget {
+  const ShelfHeading(this.text, {super.key, this.note});
 
-  /// The page a link opened ("/everyday-list"), else [GalleryApp.initialPage].
-  String _firstPage() {
-    if (widget.initialPage != galleryOverview) return widget.initialPage;
-    final route = _link;
-    final path = Uri.tryParse(route)?.path ?? route;
-    final id = path.startsWith('/') ? path.substring(1) : path;
-    return galleryExamplePages.any((p) => p.id == id) ? id : galleryOverview;
-  }
+  final String text;
 
-  /// Shows [page] and, on the web, puts it in the address bar, so every
-  /// page and every trip screen can be linked.
-  void _show(String page) {
-    setState(() => _page = page);
-    if (kIsWeb) {
-      SystemNavigator.routeInformationUpdated(uri: Uri(path: '/$page'));
-    }
-  }
+  /// A line under the name.
+  final String? note;
 
   @override
   Widget build(BuildContext context) {
-    kitShownPreset = _preset;
-    kitShownTheme = _shownTheme;
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Material Expressive',
-      // Flutter's MaterialPageRoute reads this theme, not the look's: the
-      // look's push, named here (expressivePageTransitions).
-      theme: ThemeData(
-        pageTransitionsTheme: const PageTransitionsTheme(
-          builders: expressivePageTransitions,
+    final t = context.expressiveTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: ExpressiveSpacing.s4,
+      children: [
+        Semantics(
+          header: true,
+          child: Text(
+            text,
+            style: t.type.titleMedium.copyWith(color: t.colors.onSurface),
+          ),
+        ),
+        if (note case final note?)
+          Text(
+            note,
+            style: t.type.bodyMedium.copyWith(color: t.colors.onSurfaceVariant),
+          ),
+      ],
+    );
+  }
+}
+
+/// The reading list: the year's goal, then every book, each opening its
+/// own page.
+class BooksPage extends StatelessWidget {
+  const BooksPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final shelf = ShelfScope.of(context);
+    final books = shelf.books;
+    return ExpressiveScaffold(
+      topBar: const ExpressiveAppBar(title: 'Books'),
+      body: ShelfColumn(
+        children: [
+          ShelfHeading(
+            'Reading goal for 2026',
+            note: '${shelf.finished} of ${shelf.goal} finished',
+          ),
+          ExpressiveLinearProgressIndicator(
+            value: (shelf.finished / shelf.goal).clamp(0.0, 1.0),
+            expand: true,
+            semanticLabel: 'Reading goal',
+          ),
+          if (books.isEmpty)
+            const ExpressiveEmptyState(
+              icon: ExpressiveSymbols.book,
+              title: 'No books yet',
+              body: 'Books you add show here.',
+            )
+          else
+            ExpressiveListSection(
+              header: books.length == 1 ? '1 book' : '${books.length} books',
+              children: [
+                for (final book in books)
+                  ExpressiveListTile(
+                    key: ValueKey(book.id),
+                    title: Text(book.title),
+                    subtitle: Text(book.byline),
+                    trailing: book.status.tag,
+                    // A page pushed on the Books place: the rail stays
+                    // beside it.
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (context) => BookPage(id: book.id),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One book: what the reader said about it, and the ways to change it or
+/// delete it.
+class BookPage extends StatelessWidget {
+  const BookPage({super.key, required this.id});
+
+  final String id;
+
+  @override
+  Widget build(BuildContext context) {
+    final book = ShelfScope.of(context).byId(id);
+    if (book == null) return const SizedBox.shrink();
+    final colors = context.expressiveTheme.colors;
+    void edit() => Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => ExpressiveScaffold(
+          topBar: const ExpressiveAppBar(title: 'Change book'),
+          body: ShelfColumn(
+            children: [
+              BookForm(
+                saveLabel: 'Save changes',
+                initial: book,
+                onSaved: (changed) {
+                  ShelfScope.read(context).put(changed);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
         ),
       ),
-      // Right to left, the overview, the trip planner, the everyday pages
-      // and the feedback states read in Arabic, their components' words too (a
-      // dialog's Cancel, a calendar's months, an error's Try again), so
-      // their mirrored screens are seen with real right-to-left text.
-      localizationsDelegates: [
-        if (_custom.direction == 'rtl' && _arabicPages.contains(_page))
-          ...tripArabicDelegates,
-        RawWidgetsLocalizations.delegate,
-        ExpressiveLocalizations.delegate,
-        // Flutter's own Material, Cupertino and Widgets words, in the
-        // reader's language (the look loads its primitives' own itself).
-        ...GlobalMaterialLocalizations.delegates,
-      ],
-      // The components speak the reader's language where ui_core does.
-      supportedLocales: RawWidgetsLocalizations.supportedLocales,
-      // ExpressiveHost, which every Expressive app mounts in its builder,
-      // above the navigator (from material_expressive_host.dart): it holds
-      // the theme, so day to night, a preset or a Customize choice springs
-      // from one theme to the next, and the layer snackbars show in, above
-      // every page. showExpressiveSnackBar throws without it.
-      // Direction and text size wrap the navigator, so every page, preview
-      // and overlay reads them.
-      // Tab and Shift+Tab bring the control they reach into view.
-      builder: (context, child) {
-        final shown = _shownTheme(
-          ExpressiveThemeData.preset(_preset, _brightness),
-        );
-        return KitFocusActions(
-          child: Directionality(
-            textDirection: _custom.textDirection,
-            child: MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                textScaler: _custom.textScaler(
-                  MediaQuery.textScalerOf(context),
-                ),
+    );
+    return ExpressiveScaffold(
+      topBar: ExpressiveAppBar(title: book.title),
+      body: ShelfColumn(
+        children: [
+          ExpressiveDescriptionList(
+            items: [
+              ExpressiveDescriptionItem(
+                'Author',
+                book.author.isEmpty ? 'Not given' : book.author,
               ),
-              child: ExpressiveHost(
-                theme: shown,
-                darkTheme: shown,
-                brightness: _brightness,
-                child: child!,
+              ExpressiveDescriptionItem('Format', book.format.label),
+              ExpressiveDescriptionItem('Status', book.status.label),
+              ExpressiveDescriptionItem(
+                'Favourite',
+                book.favourite ? 'Yes' : 'No',
               ),
-            ),
+              ExpressiveDescriptionItem(
+                'Date started',
+                book.started == null
+                    ? 'Not given'
+                    : ExpressiveFormat.date(book.started!),
+              ),
+            ],
           ),
-        );
-      },
-      // A link's route names a page, not a pushed route: the shell stands
-      // alone and opens that page itself.
-      onGenerateRoute: (_) => _shellRoute(),
-      onGenerateInitialRoutes: (_) => [_shellRoute()],
+          Wrap(
+            spacing: ExpressiveSpacing.s12,
+            runSpacing: ExpressiveSpacing.s12,
+            children: [
+              ExpressiveFilledButton(
+                'Change book',
+                icon: ExpressiveSymbols.edit,
+                onPressed: edit,
+              ),
+              // A destructive act in the error container (Material's
+              // guidance), apart from the primary act beside it.
+              ExpressiveFilledButton.tonal(
+                'Delete book',
+                icon: ExpressiveSymbols.delete,
+                style: ExpressiveFilledButton.styleFrom(
+                  backgroundColor: colors.errorContainer,
+                  foregroundColor: colors.onErrorContainer,
+                ),
+                onPressed: () async {
+                  if (await deleteBook(context, book) && context.mounted) {
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Asks before deleting [book]: the dialog is popped with the answer. Says
+/// so in a snackbar once it is gone; returns whether it went.
+Future<bool> deleteBook(BuildContext context, Book book) async {
+  final shelf = ShelfScope.read(context);
+  final delete = await showExpressiveDialog<bool>(
+    context: context,
+    builder: (context) => ExpressiveDialog(
+      title: 'Delete “${book.title}”?',
+      text: 'It comes off your list. You cannot undo this.',
+      actions: const [
+        ExpressiveDialogAction('Keep it', value: false),
+        ExpressiveDialogAction(
+          'Delete book',
+          value: true,
+          isDestructiveAction: true,
+        ),
+      ],
+    ),
+  );
+  if (delete != true) return false;
+  shelf.remove(book.id);
+  if (context.mounted) {
+    showExpressiveSnackBar(context, 'Deleted “${book.title}”');
+  }
+  return true;
+}
+
+/// The Add place: a new book's answers.
+class AddBookPage extends StatelessWidget {
+  const AddBookPage({super.key, required this.onAdded});
+
+  /// Called once the book is on the list.
+  final VoidCallback onAdded;
+
+  @override
+  Widget build(BuildContext context) => ExpressiveScaffold(
+    topBar: const ExpressiveAppBar(title: 'Add a book'),
+    body: ShelfColumn(
+      children: [
+        BookForm(
+          saveLabel: 'Save book',
+          onSaved: (book) {
+            ShelfScope.read(context).put(book);
+            showExpressiveSnackBar(context, 'Added “${book.title}”');
+            onAdded();
+          },
+        ),
+      ],
+    ),
+  );
+}
+
+/// The answers about a book. Saving checks them: a missing title is said
+/// at the field, and the focus goes to it.
+class BookForm extends StatefulWidget {
+  const BookForm({
+    super.key,
+    required this.saveLabel,
+    required this.onSaved,
+    this.initial,
+  });
+
+  final String saveLabel;
+  final ValueChanged<Book> onSaved;
+
+  /// The book being changed; null adds one.
+  final Book? initial;
+
+  @override
+  State<BookForm> createState() => _BookFormState();
+}
+
+class _BookFormState extends State<BookForm> {
+  late final _title = TextEditingController(text: widget.initial?.title);
+  late final _author = TextEditingController(text: widget.initial?.author);
+  final _titleFocus = FocusNode();
+  late BookFormat _format = widget.initial?.format ?? BookFormat.paperback;
+  late BookStatus _status = widget.initial?.status ?? BookStatus.toRead;
+  late bool _favourite = widget.initial?.favourite ?? false;
+  late DateTime? _started = widget.initial?.started;
+  String? _titleError;
+
+  @override
+  void dispose() {
+    _title.dispose();
+    _author.dispose();
+    _titleFocus.dispose();
+    super.dispose();
+  }
+
+  // The form's check: each field's error in words, or null.
+  String? _checkTitle(String title) =>
+      title.trim().isEmpty ? 'Enter the book’s title' : null;
+
+  void _save() {
+    setState(() => _titleError = _checkTitle(_title.text));
+    if (_titleError != null) {
+      _titleFocus.requestFocus();
+      return;
+    }
+    widget.onSaved(
+      Book(
+        id: widget.initial?.id ?? '${DateTime.now().microsecondsSinceEpoch}',
+        title: _title.text.trim(),
+        author: _author.text.trim(),
+        format: _format,
+        status: _status,
+        favourite: _favourite,
+        started: _started,
+      ),
     );
   }
 
-  Route<void> _shellRoute() =>
-      MaterialPageRoute<void>(builder: (context) => Builder(builder: _shell));
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    spacing: ExpressiveSpacing.s24,
+    children: [
+      ExpressiveTextField(
+        labelText: 'Title',
+        controller: _title,
+        focusNode: _titleFocus,
+        errorText: _titleError,
+        textInputAction: TextInputAction.next,
+        onChanged: (_) {
+          if (_titleError != null) setState(() => _titleError = null);
+        },
+      ),
+      ExpressiveTextField(
+        labelText: 'Author',
+        helperText: 'Optional',
+        controller: _author,
+      ),
+      ExpressiveSelect<BookFormat>(
+        labelText: 'Format',
+        value: _format,
+        options: [
+          for (final format in BookFormat.values)
+            ExpressiveSelectOption(format, format.label),
+        ],
+        onChanged: (format) => setState(() => _format = format),
+      ),
+      ShelfPart(
+        heading: const ShelfHeading('Status'),
+        child: ExpressiveRadioGroup<BookStatus>(
+          semanticLabel: 'Status',
+          contentPadding: EdgeInsets.zero,
+          value: _status,
+          options: [
+            for (final status in BookStatus.values)
+              ExpressiveRadioOption(value: status, label: status.label),
+          ],
+          onChanged: (status) => setState(() => _status = status),
+        ),
+      ),
+      ExpressiveSwitchRow(
+        label: 'Favourite',
+        supportingText: 'Favourites are marked in your list.',
+        contentPadding: EdgeInsets.zero,
+        value: _favourite,
+        onChanged: (on) => setState(() => _favourite = on),
+      ),
+      ExpressiveDockedDatePicker(
+        label: 'Date started',
+        value: _started,
+        firstDate: DateTime(1900),
+        lastDate: DateTime(2100),
+        onChanged: (day) => setState(() => _started = day),
+      ),
+      ExpressiveFilledButton(widget.saveLabel, expand: true, onPressed: _save),
+    ],
+  );
+}
 
-  /// The trip planner over the whole window, Customize above it when open.
-  Widget _trip(BuildContext context) {
-    final dark = _brightness == Brightness.dark;
-    return ColoredBox(
-      color: context.expressiveTheme.colors.surface,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+/// The appearance, the palette and the year's goal.
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final shelf = ShelfScope.of(context);
+    return ExpressiveScaffold(
+      topBar: const ExpressiveAppBar(title: 'Settings'),
+      body: ShelfColumn(
         children: [
-          if (_customize)
-            SafeArea(
-              bottom: false,
-              child: _CustomizePanel(
-                preset: _preset,
-                custom: _custom,
-                onPreset: (v) => setState(() => _preset = v),
-                onCustom: (v) => setState(() => _custom = v),
-                onClose: () => setState(() => _customize = false),
-              ),
+          // Each heading stands with its control, the parts 24 apart.
+          ShelfPart(
+            heading: const ShelfHeading(
+              'Appearance',
+              note: 'System follows your device.',
             ),
-          Expanded(
-            child: MediaQuery.removePadding(
-              context: context,
-              removeTop: _customize,
-              child: TripApp(
-                key: const ValueKey('trip'),
-                screen: _page,
-                onScreenChanged: _show,
-                gallery: (
-                  exit: () => _show(galleryOverview),
-                  toggleBrightness: () => setState(
-                    () =>
-                        _brightness = dark ? Brightness.light : Brightness.dark,
+            child: ExpressiveSegmentedButton<Appearance>(
+              segments: [
+                for (final appearance in Appearance.values)
+                  ExpressiveButtonSegment(appearance, appearance.label),
+              ],
+              value: shelf.appearance,
+              onChanged: (appearance) => shelf.appearance = appearance,
+            ),
+          ),
+          // The six palettes, each by its colour as it shows now and its
+          // name; an app stores the id.
+          ShelfPart(
+            heading: const ShelfHeading('Colour'),
+            child: ExpressiveRadioGroup<String>(
+              semanticLabel: 'Colour',
+              contentPadding: EdgeInsets.zero,
+              value: shelf.palette.id,
+              options: [
+                for (final palette in ExpressiveThemeData.palettes)
+                  ExpressiveRadioOption(
+                    value: palette.id,
+                    label: palette.label,
+                    leading: PaletteSwatch(palette: palette),
                   ),
-                  customize: () => setState(() => _customize = !_customize),
-                  dark: dark,
-                ),
-              ),
+              ],
+              onChanged: (id) => shelf.palette = ExpressiveThemeData.palettes
+                  .firstWhere((palette) => palette.id == id),
+            ),
+          ),
+          ShelfPart(
+            heading: ShelfHeading(
+              'Books to finish this year',
+              note: '${shelf.goal} books',
+            ),
+            child: ExpressiveSlider(
+              value: shelf.goal.toDouble(),
+              min: 4,
+              max: 52,
+              semanticLabel: 'Books to finish this year',
+              onChanged: (goal) => shelf.goal = goal.round(),
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  List<ExpressiveNavItem> get _items => [
-    for (final d in galleryDestinations) ExpressiveNavItem(d.icon, d.title),
-  ];
+/// A palette's primary as it shows now (by day or by night), beside its
+/// name: what the name stands for, seen. A filled disc, apart from the
+/// radio's ring.
+class PaletteSwatch extends StatelessWidget {
+  const PaletteSwatch({super.key, required this.palette});
 
-  Widget _shell(BuildContext context) {
-    if (TripScreens.all.contains(_page)) return _trip(context);
-    final t = context.expressiveTheme;
-    final wide = MediaQuery.sizeOf(context).width >= galleryRailWidth;
-    final destination = galleryDestinations[_destination];
-    final dark = _brightness == Brightness.dark;
-    final bar = ExpressiveAppBar(
-      title: destination.title,
-      leading: wide
-          ? null
-          : ExpressiveIconButton(
-              ExpressiveSymbols.menu,
-              semanticLabel: 'Open navigation',
-              onPressed: () async {
-                final chosen = await showExpressiveNavigationDrawer(
-                  context,
-                  destinations: _items,
-                  selectedIndex: _destination,
-                );
-                if (chosen != null) _open(chosen);
-              },
-            ),
-      actions: [
-        ExpressiveAppBarAction(
-          dark ? ExpressiveSymbols.lightMode : ExpressiveSymbols.darkMode,
-          label: dark ? 'Light theme' : 'Dark theme',
-          onPressed: () => setState(
-            () => _brightness = dark ? Brightness.light : Brightness.dark,
-          ),
-        ),
-        ExpressiveAppBarAction(
-          ExpressiveSymbols.tune,
-          label: 'Customize',
-          onPressed: () => setState(() => _customize = !_customize),
-        ),
-      ],
-    );
-    final content = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        bar,
-        if (_customize)
-          _CustomizePanel(
-            preset: _preset,
-            custom: _custom,
-            onPreset: (v) => setState(() => _preset = v),
-            onCustom: (v) => setState(() => _custom = v),
-          ),
-        if (destination.pages.length > 1)
-          ExpressiveTabBar(
-            key: ValueKey('tabs/${destination.title}'),
-            variant: ExpressiveTabBarVariant.secondary,
-            scrollable: true,
-            // The first tab starts on the column's edge, under the title,
-            // beside the page's content (not Compose's 52dp scroll hint).
-            edgePadding: ExpressiveChromeMetrics.margin,
-            selectedIndex: destination.pages.indexOf(_page),
-            onChanged: (i) => _show(destination.pages[i]),
-            tabs: [
-              for (final id in destination.pages)
-                ExpressiveTab(label: galleryTabLabel(id)),
-            ],
-          ),
-        // Keyed, so the page keeps its element as the bars above it come
-        // and go: a reference page keeps its preview host (and its
-        // navigator) across pages, only the page inside it changing.
-        Expanded(
-          key: const ValueKey('page'),
-          child: _page == galleryOverview
-              ? _Overview(onOpen: _open, onTrip: () => _show(TripScreens.home))
-              : galleryBuildPage(
-                  galleryExamplePages.firstWhere((p) => p.id == _page),
-                  _brightness,
-                ),
-        ),
-      ],
-    );
-    return ColoredBox(
-      color: t.colors.surface,
-      child: wide
-          ? Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ExpressiveNavigationRail(
-                  expanded: true,
-                  destinations: _items,
-                  selectedIndex: _destination,
-                  onDestinationSelected: _open,
-                ),
-                Expanded(
-                  child: MediaQuery.removePadding(
-                    context: context,
-                    removeLeft: true,
-                    child: content,
-                  ),
-                ),
-              ],
-            )
-          : content,
+  final RawNamedPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.expressiveTheme;
+    final [primary, ...] = palette.swatchesFor(theme.brightness);
+    return Container(
+      width: 20,
+      height: 20,
+      decoration: BoxDecoration(
+        color: primary,
+        shape: BoxShape.circle,
+        border: Border.all(color: theme.colors.outlineVariant),
+      ),
     );
   }
 }
 
-/// Customize: the preset and the look's knobs, each control at its own
-/// width, flowing from the start edge. Every page follows them, the
-/// example's own chrome included.
-class _CustomizePanel extends StatelessWidget {
-  const _CustomizePanel({
-    required this.preset,
-    required this.custom,
-    required this.onPreset,
-    required this.onCustom,
-    this.onClose,
+/// A heading over its control, 8 apart.
+class ShelfPart extends StatelessWidget {
+  const ShelfPart({super.key, required this.heading, required this.child});
+
+  final Widget heading;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    spacing: ExpressiveSpacing.s8,
+    children: [heading, child],
+  );
+}
+
+// The app's state: the books, and how the reader likes the app.
+
+enum BookStatus {
+  toRead('To read'),
+  reading('Reading'),
+  done('Done');
+
+  const BookStatus(this.label);
+
+  final String label;
+
+  /// Its tag in the list: the palette's own while it is read; outlined while
+  /// it waits and once it is done, statuses at rest.
+  Widget get tag => switch (this) {
+    reading => ExpressiveTag(label, tone: ExpressiveTone.primary),
+    toRead || done => ExpressiveTag(label),
+  };
+}
+
+enum BookFormat {
+  paperback('Paperback'),
+  hardback('Hardback'),
+  ebook('Ebook'),
+  audiobook('Audiobook');
+
+  const BookFormat(this.label);
+
+  final String label;
+}
+
+enum Appearance {
+  light('Light', Brightness.light),
+  dark('Dark', Brightness.dark),
+  system('System', null);
+
+  const Appearance(this.label, this.brightness);
+
+  final String label;
+
+  /// What the host pins; null follows the device.
+  final Brightness? brightness;
+}
+
+@immutable
+class Book {
+  const Book({
+    required this.id,
+    required this.title,
+    this.author = '',
+    this.format = BookFormat.paperback,
+    this.status = BookStatus.toRead,
+    this.favourite = false,
+    this.started,
   });
 
-  final String preset;
-  final GalleryCustom custom;
-  final ValueChanged<String> onPreset;
-  final ValueChanged<GalleryCustom> onCustom;
+  final String id;
+  final String title;
+  final String author;
+  final BookFormat format;
+  final BookStatus status;
+  final bool favourite;
+  final DateTime? started;
 
-  /// Closes the panel, where no bar of the gallery's stands over it (the
-  /// trip planner).
-  final VoidCallback? onClose;
+  /// The line under the title in the list.
+  String get byline => [
+    if (author.isEmpty) 'Author not given' else author,
+    if (favourite) 'Favourite',
+  ].join(' · ');
+}
 
-  Widget _knob(
-    BuildContext context,
-    String label,
-    String value,
-    List<(String, String)> options,
-    GalleryCustom Function(String) change,
-  ) {
-    final t = context.expressiveTheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      spacing: ExpressiveSpacing.s8,
-      children: [
-        Text(
-          label,
-          style: t.type.labelLarge.copyWith(color: t.colors.onSurfaceVariant),
+/// The reading list and the reader's settings, kept while the app runs.
+class Shelf extends ChangeNotifier {
+  Shelf(this._books);
+
+  Shelf.sample()
+    : this([
+        Book(
+          id: '1',
+          title: 'Middlemarch',
+          author: 'George Eliot',
+          status: BookStatus.reading,
+          started: DateTime(2026, 10, 2),
         ),
-        ExpressiveSegmentedButton<String>(
-          expand: false,
-          segments: [
-            for (final (id, title) in options)
-              ExpressiveButtonSegment(id, title),
-          ],
-          value: value,
-          onChanged: (v) => onCustom(change(v)),
+        const Book(
+          id: '2',
+          title: 'The Left Hand of Darkness',
+          author: 'Ursula K. Le Guin',
+          status: BookStatus.done,
+          favourite: true,
         ),
-      ],
-    );
+        const Book(
+          id: '3',
+          title: 'Pride and Prejudice',
+          author: 'Jane Austen',
+          format: BookFormat.hardback,
+          status: BookStatus.done,
+        ),
+        const Book(id: '4', title: 'Beloved', author: 'Toni Morrison'),
+        const Book(
+          id: '5',
+          title: 'Things Fall Apart',
+          author: 'Chinua Achebe',
+          format: BookFormat.audiobook,
+        ),
+      ]);
+
+  final List<Book> _books;
+
+  List<Book> get books => List.unmodifiable(_books);
+
+  int get finished => _books.where((b) => b.status == BookStatus.done).length;
+
+  Book? byId(String id) => _books.where((b) => b.id == id).firstOrNull;
+
+  /// Adds [book], or puts it in place of the book with its id.
+  void put(Book book) {
+    final at = _books.indexWhere((b) => b.id == book.id);
+    if (at < 0) {
+      _books.insert(0, book);
+    } else {
+      _books[at] = book;
+    }
+    notifyListeners();
   }
 
-  GalleryCustom _with({
-    String? density,
-    String? motion,
-    String? seed,
-    String? direction,
-    String? textSize,
-  }) => GalleryCustom(
-    density: density ?? custom.density,
-    motion: motion ?? custom.motion,
-    seed: seed ?? custom.seed,
-    direction: direction ?? custom.direction,
-    textSize: textSize ?? custom.textSize,
-  );
+  void remove(String id) {
+    _books.removeWhere((b) => b.id == id);
+    notifyListeners();
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    final t = context.expressiveTheme;
-    final height = MediaQuery.sizeOf(context).height;
-    return Semantics(
-      container: true,
-      label: 'Customize',
-      child: ColoredBox(
-        color: t.colors.surfaceContainerLow,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: height * 0.45),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              ExpressiveChromeMetrics.margin,
-              ExpressiveSpacing.s16,
-              ExpressiveChromeMetrics.margin,
-              ExpressiveSpacing.s24,
-            ),
-            child: Wrap(
-              spacing: ExpressiveSpacing.s24,
-              runSpacing: ExpressiveSpacing.s16,
-              crossAxisAlignment: WrapCrossAlignment.end,
-              children: [
-                SizedBox(
-                  width: 200,
-                  child: ExpressiveSelect<String>(
-                    labelText: 'Preset',
-                    value: preset,
-                    options: [
-                      for (final id in ExpressiveThemeData.presets)
-                        ExpressiveSelectOption(id, id),
-                    ],
-                    onChanged: onPreset,
-                  ),
-                ),
-                _knob(context, 'Colours', custom.seed, const [
-                  ('preset', 'Preset'),
-                  ('teal', 'Teal'),
-                  ('plum', 'Plum'),
-                  ('grey', 'Grey'),
-                ], (v) => _with(seed: v)),
-                _knob(context, 'Density', custom.density, const [
-                  ('auto', 'Automatic'),
-                  ('standard', 'Standard'),
-                  ('comfortable', 'Comfortable'),
-                  ('compact', 'Compact'),
-                ], (v) => _with(density: v)),
-                _knob(context, 'Motion', custom.motion, const [
-                  ('preset', 'Preset'),
-                  ('expressive', 'Expressive'),
-                  ('standard', 'Standard'),
-                ], (v) => _with(motion: v)),
-                _knob(context, 'Direction', custom.direction, const [
-                  ('ltr', 'Left to right'),
-                  ('rtl', 'Right to left'),
-                ], (v) => _with(direction: v)),
-                _knob(context, 'Text size', custom.textSize, const [
-                  ('100', '100%'),
-                  ('150', '150%'),
-                  ('200', '200%'),
-                ], (v) => _with(textSize: v)),
-                if (onClose != null)
-                  ExpressiveIconButton(
-                    ExpressiveSymbols.close,
-                    semanticLabel: 'Close Customize',
-                    onPressed: onClose,
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+  int get goal => _goal;
+  int _goal = 12;
+  set goal(int value) {
+    _goal = value;
+    notifyListeners();
+  }
+
+  Appearance get appearance => _appearance;
+  Appearance _appearance = Appearance.system;
+  set appearance(Appearance value) {
+    _appearance = value;
+    notifyListeners();
+  }
+
+  RawNamedPalette get palette => _palette;
+  RawNamedPalette _palette = ExpressiveThemeData.palettes.first;
+  set palette(RawNamedPalette value) {
+    _palette = value;
+    notifyListeners();
   }
 }
 
-/// The overview, the package's pitch: what it is in one sentence, the
-/// trip planner live (on a wide window) or one tap away, what it adds to
-/// Flutter's Material, each live, and then the index.
-class _Overview extends StatelessWidget {
-  const _Overview({required this.onOpen, required this.onTrip});
+/// Puts the [Shelf] within reach of every page.
+class ShelfScope extends InheritedNotifier<Shelf> {
+  const ShelfScope({super.key, required Shelf shelf, required super.child})
+    : super(notifier: shelf);
 
-  final ValueChanged<int> onOpen;
-  final VoidCallback onTrip;
+  /// The shelf, rebuilding [context] as it changes.
+  static Shelf of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<ShelfScope>()!.notifier!;
 
-  @override
-  Widget build(BuildContext context) {
-    final t = context.expressiveTheme;
-    final c = t.colors;
-    // Right to left, the overview reads in Arabic.
-    final w = TripWords.of(context);
-    const margin = ExpressiveChromeMetrics.margin;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final wide = width >= 1100;
-        // On a wide window the parts stand under the pitch, beside the
-        // trip planner's frame: the column beside the frame holds them, not
-        // an empty band the frame's height.
-        final column = wide
-            ? width - 2 * margin - _tripGap - _LiveTrip.phone.width
-            : width - 2 * margin;
-        // The title in the emphasized display type, the look's name in the
-        // primary colour: Expressive's way of saying what leads.
-        final words = Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text.rich(
-              TextSpan(
-                children: [
-                  const TextSpan(text: 'Material 3 '),
-                  TextSpan(
-                    text: 'Expressive',
-                    style: TextStyle(color: c.primary),
-                  ),
-                ],
-              ),
-              style:
-                  (column >= 600
-                          ? t.type.displayMediumEmphasized
-                          : t.type.displaySmallEmphasized)
-                      .copyWith(color: c.onSurface),
-            ),
-            const SizedBox(height: ExpressiveSpacing.s16),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560),
-              child: Text(
-                w.overviewPitch,
-                style: t.type.bodyLarge.copyWith(color: c.onSurfaceVariant),
-              ),
-            ),
-            const SizedBox(height: ExpressiveSpacing.s24),
-            ExpressiveFilledButton(
-              w.openTripPlanner,
-              key: const ValueKey('overview/trip'),
-              icon: ExpressiveSymbols.hiking,
-              size: ExpressiveButtonSize.medium,
-              expand: width < 600,
-              onPressed: onTrip,
-            ),
-          ],
-        );
-        // The mark beside the words where there is room, above them on a
-        // phone.
-        final pitch = column >= 640
-            ? Row(
-                spacing: ExpressiveSpacing.s24,
-                children: [
-                  Expanded(child: words),
-                  const _ShapeMark(size: 184),
-                ],
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const _ShapeMark(size: 120),
-                  const SizedBox(height: ExpressiveSpacing.s16),
-                  words,
-                ],
-              );
-        // Each part's key, its English name; then its words and its demo.
-        final live = <(String, String, String, Widget)>[
-          (
-            'Button groups',
-            w.buttonGroups,
-            w.buttonGroupsText,
-            // Words alone: three buttons with icons need more than a
-            // phone's tile.
-            kitSpecimenButtonGroupReply(icons: false),
-          ),
-          (
-            'Split button',
-            w.splitButton,
-            w.splitButtonText,
-            kitSpecimenSplitButtonSend(),
-          ),
-          (
-            'Loading indicator',
-            w.loadingIndicator,
-            w.loadingIndicatorText,
-            kitSpecimenLoadingIndicatorPair(),
-          ),
-          (
-            'Floating toolbar',
-            w.floatingToolbar,
-            w.floatingToolbarText,
-            kitSpecimenFloatingToolbarEditor(),
-          ),
-          (
-            'Wavy progress',
-            w.wavyProgress,
-            w.wavyProgressText,
-            ExpressiveHeroMoment(
-              child: ExpressiveLinearProgressIndicator(
-                value: .66,
-                wavy: true,
-                expand: true,
-                // The track's secondaryContainer all but vanishes on the
-                // tile's container, and the page's surface was a groove at
-                // night: the tile's content colour, faint.
-                trackColor: context.expressiveTheme.colors.onSurface.withValues(
-                  alpha: .2,
-                ),
-                semanticLabel: w.twoThirdsDone,
-              ),
-            ),
-          ),
-          (
-            'Toggle groups',
-            w.toggleGroups,
-            w.toggleGroupsText,
-            kitSpecimenToggleGroupAlign(),
-          ),
-        ];
-        const gap = ExpressiveSpacing.s16;
-        final columns = wide ? (column >= 860 ? 3 : 2) : (width >= 600 ? 2 : 1);
-        final tile = (column - (columns - 1) * gap) / columns;
-        final parts = Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              w.materialLacks,
-              style: t.type.titleLarge.copyWith(color: c.onSurface),
-            ),
-            const SizedBox(height: ExpressiveSpacing.s16),
-            Wrap(
-              spacing: gap,
-              runSpacing: gap,
-              children: [
-                for (final (name, title, about, demo) in live)
-                  SizedBox(
-                    width: tile,
-                    // Tonal, on the extra-large corner: each part on a
-                    // surface of its own, not a hairline box.
-                    child: ExpressiveCard.filled(
-                      key: ValueKey('overview/live/$name'),
-                      style: ExpressiveComponentThemeData(
-                        shape: WidgetStatePropertyAll(t.shapes.extraLarge),
-                      ),
-                      padding: const EdgeInsets.all(ExpressiveSpacing.s20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          SizedBox(height: 112, child: Center(child: demo)),
-                          const SizedBox(height: ExpressiveSpacing.s16),
-                          Text(
-                            title,
-                            style: t.type.titleMedium.copyWith(
-                              color: c.onSurface,
-                            ),
-                          ),
-                          const SizedBox(height: ExpressiveSpacing.s4),
-                          Text(
-                            about,
-                            style: t.type.bodyMedium.copyWith(
-                              color: c.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ],
-        );
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(margin, 24, margin, 48),
-          children: [
-            if (wide)
-              Row(
-                // The words start on the preview's top line.
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: _tripGap,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [pitch, const SizedBox(height: 48), parts],
-                    ),
-                  ),
-                  _LiveTrip(onOpen: onTrip),
-                ],
-              )
-            else ...[
-              pitch,
-              const SizedBox(height: 48),
-              parts,
-            ],
-            const SizedBox(height: 48),
-            Text(
-              w.everyComponent,
-              style: t.type.titleLarge.copyWith(color: c.onSurface),
-            ),
-            const SizedBox(height: ExpressiveSpacing.s8),
-            _Index(onOpen: onOpen, columns: width >= 900 ? 2 : 1),
-          ],
-        );
-      },
-    );
-  }
-}
-
-/// The gap between the overview's column and the trip planner's frame.
-const double _tripGap = 48;
-
-/// The overview's mark: three of Material's library shapes, in the primary
-/// container, the tertiary and the secondary container, that turn on a
-/// spatial spring and change shape (Material's polygon morph) each time a
-/// pointer comes over them or presses them. Decoration: a screen reader
-/// skips it and it takes no focus.
-class _ShapeMark extends StatefulWidget {
-  const _ShapeMark({required this.size});
-
-  /// The square the three shapes share.
-  final double size;
-
-  @override
-  State<_ShapeMark> createState() => _ShapeMarkState();
-}
-
-class _ShapeMarkState extends State<_ShapeMark> {
-  /// Each shape's turn through the library, one step a visit.
-  static const List<List<ExpressiveMaterialShape>> _turns = [
-    [
-      ExpressiveMaterialShape.cookie9Sided,
-      ExpressiveMaterialShape.sunny,
-      ExpressiveMaterialShape.flower,
-      ExpressiveMaterialShape.cookie12Sided,
-    ],
-    [
-      ExpressiveMaterialShape.clover4Leaf,
-      ExpressiveMaterialShape.softBurst,
-      ExpressiveMaterialShape.puffy,
-      ExpressiveMaterialShape.clover8Leaf,
-    ],
-    [
-      ExpressiveMaterialShape.pill,
-      ExpressiveMaterialShape.gem,
-      ExpressiveMaterialShape.heart,
-      ExpressiveMaterialShape.arch,
-    ],
-  ];
-
-  int _step = 0;
-
-  void _next() => setState(() => _step++);
-
-  Widget _piece(int i, double size, Color color, double turn) {
-    final shapes = _turns[i];
-    return ExpressiveSpringValue(
-      value: _step * turn,
-      motion: ExpressiveMotionKey.slowSpatial,
-      builder: (context, angle, child) =>
-          Transform.rotate(angle: angle, child: child),
-      child: ExpressiveSpringShape(
-        value: ExpressiveMaterialShapeBorder(shapes[_step % shapes.length]),
-        motion: ExpressiveMotionKey.defaultEffects,
-        builder: (context, shape, _) => SizedBox.square(
-          dimension: size,
-          child: DecoratedBox(
-            decoration: ShapeDecoration(color: color, shape: shape),
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.expressiveTheme.colors;
-    final s = widget.size;
-    return ExcludeSemantics(
-      child: MouseRegion(
-        onEnter: (_) => _next(),
-        child: Listener(
-          behavior: HitTestBehavior.opaque,
-          onPointerDown: (_) => _next(),
-          child: SizedBox.square(
-            dimension: s,
-            child: Stack(
-              children: [
-                Positioned(
-                  left: 0,
-                  top: 0,
-                  child: _piece(0, s * .66, c.primaryContainer, math.pi / 4),
-                ),
-                Positioned(
-                  right: 0,
-                  top: s * .30,
-                  child: _piece(1, s * .48, c.tertiary, -math.pi / 3),
-                ),
-                Positioned(
-                  left: s * .20,
-                  bottom: 0,
-                  child: _piece(2, s * .36, c.secondaryContainer, math.pi / 2),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// The trip planner live beside the pitch on a wide window: the app at a
-/// phone's size, working, in a frame of the large corner.
-class _LiveTrip extends StatelessWidget {
-  const _LiveTrip({required this.onOpen});
-
-  final VoidCallback onOpen;
-
-  /// The frame's size: a phone's.
-  static const Size phone = Size(390, 720);
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.expressiveTheme;
-    final media = MediaQuery.of(context);
-    return Semantics(
-      container: true,
-      label: 'The trip planner, live',
-      child: ExpressiveSurface(
-        key: const ValueKey('overview/live-trip'),
-        shape: t.shapes.extraLarge,
-        color: t.colors.surface,
-        // The phone's edge, drawn over the app it holds (whose own surface
-        // would cover an edge drawn under it): a screen, not page content.
-        child: DecoratedBox(
-          position: DecorationPosition.foreground,
-          decoration: ShapeDecoration(
-            shape: t.shapes.extraLarge.copyWith(
-              side: BorderSide(color: t.colors.outline),
-            ),
-          ),
-          child: SizedBox.fromSize(
-            size: phone,
-            child: MediaQuery(
-              data: media.copyWith(
-                size: phone,
-                padding: EdgeInsets.zero,
-                viewPadding: EdgeInsets.zero,
-              ),
-              // The frame is a screen of its own: its own route, so its dialogs
-              // stay in it and its FAB menu is not beside the page's toolbar.
-              child: Navigator(
-                onGenerateRoute: (_) => PageRouteBuilder<void>(
-                  transitionDuration: Duration.zero,
-                  pageBuilder: (_, _, _) => const TripApp(),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// The index: every destination but the overview, a row each, in one or
-/// two columns.
-class _Index extends StatelessWidget {
-  const _Index({required this.onOpen, required this.columns});
-
-  final ValueChanged<int> onOpen;
-  final int columns;
-
-  @override
-  Widget build(BuildContext context) {
-    final entries = galleryDestinations.indexed.skip(1).toList();
-    final per = (entries.length / columns).ceil();
-    final w = TripWords.of(context);
-    Widget section(Iterable<(int, GalleryDestination)> part) =>
-        ExpressiveListSection(
-          children: [
-            for (final (i, d) in part)
-              ExpressiveListTile(
-                key: ValueKey('overview/${d.title}'),
-                leading: Icon(d.icon),
-                title: Text(w.destination(d.title, d.about).title),
-                subtitle: Text(w.destination(d.title, d.about).about),
-                trailing: const Icon(ExpressiveSymbols.chevronRight),
-                onTap: () => onOpen(i),
-              ),
-          ],
-        );
-    if (columns == 1) return section(entries);
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: ExpressiveSpacing.s16,
-      children: [
-        for (var k = 0; k < columns; k++)
-          Expanded(child: section(entries.skip(k * per).take(per))),
-      ],
-    );
-  }
+  /// The shelf, to change it from a callback.
+  static Shelf read(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<ShelfScope>()!.notifier!;
 }

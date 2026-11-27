@@ -514,3 +514,15 @@ transforms:
       - kind: 'renameParameter'
         oldName: 'today'
         newName: 'currentDate'
+  - title: "Replace with 'RawPalette.contrastRatio'"
+    date: 2026-11-26
+    element:
+      uris: *uris
+      function: 'expressiveContrastRatio'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: *uris
+          method: 'contrastRatio'
+          inClass: 'RawPalette'
+          static: true

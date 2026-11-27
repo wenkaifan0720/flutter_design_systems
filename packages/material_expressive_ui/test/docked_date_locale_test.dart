@@ -1,6 +1,7 @@
 /// A docked date picker prints its day as the app's language writes a short
 /// date, in its digits, as Material's date field (`formatCompactDate`): an
-/// Arabic app read "11/20/2026". English keeps Compose's MM/DD/YYYY. The
+/// Arabic app read "11/20/2026". English prints the look's medium date with
+/// the year (18 Sep 2026), which no reader takes for another day. The
 /// year is the bare figure a short date writes, not the year said on its own
 /// (Japanese's 2026年).
 library;
@@ -56,8 +57,8 @@ Future<String> _shown(
 void main() {
   setUpAll(expressiveLoadFonts);
 
-  testWidgets('English keeps MM/DD/YYYY', (tester) async {
-    expect(await _shown(tester, const Locale('en')), '09/18/2026');
+  testWidgets('English prints the medium date with the year', (tester) async {
+    expect(await _shown(tester, const Locale('en')), '18 Sep 2026');
   });
 
   testWidgets('German writes the day first', (tester) async {
