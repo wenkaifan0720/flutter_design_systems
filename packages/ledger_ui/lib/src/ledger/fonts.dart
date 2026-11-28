@@ -29,9 +29,10 @@ const Map<String, List<String>> _faces = {
   'PlexMono': ['PlexMono-Regular', 'PlexMono-Medium'],
 };
 
-/// Loads the faces Ledger bundles, so the first frame is set in them. Await
-/// it before `runApp`: on the web a bundled face otherwise arrives after the
-/// first frames, which flash in a fallback face.
+/// Loads the faces Ledger bundles and the Lucide icon font its parts draw
+/// their glyphs from, so the first frame is set in them. Await it before
+/// `runApp`: on the web a bundled font otherwise arrives after the first
+/// frames, which flash in a fallback face, and a glyph shows as an empty box.
 ///
 /// ```dart
 /// Future<void> main() async {
@@ -43,6 +44,11 @@ const Map<String, List<String>> _faces = {
 Future<void> ledgerLoadFonts() => Future.wait([
   for (final MapEntry(key: family, value: files) in _faces.entries)
     _loader(family, files).load(),
+  // The family `LucideIcons` names, as Flutter registers a package's font.
+  (FontLoader('packages/lucide_icons_flutter/Lucide')..addFont(
+        rootBundle.load('packages/lucide_icons_flutter/assets/lucide.ttf'),
+      ))
+      .load(),
 ]);
 
 FontLoader _loader(String family, List<String> files) {

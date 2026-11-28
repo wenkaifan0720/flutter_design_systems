@@ -1,3 +1,12 @@
+## 0.9.1
+
+- Needs ui_core 0.8.7: a bottom sheet opened over `LedgerAppShell` ends at the top of its tab bar, where it ran to the screen's foot and covered the bar. The bar stays under the veil and a tap on it closes the sheet. The gallery's account page at 390 shows it.
+- `ledgerLoadFonts` loads the Lucide icon font Ledger's parts draw their glyphs from, as well as its faces, so on the web a glyph never comes up as an empty box on the first frames.
+- `LedgerHost` takes a `density` beside its `palette` and `brightness`; it stands over the theme by day and by night, a palette's or the app's own. The host's doc says how `theme`, `darkTheme`, `palette` and `density` combine, and that the window's width changes none of them.
+- `LedgerTextField`'s doc says what a form does to it: a Material `Form` passes it by; in a `RawFormField`, `reset()` takes the error away and leaves the controller's text, so a form empties with `reset()` and then `controller.clear()`.
+- README: one delegate list (`RawWidgetsLocalizations.delegate` and `GlobalMaterialLocalizations.delegates`, with `RawWidgetsLocalizations.supportedLocales`), and no `flutter_localizations` on material_ui; the example lists the same delegates. The Forms section clears the form after a save, shows a `RawForm` that checks itself and names `autovalidateMode`. The corners example is a tab's, its top round and its foot square.
+- The gallery's Overview "Corners of its own" slip and its button round their top corners and keep their foot square, the same on both sides, in place of two diagonal cuts.
+
 ## 0.9.0
 
 - Needs ui_core 0.8.6.

@@ -140,7 +140,7 @@ class QuillOverview extends StatelessWidget {
     final own = LedgerSection(
       head: LedgerHead(context.say('Corners of its own')),
       child: LedgerSlip(
-        style: _ticketSlip,
+        style: _tabSlip,
         padding: const EdgeInsets.symmetric(
           horizontal: LedgerSpacing.s20,
           vertical: LedgerSpacing.s16,
@@ -152,15 +152,15 @@ class QuillOverview extends StatelessWidget {
             Text(
               context.say(
                 'A part takes its own step at each corner from its style: '
-                "this slip and its button cut two diagonal corners square, as "
-                "a ticket's stub is. A corner takes square to extra large, or "
-                'round.',
+                'this slip and its button round their top corners and keep '
+                "their foot square, as a ledger's index tab is. A corner takes "
+                'square to extra large, or round.',
               ),
               style: t.body,
             ),
             LedgerButton(
               context.say('Print the receipt'),
-              style: _ticketButton,
+              style: _tabButton,
               onPressed: () {},
             ),
           ],
@@ -250,22 +250,23 @@ class QuillOverview extends StatelessWidget {
 
   static const double _recordWidth = 400;
 
-  // A ticket's stub: two diagonal corners square, the others an app's own.
-  static const _ticketSlip = LedgerStyle(
+  // A ledger's index tab: the top corners round, the foot square, the same
+  // on both sides.
+  static const _tabSlip = LedgerStyle(
     corners: WidgetStatePropertyAll(
       RawCorners(
         topStart: RawCorner.extraLarge,
-        topEnd: RawCorner.none,
+        topEnd: RawCorner.extraLarge,
         bottomStart: RawCorner.none,
-        bottomEnd: RawCorner.extraLarge,
+        bottomEnd: RawCorner.none,
       ),
     ),
   );
 
-  // The button keeps its round ends where the slip keeps its corners.
-  static const _ticketButton = LedgerStyle(
+  // The button keeps its round top as the slip does, its foot square.
+  static const _tabButton = LedgerStyle(
     corners: WidgetStatePropertyAll(
-      RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none),
+      RawCorners(bottomStart: RawCorner.none, bottomEnd: RawCorner.none),
     ),
   );
 

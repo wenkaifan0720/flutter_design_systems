@@ -27,6 +27,12 @@ import '../../internal/entry_open.dart';
 /// Validate in a `RawForm` with a `RawFormField` around it and pass its
 /// error here.
 ///
+/// It is not a form field itself: a Material `Form`'s `reset()` and
+/// `validate()` pass it by. In a `RawFormField`, the form keeps the field's
+/// error and the [controller] keeps the words: `reset()` takes the error away
+/// and leaves the controller's text as it is. To empty a form, call
+/// `reset()` and then clear the controllers (`controller.clear()`).
+///
 /// The [controller] and [focusNode] are the caller's to dispose when given;
 /// when not, the field makes its own and disposes them.
 ///

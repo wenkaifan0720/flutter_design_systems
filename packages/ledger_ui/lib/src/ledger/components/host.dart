@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/host.dart';
 
+import '../density.dart';
 import '../page_motion.dart';
 import '../theme.dart';
 import 'toast.dart';
@@ -26,6 +27,12 @@ import 'toast.dart';
 /// The host follows the ambient platform for behaviour (scroll physics, text
 /// selection, back gestures) and never pins one; inside a preview frame it
 /// follows the frame's register.
+///
+/// How its settings combine: [brightness] (or the platform) picks day or
+/// night. By day the theme is [theme]; by night it is [darkTheme]. Either
+/// left out is [palette] in that brightness. [density], when given, stands
+/// over both, whichever theme they come from. The window's width changes
+/// none of them: the parts follow the width themselves.
 /// ```dart
 /// MaterialApp(
 ///   builder: (context, child) => LedgerHost(brightness: appearance, child: child!),
@@ -40,6 +47,7 @@ class LedgerHost extends StatelessWidget {
     this.darkTheme,
     this.palette,
     this.brightness,
+    this.density,
     super.key,
   });
 
@@ -56,6 +64,15 @@ class LedgerHost extends StatelessWidget {
 
   /// Pins the appearance; null follows the platform (or the preview frame).
   final Brightness? brightness;
+
+  /// How tightly controls and rows are set, by day and by night; null keeps
+  /// the theme's own (a palette's follows the platform: compact on a
+  /// desktop).
+  ///
+  /// ```dart
+  /// LedgerHost(density: LedgerDensity.compact, child: app)
+  /// ```
+  final LedgerDensity? density;
 
   /// The app.
   final Widget child;
@@ -128,6 +145,13 @@ class LedgerHost extends StatelessWidget {
           brightness,
           defaultValue: null,
         ),
+      )
+      ..add(
+        DiagnosticsProperty<LedgerDensity>(
+          'density',
+          density,
+          defaultValue: null,
+        ),
       );
   }
 
@@ -138,11 +162,15 @@ class LedgerHost extends StatelessWidget {
         PreviewFrame.maybeOf(context)?.brightness ??
         MediaQuery.platformBrightnessOf(context);
     final chosen = palette ?? LedgerThemeData.palettes.first;
-    final night =
-        darkTheme ?? LedgerThemeData.fromPalette(chosen, Brightness.dark);
+    final tight = density;
+    LedgerThemeData dense(LedgerThemeData t) =>
+        tight == null ? t : t.copyWith(density: tight);
+    final night = dense(
+      darkTheme ?? LedgerThemeData.fromPalette(chosen, Brightness.dark),
+    );
     final t = wanted == Brightness.dark
         ? night
-        : theme ?? LedgerThemeData.fromPalette(chosen, Brightness.light);
+        : dense(theme ?? LedgerThemeData.fromPalette(chosen, Brightness.light));
     final platform = PreviewFrame.targetPlatformOf(context);
     return MediaQuery.withClampedTextScaling(
       maxScaleFactor: maxTextScale,

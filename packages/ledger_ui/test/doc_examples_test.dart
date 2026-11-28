@@ -116,6 +116,8 @@ void main() {
         palette: LedgerThemeData.palettes.firstWhere((p) => p.id == paletteId),
         child: app,
       ),
+      'LedgerHost.density': (context) =>
+          LedgerHost(density: LedgerDensity.compact, child: app),
       'LedgerPreview': (context) => LedgerPreview(
         presentation: LedgerPresentation.pushed,
         child: const AccountPage(),

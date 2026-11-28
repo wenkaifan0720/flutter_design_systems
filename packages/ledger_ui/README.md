@@ -61,7 +61,11 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    localizationsDelegates: const [RawWidgetsLocalizations.delegate],
+    localizationsDelegates: const [
+      RawWidgetsLocalizations.delegate, // Ledger's own words, in 30 languages
+      ...GlobalMaterialLocalizations.delegates, // material_ui's, Cupertino's and the widgets'
+    ],
+    supportedLocales: RawWidgetsLocalizations.supportedLocales,
     builder: (context, child) => LedgerHost(brightness: appearance, child: child!),
     home: const LedgerScreen(
       topBar: LedgerTopBar(title: 'Shelf'),
@@ -71,8 +75,15 @@ class App extends StatelessWidget {
 }
 ```
 
-Under a `CupertinoApp` (from `cupertino_ui`) or a bare `WidgetsApp` the host goes in the same place. A bare
-`LedgerTheme` gives a subtree the theme alone: no toasts, no paper, no fade.
+That is the whole delegate list. `GlobalMaterialLocalizations` comes from material_ui, so an app on material_ui needs no
+`flutter_localizations` dependency; the example lists the same delegates. Under a `CupertinoApp` (from `cupertino_ui`)
+or a bare `WidgetsApp` the host and the delegates go in the same places. A bare `LedgerTheme` gives a subtree the theme
+alone: no toasts, no paper, no fade.
+
+`LedgerHost` takes a `density` beside its `palette` and `brightness`, which stands over the theme by day and by night:
+`LedgerHost(density: LedgerDensity.compact, child: child!)`. A `theme` or `darkTheme` you give is used as it is, and the
+one you leave out is the palette's in that brightness. The window's width changes none of them: the parts follow the
+width themselves.
 
 ## Build an app
 
@@ -243,6 +254,78 @@ class _AddBookPageState extends State<AddBookPage> {
 A field that only shows a value, or wraps a control that has no label of its own (a toggle group, a slider), is a
 `LedgerField`: its `labelText` over the control, read with it.
 
+To clear the form after a save and stay on the page for the next book, empty the controller and set the other answers
+back at the end of `_save`: `_title.clear(); setState(() { _format = 'paperback'; _started = null; });`.
+
+A form can also check itself. Put each field in a `RawFormField` under a `RawForm`; on a submit that fails, the form
+shows every error, moves the focus to the first and checks each field again as the reader puts it right (Material's
+`autovalidateMode: AutovalidateMode.onUserInteraction`; give a `RawFormField` that `autovalidateMode` to check it from
+the first keystroke). A `LedgerTextField` is not a form field itself: a Material `Form` passes it by. In a
+`RawFormField`, `reset()` takes the error away and leaves the controller's text as it is. To empty the form, call
+`reset()` and then clear the controllers:
+
+```dart
+import 'package:ledger_ui/ledger_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+class QuickAdd extends StatefulWidget {
+  const QuickAdd({super.key, required this.onAdd});
+
+  final ValueChanged<String> onAdd;
+
+  @override
+  State<QuickAdd> createState() => _QuickAddState();
+}
+
+class _QuickAddState extends State<QuickAdd> {
+  final _form = GlobalKey<RawFormState>();
+  final _title = TextEditingController();
+  final _titleFocus = FocusNode();
+
+  @override
+  void dispose() {
+    _title.dispose();
+    _titleFocus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => RawForm(
+    key: _form,
+    onSubmit: () {
+      widget.onAdd(_title.text.trim());
+      // Clear the form after a save: reset() takes the errors away, then the
+      // controller empties the field.
+      _form.currentState!.reset();
+      _title.clear();
+    },
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: LedgerSpacing.s24,
+      children: [
+        RawFormField<String>(
+          focusNode: _titleFocus,
+          validator: (_) => _title.text.trim().isEmpty ? 'Enter the book’s title' : null,
+          builder: (field) => LedgerTextField(
+            labelText: 'Title',
+            controller: _title,
+            focusNode: _titleFocus,
+            errorText: field.errorText,
+            onChanged: field.didChange,
+          ),
+        ),
+        Builder(
+          builder: (context) => LedgerButton.filled(
+            'Add',
+            onPressed: () => RawForm.of(context).submit(),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+```
+
 ### Dialogs and toasts
 
 `LedgerDialog.show` returns the reader's answer: `true` for the confirm, `false` for Cancel, `null` when it is
@@ -408,8 +491,8 @@ LedgerThemeData.light(
 )
 ```
 
-One part's own corners, a step at each, start and end as the text reads. A full corner beside corners of other steps is
-20, or the scale's `fullMaxRadius`:
+One part's own corners, a step at each, start and end as the text reads; here a tab's, the top round and the foot
+square. A full corner beside corners of other steps is 20, or the scale's `fullMaxRadius`:
 
 ```dart
 LedgerButton(
@@ -417,7 +500,7 @@ LedgerButton(
   onPressed: () {},
   style: const LedgerStyle(
     corners: WidgetStatePropertyAll(
-      RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none),
+      RawCorners(bottomStart: RawCorner.none, bottomEnd: RawCorner.none),
     ),
   ),
 )
@@ -436,7 +519,7 @@ pressable, the rules, the leader, the engraving and the other helpers). The rest
 - Use Tab to move between controls, Enter or Space to activate them, and Escape to close overlays. A set of radios, a segmented control or a one-choice toggle group is one Tab stop, on the chosen option, and the arrow keys move and choose. Selects support arrow keys, Home, End and type-ahead. Sliders respond to arrow keys. Keyboard focus is shown with a double underline.
 - Control hit targets stay at least 40 logical pixels (ui_core's tap floor) across densities. Labels and form rows wrap at large text sizes. Calendar days and weekday names scale within the seven-column grid. Chart legends and rulers scale separately from labels inside the plot.
 - The layout follows `Directionality`. Money, masked account numbers and step counts preserve their numeric order in right-to-left layouts. Charts retain their left-to-right time axis.
-- Add `RawWidgetsLocalizations.delegate` to `localizationsDelegates` and `RawWidgetsLocalizations.supportedLocales` to `supportedLocales` to localize shared control labels. Supply translated application labels, chart names and prompts yourself. The bundled fonts cover Latin scripts. Other scripts use platform fallback fonts.
+- List the delegates as [Mount Ledger](#mount-ledger) does (`RawWidgetsLocalizations.delegate` and `GlobalMaterialLocalizations.delegates`, with `RawWidgetsLocalizations.supportedLocales`) to localize shared control labels; on material_ui no `flutter_localizations` is needed. Supply translated application labels, chart names and prompts yourself. The bundled fonts cover Latin scripts. Other scripts use platform fallback fonts.
 - `LedgerFormat` prints dates and times in English and currency amounts in US dollars. Use `RawWidgetsLocalizations.of(context).formatTimeOfDay` for a clock time in the reader's language and hours, and `LedgerStepper.format` to display a different unit in a stepper.
 
 ## Example app

@@ -31,7 +31,13 @@ class ShelfApp extends StatelessWidget {
       builder: (context, _) => MaterialApp(
         title: 'Shelf',
         debugShowCheckedModeBanner: false,
-        localizationsDelegates: const [RawWidgetsLocalizations.delegate],
+        // Ledger's own words in 30 languages, and material_ui's, Cupertino's and
+        // the widgets'; no flutter_localizations on material_ui.
+        localizationsDelegates: const [
+          RawWidgetsLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        supportedLocales: RawWidgetsLocalizations.supportedLocales,
         builder: (context, child) => LedgerHost(
           brightness: shelf.appearance.brightness,
           palette: shelf.palette,
