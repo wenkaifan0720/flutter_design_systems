@@ -866,6 +866,14 @@ final Map<String, DocExample> _examples = {
         builder: (context, child) =>
             StudioHost(palette: StudioThemeData.palettes[1], child: child!),
       ),
+  'StudioHost.density': (context) =>
+      () => MaterialApp(
+        builder: (context, child) => StudioHost(
+          palette: StudioThemeData.palettes[1],
+          density: StudioDensity.compact,
+          child: child!,
+        ),
+      ),
   'StudioScreen': (context) => const StudioScreen(
     topBar: StudioAppBar(title: 'Episode'),
     body: Text('Recorded in one take.'),

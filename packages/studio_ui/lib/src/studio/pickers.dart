@@ -662,6 +662,34 @@ double _calendarCap(BuildContext context) =>
     7 * (_dayHeight(context) + 12) +
     2 * (StudioSpacing.small + StudioMetrics.recessInset);
 
+// A calendar with a Clear key under it while the field holds a value:
+// pressing it empties the field and closes the calendar. [clear] null (an
+// empty field) shows the calendar alone.
+Widget _clearable(BuildContext context, Widget calendar, VoidCallback? clear) {
+  if (clear == null) return calendar;
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      calendar,
+      Padding(
+        padding: const EdgeInsetsDirectional.only(
+          start: StudioSpacing.small,
+          end: StudioSpacing.small,
+          bottom: StudioSpacing.small,
+        ),
+        child: Align(
+          alignment: AlignmentDirectional.centerEnd,
+          child: StudioButton.text(
+            RawWidgetsLocalizations.of(context).clearButtonTooltip,
+            onPressed: clear,
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
 // A calendar's popover: as wide as its field, edge to edge, up to a month's
 // comfortable width; under a narrower field it keeps a month's width, and
 // under a wider one the comfortable width, from the field's leading edge.
@@ -682,7 +710,9 @@ Widget _panel(BuildContext context, RawPopoverInfo info, Widget child) =>
 
 /// A date field: a glass window showing the chosen day (or [hintText]) with a
 /// calendar glyph at its end; a press opens a [StudioCalendar] under it,
-/// and taking a day closes it.
+/// and taking a day closes it. While a day is chosen, a Clear key under the
+/// calendar empties the field: [onChanged] is called with null. A day the
+/// form must have sets [clearable] false.
 ///
 /// A null [onChanged] disables it.
 ///
@@ -702,14 +732,20 @@ class StudioDatePicker extends StatelessWidget {
     this.helperText,
     this.errorText,
     this.currentDate,
+    this.clearable = true,
     this.style,
   });
 
   /// The chosen day.
   final DateTime? value;
 
-  /// Called with the day taken; null disables it.
-  final ValueChanged<DateTime>? onChanged;
+  /// Called with the day taken, or null when the field is cleared; null
+  /// disables it.
+  final ValueChanged<DateTime?>? onChanged;
+
+  /// Whether a Clear key under the calendar empties a field that holds a
+  /// day; false for a day the form must have.
+  final bool clearable;
 
   /// The first day it offers.
   final DateTime firstDate;
@@ -751,7 +787,9 @@ class StudioDatePicker extends StatelessWidget {
               error: errorText != null,
             )
           : RawPopover(
-              semanticLabel: labelText,
+              // The calendar's surface is named for its purpose; the field
+              // is heard by its label once, on the field.
+              semanticLabel: words.datePickerHelpText,
               placement: _calendarPlacement(context),
               dampingRatio: StudioMotion.dampingRatio,
               stiffness: StudioMotion.overlayStiffness,
@@ -766,17 +804,26 @@ class StudioDatePicker extends StatelessWidget {
               overlayBuilder: (context, info) => _panel(
                 context,
                 info,
-                StudioCalendar(
-                  firstDate: firstDate,
-                  lastDate: lastDate,
-                  selectedDate: value,
-                  currentDate: currentDate,
-                  autofocus: true,
-                  style: style,
-                  onDateChanged: (d) {
-                    info.close();
-                    onChanged?.call(d);
-                  },
+                _clearable(
+                  context,
+                  StudioCalendar(
+                    firstDate: firstDate,
+                    lastDate: lastDate,
+                    selectedDate: value,
+                    currentDate: currentDate,
+                    autofocus: true,
+                    style: style,
+                    onDateChanged: (d) {
+                      info.close();
+                      onChanged?.call(d);
+                    },
+                  ),
+                  value == null || !clearable
+                      ? null
+                      : () {
+                          info.close();
+                          onChanged?.call(null);
+                        },
                 ),
               ),
             ),
@@ -792,13 +839,18 @@ class StudioDatePicker extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null))
-      ..add(StringProperty('label', labelText, defaultValue: null));
+      ..add(StringProperty('label', labelText, defaultValue: null))
+      ..add(
+        FlagProperty('clearable', value: clearable, ifFalse: 'not clearable'),
+      );
   }
 }
 
 /// A span field: a glass window showing the first and last days (or
 /// [hintText]); a press opens a range [StudioCalendar] under it, which closes
-/// once the last day is taken.
+/// once the last day is taken. While a span is chosen, a Clear key under the
+/// calendar empties the field: [onChanged] is called with null. A span the
+/// form must have sets [clearable] false.
 ///
 /// A null [onChanged] disables it.
 ///
@@ -818,14 +870,20 @@ class StudioDateRangePicker extends StatelessWidget {
     this.helperText,
     this.errorText,
     this.currentDate,
+    this.clearable = true,
     this.style,
   });
 
   /// The chosen span.
   final StudioDateRange? value;
 
-  /// Called with the span taken; null disables it.
-  final ValueChanged<StudioDateRange>? onChanged;
+  /// Called with the span taken, or null when the field is cleared; null
+  /// disables it.
+  final ValueChanged<StudioDateRange?>? onChanged;
+
+  /// Whether a Clear key under the calendar empties a field that holds a
+  /// span; false for a span the form must have.
+  final bool clearable;
 
   /// The first day it offers.
   final DateTime firstDate;
@@ -870,7 +928,9 @@ class StudioDateRangePicker extends StatelessWidget {
               error: errorText != null,
             )
           : RawPopover(
-              semanticLabel: labelText,
+              // The calendar's surface is named for its purpose; the field
+              // is heard by its label once, on the field.
+              semanticLabel: words.datePickerHelpText,
               placement: _calendarPlacement(context),
               dampingRatio: StudioMotion.dampingRatio,
               stiffness: StudioMotion.overlayStiffness,
@@ -885,17 +945,26 @@ class StudioDateRangePicker extends StatelessWidget {
               overlayBuilder: (context, info) => _panel(
                 context,
                 info,
-                StudioCalendar.range(
-                  firstDate: firstDate,
-                  lastDate: lastDate,
-                  selectedRange: value,
-                  currentDate: currentDate,
-                  autofocus: true,
-                  style: style,
-                  onRangeChanged: (r) {
-                    info.close();
-                    onChanged?.call(r);
-                  },
+                _clearable(
+                  context,
+                  StudioCalendar.range(
+                    firstDate: firstDate,
+                    lastDate: lastDate,
+                    selectedRange: value,
+                    currentDate: currentDate,
+                    autofocus: true,
+                    style: style,
+                    onRangeChanged: (r) {
+                      info.close();
+                      onChanged?.call(r);
+                    },
+                  ),
+                  value == null || !clearable
+                      ? null
+                      : () {
+                          info.close();
+                          onChanged?.call(null);
+                        },
                 ),
               ),
             ),
@@ -917,7 +986,10 @@ class StudioDateRangePicker extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', labelText, defaultValue: null));
+      ..add(StringProperty('label', labelText, defaultValue: null))
+      ..add(
+        FlagProperty('clearable', value: clearable, ifFalse: 'not clearable'),
+      );
   }
 }
 

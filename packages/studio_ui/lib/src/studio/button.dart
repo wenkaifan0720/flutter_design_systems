@@ -13,6 +13,7 @@ import 'theme.dart';
 
 enum _KeyKind { plain, lit, text }
 
+/// A button.
 /// A key. It stands proud of the metal, lit from the top; a press sinks it
 /// and its shadow closes, and it springs back when let go.
 ///
@@ -313,6 +314,7 @@ class StudioButton extends StatelessWidget {
   }
 }
 
+/// An icon button.
 /// A square key with a glyph: the bar's back key, a toolbar's action.
 /// [selected] latches it down with its glyph lit, as a key that stays in.
 ///

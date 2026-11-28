@@ -109,58 +109,6 @@ abstract final class StudioIconSizes {
   static const double huge = 28;
 }
 
-/// Studio's corners at their own values: machined, small and concentric. A
-/// shape set into another is inset by the difference of their radii. The
-/// parts draw the theme's corners ([StudioThemeData.shapeScheme], read as
-/// [StudioThemeData.radiusCap] to [StudioThemeData.radiusPanel]), which an
-/// app can change within Studio's bands; a part of an app's own reads them
-/// there, so it follows.
-abstract final class StudioRadii {
-  /// A panel module set in the chassis, a dialog, a sheet.
-  @Deprecated(
-    "Read the theme's corner, StudioTheme.of(context).radiusPanel, which follows "
-    'its shapeScheme. Removed in 0.8.0.',
-  )
-  static const double panel = 12;
-
-  /// A glass display pane.
-  @Deprecated(
-    "Read the theme's corner, StudioTheme.of(context).radiusDisplay, which follows "
-    'its shapeScheme. Removed in 0.8.0.',
-  )
-  static const double display = 10;
-
-  /// A recess that holds keys (a bank, a rail): [key] plus
-  /// [StudioMetrics.recessInset].
-  @Deprecated(
-    "Read the theme's corner, StudioTheme.of(context).radiusBank, which follows "
-    'its shapeScheme. Removed in 0.8.0.',
-  )
-  static const double bank = 10;
-
-  /// A key, a field's glass, a select's window.
-  @Deprecated(
-    "Read the theme's corner, StudioTheme.of(context).radiusKey, which follows "
-    'its shapeScheme. Removed in 0.8.0.',
-  )
-  static const double key = 6;
-
-  /// A small window: a readout, a toggle's slot.
-  @Deprecated(
-    "Read the theme's corner, StudioTheme.of(context).radiusSmall, which follows "
-    'its shapeScheme. Removed in 0.8.0.',
-  )
-  static const double small = 5;
-
-  /// The switch cap follows the 6 px corners of its slot past a 3 px lip.
-  /// A fader uses the same corner on its raised handle.
-  @Deprecated(
-    "Read the theme's corner, StudioTheme.of(context).radiusCap, which follows "
-    'its shapeScheme. Removed in 0.8.0.',
-  )
-  static const double cap = 3;
-}
-
 /// Studio's spacing, on a 4 px grid ([RawSpacingScope] declares it).
 abstract final class StudioSpacing {
   /// The grid every gap, inset and offset stands on.

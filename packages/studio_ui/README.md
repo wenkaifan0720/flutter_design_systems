@@ -12,6 +12,8 @@ Studio is a Flutter design system for audio and media apps. It includes transpor
 flutter pub add studio_ui material_ui
 ```
 
+A new project on Flutter 3.48 or later already lists `material_ui`; the command then adds `studio_ui` alone.
+
 Every snippet on this page compiles after that line. Each file imports the look and the Material it is built on:
 
 - `package:studio_ui/studio_ui.dart` holds every part, `StudioHost` and the `LucideIcons` glyphs Studio draws with included, and ui_core's `Raw*` parts.
@@ -85,7 +87,7 @@ WidgetsApp(
 )
 ```
 
-With a router (go_router, say), return a `StudioPage` from a route's `pageBuilder` for Studio's transition. `StudioHost(theme:, darkTheme:)` takes themes of your own instead of a palette. To theme one subtree, wrap it in `StudioTheme(data: …)`.
+With a router (go_router, say), return a `StudioPage` from a route's `pageBuilder` for Studio's transition. `StudioHost(theme:, darkTheme:)` takes themes of your own instead of a palette. `StudioHost(density: StudioDensity.compact)` sets how tight the controls stand, by day and by night, at every window width. To theme one subtree, wrap it in `StudioTheme(data: …)`.
 
 Your own text reads the theme's tokens, so it follows the palette and the room:
 
@@ -96,6 +98,8 @@ Text(
 )
 ```
 
+Lucide draws its glyphs as outlines only, so a glyph that is on (a favourite) takes the indicator's light rather than a filled form: `Icon(LucideIcons.star, color: on ? context.studioTheme.colors.indicator : null)`.
+
 `colors.legend` is words on the metal, `colors.onDisplay` words on a display's glass, `colors.litLegend` a lit word; `textTheme` holds `display`, `headline`, `title`, `body`, `secondary`, `label`, `caption`, and `legend` and `readout` for words printed on the metal and on a readout.
 
 ## Build an app
@@ -104,7 +108,7 @@ The example app, `example/lib/main.dart`, is all of this in one file: a podcast 
 
 ### The shell
 
-`StudioAppShell` is the app's frame: its places in a key bank along a phone's foot, in a rail from 600 wide and in a side panel from 1024. With `branches`, each place keeps its own stack of pages: a page pushed in a place keeps the rail or the panel beside it while a phone's key bank steps away, back pops it, and choosing the place again returns to its first page. Toasts keep clear of the key bank. A `StudioShellAction` is the app's one act, a lit key over each place's first page.
+`StudioAppShell` is the app's frame: its places in a key bank along a phone's foot, in a rail from 600 wide and in a side panel from 1024. With `branches`, each place keeps its own stack of pages: a page pushed in a place keeps the rail or the panel beside it while a phone's key bank steps away, back pops it, and choosing the place again returns to its first page. Toasts keep clear of the key bank. A `StudioShellAction` is the app's one act, a lit key over each place's first page. To move to another place after an act (back to the list after a save), set `selectedIndex`. To start a place's first page fresh (a form that was saved), give that page a new key.
 
 ```dart
 import 'package:material_ui/material_ui.dart';
@@ -204,9 +208,34 @@ class EpisodePage extends StatelessWidget {
 }
 ```
 
+To delete from a list, wrap each row in a `StudioSwipeRow`. In a `StudioListGroup` it is the group's row: at rest the group is one pane of glass with its rules, and a drag toward the start (or the arrow keys, or a screen reader's actions) shows its key in the metal the row leaves.
+
+```dart
+import 'package:material_ui/material_ui.dart';
+import 'package:studio_ui/studio_ui.dart';
+
+Widget episodesList(List<String> titles, ValueChanged<String> delete) => StudioListGroup(
+  children: [
+    for (final title in titles)
+      StudioSwipeRow(
+        key: ValueKey(title),
+        endActions: [
+          StudioSwipeAction(
+            label: 'Delete',
+            icon: const Icon(LucideIcons.trash2),
+            destructive: true,
+            onPressed: () => delete(title),
+          ),
+        ],
+        child: StudioListTile(title: title, onTap: () {}),
+      ),
+  ],
+);
+```
+
 ### Forms
 
-`StudioForm` is the form: `StudioTextFormField`s in it validate, and `StudioForm.submit(context)` checks every field, shows each error in its field's help line beside a lit lamp and moves focus to the first, or saves each field and calls `onSubmit`. In a form's column every field takes the column's width. A part's everyday controls take `value` and `onChanged`; a null `onChanged` or `onPressed` turns it off. Wrap a control that brings no label of its own in a `StudioFormField`.
+`StudioForm` is the form: `StudioTextFormField`s in it validate, and `StudioForm.submit(context)` checks every field, shows each error in its field's help line beside a lit lamp and moves focus to the first, or saves each field and calls `onSubmit`. In a form's column every field takes the column's width. A part's everyday controls take `value` and `onChanged`; a null `onChanged` or `onPressed` turns it off. Wrap a control that brings no label of its own (a switch) in a `StudioFormField`, which names it; a switch keeps its own size at the line's start.
 
 ```dart
 import 'package:material_ui/material_ui.dart';
@@ -224,6 +253,7 @@ class _NewEpisodePageState extends State<NewEpisodePage> {
   String _quality = 'high';
   DateTime? _recorded;
   bool _explicit = false;
+  bool _notify = true;
 
   @override
   Widget build(BuildContext context) => StudioForm(
@@ -263,6 +293,11 @@ class _NewEpisodePageState extends State<NewEpisodePage> {
             value: _explicit,
             onChanged: (value) => setState(() => _explicit = value),
           ),
+          // A switch brings no label: the field names it, and it keeps its own size.
+          StudioFormField(
+            labelText: 'Notify listeners',
+            child: StudioSwitch(value: _notify, onChanged: (value) => setState(() => _notify = value)),
+          ),
         ],
       ),
       // Under the form, so submit finds it.
@@ -274,7 +309,66 @@ class _NewEpisodePageState extends State<NewEpisodePage> {
 }
 ```
 
-A date field with no value shows its hint; one with a day shows a medium date with its year ("Nov 9, 2026"), as ui_core's `RawWidgetsLocalizations.formatMediumDate` writes it in the app's language.
+A date field with no value shows its hint; one with a day shows a medium date with its year ("Nov 9, 2026"), as ui_core's `RawWidgetsLocalizations.formatMediumDate` writes it in the app's language. While it holds a day, a Clear key under its calendar empties it and `onChanged` gets null; a day the form must have passes `clearable: false`.
+
+A field checks itself when the form submits, and after a failed submit as it is edited; `autovalidateMode: AutovalidateMode.onUserInteraction` makes a field check itself from its first edit.
+
+To clear a form after a save (a form that stays on screen, such as a place's first page), reset it and then clear the controllers: with a controller, a field's first value is the controller's text when the field was last built, so `reset()` alone puts that text back.
+
+```dart
+import 'package:material_ui/material_ui.dart';
+import 'package:studio_ui/studio_ui.dart';
+
+class QuickAdd extends StatefulWidget {
+  const QuickAdd({super.key, required this.onAdd});
+
+  final ValueChanged<String> onAdd;
+
+  @override
+  State<QuickAdd> createState() => _QuickAddState();
+}
+
+class _QuickAddState extends State<QuickAdd> {
+  final _title = TextEditingController();
+
+  @override
+  void dispose() {
+    _title.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => StudioForm(
+    child: Builder(
+      builder: (context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: StudioSpacing.regular,
+        children: [
+          StudioTextFormField(
+            controller: _title,
+            labelText: 'Title',
+            validator: (value) => (value ?? '').trim().isEmpty ? 'Enter the title' : null,
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: StudioButton.lit(
+              'Add',
+              onPressed: () {
+                if (!StudioForm.submit(context)) return;
+                widget.onAdd(_title.text.trim());
+                // Clear the form after a save: the errors and the values go
+                // back, then the controllers empty.
+                StudioForm.reset(context);
+                _title.clear();
+              },
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+```
 
 ### Dialogs and toasts
 
@@ -422,14 +516,14 @@ final rounder = StudioThemeData.light().copyWith(
 );
 ```
 
-A part takes its own corners from its style, a step per corner, start and end as it reads, so they turn right to left:
+A part takes its own corners from its style, a step per corner, start and end as it reads, so they turn right to left. Keep the shape the same side to side: the top pair one step, the bottom pair another.
 
 ```dart
 final record = StudioButton.lit(
   'Record',
   style: const StudioStyle(
     corners: WidgetStatePropertyAll(
-      RawCorners(topStart: RawCorner.large, bottomEnd: RawCorner.large),
+      RawCorners(topStart: RawCorner.large, topEnd: RawCorner.large),
     ),
   ),
   onPressed: () {},
@@ -448,7 +542,23 @@ Every part reads to a screen reader with its role and name; an icon key takes a 
 
 ## Languages and right to left
 
-Labels the parts say themselves (Cancel, Search, a picker's months) come from ui_core's `RawWidgetsLocalizations`, in 30 languages, and follow the app's locale with nothing to set up. Studio's own counts come from `StudioLocalizations`, in English; for another language, extend `DefaultStudioLocalizations` and add a delegate for it to `localizationsDelegates`. In a right-to-left locale every layout mirrors, and the charts write Arabic-Indic digits in Arabic.
+Labels the parts say themselves (Cancel, Search, a picker's months) come from ui_core's `RawWidgetsLocalizations`, in 30 languages, and follow the app's locale. Studio's own counts come from `StudioLocalizations`, in English; for another language, extend `DefaultStudioLocalizations` and add a delegate for it to `localizationsDelegates`. Register the three in the snippet below, Material's, Cupertino's and the widgets' words included. On material_ui an app needs no `flutter_localizations` dependency: material_ui exports `GlobalMaterialLocalizations` and depends on Flutter's localizations itself.
+
+```dart
+import 'package:material_ui/material_ui.dart';
+import 'package:studio_ui/studio_ui.dart';
+
+final app = MaterialApp(
+  localizationsDelegates: const [
+    RawWidgetsLocalizations.delegate,
+    StudioLocalizations.delegate,
+    ...GlobalMaterialLocalizations.delegates,
+  ],
+  supportedLocales: RawWidgetsLocalizations.supportedLocales,
+  builder: (context, child) => StudioHost(child: child!),
+  home: const StudioScreen(body: SizedBox()),
+);
+``` In a right-to-left locale every layout mirrors, and the charts write Arabic-Indic digits in Arabic.
 
 ## Example
 

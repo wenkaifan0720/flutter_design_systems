@@ -11,6 +11,7 @@ import 'package:ui_core/ui_core.dart';
 
 import 'internal/corners.dart';
 import 'internal/control_light.dart';
+import 'internal/group_pane.dart';
 
 import 'choices.dart';
 import 'display.dart' show StudioTag;
@@ -139,25 +140,34 @@ class StudioListGroup extends StatelessWidget {
         if (header != null) StudioSectionHeader(header!),
         StudioDisplay(
           padding: const EdgeInsets.all(StudioMetrics.recessInset),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final (i, row) in children.indexed) ...[
-                if (i > 0)
-                  Padding(
-                    padding: EdgeInsetsDirectional.only(
-                      start: dividerIndent,
-                      end: StudioSpacing.small,
-                    ),
-                    child: SizedBox(
-                      height: 1,
-                      child: ColoredBox(color: c.displayLine),
-                    ),
-                  ),
-                row,
-              ],
-            ],
+          // The rows round at the pane's inner wall, not each on its own: a
+          // swipe row slides over the glass and its keys stand inside it.
+          child: StudioGroupPane(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(
+                theme.radiusDisplay - StudioMetrics.recessInset,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final (i, row) in children.indexed) ...[
+                    if (i > 0)
+                      Padding(
+                        padding: EdgeInsetsDirectional.only(
+                          start: dividerIndent,
+                          end: StudioSpacing.small,
+                        ),
+                        child: SizedBox(
+                          height: 1,
+                          child: ColoredBox(color: c.displayLine),
+                        ),
+                      ),
+                    row,
+                  ],
+                ],
+              ),
+            ),
           ),
         ),
         if (footer != null)

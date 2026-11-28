@@ -180,6 +180,8 @@ class _RoomtonePublishPageState extends State<RoomtonePublishPage>
               firstDate: first,
               lastDate: DateTime(2027, 6, 30),
               currentDate: first,
+              // A scheduled episode needs its day.
+              clearable: false,
               onChanged: (d) => setState(() => _day = d),
             ),
             const SizedBox(height: StudioSpacing.regular),

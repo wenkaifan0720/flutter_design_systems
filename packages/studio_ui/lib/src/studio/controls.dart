@@ -67,6 +67,7 @@ Map<ShortcutActivator, Intent> _stepKeys(bool rtl, Axis axis) => {
   ),
 };
 
+/// A slider.
 /// A fader: a metal cap with an index line riding a dark slot, the slot lit
 /// in the indicator light from its start up to the cap, engraved ticks beside
 /// it. Drag the cap or press anywhere along the slot; the arrows step it.
@@ -172,6 +173,10 @@ class StudioFader extends StatefulWidget {
 
 class _StudioFaderState extends State<StudioFader> {
   bool _focused = false;
+  FocusNode? _ownFocus;
+  // The node the fader takes focus on when a pointer goes down on it.
+  FocusNode get _focus =>
+      widget.focusNode ?? (_ownFocus ??= FocusNode(debugLabel: 'StudioFader'));
   // Focus shows as ui_core's parts show it: after a key, not after a click
   // or a drag, and for a Tab after a mouse that came before any other input
   // (a trackpad on an iPad), which leaves the detector's highlight stale.
@@ -182,6 +187,7 @@ class _StudioFaderState extends State<StudioFader> {
   @override
   void dispose() {
     _focusShown.dispose();
+    _ownFocus?.dispose();
     super.dispose();
   }
 
@@ -284,9 +290,16 @@ class _StudioFaderState extends State<StudioFader> {
           if (_held != on) setState(() => _held = on);
         }
 
-        // A finger on the fader holds its cap at once, before it moves.
+        // A finger on the fader holds its cap at once, before it moves,
+        // and takes the keyboard's focus, as Material's slider does; the
+        // ring waits for a key.
         return Listener(
-          onPointerDown: enabled ? (_) => hold(true) : null,
+          onPointerDown: enabled
+              ? (_) {
+                  hold(true);
+                  _focus.requestFocus();
+                }
+              : null,
           onPointerUp: (_) => hold(false),
           onPointerCancel: (_) => hold(false),
           child: GestureDetector(
@@ -341,7 +354,7 @@ class _StudioFaderState extends State<StudioFader> {
       onDecrease: enabled ? () => _set(prev) : null,
       child: FocusableActionDetector(
         enabled: enabled,
-        focusNode: widget.focusNode,
+        focusNode: _focus,
         autofocus: widget.autofocus,
         mouseCursor: enabled
             ? SystemMouseCursors.click
@@ -516,6 +529,7 @@ class _FaderPainter extends CustomPainter {
       old.capRadius != capRadius;
 }
 
+/// A rotary slider, a dial.
 /// A knob: a knurled rotary with a lit pointer, ticks round it on the metal.
 /// Drag up or right to turn it up; the arrows step it. With [divisions] it
 /// clicks into detents and settles into the nearest with a small give, as a
@@ -594,6 +608,10 @@ class _StudioKnobState extends State<StudioKnob>
   bool _dragging = false;
   // A finger or the pointer's button on the knob.
   bool _held = false;
+  FocusNode? _ownFocus;
+  // The node the knob takes focus on when a pointer goes down on it.
+  FocusNode get _focus =>
+      widget.focusNode ?? (_ownFocus ??= FocusNode(debugLabel: 'StudioKnob'));
 
   void _hold(bool on) {
     if (_held != on) setState(() => _held = on);
@@ -637,6 +655,7 @@ class _StudioKnobState extends State<StudioKnob>
   void dispose() {
     _shown.dispose();
     _focusShown.dispose();
+    _ownFocus?.dispose();
     super.dispose();
   }
 
@@ -664,7 +683,7 @@ class _StudioKnobState extends State<StudioKnob>
       onDecrease: enabled ? () => _set(prev) : null,
       child: FocusableActionDetector(
         enabled: enabled,
-        focusNode: widget.focusNode,
+        focusNode: _focus,
         autofocus: widget.autofocus,
         mouseCursor: enabled
             ? SystemMouseCursors.resizeUpDown
@@ -680,8 +699,15 @@ class _StudioKnobState extends State<StudioKnob>
           ),
         },
         child: ExcludeSemantics(
+          // A pointer down on the knob takes the keyboard's focus, as
+          // Material's slider does; the ring waits for a key.
           child: Listener(
-            onPointerDown: enabled ? (_) => _hold(true) : null,
+            onPointerDown: enabled
+                ? (_) {
+                    _hold(true);
+                    _focus.requestFocus();
+                  }
+                : null,
             onPointerUp: (_) => _hold(false),
             onPointerCancel: (_) => _hold(false),
             child: GestureDetector(

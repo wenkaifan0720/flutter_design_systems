@@ -10,6 +10,7 @@ import 'package:ui_core/ui_core.dart';
 import 'surface.dart';
 import 'theme.dart';
 
+/// A surface for controls.
 /// A panel: a module of brushed anodised metal, flush with the chassis, its
 /// top edge catching the light. Controls and legends stand on it; what
 /// people read goes on a [StudioDisplay] set into it.
@@ -57,6 +58,7 @@ class StudioPanel extends StatelessWidget {
   }
 }
 
+/// A card for content.
 /// A display: a pane of glass set into the metal, shadow falling inside it
 /// from its top edge. Content is read on it: an episode, a list, notes. Pale
 /// by day and dark by night; [readout] makes it a readout window's glass,

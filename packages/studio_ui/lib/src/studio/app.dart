@@ -29,8 +29,9 @@ import 'transitions.dart';
 /// under every page.
 ///
 /// It builds [palette]'s theme by day and by night (or takes [theme] and
-/// [darkTheme] as given), follows the platform's brightness unless
-/// [brightness] pins one, and moves to a new brightness or palette smoothly,
+/// [darkTheme] as given). It sets both at [density] when one is given. It
+/// follows the platform's brightness unless [brightness] pins one, and moves
+/// to a new brightness or palette smoothly,
 /// every colour at once ([AnimatedStudioTheme]; at once under Reduce
 /// Motion).
 ///
@@ -46,6 +47,7 @@ class StudioHost extends StatelessWidget {
     this.theme,
     this.darkTheme,
     this.brightness,
+    this.density,
     required this.child,
   });
 
@@ -63,6 +65,15 @@ class StudioHost extends StatelessWidget {
   /// platform's.
   final Brightness? brightness;
 
+  /// How tight the controls stand, by day and by night alike, whatever the
+  /// window's width; null keeps each theme's own (a palette's is
+  /// [RawDensity.standard]).
+  ///
+  /// ```dart
+  /// StudioHost(palette: StudioThemeData.palettes[1], density: StudioDensity.compact, child: child!)
+  /// ```
+  final StudioDensity? density;
+
   /// The app.
   final Widget child;
 
@@ -72,12 +83,14 @@ class StudioHost extends StatelessWidget {
         brightness ??
         PreviewFrame.maybeOf(context)?.brightness ??
         MediaQuery.platformBrightnessOf(context);
-    final data =
+    final built =
         (wanted == Brightness.dark ? darkTheme : theme) ??
         StudioThemeData.preset(
           (palette ?? StudioThemeData.palettes.first).id,
           wanted,
         );
+    final density = this.density;
+    final data = density == null ? built : built.copyWith(density: density);
     return AnimatedStudioTheme(
       data: data,
       child: StudioToaster(
@@ -120,6 +133,13 @@ class StudioHost extends StatelessWidget {
         DiagnosticsProperty<Brightness>(
           'brightness',
           brightness,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<StudioDensity>(
+          'density',
+          density,
           defaultValue: null,
         ),
       );
@@ -573,6 +593,7 @@ class StudioPreview extends StatelessWidget {
   }
 }
 
+/// The app's navigation shell: a bottom bar, a rail or a sidebar.
 /// The app's places and its one act round its pages: [StudioScaffold]'s
 /// key bank on a phone, its rail on a tablet, its side panel on a desk, and
 /// the act a [StudioFloatingKey] over a root page's bottom end, which the
@@ -825,6 +846,7 @@ class _ActKey extends StatelessWidget {
   }
 }
 
+/// A navigation destination (a tab).
 /// One of an app shell's places as an app declares it: its glyph, its name
 /// and the key on its bank key.
 ///
@@ -846,6 +868,7 @@ class StudioTab {
   final Key? key;
 }
 
+/// The app's primary action (a floating action button).
 /// The app's one act beside its places (record, write, add): the graphite
 /// floating key over a root page's bottom end, lit when [accent], an
 /// aluminium one when not.

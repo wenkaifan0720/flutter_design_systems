@@ -421,6 +421,7 @@ class StudioKeyRow extends StatelessWidget {
   }
 }
 
+/// Toggle buttons.
 /// Latching keys in a recessed bank: a key pressed stays down with its own
 /// lamp lit until it is pressed again. Several may be in at once unless
 /// [multiSelectionEnabled] is false; then the bank is one choice, read as a

@@ -4,6 +4,7 @@
 library;
 
 import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// The package that bundles Studio's face, or null when the app does. Every
 /// Studio text style passes it as `TextStyle.package`.
@@ -35,9 +36,10 @@ const List<(String, int)> _faces = [
 String studioRegisteredFamily(String family) =>
     studioFontPackage == null ? family : 'packages/$studioFontPackage/$family';
 
-/// Loads Barlow and the Arabic chart face for the first frame. Await it
-/// before `runApp`: on the web a bundled face otherwise arrives after the
-/// first frames, which flash in a fallback face.
+/// Loads Barlow, the Arabic chart face and Lucide, the glyphs every part
+/// draws ([LucideIcons]), for the first frame. Await it before `runApp`: on
+/// the web a bundled face otherwise arrives after the first frames, which
+/// flash in a fallback face and draw the glyphs as empty boxes.
 ///
 /// ```dart
 /// Future<void> main() async {WidgetsFlutterBinding.ensureInitialized(); await studioLoadFonts(); runApp(const MyApp());}
@@ -52,5 +54,11 @@ Future<void> studioLoadFonts() async {
   }
   final arabic = FontLoader(studioRegisteredFamily('NotoSansArabic'))
     ..addFont(rootBundle.load('$assets/NotoSansArabic-400.ttf'));
-  await Future.wait([loader.load(), arabic.load()]);
+  // Lucide from its own package, under the family its glyphs name.
+  const glyph = LucideIcons.mic;
+  final glyphs = FontLoader('packages/${glyph.fontPackage}/${glyph.fontFamily}')
+    ..addFont(
+      rootBundle.load('packages/${glyph.fontPackage}/assets/lucide.ttf'),
+    );
+  await Future.wait([loader.load(), arabic.load(), glyphs.load()]);
 }

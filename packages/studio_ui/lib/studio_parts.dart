@@ -20,6 +20,7 @@ export 'src/studio/internal/corners.dart';
 export 'src/studio/internal/curved.dart';
 export 'src/studio/internal/field_frame.dart';
 export 'src/studio/internal/focus_light.dart';
+export 'src/studio/internal/group_pane.dart';
 export 'src/studio/internal/inventory.dart';
 export 'src/studio/internal/label_stride.dart';
 export 'src/studio/internal/list_keys.dart';

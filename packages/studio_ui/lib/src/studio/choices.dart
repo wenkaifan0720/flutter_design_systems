@@ -878,68 +878,76 @@ class _StudioSwitchState extends State<StudioSwitch>
     final enabled = widget.onChanged != null;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final light = StudioLight.of(context);
-    return RawButton(
-      onPressed: enabled ? () => widget.onChanged!(!widget.value) : null,
-      focusNode: widget.focusNode,
-      autofocus: widget.autofocus,
-      toggled: widget.value,
-      semanticLabel: widget.semanticLabel,
-      builder: (context, states, _) {
-        final layered = RawStyleOf(
-          [widget.style, theme.switchStyle],
-          {...states, if (widget.value) WidgetState.selected},
-        );
-        final cue = studioControlLight(states);
-        final pressed = states.contains(WidgetState.pressed);
-        return TapTargetPadding(
-          child: GestureDetector(
-            onHorizontalDragStart: enabled
-                ? (_) => setState(() => _dragging = true)
-                : null,
-            onHorizontalDragUpdate: enabled
-                ? (d) {
-                    final dx = (rtl ? -1 : 1) * d.delta.dx / _throw;
-                    _at.value = (_at.value + dx).clamp(0.0, 1.0);
-                  }
-                : null,
-            onHorizontalDragEnd: enabled
-                ? (d) {
-                    final v = (rtl ? -1 : 1) * d.velocity.pixelsPerSecond.dx;
-                    final on = v.abs() > 200 ? v > 0 : _at.value > 0.5;
-                    setState(() => _dragging = false);
-                    _go(on);
-                    if (on != widget.value) widget.onChanged!(on);
-                  }
-                : null,
-            dragStartBehavior: DragStartBehavior.down,
-            child: SizedBox.fromSize(
-              size: StudioSwitch.size,
-              child: AnimatedBuilder(
-                animation: _at,
-                builder: (context, _) => CustomPaint(
-                  painter: _SwitchPainter(
-                    slotRadius: StudioTheme.of(context).radiusSmall + 1,
-                    capRadius: StudioTheme.of(context).radiusCap,
-                    at: _at.value.clamp(0.0, 1.0),
-                    rtl: rtl,
-                    light: light,
-                    lit: layered.fill ?? c.lightInDark,
-                    enabled: enabled,
-                    pressed: pressed,
-                    cue: cue,
-                    capFocus: studioLitFocus(
-                      c,
-                      states,
-                      lit: widget.value && enabled,
+    // Its own size wherever it stands, as Material's switch keeps it: in a
+    // form's column (a StudioFormField that names it) it stands at the
+    // line's start, and only the switch turns it.
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      widthFactor: 1,
+      heightFactor: 1,
+      child: RawButton(
+        onPressed: enabled ? () => widget.onChanged!(!widget.value) : null,
+        focusNode: widget.focusNode,
+        autofocus: widget.autofocus,
+        toggled: widget.value,
+        semanticLabel: widget.semanticLabel,
+        builder: (context, states, _) {
+          final layered = RawStyleOf(
+            [widget.style, theme.switchStyle],
+            {...states, if (widget.value) WidgetState.selected},
+          );
+          final cue = studioControlLight(states);
+          final pressed = states.contains(WidgetState.pressed);
+          return TapTargetPadding(
+            child: GestureDetector(
+              onHorizontalDragStart: enabled
+                  ? (_) => setState(() => _dragging = true)
+                  : null,
+              onHorizontalDragUpdate: enabled
+                  ? (d) {
+                      final dx = (rtl ? -1 : 1) * d.delta.dx / _throw;
+                      _at.value = (_at.value + dx).clamp(0.0, 1.0);
+                    }
+                  : null,
+              onHorizontalDragEnd: enabled
+                  ? (d) {
+                      final v = (rtl ? -1 : 1) * d.velocity.pixelsPerSecond.dx;
+                      final on = v.abs() > 200 ? v > 0 : _at.value > 0.5;
+                      setState(() => _dragging = false);
+                      _go(on);
+                      if (on != widget.value) widget.onChanged!(on);
+                    }
+                  : null,
+              dragStartBehavior: DragStartBehavior.down,
+              child: SizedBox.fromSize(
+                size: StudioSwitch.size,
+                child: AnimatedBuilder(
+                  animation: _at,
+                  builder: (context, _) => CustomPaint(
+                    painter: _SwitchPainter(
+                      slotRadius: StudioTheme.of(context).radiusSmall + 1,
+                      capRadius: StudioTheme.of(context).radiusCap,
+                      at: _at.value.clamp(0.0, 1.0),
+                      rtl: rtl,
+                      light: light,
+                      lit: layered.fill ?? c.lightInDark,
+                      enabled: enabled,
+                      pressed: pressed,
+                      cue: cue,
+                      capFocus: studioLitFocus(
+                        c,
+                        states,
+                        lit: widget.value && enabled,
+                      ),
+                      ratio: MediaQuery.maybeDevicePixelRatioOf(context) ?? 1,
                     ),
-                    ratio: MediaQuery.maybeDevicePixelRatioOf(context) ?? 1,
                   ),
                 ),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

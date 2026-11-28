@@ -60,10 +60,10 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
     KitSection(
       title: "A part's own corners",
       note:
-          "A style's corners name a step per corner, start and end as the part "
-          'reads: a panel cut at two diagonal corners, a key round at its top '
-          "start alone. Studio holds each to its steps: a milled corner is never "
-          'sharp, a key never a pill.',
+          "A style's corners name a step per corner, the top pair one step and "
+          'the bottom pair another: a panel rounder at its top over a tight '
+          "foot, a key rounder at its top. Studio holds each to its steps: a "
+          'milled corner is never sharp, a key never a pill.',
       children: [
         KitRow(
           children: [
@@ -73,19 +73,24 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
                 style: const StudioStyle(
                   corners: WidgetStatePropertyAll(
                     RawCorners(
-                      topStart: RawCorner.none,
-                      bottomEnd: RawCorner.none,
+                      topStart: RawCorner.extraLarge,
+                      topEnd: RawCorner.extraLarge,
+                      bottomStart: RawCorner.extraSmall,
+                      bottomEnd: RawCorner.extraSmall,
                     ),
                   ),
                 ),
-                child: const Text('Two corners cut'),
+                child: const Text('Rounder top, tight foot'),
               ),
             ),
             StudioButton.lit(
               'Record',
               style: const StudioStyle(
                 corners: WidgetStatePropertyAll(
-                  RawCorners.only(topStart: RawCorner.large),
+                  RawCorners.only(
+                    topStart: RawCorner.large,
+                    topEnd: RawCorner.large,
+                  ),
                 ),
               ),
               onPressed: () {},

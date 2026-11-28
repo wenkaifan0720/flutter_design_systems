@@ -1018,6 +1018,7 @@ extension StudioStyleFace on RawStyleOf {
   TextStyle text(TextStyle base) => base.merge(textStyle);
 }
 
+/// A status dot.
 /// An indicator lamp: a dimple of unlit glass when off (by night its bezel
 /// catches the light, so it still reads as a lamp); lit, a small amber light
 /// that glows. It warms up and goes dark on a spring.
@@ -1192,6 +1193,7 @@ class _LampPainter extends CustomPainter {
       old.night != night;
 }
 
+/// A value display for figures.
 /// A readout window: by night dark glass, its figures glowing in the
 /// indicator light; by day pale glass lit from behind, its figures the
 /// indicator deepened to read there. Tabular figures, so they never jitter
@@ -1313,6 +1315,7 @@ class StudioGroove extends StatelessWidget {
   }
 }
 
+/// A label.
 /// An engraved legend on the metal: small capitals with tracking where the
 /// script has capitals (Latin, Greek, Cyrillic), and its own natural form
 /// where it has none (Arabic, Hebrew, CJK, Thai), never forced spacing.

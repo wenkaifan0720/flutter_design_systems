@@ -112,6 +112,15 @@ class TakesApp extends StatelessWidget {
     builder: (context, _) => MaterialApp(
       title: 'Takes',
       debugShowCheckedModeBanner: false,
+      // Every part's words: the shared labels in 30 languages, Studio's
+      // own, and Material's, Cupertino's and the widgets' (material_ui
+      // carries these, so no flutter_localizations dependency).
+      localizationsDelegates: const [
+        RawWidgetsLocalizations.delegate,
+        StudioLocalizations.delegate,
+        ...GlobalMaterialLocalizations.delegates,
+      ],
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
       // Studio's push and pop for the pages the app pushes.
       theme: ThemeData(
         pageTransitionsTheme: const PageTransitionsTheme(

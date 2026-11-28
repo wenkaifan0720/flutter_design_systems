@@ -114,7 +114,14 @@ void main() {
           );
 
           await tester.enterText(find.byType(EditableText), 'Roomtone');
-          await tester.tap(find.byType(StudioSwitch));
+          // The switch keeps its size at the list's start: tap the switch,
+          // not the middle of the row it stands in.
+          await tester.tap(
+            find.descendant(
+              of: find.byType(StudioSwitch),
+              matching: find.byType(CustomPaint),
+            ),
+          );
           await tester.pumpAndSettle();
 
           await tester.tap(find.text('Normal'));

@@ -1223,6 +1223,7 @@ class _TabLightPainter extends CustomPainter {
   bool shouldRepaint(_TabLightPainter old) => true;
 }
 
+/// A scaffold with adaptive navigation.
 /// An app's frame: its [body] under its [appBar], with its places as the
 /// width asks: under 600 px a [StudioNavigationBar] at the foot; to 1024 px
 /// a [StudioNavigationRail] at the start; wider a [StudioSideNavigation].

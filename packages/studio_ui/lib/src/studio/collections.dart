@@ -15,6 +15,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'internal/corners.dart';
+import 'internal/group_pane.dart';
 import 'button.dart';
 import 'feedback.dart';
 import 'surface.dart';
@@ -886,9 +887,13 @@ const double _swipeKeyExtent = 88;
 /// go does it. With the keyboard or a screen reader the actions are the
 /// row's own.
 ///
-/// It is a plate of glass with the corners of a display's inner wall: set it
-/// in a [StudioDisplay] with [StudioMetrics.recessInset] round it, and its
-/// corners follow the well's at rest and as it slides.
+/// In a [StudioListGroup] it is the pane's row: square and see-through, so
+/// the group stays one pane of glass with its rules; dragged, the row slides
+/// over the glass and its keys stand in the metal it leaves, inside the
+/// pane's round outline. Elsewhere it is a plate of glass with the corners of
+/// a display's inner wall: set it in a [StudioDisplay] with
+/// [StudioMetrics.recessInset] round it, and its corners follow the well's
+/// at rest and as it slides.
 ///
 /// Built on ui_core's RawSwipeActions.
 ///
@@ -923,91 +928,96 @@ class StudioSwipeRow extends StatelessWidget {
       destructive: a.destructive,
       data: a,
     );
+    // On a group's pane the row is the pane's: square, see-through, the
+    // group rounding and clipping its rows (a row with corners of its own
+    // shows them where it meets its neighbour), the metal only where the
+    // row has slid from.
+    final onPane = StudioGroupPane.around(context);
     // The row's corners: a display's glass less the recess it stands in, so
     // the row is concentric with the well round it.
     final swipeRadius = theme.radiusDisplay - StudioMetrics.recessInset;
     final corners = BorderRadius.all(Radius.circular(swipeRadius));
     // The metal it uncovers follows the well's inner wall; the plate keeps
     // its own round corners as it slides, the metal running on under them.
-    return ClipRRect(
-      borderRadius: corners,
-      child: RawSwipeActions(
-        startActions: [for (final a in startActions) wrap(a)],
-        endActions: [for (final a in endActions) wrap(a)],
-        actionExtent: _swipeKeyExtent,
-        underlap: swipeRadius,
-        actionBuilder: (context, action, details) {
-          final a = action.data! as StudioSwipeAction;
-          final pressed = details.states.contains(WidgetState.pressed);
-          final ink = action.destructive ? c.dangerLegend : c.onKey;
-          // The key stands whole in the metal, anchored at the row's outer
-          // edge: the sliding row uncovers it, never squeezes it. The actions
-          // are laid out from the row's edge on either side, so that edge is
-          // their start.
-          return ColoredBox(
-            color: c.panelLow,
-            child: ClipRect(
-              child: OverflowBox(
-                minWidth: _swipeKeyExtent,
-                maxWidth: _swipeKeyExtent,
-                alignment: AlignmentDirectional.centerStart,
-                child: Padding(
-                  padding: const EdgeInsets.all(StudioSpacing.tight),
-                  child: AnimatedStudioSurface(
-                    face: c.keyFace.copyWith(
-                      radius: StudioTheme.of(context).radiusKey,
-                      travel: pressed || details.armed ? 1 : 0,
-                      foreground: ink,
-                      focus: _ring(c, details.states),
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (a.icon != null)
-                            IconTheme.merge(
-                              data: IconThemeData(
-                                size: StudioIconSizes.regular,
-                                color: ink,
-                              ),
-                              child: a.icon!,
+    final swipe = RawSwipeActions(
+      startActions: [for (final a in startActions) wrap(a)],
+      endActions: [for (final a in endActions) wrap(a)],
+      actionExtent: _swipeKeyExtent,
+      underlap: onPane ? 0 : swipeRadius,
+      actionBuilder: (context, action, details) {
+        final a = action.data! as StudioSwipeAction;
+        final pressed = details.states.contains(WidgetState.pressed);
+        final ink = action.destructive ? c.dangerLegend : c.onKey;
+        // The key stands whole in the metal, anchored at the row's outer
+        // edge: the sliding row uncovers it, never squeezes it. The actions
+        // are laid out from the row's edge on either side, so that edge is
+        // their start.
+        return ColoredBox(
+          color: c.panelLow,
+          child: ClipRect(
+            child: OverflowBox(
+              minWidth: _swipeKeyExtent,
+              maxWidth: _swipeKeyExtent,
+              alignment: AlignmentDirectional.centerStart,
+              child: Padding(
+                padding: const EdgeInsets.all(StudioSpacing.tight),
+                child: AnimatedStudioSurface(
+                  face: c.keyFace.copyWith(
+                    radius: StudioTheme.of(context).radiusKey,
+                    travel: pressed || details.armed ? 1 : 0,
+                    foreground: ink,
+                    focus: _ring(c, details.states),
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (a.icon != null)
+                          IconTheme.merge(
+                            data: IconThemeData(
+                              size: StudioIconSizes.regular,
+                              color: ink,
                             ),
-                          const SizedBox(height: StudioSpacing.tight),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              StudioLamp(
-                                on: details.armed,
-                                size: 5,
-                                color: action.destructive ? c.danger : null,
-                              ),
-                              const SizedBox(width: StudioSpacing.tight),
-                              Text(
-                                a.label,
-                                maxLines: 1,
-                                style: theme.textTheme.caption.copyWith(
-                                  color: ink,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
+                            child: a.icon!,
                           ),
-                        ],
-                      ),
+                        const SizedBox(height: StudioSpacing.tight),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            StudioLamp(
+                              on: details.armed,
+                              size: 5,
+                              color: action.destructive ? c.danger : null,
+                            ),
+                            const SizedBox(width: StudioSpacing.tight),
+                            Text(
+                              a.label,
+                              maxLines: 1,
+                              style: theme.textTheme.caption.copyWith(
+                                color: ink,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
             ),
-          );
-        },
-        // The row is glass: it slides whole over the metal it uncovers.
-        child: ClipRRect(
-          borderRadius: corners,
-          child: ColoredBox(color: c.display, child: child),
-        ),
-      ),
+          ),
+        );
+      },
+      // The row is glass: it slides whole over the metal it uncovers.
+      child: onPane
+          ? child
+          : ClipRRect(
+              borderRadius: corners,
+              child: ColoredBox(color: c.display, child: child),
+            ),
     );
+    return onPane ? swipe : ClipRRect(borderRadius: corners, child: swipe);
   }
 
   @override

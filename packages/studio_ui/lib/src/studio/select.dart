@@ -268,7 +268,8 @@ class _StudioSelectState<T> extends State<StudioSelect<T>> {
         ? MergeSemantics(child: window(null))
         : RawPopover(
             arrowKeyNavigation: true,
-            semanticLabel: label,
+            // The list names itself by its options; the field is heard by
+            // its label once, on the field.
             placement: const RawPopoverPlacement(
               gap: StudioSpacing.tight,
               margin: StudioSpacing.small,

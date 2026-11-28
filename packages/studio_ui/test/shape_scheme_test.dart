@@ -45,17 +45,6 @@ void main() {
     }
     final own = StudioThemeData.from(indicator: const Color(0xFF4FD1C5));
     expect(own.shapeScheme, StudioThemeData.defaultShapeScheme);
-    expect(
-      [
-        StudioRadii.cap,
-        StudioRadii.small,
-        StudioRadii.key,
-        StudioRadii.display,
-        StudioRadii.panel,
-        StudioRadii.bank,
-      ],
-      [3, 5, 6, 10, 12, 10],
-    );
   });
 
   test("an app's corners are held to Studio's bands, round only", () {

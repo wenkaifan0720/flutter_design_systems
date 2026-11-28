@@ -122,13 +122,14 @@ void _traditionalFocus() {
   );
 }
 
-StudioDatePicker _date({ValueChanged<DateTime>? onChanged}) => StudioDatePicker(
-  value: DateTime(2026, 11, 9),
-  firstDate: DateTime(2026),
-  lastDate: DateTime(2027),
-  currentDate: DateTime(2026, 11, 12),
-  onChanged: onChanged ?? (_) {},
-);
+StudioDatePicker _date({ValueChanged<DateTime?>? onChanged}) =>
+    StudioDatePicker(
+      value: DateTime(2026, 11, 9),
+      firstDate: DateTime(2026),
+      lastDate: DateTime(2027),
+      currentDate: DateTime(2026, 11, 12),
+      onChanged: onChanged ?? (_) {},
+    );
 
 bool _framed(WidgetTester tester) => tester
     .widgetList<StudioSurface>(
