@@ -44,7 +44,8 @@ Future<List<Map<Element, Rect>>> _frames(
 }
 
 /// Every pane in [seen] sits, in each frame it shows in, at the rect it
-/// settles at.
+/// settles at (to a millionth of a pixel: a sheet's rise and the hold that
+/// keeps it in place cancel in floating point).
 void _expectNoTravel(List<Map<Element, Rect>> seen) {
   final last = seen.last;
   expect(last, isNotEmpty);
@@ -53,8 +54,9 @@ void _expectNoTravel(List<Map<Element, Rect>> seen) {
       final end = last[element];
       if (end == null) continue;
       expect(
-        rect,
-        end,
+        (rect.topLeft - end.topLeft).distance +
+            (rect.bottomRight - end.bottomRight).distance,
+        lessThan(1e-6),
         reason:
             'frame $i: ${element.widget.toStringShort()} at $rect '
             'settles at $end',

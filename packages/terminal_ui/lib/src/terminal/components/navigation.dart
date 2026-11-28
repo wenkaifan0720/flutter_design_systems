@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../grid.dart';
 import '../internal/digits.dart';
 import '../internal/pointer.dart';
 import '../internal/shell_face.dart';
@@ -663,6 +664,13 @@ class _GroundWithRule extends CustomPainter {
 /// its windows: `1:home  2:runs*  3:deploy  4:config`, the current one in
 /// inverse video and marked `*`, so it reads without colour too.
 ///
+/// It stays one line, as Material's NavigationBar does: its words grow with
+/// the reader's text to 1.3 times their size at most, and where the line
+/// can't hold every number and name, the names stand alone (`home  runs*`),
+/// then closer, a blank cell between each and the next, then the longest are
+/// cut after a whole letter (`sett…`). A screen reader hears every name
+/// whole.
+///
 /// ```dart
 /// TermNavigationBar(
 ///   destinations: const [
@@ -697,64 +705,75 @@ class TermNavigationBar extends StatelessWidget {
   /// rule over the bar).
   final TermStyle? style;
 
+  // The names grow with the reader's text to 1.3 times their size, as
+  // Material's NavigationBar's labels do, so a phone's line keeps them.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => MediaQuery.withClampedTextScaling(
+    maxScaleFactor: 1.3,
+    child: Builder(builder: _bar),
+  );
+
+  Widget _bar(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final height = grid.ceil(RawTapTargets.of(context).floorOn()).height;
     final lines = height < grid.lineHeight ? grid.lineHeight : height;
     final bar = TermStyleOf([style, theme.navigationBarStyle], const {});
-    Widget face(int i, String text, Set<WidgetState> states, {int? lead}) =>
-        TermStateSprings(
-          pressed: states.contains(WidgetState.pressed),
-          focused: states.contains(WidgetState.focused),
-          builder: (context, press, focus) => TermSpring(
-            target: i == selectedIndex ? 1 : 0,
-            token: TermMotion.move,
-            spatial: true,
-            builder: (context, t, _) => _OnCell(
-              lead: lead == null ? null : grid.cols(lead),
-              // The keyboard's focus: the cursor over the window, hollow
-              // on the current one.
-              child: _Inverse(
-                amount: t,
-                press: press,
-                cursor: focus,
-                chosen: i == selectedIndex,
-                fill: TermStyleOf([
-                  style,
-                  theme.navigationBarStyle,
-                ], states).fill,
-                ink: TermStyleOf([
-                  style,
-                  theme.navigationBarStyle,
-                ], states).foreground,
-                child: SizedBox(
-                  height: grid.lineHeight,
-                  child: Padding(
-                    padding: EdgeInsetsDirectional.symmetric(
-                      horizontal: grid.cellWidth,
-                    ),
-                    child: ExcludeSemantics(
-                      child: Text(
-                        text,
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.clip,
-                      ),
-                    ),
+    Widget face(
+      int i,
+      String text,
+      Set<WidgetState> states, {
+      int? lead,
+      bool padded = true,
+    }) => TermStateSprings(
+      pressed: states.contains(WidgetState.pressed),
+      focused: states.contains(WidgetState.focused),
+      builder: (context, press, focus) => TermSpring(
+        target: i == selectedIndex ? 1 : 0,
+        token: TermMotion.move,
+        spatial: true,
+        builder: (context, t, _) => _OnCell(
+          lead: lead == null ? null : grid.cols(lead),
+          // The keyboard's focus: the cursor over the window, hollow
+          // on the current one.
+          child: _Inverse(
+            amount: t,
+            press: press,
+            cursor: focus,
+            chosen: i == selectedIndex,
+            fill: TermStyleOf([style, theme.navigationBarStyle], states).fill,
+            ink: TermStyleOf([
+              style,
+              theme.navigationBarStyle,
+            ], states).foreground,
+            child: SizedBox(
+              height: grid.lineHeight,
+              child: Padding(
+                padding: EdgeInsetsDirectional.symmetric(
+                  horizontal: padded ? grid.cellWidth : 0,
+                ),
+                child: ExcludeSemantics(
+                  child: Text(
+                    text,
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.clip,
                   ),
                 ),
               ),
             ),
           ),
-        );
+        ),
+      ),
+    );
     // In TermScaffold's shell, its destinations stand in the windows'
     // places: the shell presses them and gives them their keys.
     final shell = TermShellDestinations.maybeOf(context);
-    Widget item(int i, String text, {int? lead}) => shell != null
+    Widget item(int i, String text, {int? lead, bool padded = true}) =>
+        shell != null
         ? TermShellFace(
-            face: (context, states) => face(i, text, states, lead: lead),
+            face: (context, states) =>
+                face(i, text, states, lead: lead, padded: padded),
             child: shell[i],
           )
         : RawButton(
@@ -767,7 +786,8 @@ class TermNavigationBar extends StatelessWidget {
             mouseCursor: onDestinationSelected == null
                 ? SystemMouseCursors.basic
                 : SystemMouseCursors.click,
-            builder: (context, states, _) => face(i, text, states, lead: lead),
+            builder: (context, states, _) =>
+                face(i, text, states, lead: lead, padded: padded),
           );
     return CustomPaint(
       painter: _GroundWithRule(
@@ -784,57 +804,29 @@ class TermNavigationBar extends StatelessWidget {
             // A window's number in the reader's digits, as its dates are.
             final l = RawWidgetsLocalizations.of(context);
             String number(int i) => termDigits(l, i + 1);
-            String words(int i) =>
-                '${number(i)}:${destinations[i].label}${i == selectedIndex ? '*' : ' '}';
-            // A slot's name with the current one's mark, so a slot keeps
-            // its width whichever is current.
-            final wide = [
+            String mark(int i) => i == selectedIndex ? '*' : ' ';
+            // A window as a multiplexer lists it, its number and its name
+            // (`1:home`); where the line can't hold them all so, its name
+            // alone (`home`).
+            final numbered = [
               for (var i = 0; i < n; i++)
-                grid.widthOf('${number(i)}:${destinations[i].label}*') +
-                    grid.cols(2),
+                '${number(i)}:${destinations[i].label}',
             ];
-            // Equal cells, as Material's NavigationBar shares its width:
-            // each name in the middle of an equal slot of whole cells (to
-            // half a cell, so it starts on the character grid), the odd
-            // cells at the two ends, so the names stand evenly along the
-            // line whatever their lengths.
-            if (c.maxWidth.isFinite && n > 0) {
-              final cells = grid.colsIn(c.maxWidth);
-              final each = cells ~/ n;
-              if (wide.every((w) => w <= grid.cols(each) + 0.01)) {
-                final spare = cells - each * n;
-                return Row(
-                  children: [
-                    SizedBox(width: grid.cols(spare ~/ 2)),
-                    for (var i = 0; i < n; i++)
-                      SizedBox(
-                        width: grid.cols(each),
-                        height: lines,
-                        child: item(
-                          i,
-                          words(i),
-                          lead: (each - grid.colsIn(wide[i])) ~/ 2,
-                        ),
-                      ),
-                  ],
-                );
-              }
-            }
-            final roomy =
-                !c.maxWidth.isFinite ||
-                wide.fold(0.0, (a, w) => a + w) <= c.maxWidth;
-            if (roomy) {
-              // The room left over, in whole cells, so every name starts
-              // on the character grid: shared evenly between the two ends
-              // and the names. The odd cells go to the ends first, a pair
-              // at a time, then between the names from the outside in; a
-              // last single one to the middle, or (no middle) the end. So
-              // the first name never stands against the screen's edge
-              // while there is a cell to spare, and the line stays even.
-              final spare = c.maxWidth.isFinite
-                  ? grid.colsIn(c.maxWidth - wide.fold(0.0, (a, w) => a + w))
-                  : 0;
-              // Gap g stands before name g; gap n is the end's.
+            final named = [for (final d in destinations) d.label];
+            // A slot's name with the current one's mark and a cell either
+            // side, so a slot keeps its width whichever is current.
+            List<double> wideOf(List<String> names) => [
+              for (final name in names) grid.widthOf('$name*') + grid.cols(2),
+            ];
+            final cells = c.maxWidth.isFinite ? grid.colsIn(c.maxWidth) : null;
+            // [spare] cells shared evenly between the two ends and the
+            // names, so every name starts on the character grid. The odd
+            // cells go to the ends first, a pair at a time, then between the
+            // names from the outside in; a last single one to the middle,
+            // or (no middle) the end. So the first name never stands against
+            // the screen's edge while there is a cell to spare, and the line
+            // stays even. Gap g stands before name g; gap n is the end's.
+            List<int> gapsFor(int spare) {
               final gaps = List.filled(n + 1, spare ~/ (n + 1));
               var odd = spare % (n + 1);
               for (var g = 0; odd >= 2 && g < n - g; g++, odd -= 2) {
@@ -842,31 +834,134 @@ class TermNavigationBar extends StatelessWidget {
                 gaps[n - g]++;
               }
               if (odd > 0) gaps[n.isEven ? n ~/ 2 : n]++;
-              int gap(int g) => gaps[g];
+              return gaps;
+            }
+
+            // A face of [text] and [pad] blank cells centred in a slot [slot]
+            // cells wide, to half a cell, so it starts on the character grid.
+            int lead(String text, int slot, {int pad = 2}) =>
+                (slot - grid.colsIn(grid.widthOf(text) + grid.cols(pad))) ~/ 2;
+            Widget? whole(List<String> names) {
+              final wide = wideOf(names);
+              // Equal cells, as Material's NavigationBar shares its width:
+              // each name in the middle of an equal slot of whole cells (to
+              // half a cell, so it starts on the character grid), the odd
+              // cells at the two ends, so the names stand evenly along the
+              // line whatever their lengths.
+              if (cells != null && n > 0) {
+                final each = cells ~/ n;
+                if (wide.every((w) => w <= grid.cols(each) + 0.01)) {
+                  final spare = cells - each * n;
+                  return Row(
+                    children: [
+                      SizedBox(width: grid.cols(spare ~/ 2)),
+                      for (var i = 0; i < n; i++)
+                        SizedBox(
+                          width: grid.cols(each),
+                          height: lines,
+                          child: item(
+                            i,
+                            '${names[i]}${mark(i)}',
+                            lead: (each - grid.colsIn(wide[i])) ~/ 2,
+                          ),
+                        ),
+                    ],
+                  );
+                }
+              }
+              // Else from the start, a cell or more off each of the screen's
+              // edges, so the current one's block never meets one.
+              final sum = wide.fold(0.0, (a, w) => a + w);
+              if (cells != null && sum + grid.cols(2) > c.maxWidth + 0.01) {
+                return null;
+              }
+              final gaps = gapsFor(
+                cells == null ? 0 : grid.colsIn(c.maxWidth - sum),
+              );
               return Row(
                 children: [
                   for (var i = 0; i < n; i++) ...[
-                    SizedBox(width: grid.cols(gap(i))),
+                    SizedBox(width: grid.cols(gaps[i])),
                     SizedBox(
                       width: wide[i],
                       height: lines,
-                      child: item(i, words(i)),
+                      child: item(i, '${names[i]}${mark(i)}'),
                     ),
                   ],
                 ],
               );
             }
-            // Wrap labeled targets onto whole lines as text grows. Keep
-            // their widths stable when a different destination is selected.
-            return Wrap(
-              alignment: WrapAlignment.spaceEvenly,
+
+            final fits = whole(numbered);
+            if (fits != null) return fits;
+            // Where the numbers and names don't fit, the names stand alone,
+            // whole where the line holds them: each with a cell either side
+            // (and the line a cell off each screen edge), else with the cell
+            // after it alone and one at the line's start,
+            // so the current one's block loses its blank edges but every
+            // name still stands a cell from the next and from the screen's
+            // edge. Where they still don't fit, the longest are cut first, to
+            // one width of whole cells, and the cells left over go to the cut
+            // names nearest whole. A cut one ends in "…" after a whole
+            // letter. Every slot stays a finger's width where the line has
+            // room, and the line stays one line, as Material's NavigationBar
+            // never takes two.
+            final line = cells!;
+            final finger = grid.colsIn(
+              grid.ceil(RawTapTargets.of(context).floorOn()).width,
+            );
+            List<int> wantFor(int pad) => [
+              for (final name in named)
+                math.max(grid.colsIn(grid.widthOf('$name*')) + pad, finger),
+            ];
+            var pad = 2;
+            var want = wantFor(pad);
+            var room = line;
+            if (want.fold(0, (a, w) => a + w) + 2 > room) {
+              pad = 1;
+              want = wantFor(pad);
+              room = line - 1;
+            }
+            int total(int cap) => want.fold(0, (a, w) => a + math.min(w, cap));
+            var cap = want.fold(0, math.max);
+            while (cap > 0 && total(cap) > room) {
+              cap--;
+            }
+            final take = [for (final w in want) math.min(w, cap)];
+            var left = room - total(cap);
+            final cut = [
+              for (var i = 0; i < n; i++)
+                if (want[i] > cap) i,
+            ]..sort((a, b) => want[a] != want[b] ? want[a] - want[b] : a - b);
+            for (final i in cut) {
+              if (left == 0) break;
+              take[i]++;
+              left--;
+            }
+            final gaps = gapsFor(left);
+            if (pad == 1) gaps[0]++;
+            return Row(
               children: [
-                for (var i = 0; i < n; i++)
+                for (var i = 0; i < n; i++) ...[
+                  SizedBox(width: grid.cols(gaps[i])),
                   SizedBox(
-                    width: math.min(wide[i], c.maxWidth),
+                    width: grid.cols(take[i]),
                     height: lines,
-                    child: item(i, words(i)),
+                    child: Builder(
+                      builder: (context) {
+                        final text =
+                            '${_cutTo(grid, named[i], take[i] - 1 - pad)}'
+                            '${mark(i)}';
+                        return item(
+                          i,
+                          text,
+                          padded: pad == 2,
+                          lead: lead(text, take[i], pad: pad),
+                        );
+                      },
+                    ),
                   ),
+                ],
               ],
             );
           },
@@ -880,6 +975,21 @@ class TermNavigationBar extends StatelessWidget {
     super.debugFillProperties(properties);
     properties.add(IntProperty('selectedIndex', selectedIndex));
   }
+}
+
+// [name] in at most [cells] cells of [grid]: whole where it fits, else its
+// first letters and "…", cut after a whole character (never inside one, nor
+// after a space).
+String _cutTo(TermGrid grid, String name, int cells) {
+  final room = grid.cols(cells) + 0.01;
+  if (grid.widthOf(name) <= room) return name;
+  if (cells < 1) return '';
+  var kept = '';
+  for (final letter in name.characters) {
+    if (grid.widthOf('$kept$letter…') > room) break;
+    kept += letter;
+  }
+  return '${kept.trimRight()}…';
 }
 
 /// The side pane at a desk: [destinations] as rows, each with its glyph and

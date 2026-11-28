@@ -148,4 +148,13 @@ void main() {
     expect(status.center.dy, closeTo(author.center.dy, 0.5));
     expect(_whole(tester, 'George Eliot'), isTrue);
   });
+
+  testWidgets('at 200% the status on a line of its own takes that line, '
+      'whole', (tester) async {
+    await _list(tester, 2);
+    for (final status in const ['reading', 'to read']) {
+      expect(_whole(tester, status), isTrue, reason: status);
+    }
+    expect(tester.takeException(), isNull);
+  });
 }

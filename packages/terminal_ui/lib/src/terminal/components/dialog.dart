@@ -2,7 +2,10 @@
 /// terminal's question, `proceed? [y/N]`.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/semantics.dart' show SemanticsRole;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -455,7 +458,8 @@ Future<bool?> showTermConfirmDialog({
         );
 }
 
-/// A sheet: a raised pane standing on the foot of the screen, [title] cut
+/// A sheet: a raised pane standing at the foot of the screen (on a phone's
+/// window list, where there is one), [title] cut
 /// into its top line, [child], then [actions] at the end, the strongest
 /// last. It is a [TermDialog] that stands where a thumb reaches; show one
 /// with [showTermSheet].
@@ -688,11 +692,14 @@ class _ModalPaneState extends State<_ModalPane> {
 }
 
 /// Raises the sheet [builder] makes at the foot of the screen, the screen
-/// behind dimmed, and completes with what it pops. Like a dialog it comes
-/// up where it stays in a very short fade on [TermMotion.surface], keeps
-/// the focus inside while open, and a tap outside (when
-/// [barrierDismissible]), Escape or Android's back closes it. [isAlert] and
-/// [semanticLabel] are [showTermDialog]'s.
+/// behind dimmed, and completes with what it pops. On ui_core's bottom sheet
+/// route, as the family's sheets: it stands on the window list and the
+/// status line (the bar shows under the dimmed screen, and a tap on it
+/// closes the sheet), it keeps the focus inside while open, and a tap
+/// outside (when [barrierDismissible]), Escape or Android's back closes it.
+/// Like a dialog it comes up where it stays, in a very short fade on
+/// [TermMotion.surface]. [isAlert] and [semanticLabel] are
+/// [showTermDialog]'s.
 Future<T?> showTermSheet<T>({
   required BuildContext context,
   required WidgetBuilder builder,
@@ -702,42 +709,96 @@ Future<T?> showTermSheet<T>({
   bool useRootNavigator = true,
 }) {
   final theme = TermTheme.of(context);
-  final grid = context.termGrid;
-  return _pushSurface<T>(
-    context,
-    useRootNavigator: useRootNavigator,
-    barrierDismissible: barrierDismissible,
-    isAlert: isAlert,
-    semanticLabel: semanticLabel,
-    // The foot of the screen is cleared under the sheet, edge to edge and
-    // to the bottom, so nothing of the status line or the window list
-    // shows in the margin beside it.
-    page: (child) => SafeArea(
-      bottom: false,
-      child: Padding(
-        padding: EdgeInsets.only(top: grid.lineHeight * 0.5),
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: ColoredBox(
-            color: theme.background,
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                  grid.cellWidth,
-                  grid.lineHeight * 0.5,
-                  grid.cellWidth,
-                  grid.lineHeight * 0.5,
+  final words = RawWidgetsLocalizations.of(context);
+  final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
+  final themes = InheritedTheme.capture(from: context, to: navigator.context);
+  return navigator.push<T>(
+    _TermSheetRoute<T>(
+      barrierDismissible: barrierDismissible,
+      barrierColor: theme.background.withValues(alpha: 0.72),
+      barrierLabel: words.modalBarrierDismissLabel,
+      semanticLabel: isAlert
+          ? semanticLabel ?? words.alertDialogLabel
+          : semanticLabel,
+      builder: (context, details) {
+        final grid = context.termGrid;
+        // The sheet's ground runs edge to edge and down to the foot of
+        // its room, so nothing of the screen shows in a margin beside it;
+        // half a line under the top of the screen stays clear.
+        Widget sheet = LayoutBuilder(
+          builder: (context, room) => ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: math.max(0, room.maxHeight - grid.lineHeight * 0.5),
+            ),
+            child: ColoredBox(
+              color: TermTheme.of(context).background,
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    grid.cellWidth,
+                    grid.lineHeight * 0.5,
+                    grid.cellWidth,
+                    grid.lineHeight * 0.5,
+                  ),
+                  child: Builder(builder: builder),
                 ),
-                child: child,
               ),
             ),
           ),
-        ),
-      ),
+        );
+        // A question that wants an answer is an alert to a screen reader.
+        if (isAlert) {
+          sheet = Semantics(role: SemanticsRole.alertDialog, child: sheet);
+        }
+        // The route raises its panel from the foot by its animation;
+        // Terminal's surfaces come up where they stay, so the panel is held at
+        // its rest by that same animation (under Reduce Motion the route's
+        // panel already stands, and its presence is always complete).
+        final presence = ModalRoute.of(context)!.animation!;
+        final stands = details.animation == kAlwaysCompleteAnimation;
+        return themes.wrap(
+          AnimatedBuilder(
+            animation: presence,
+            builder: (context, child) => FractionalTranslation(
+              translation: Offset(
+                0,
+                stands ? 0 : presence.value.clamp(0.0, 1.0) - 1,
+              ),
+              child: child,
+            ),
+            child: sheet,
+          ),
+        );
+      },
     ),
-    builder: builder,
   );
+}
+
+// ui_core's bottom sheet on Terminal's surface spring: it fades up where it
+// stays, as Terminal's dialogs and side sheets do (showTermSheet holds the
+// panel at its rest), and, as before, no drag moves it.
+class _TermSheetRoute<T> extends RawBottomSheetRoute<T> {
+  _TermSheetRoute({
+    required super.builder,
+    required super.barrierDismissible,
+    required super.barrierColor,
+    required super.barrierLabel,
+    super.semanticLabel,
+  }) : super(
+         useSafeArea: true,
+         enableDrag: false,
+         dampingRatio: TermMotion.surface.dampingRatio,
+         stiffness: TermMotion.surface.stiffness,
+       );
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) => FadeTransition(opacity: animation, child: child);
 }
 
 /// A dialog's or a sheet's pane, at most [cols] cells wide: narrower than

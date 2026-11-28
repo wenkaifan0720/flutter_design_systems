@@ -1,6 +1,7 @@
 // In a narrow list every row's words at the end stand on its second line,
-// beside the subtitle, short title or long, so the ends keep one column; and
-// at any width they take at most half the row.
+// beside the subtitle, short title or long, so the ends keep one column. On a
+// line they share they take at most half the row; on a line of their own
+// they may take all of it, and end in an ellipsis at the row's edge.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:terminal_ui/terminal_ui.dart';
@@ -61,34 +62,49 @@ void main() {
     );
   });
 
-  for (final width in [390.0, 800.0]) {
-    testWidgets('the words at the end take at most half the row '
-        '(${width.toInt()})', (tester) async {
-      const long = 'waiting at the library since the spring, then lent twice';
-      await tester.pumpWidget(
-        MaterialApp(
-          home: TermTheme(
-            data: TermThemeData.dark(),
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: SizedBox(
-                width: width,
-                child: TermListTile(
-                  title: const Text('Beloved'),
-                  subtitle: const Text('Toni Morrison'),
-                  trailing: const Text(long),
-                  onTap: () {},
-                ),
-              ),
+  const long = 'waiting at the library since the spring, then lent twice';
+  Future<void> row(WidgetTester tester, double width) => tester.pumpWidget(
+    MaterialApp(
+      home: TermTheme(
+        data: TermThemeData.dark(),
+        child: Align(
+          alignment: Alignment.topLeft,
+          child: SizedBox(
+            width: width,
+            child: TermListTile(
+              title: const Text('Beloved'),
+              subtitle: const Text('Toni Morrison'),
+              trailing: const Text(long),
+              onTap: () {},
             ),
           ),
         ),
-      );
-      expect(tester.takeException(), isNull);
-      expect(
-        tester.getSize(find.text(long)).width,
-        lessThanOrEqualTo(width / 2 + 0.5),
-      );
-    });
-  }
+      ),
+    ),
+  );
+
+  testWidgets('on a line of their own (390) the words at the end take the '
+      'line, one line, within the row', (tester) async {
+    await row(tester, 390);
+    expect(tester.takeException(), isNull);
+    final end = tester.getRect(find.text(long));
+    final author = tester.getRect(find.text('Toni Morrison'));
+    final tile = tester.getRect(find.byType(TermListTile));
+    expect(end.top, greaterThanOrEqualTo(author.bottom - 0.5));
+    expect(end.width, greaterThan(390 / 2));
+    expect(end.right, lessThanOrEqualTo(tile.right + 0.5));
+    expect(end.height, closeTo(TermThemeData.dark().grid.lineHeight, 0.5));
+  });
+
+  testWidgets('on a line they share (800) the words at the end take at most '
+      'half the row', (tester) async {
+    await row(tester, 800);
+    expect(tester.takeException(), isNull);
+    final end = tester.getRect(find.text(long));
+    expect(end.width, lessThanOrEqualTo(800 / 2 + 0.5));
+    expect(
+      end.center.dy,
+      closeTo(tester.getRect(find.text('Toni Morrison')).center.dy, 0.5),
+    );
+  });
 }

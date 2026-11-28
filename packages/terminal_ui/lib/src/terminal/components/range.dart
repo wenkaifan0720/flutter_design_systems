@@ -417,41 +417,62 @@ class TermMeter extends StatelessWidget {
         : TermTone.success;
     final said = reading ?? '${(v * 100).round()}%';
     final own = TermStyleOf([style, theme.meterStyle], const {});
+    final first = [
+      Text(label, style: theme.dimStyle),
+      SizedBox(width: grid.cellWidth),
+      // [cols] cells, or as many whole ones as the line leaves it
+      // (larger text on a phone).
+      Flexible(
+        child: LayoutBuilder(
+          builder: (context, box) => CustomPaint(
+            size: Size(
+              grid.cols(
+                box.hasBoundedWidth
+                    ? math.min(cols, grid.colsIn(box.maxWidth))
+                    : cols,
+              ),
+              grid.lineHeight,
+            ),
+            painter: TermBlocksPainter(
+              grid: grid,
+              value: v,
+              color: own.fill ?? tone.colorIn(theme),
+              track: own.edge ?? theme.rule,
+              textDirection: Directionality.of(context),
+            ),
+          ),
+        ),
+      ),
+    ];
     return Semantics(
       label: label,
       value: said,
       excludeSemantics: true,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(label, style: theme.dimStyle),
-          SizedBox(width: grid.cellWidth),
-          // [cols] cells, or as many whole ones as the line leaves it
-          // (larger text on a phone).
-          Flexible(
-            child: LayoutBuilder(
-              builder: (context, box) => CustomPaint(
-                size: Size(
-                  grid.cols(
-                    box.hasBoundedWidth
-                        ? math.min(cols, grid.colsIn(box.maxWidth))
-                        : cols,
-                  ),
-                  grid.lineHeight,
-                ),
-                painter: TermBlocksPainter(
-                  grid: grid,
-                  value: v,
-                  color: own.fill ?? tone.colorIn(theme),
-                  track: own.edge ?? theme.rule,
-                  textDirection: Directionality.of(context),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(width: grid.cellWidth),
-          Text(said, style: theme.textStyle),
-        ],
+      child: LayoutBuilder(
+        builder: (context, box) {
+          // The label, a cell of the bar and the reading, a cell apart.
+          final line = grid.widthOf(label) + grid.widthOf(said) + grid.cols(3);
+          if (!box.hasBoundedWidth || line <= box.maxWidth + 0.5) {
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ...first,
+                SizedBox(width: grid.cellWidth),
+                Text(said, style: theme.textStyle),
+              ],
+            );
+          }
+          // Too narrow for them on one line (a phone at large text): the
+          // reading takes the line under the label and the bar, whole.
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(mainAxisSize: MainAxisSize.min, children: first),
+              Text(said, style: theme.textStyle),
+            ],
+          );
+        },
       ),
     );
   }

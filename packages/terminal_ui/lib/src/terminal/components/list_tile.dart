@@ -272,14 +272,22 @@ class TermListTile extends StatelessWidget {
                   SizedBox(width: cw),
                 ],
               ];
-              // The end's words take at most half the row: a long one
-              // ellipsizes rather than push the title off.
-              List<Widget> endIn(double width, {double? room}) => [
+              // The end's words take at most half the row they share: a long
+              // one ellipsizes rather than push the title off. On a line of
+              // their own ([alone]) they may take all of it.
+              List<Widget> endIn(
+                double width, {
+                double? room,
+                bool alone = false,
+              }) => [
                 if (trailing != null) ...[
                   SizedBox(width: cw),
                   ConstrainedBox(
                     constraints: BoxConstraints(
-                      maxWidth: math.max(0, math.min(width / 2, room ?? width)),
+                      maxWidth: math.max(
+                        0,
+                        alone ? width - cw : math.min(width / 2, room ?? width),
+                      ),
                     ),
                     child: slot(trailing!, faint),
                   ),
@@ -344,7 +352,10 @@ class TermListTile extends StatelessWidget {
                             SizedBox(
                               height: lh,
                               child: Row(
-                                children: [const Spacer(), ...endIn(width)],
+                                children: [
+                                  const Spacer(),
+                                  ...endIn(width, alone: true),
+                                ],
                               ),
                             ),
                         ],

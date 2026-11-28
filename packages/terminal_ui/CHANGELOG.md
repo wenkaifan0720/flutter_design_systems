@@ -1,3 +1,22 @@
+## 0.7.2
+
+- Requires ui_core 0.8.7 (ui_core_test 0.6.3 for the checks).
+- `TermNavigationBar`: a phone's window list stays one line as text grows, as Material's NavigationBar does. Its
+  words grow with the reader's text to 1.3 times their size at most (the cap Material puts on its labels). Where the
+  line can't hold every window's number and name, the names stand alone (`home  runs*`), then closer, a blank cell
+  between each and the next, and where it can't hold those, the longest are cut first, after a whole letter,
+  with `…`. Every window keeps its mark and stays a target
+  40 dp or more each way, the current one's block a cell or more off the screen's edges, and a screen reader hears its whole name. Before, at 150% text on a phone, the third window
+  went to a second line on its own.
+- `showTermSheet` (and so `showTermActionSheet` and the y/N question at a phone's width) is on ui_core's bottom sheet
+  route, as the family's sheets are. On a phone it stands on the window list and the status line, which show under
+  the dimmed screen, and a tap on them closes it (it covered them). It still comes up in place in a very short fade,
+  and no drag moves it.
+- `TermMeter`: where its label, a cell of its bar and its reading don't fit on one line (a phone at 200% text), the
+  reading takes the line under them, whole. It ran past the pane's edge.
+- `TermListTile`: the end's words on a line of their own may take all of it. They kept half, so at 200% text on a
+  phone `reading` showed as `read…`.
+
 ## 0.7.1
 
 - Requires ui_core 0.8.5 (ui_core_test 0.6.2 for the checks).
