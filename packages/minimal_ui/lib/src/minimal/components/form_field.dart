@@ -24,7 +24,9 @@ import 'input.dart';
 /// help as its hint, the control marked invalid while [errorText] is set (a
 /// [MinimalTextField] or [MinimalInputGroup] in it draws its rule in the
 /// danger ink, as with an error of its own); a tap
-/// on the label focuses the control ([focusNode]). A group of controls
+/// on the label focuses the control ([focusNode]). The control inside takes
+/// no `semanticLabel` of its own: the label names it, and a second name is
+/// read twice. A group of controls
 /// (radios) sets `group: true`, and the label names the group instead. The
 /// behaviour is ui_core's ([RawInputDecorator]); Minimal paints it. A
 /// [MinimalTextField] carries its own label and needs none of this.
@@ -169,7 +171,12 @@ class MinimalFormField extends StatelessWidget {
 /// Lay the fields in one column, each at the column's width, 16 px apart:
 /// `Column(crossAxisAlignment: CrossAxisAlignment.stretch, spacing:
 /// MinimalSpacing.s16, children: fields)`, the rhythm every Minimal form
-/// keeps.
+/// keeps. Keep one field style: beside boxed text fields a date is boxed
+/// too (`MinimalDatePickerPresentation.field`).
+///
+/// A form that is itself a place (an "Add" tab, a nav root) is the same
+/// page as the form pushed to edit: its Save stays in the
+/// [MinimalScaffold.footer], which docks above a phone's tab bar.
 ///
 /// The behaviour is ui_core's ([RawForm]); it paints nothing.
 ///

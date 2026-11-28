@@ -20,6 +20,18 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
     kitSection('Type · Geist, Geist Mono', children: const [_TypeScale()]),
     kitSection('Spacing', children: const [_Spacing()]),
     kitSection('Corners', children: const [_Corners()]),
+    kitSection(
+      "A part's own corners",
+      children: [
+        const _OwnCorners(),
+        kitNote(
+          "A style's corners name a step per corner, start and end as the "
+          'part reads: a card with two diagonal corners square, a button '
+          'with a capsule end. Minimal holds each to its steps; a corner a '
+          "style leaves keeps the part's own.",
+        ),
+      ],
+    ),
     kitSection('Density', children: const [_Density()]),
     kitSection('Format', children: const [_Formats()]),
     kitSection(
@@ -456,6 +468,39 @@ class _Corners extends StatelessWidget {
           ),
       ],
     );
+  }
+}
+
+/// A style's own corners on a card and a button, each held to Minimal's
+/// steps over the part's own.
+class _OwnCorners extends StatelessWidget {
+  const _OwnCorners();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.minimalTheme;
+    return kitRow([
+      SizedBox(
+        width: 240,
+        child: MinimalCard(
+          style: const MinimalStyle(
+            corners: WidgetStatePropertyAll(
+              RawCorners(topStart: RawCorner.none, bottomEnd: RawCorner.none),
+            ),
+          ),
+          child: Text('Two corners square', style: t.bodySmall),
+        ),
+      ),
+      MinimalButton(
+        'Next',
+        style: const MinimalStyle(
+          corners: WidgetStatePropertyAll(
+            RawCorners(topEnd: RawCorner.full, bottomEnd: RawCorner.full),
+          ),
+        ),
+        onPressed: () {},
+      ),
+    ]);
   }
 }
 

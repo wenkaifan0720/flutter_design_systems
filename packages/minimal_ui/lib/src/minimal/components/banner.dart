@@ -4,6 +4,7 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../component_themes.dart';
 import '../internal/kit_paint.dart';
@@ -83,7 +84,7 @@ class MinimalBanner extends StatelessWidget {
     final t = context.minimalTheme;
     final so = MinimalStyleOf([style, t.components.banner], const {});
     final colours = t.tone(tone);
-    final shape = so.shape ?? t.shapes.medium;
+    final shape = so.outline(t, RawCorner.medium);
     final rim = so.rim(t.border, t.hairline);
     final message = this.message;
     final dismiss = onDismissed;

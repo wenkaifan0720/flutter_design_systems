@@ -491,9 +491,11 @@ void main() {
     }
 
     testWidgets('a corner radius rounds a button and a card', (tester) async {
-      final soft = _look.copyWith(shapes: const MinimalShapes(radius: 16));
+      final soft = _look.copyWith(
+        shapeScheme: const MinimalShapes(radius: 12).scheme,
+      );
       final button = await buttonFrame(tester, soft) as BoxDecoration;
-      expect(button.borderRadius, BorderRadius.circular(16));
+      expect(button.borderRadius, BorderRadius.circular(12));
       await tester.pumpWidget(
         _host(
           const KeyedSubtree(
@@ -505,14 +507,14 @@ void main() {
       );
       expect(
         (_frame(tester) as BoxDecoration).borderRadius,
-        BorderRadius.circular(18),
+        BorderRadius.circular(14),
       );
     });
 
     testWidgets('a style\'s shape beats the knob', (tester) async {
       final frame = await buttonFrame(
         tester,
-        _look.copyWith(shapes: const MinimalShapes(radius: 16)),
+        _look.copyWith(shapeScheme: const MinimalShapes(radius: 12).scheme),
         style: const MinimalStyle(
           shape: WidgetStatePropertyAll<OutlinedBorder?>(
             BeveledRectangleBorder(
@@ -525,7 +527,9 @@ void main() {
     });
 
     testWidgets('square corners square every framed part', (tester) async {
-      final square = _look.copyWith(shapes: const MinimalShapes(radius: 0));
+      final square = _look.copyWith(
+        shapeScheme: const MinimalShapes(radius: 0).scheme,
+      );
       final button = await buttonFrame(tester, square) as BoxDecoration;
       expect(button.borderRadius, BorderRadius.zero);
       await tester.pumpWidget(

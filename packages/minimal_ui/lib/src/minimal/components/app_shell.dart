@@ -116,7 +116,9 @@ class MinimalAppShell extends StatelessWidget {
   final MinimalShellAction? action;
 
   /// What stands at the sidebar's head, a bar tall: the app's name, a
-  /// workspace switch. The bar and the rail leave it out.
+  /// workspace switch. The shell insets it to the sidebar's gutter, as the
+  /// items under it: pass bare content (a `Text`), no padding of its own.
+  /// The bar and the rail leave it out.
   final Widget? header;
 
   /// The sidebar's width.

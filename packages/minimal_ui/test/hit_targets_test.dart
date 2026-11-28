@@ -26,8 +26,8 @@ void main() {
           ),
         ),
       );
-      expect(tester.getSize(pill('21 Aug 2026')).height, 28);
-      await tapBelow(tester, pill('21 Aug 2026'), 7);
+      expect(tester.getSize(pill('Aug 21, 2026')).height, 28);
+      await tapBelow(tester, pill('Aug 21, 2026'), 7);
       await tester.pumpAndSettle();
       expect(find.text('August 2026'), findsOneWidget);
     });

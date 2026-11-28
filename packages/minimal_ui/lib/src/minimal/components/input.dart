@@ -480,7 +480,7 @@ class _MinimalTextFieldState extends State<MinimalTextField>
       [widget.fieldStyle, t.components.textField],
       minimalStates(enabled: widget.enabled, focused: focused, error: inError),
     );
-    final shape = so.shape ?? t.shapes.small;
+    final shape = so.outline(t, RawCorner.small);
     final least = so.minimumSize;
     final height =
         least?.height ??

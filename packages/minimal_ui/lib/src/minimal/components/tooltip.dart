@@ -126,7 +126,7 @@ class MinimalTooltip extends StatelessWidget {
                 vertical: MinimalSpacing.s4,
               ),
           decoration: minimalFrame(
-            so.shape ?? t.shapes.small,
+            so.outline(t, RawCorner.small),
             fill: so.fill ?? t.surfaceInverse,
             side: so.rim(null, t.rim),
           ),

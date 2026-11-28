@@ -63,6 +63,9 @@ class MinimalRating extends StatefulWidget {
   final double size;
 
   /// What is being rated, for a screen reader.
+  ///
+  /// Leave it null inside a [MinimalFormField]: the field's label names the
+  /// control, and a second name would be read twice.
   final String? semanticLabel;
 
   /// A tap on the current score clears it.

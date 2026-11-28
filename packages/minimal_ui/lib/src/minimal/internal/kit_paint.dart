@@ -371,7 +371,7 @@ class MinimalKitPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
     final so = MinimalStyleOf([style, t.components.menu], const {});
-    final shape = so.shape ?? t.shapes.medium;
+    final shape = so.outline(t, RawCorner.medium);
     Widget panel = DecoratedBox(
       decoration: minimalFrame(
         shape,
@@ -438,7 +438,10 @@ Widget minimalKitPresence(
 /// panel's 4 px padding so the two stay concentric.
 OutlinedBorder minimalKitRowShape(MinimalThemeData t, [MinimalStyle? style]) {
   final so = MinimalStyleOf([style, t.components.menu], const {});
-  return MinimalShapes.inset(so.shape ?? t.shapes.medium, MinimalSpacing.s4);
+  return MinimalShapes.inset(
+    so.outline(t, RawCorner.medium),
+    MinimalSpacing.s4,
+  );
 }
 
 /// One 32 px row of an open list or menu (an option, a menu item, an

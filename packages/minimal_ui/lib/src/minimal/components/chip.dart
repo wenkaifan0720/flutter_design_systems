@@ -90,7 +90,7 @@ class MinimalChip extends StatelessWidget {
     final enabled = onPressed != null;
     final chosenInk = enabled ? t.foreground : t.mutedForeground;
     // A chip is a capsule by role, in the scale's own family.
-    final own = t.shapes.pill;
+    final own = MinimalStyleOf(layers, const {}).outline(t, RawCorner.full);
     final pad = t.density.padding(
       EdgeInsets.only(
         left: glyph != null || leading != null

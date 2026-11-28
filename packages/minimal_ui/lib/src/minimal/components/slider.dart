@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart' show RawFocusShown;
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../component_themes.dart';
 import '../internal/controls.dart';
@@ -320,7 +321,7 @@ class _MinimalSliderState extends State<MinimalSlider> {
               halo: _down ? so.wash ?? t.primary.withValues(alpha: 0.16) : null,
               ring: _focus ? t.ring : null,
               ringWidth: t.focusWidth,
-              slot: so.shape ?? t.shapes.pill,
+              slot: so.outline(t, RawCorner.full),
             ),
           ),
         );

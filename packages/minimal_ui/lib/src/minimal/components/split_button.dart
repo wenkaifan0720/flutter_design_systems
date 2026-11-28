@@ -135,9 +135,12 @@ class MinimalSplitButton extends StatelessWidget {
     Widget half(RawSplitPart part, Set<WidgetState> states, bool open) {
       final so = MinimalStyleOf(layers, states);
       final ink = so.foreground ?? fg;
-      final whole = so.shape ?? t.shapes.small;
+      final whole = so.outline(t, RawCorner.small);
+      final held = so.heldCorners(t, RawCorner.small);
       final main = part == RawSplitPart.main;
-      final cell = minimalCell(whole, index: main ? 0 : 1, count: 2);
+      final cell = held == null
+          ? minimalCell(whole, index: main ? 0 : 1, count: 2)
+          : minimalHeldCell(t, held, index: main ? 0 : 1, count: 2);
       final glyph = icon;
       return Container(
         height: so.minimumSize?.height ?? h,
@@ -219,7 +222,7 @@ class MinimalSplitButton extends StatelessWidget {
         return Container(
           // One rim round both halves, over their fills.
           foregroundDecoration: minimalFrame(
-            so.shape ?? t.shapes.small,
+            so.outline(t, RawCorner.small),
             side: so.rim(edge, t.rim),
           ),
           child: _Halves(

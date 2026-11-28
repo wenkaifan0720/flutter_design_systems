@@ -492,7 +492,7 @@ class _ResultRow extends StatelessWidget {
         if (highlighted) WidgetState.selected,
       },
     );
-    final shape = so.shape ?? t.shapes.small;
+    final shape = so.outline(t, RawCorner.small);
     final pressed = states.contains(WidgetState.pressed);
     return Semantics(
       label: keys.isEmpty

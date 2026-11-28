@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-/// The measure a `MinimalScaffold` holds its page to, from the start edge:
+/// The measure a `MinimalScaffold` holds its page to, centred in its pane:
 /// its bar's title and actions read it, so they line up with the body.
 class MinimalPageMeasure extends InheritedWidget {
   /// Publishes [maxWidth] to the page's chrome.
@@ -18,9 +18,11 @@ class MinimalPageMeasure extends InheritedWidget {
       .dependOnInheritedWidgetOfExactType<MinimalPageMeasure>()
       ?.maxWidth;
 
-  /// [child] held to [maxWidth] on the start edge, where the box it stands
-  /// in is [inset] narrower than the page (its padding): whatever is past
-  /// the measure becomes end padding, so a tight box stays tight. [child]
+  /// [child] held to [maxWidth], centred, where the box it stands in is
+  /// [inset] narrower than the page (its padding): whatever is past the
+  /// measure becomes padding, half at each side, so the bar, the body and
+  /// the footer stand in one column in the middle of the pane (and a toast,
+  /// centred on the pane, on that column). A tight box stays tight. [child]
   /// itself when [maxWidth] is null.
   static Widget hold(
     Widget child, {
@@ -38,7 +40,7 @@ class MinimalPageMeasure extends InheritedWidget {
               )
             : 0.0;
         return Padding(
-          padding: EdgeInsetsDirectional.only(end: excess),
+          padding: EdgeInsets.symmetric(horizontal: excess / 2),
           child: child,
         );
       },

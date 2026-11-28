@@ -149,7 +149,7 @@ class MinimalDialog extends StatelessWidget {
     // The dialog floats over the scrim like a sheet card, so it takes the
     // theme's sheet corner.
     final so = MinimalStyleOf([style, t.components.dialog], const {});
-    final shape = so.shape ?? t.shapes.large;
+    final shape = so.outline(t, RawCorner.large);
     final rim = so.rim(t.border, t.rim);
     final fill = so.fill ?? t.card;
     // What stands inside the rim: the shape drawn the rim's width in.

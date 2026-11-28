@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../component_themes.dart';
 import '../internal/styled.dart';
@@ -54,6 +55,9 @@ class MinimalCheckbox extends StatelessWidget {
   final double size;
 
   /// What is being checked, announced (never printed).
+  ///
+  /// Leave it null inside a [MinimalFormField]: the field's label names the
+  /// control, and a second name would be read twice.
   final String? semanticLabel;
 
   /// This check's style, over `components.checkbox`.
@@ -211,7 +215,11 @@ class _CheckFace extends StatelessWidget {
       width: size,
       height: size,
       decoration: minimalFrame(
-        so.shape ?? _ownShape(t, size),
+        so.shape ??
+            minimalScaled(
+              minimalCornersOutline(t, so.corners, RawCorner.extraSmall),
+              size / 16,
+            ),
         fill: so.fill ?? (value ? t.primary : t.card),
         // The edge keeps its width in both states so the square never
         // changes size as it fills. Idle, it is the control edge (3:1 on

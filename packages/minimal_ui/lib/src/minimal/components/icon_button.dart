@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../chrome_metrics.dart';
 import '../component_themes.dart';
@@ -154,7 +155,7 @@ class MinimalIconButton extends StatelessWidget {
       semanticLabel: semanticLabel,
       selected: selected,
       style: rest.press,
-      shape: t.shapes.small,
+      shape: rest.outline(t, RawCorner.small),
       face: rest.fill ?? bg,
       ink: rest.foreground ?? fg,
       builder: (context, states) {
@@ -165,7 +166,7 @@ class MinimalIconButton extends StatelessWidget {
           width: least?.width ?? square,
           height: least?.height ?? square,
           decoration: minimalFrame(
-            so.shape ?? t.shapes.small,
+            so.outline(t, RawCorner.small),
             fill: so.fill ?? bg ?? const Color(0x00000000),
             side: so.rim(border, t.rim),
           ),

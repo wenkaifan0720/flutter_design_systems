@@ -145,7 +145,7 @@ class MinimalRangeSlider extends StatelessWidget {
           rail: so.edge ?? t.border,
           fill: fill,
           tick: t.textTertiary,
-          slot: so.shape ?? t.shapes.pill,
+          slot: so.outline(t, RawCorner.full),
           // The thumbs' travel stops half a thumb from the part's edges
           // (_bleed); the rail runs on to the edges, as a slider's does.
           overhang: _thumb / 2,
@@ -342,7 +342,11 @@ class _RangeTrackPainter extends CustomPainter {
         cy + _track / 2,
       );
       canvas.drawPath(
-        slot.getOuterPath(rect, textDirection: TextDirection.ltr),
+        // A style's own corners turn with the reading direction.
+        slot.getOuterPath(
+          rect,
+          textDirection: rtl ? TextDirection.rtl : TextDirection.ltr,
+        ),
         Paint()..color = colour,
       );
     }

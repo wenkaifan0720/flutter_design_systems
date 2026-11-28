@@ -19,10 +19,11 @@ import 'tag.dart';
 /// height on the muted ground, holding the glyph over a short label in its
 /// [tone]'s ink.
 ///
-/// Destructive actions say `destructive: true` (the destructive ink); every
-/// other word is the full ink, or a status's own ink — `success` for a
-/// "done", `warning` for a snooze — and `neutral` is the quiet ink of a
-/// "more".
+/// Destructive actions say `destructive: true` (the destructive ink): a
+/// "Delete" is in the full ink until it says so, as Minimal never reads a
+/// label's words (they are a word in one language only). Every other word
+/// is the full ink, or a status's own ink — `success` for a "done",
+/// `warning` for a snooze — and `neutral` is the quiet ink of a "more".
 ///
 /// ```dart
 /// MinimalSwipeAction('Archive', icon: LucideIcons.archive, onPressed: archive)

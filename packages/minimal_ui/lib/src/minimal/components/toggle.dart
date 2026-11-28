@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../component_themes.dart';
 import '../internal/cap_label.dart';
@@ -22,9 +23,11 @@ import 'pressable.dart';
 /// hit area pads out to the tap floor.
 ///
 /// `showLabel: true` is the labelled register for a switch that stands on
-/// its own (a sheet footer's `Create another`): the [label] prints after
-/// the track in the small body register's quiet ink, and the switch and
-/// the words are one control — a tap on either flips it.
+/// its own (a sheet footer's `Create another`, a form's `Favourite`): the
+/// [label] prints after the track in the small body register, in the ink
+/// on or off (an off switch is a choice, not a disabled one; the quiet ink
+/// only when the switch is disabled), and the switch and the words are one
+/// control — a tap on either flips it.
 ///
 /// [style] dresses one switch, `components.switchTheme` every one, resolved
 /// with [WidgetState.selected] when on: fill (the track), foreground (the
@@ -137,7 +140,7 @@ class _MinimalSwitchState extends State<MinimalSwitch> {
     final layers = <MinimalStyle?>[widget.style, t.components.switchTheme];
     // The track is a capsule by role (square under a square scale); the
     // thumb sits concentric inside it.
-    final track = MinimalStyleOf(layers, const {}).shape ?? t.shapes.pill;
+    final track = MinimalStyleOf(layers, const {}).outline(t, RawCorner.full);
 
     final alignment =
         MinimalTapAlignment.maybeOf(context) ??
@@ -284,7 +287,10 @@ class _MinimalSwitchState extends State<MinimalSwitch> {
             child: minimalCapLabel(
               Text(
                 label,
-                style: t.bodySmall.c(t.mutedForeground),
+                // The ink on or off: the quiet ink would read as disabled.
+                style: t.bodySmall.c(
+                  widget.onChanged != null ? t.foreground : t.mutedForeground,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

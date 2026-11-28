@@ -3,6 +3,7 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../component_themes.dart';
 import '../internal/cap_label.dart';
@@ -67,7 +68,8 @@ class MinimalBadge extends StatelessWidget {
     final so = MinimalStyleOf([style, t.components.badge], const {});
     final n = count;
     final shape =
-        so.shape ?? (n == null ? const CircleBorder() : t.shapes.pill);
+        so.shape ??
+        (n == null ? const CircleBorder() : so.outline(t, RawCorner.full));
     final colours = t.tone(tone);
     // A plain count is a neutral tag's: the muted fill in a hairline, the
     // figure in the ink. A mid-grey capsule reads as switched off.

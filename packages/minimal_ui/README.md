@@ -123,7 +123,7 @@ class _HomeState extends State<Home> {
 
 ### A list, and its page
 
-A page is a `MinimalScaffold`: its bar, its body and a footer for its acts. `maxWidth: MinimalLayout.contentWidth(context)` holds all three to the page's measure on a wide window. A row pushes its record's page in the same place; the pushed page's bar names where back goes (`parent`).
+A page is a `MinimalScaffold`: its bar, its body and a footer for its acts. `maxWidth: MinimalLayout.contentWidth(context)` holds all three to the page's measure on a wide window. A row pushes its record's page in the same place; the pushed page's bar names where back goes (`parent`). A swipe reveals a row's acts; each is in the full ink unless it says otherwise, so a delete says `destructive: true` (the danger ink) and takes a bin glyph. Minimal never guesses it from the word, which is "Delete" in one language only.
 
 ```dart
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -139,9 +139,10 @@ class Book {
 }
 
 class BooksPage extends StatelessWidget {
-  const BooksPage({super.key, required this.books});
+  const BooksPage({super.key, required this.books, this.onDelete});
 
   final List<Book> books;
+  final ValueChanged<Book>? onDelete;
 
   @override
   Widget build(BuildContext context) => MinimalScaffold(
@@ -151,13 +152,23 @@ class BooksPage extends StatelessWidget {
     body: MinimalListSection(
       children: [
         for (final book in books)
-          MinimalListTile(
-            title: book.title,
-            subtitle: book.author,
-            trailing: book.reading ? const MinimalTag('Reading', tone: MinimalTone.primary) : null,
-            chevron: true,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (context) => BookPage(book: book)),
+          MinimalSwipeActions(
+            trailing: [
+              MinimalSwipeAction(
+                'Delete',
+                icon: LucideIcons.trash2,
+                destructive: true,
+                onPressed: () => onDelete?.call(book),
+              ),
+            ],
+            child: MinimalListTile(
+              title: book.title,
+              subtitle: book.author,
+              trailing: book.reading ? const MinimalTag('Reading', tone: MinimalTone.primary) : null,
+              chevron: true,
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (context) => BookPage(book: book)),
+              ),
             ),
           ),
       ],
@@ -246,6 +257,8 @@ class _NewBookPageState extends State<NewBookPage> {
               child: MinimalDatePicker(
                 labelText: 'Started',
                 mode: MinimalDatePickerMode.date,
+                // The label over a box, as the title's: one field style.
+                presentation: MinimalDatePickerPresentation.field,
                 value: field.value,
                 hintText: 'Not yet',
                 focusNode: _startedFocus,
@@ -275,7 +288,11 @@ class _NewBookPageState extends State<NewBookPage> {
 }
 ```
 
-A date field with no value shows its hint; one with a day shows it with the year ("9 Nov 2026"), as `MinimalFormat.date` writes it. A field in error turns its edge to the danger colour, focused or not.
+A date field with no value shows its hint; one with a day shows it as the app's language writes a date in a field ("Nov 9, 2026" in English, "9 Nov 2026" in British English, `RawWidgetsLocalizations.formatMediumDate`), so it reads like the calendar it opens. `MinimalFormat.date` stays the app's own day-first helper. A field in error turns its edge to the danger colour, focused or not.
+
+A form that is itself a place (an "Add" tab) is this same page as a nav root: its Save stays in the footer, which docks above a phone's tab bar and at the page's foot beside the sidebar, so the form pushed to edit and the form as a place are one widget.
+
+Keep one field style in a form. Beside boxed text fields, a date stands boxed too (`MinimalDatePickerPresentation.field`) and a choice from a list is a `MinimalCombobox(requireSelection: true)`. The row controls (`MinimalSelect`, the compact `MinimalDatePicker`, a `MinimalSwitch` row) belong in a form of rows, a settings list in a `MinimalFormSection`.
 
 ### Dialogs and toasts
 
@@ -342,7 +359,9 @@ class PalettePicker extends StatelessWidget {
   );
 }
 
-// Each palette's colours in the brightness on screen, beside its name.
+// Each palette's colours in the brightness on screen, beside its name: its
+// accent on a tile of its ground. The ground is a page's own colour, so it
+// stands as a tile, ringed in the hairline, never as a ring alone.
 class _Swatches extends StatelessWidget {
   const _Swatches(this.palette);
 
@@ -351,21 +370,30 @@ class _Swatches extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.minimalTheme;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (final color in palette.swatchesFor(theme.brightness))
-          Container(
-            width: 14,
-            height: 14,
-            margin: const EdgeInsetsDirectional.only(start: 4),
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              border: Border.all(color: theme.border),
+    final swatches = palette.swatchesFor(theme.brightness);
+    // The last swatch is the ground; the others are dots on it.
+    final ground = swatches.length > 1 ? swatches.last : null;
+    final dots = ground == null ? swatches : swatches.sublist(0, swatches.length - 1);
+    return Container(
+      margin: const EdgeInsetsDirectional.only(start: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+      decoration: BoxDecoration(
+        color: ground,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: theme.border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 3,
+        children: [
+          for (final color in dots)
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -413,14 +441,16 @@ final theme = MinimalThemeData.from(
   primary: const Color(0xFF7A1F5C),
   neutral: const Color(0xFF8B7355),
 ).copyWith(
-  shapes: const MinimalShapes(radius: 12),
+  shapeScheme: const MinimalShapes(radius: 12).scheme,
   density: MinimalDensity.compact,
 );
 ```
 
 - `MinimalThemeData.from` derives readable label and accent colours from the supplied palette.
-- `MinimalShapes` derives corners for tags, fields, cards and dialogs from one radius. A radius of zero squares off capsules. Radios, slider thumbs and avatars stay round.
+- `shapeScheme` holds the corners every part reads (4, 8, 10, 14 and 18 by default), each step held to Minimal's band, from square to the most a control holds before it reads as a pill. `MinimalShapes(radius: r).scheme` sets every step from one radius. A small step of zero squares off capsules. Radios, slider thumbs and avatars stay round.
+- A style's `corners` give one part corners of its own, a step per corner, start and end as the part reads (so they mirror in a right-to-left app): `MinimalStyle(corners: WidgetStatePropertyAll(RawCorners(topStart: RawCorner.none, bottomEnd: RawCorner.none)))`. Each is held to Minimal's steps, a corner the style leaves keeps the part's own, and a `shape` wins over `corners`. In a joined strip (a segmented control, a button group) they shape the strip's ends.
 - `MinimalTypeface.app(sans:, mono:)` selects your fonts. The theme also exposes density, shadow styles and icon stroke width.
+- To keep a palette and change it, hand the host both: `MinimalHost(palette: palette, customize: (theme) => theme.copyWith(shapeScheme: const MinimalShapes(radius: 12).scheme), child: child!)` changes the palette's day and night themes alike, and a change of palette or appearance still blends.
 - Set a `MinimalStyle` in `theme.components` to style a component throughout the app. A widget's `style` takes precedence. Text fields use `fieldStyle`. Use `WidgetStateProperty` to distinguish hover, press and focus.
 
 ```dart

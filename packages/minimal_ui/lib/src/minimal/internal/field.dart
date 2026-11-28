@@ -191,6 +191,11 @@ class MinimalFieldErrorScope extends InheritedWidget {
   /// Whether the form field shows an error.
   final bool wrong;
 
+  /// Whether a form field stands round [context]: the control is a field,
+  /// labelled by it.
+  static bool around(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<MinimalFieldErrorScope>() != null;
+
   /// Whether a form field round [context] shows an error.
   static bool of(BuildContext context) =>
       context

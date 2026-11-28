@@ -1057,7 +1057,7 @@ class MinimalTextTheme with Diagnosticable {
 /// ```dart
 /// final night = MinimalThemeData.preset('ember', Brightness.dark);
 /// final mine = night.copyWith(
-///   shapes: const MinimalShapes(radius: 12),
+///   shapeScheme: const MinimalShapes(radius: 12).scheme,
 ///   density: MinimalDensity.compact,
 ///   components: const MinimalComponentThemes(
 ///     chip: MinimalStyle(shape: WidgetStatePropertyAll(StadiumBorder())),
@@ -1076,12 +1076,22 @@ class MinimalThemeData with Diagnosticable {
     List<BoxShadow>? shadowSm,
     List<BoxShadow>? shadowMd,
     List<BoxShadow>? shadowLg,
-    this.shapes = MinimalShapes.look,
+    RawShapeScheme? shapeScheme,
+    @Deprecated(
+      'Use shapeScheme: MinimalShapes(radius: r).scheme. '
+      'Removed in 0.10.0.',
+    )
+    MinimalShapes? shapes,
     MinimalDensity? density,
     this.typeface = MinimalTypeface.look,
     this.components = const MinimalComponentThemes(),
     this.iconStroke = 1.75,
   }) : assert(
+         shapeScheme == null || shapes == null,
+         'MinimalThemeData takes shapeScheme or the deprecated shapes, not '
+         'both.',
+       ),
+       assert(
          iconStroke >= 1.5 && iconStroke <= 2,
          'MinimalThemeData.iconStroke is $iconStroke. Minimal\'s strokes are '
          'thin: between 1.5 and 2, the strokes of the two Lucide cuts its '
@@ -1090,6 +1100,10 @@ class MinimalThemeData with Diagnosticable {
          'thin.',
        ),
        _chosenDensity = density,
+       shapeScheme = shapeLimits.clamp(
+         shapeScheme ?? shapes?.scheme ?? defaultShapeScheme,
+         look: 'Minimal',
+       ),
        text = text ?? MinimalTextTheme.from(colors, typeface),
        shadowSm = shadowSm ?? _shadow(colors, 0),
        shadowMd = shadowMd ?? _shadow(colors, 1),
@@ -1291,8 +1305,52 @@ class MinimalThemeData with Diagnosticable {
   /// A sheet or a dialog.
   final List<BoxShadow> shadowLg;
 
-  /// The corner scale every framed part reads.
-  final MinimalShapes shapes;
+  /// The corners every framed part reads, through [shapes]: Minimal's own
+  /// by default ([defaultShapeScheme]: 4, 8, 10, 14 and 18), held to
+  /// [shapeLimits] whatever an app asks. Round corners only; no stroke and
+  /// no depth are opened (Minimal draws hairlines and casts shadows only
+  /// under what floats). A change of corners eases across with the theme
+  /// ([lerp]). `MinimalShapes(radius: r).scheme` sets every step from one
+  /// radius.
+  ///
+  /// ```dart
+  /// final square = MinimalThemeData.standard().copyWith(
+  ///   shapeScheme: const MinimalShapes(radius: 0).scheme,
+  /// );
+  /// ```
+  final RawShapeScheme shapeScheme;
+
+  /// Minimal's own corners: round, 4, 8, 10, 14 and 18.
+  static const RawShapeScheme defaultShapeScheme = RawShapeScheme(
+    corners: RawCornerScale(
+      extraSmall: 4,
+      small: 8,
+      medium: 10,
+      large: 14,
+      extraLarge: 18,
+    ),
+  );
+
+  /// The bands Minimal holds a [shapeScheme] to: round corners alone; each
+  /// step from square (Minimal reads as itself square, its hairlines and
+  /// dense rows carrying it) to the most a 32 px control holds before it
+  /// reads as a pill: a mark to 8, a control to 12, a card to 14, a dialog
+  /// to 20, the extra large step to 24; no stroke and no depth. An app's
+  /// part may take its own step on each corner (its style's `corners`),
+  /// any step from square to a capsule: Minimal's corners carry no material
+  /// or light, so no step breaks it.
+  static const RawShapeLimits shapeLimits = RawShapeLimits(
+    extraSmall: RawBand(0, 8),
+    small: RawBand(0, 12),
+    medium: RawBand(0, 14),
+    large: RawBand(0, 20),
+    extraLarge: RawBand(0, 24),
+    cornerFreedom: RawCornerFreedom.perCorner,
+  );
+
+  /// The corner scale every framed part reads: [shapeScheme] as the outline
+  /// each role draws.
+  late final MinimalShapes shapes = MinimalShapes.of(shapeScheme);
 
   /// How compact the controls stand. Unset, the platform's own
   /// ([MinimalDensity.adaptivePlatformDensity]): standard on a phone,
@@ -1363,19 +1421,20 @@ class MinimalThemeData with Diagnosticable {
   BorderSide get rule => BorderSide(color: colors.border, width: hairline);
 
   /// The corner radius of a card, a list section, a menu and a snack bar:
-  /// [shapes]' medium step.
-  double get cardRadius => MinimalShapes.radiusOf(shapes.medium);
+  /// [shapeScheme]'s medium step.
+  double get cardRadius => shapeScheme.corners.medium;
 
-  /// The corner radius of a button, a field and a select: [shapes]' small
-  /// step.
-  double get controlRadius => MinimalShapes.radiusOf(shapes.small);
+  /// The corner radius of a button, a field and a select: [shapeScheme]'s
+  /// small step.
+  double get controlRadius => shapeScheme.corners.small;
 
   /// The corner radius of a tag, a key cap and a checkbox's box: [shapes]'
-  /// mark step.
-  double get smallRadius => MinimalShapes.radiusOf(shapes.mark);
+  /// extra small step.
+  double get smallRadius => shapeScheme.corners.extraSmall;
 
-  /// The corner radius of a dialog and a bottom sheet: [shapes]' large step.
-  double get sheetRadius => MinimalShapes.radiusOf(shapes.large);
+  /// The corner radius of a dialog and a bottom sheet: [shapeScheme]'s large
+  /// step.
+  double get sheetRadius => shapeScheme.corners.large;
 
   // The colour roles, read straight off the theme.
 
@@ -1527,6 +1586,11 @@ class MinimalThemeData with Diagnosticable {
     List<BoxShadow>? shadowSm,
     List<BoxShadow>? shadowMd,
     List<BoxShadow>? shadowLg,
+    RawShapeScheme? shapeScheme,
+    @Deprecated(
+      'Use shapeScheme: MinimalShapes(radius: r).scheme. '
+      'Removed in 0.10.0.',
+    )
     MinimalShapes? shapes,
     MinimalDensity? density,
     MinimalTypeface? typeface,
@@ -1560,7 +1624,7 @@ class MinimalThemeData with Diagnosticable {
       shadowSm: shadow(shadowSm, this.shadowSm, 0),
       shadowMd: shadow(shadowMd, this.shadowMd, 1),
       shadowLg: shadow(shadowLg, this.shadowLg, 2),
-      shapes: shapes ?? this.shapes,
+      shapeScheme: shapeScheme ?? shapes?.scheme ?? this.shapeScheme,
       density: density ?? _chosenDensity,
       typeface: nextFace,
       components: components ?? this.components,
@@ -1584,7 +1648,7 @@ class MinimalThemeData with Diagnosticable {
       shadowSm: BoxShadow.lerpList(a.shadowSm, b.shadowSm, t)!,
       shadowMd: BoxShadow.lerpList(a.shadowMd, b.shadowMd, t)!,
       shadowLg: BoxShadow.lerpList(a.shadowLg, b.shadowLg, t)!,
-      shapes: MinimalShapes.lerp(a.shapes, b.shapes, t),
+      shapeScheme: RawShapeScheme.lerp(a.shapeScheme, b.shapeScheme, t),
       density: a._chosenDensity == null && b._chosenDensity == null
           ? null
           : MinimalDensity.lerp(a.density, b.density, t),
@@ -1605,7 +1669,7 @@ class MinimalThemeData with Diagnosticable {
           listEquals(other.shadowSm, shadowSm) &&
           listEquals(other.shadowMd, shadowMd) &&
           listEquals(other.shadowLg, shadowLg) &&
-          other.shapes == shapes &&
+          other.shapeScheme == shapeScheme &&
           other._chosenDensity == _chosenDensity &&
           other.typeface == typeface &&
           other.components == components &&
@@ -1619,7 +1683,7 @@ class MinimalThemeData with Diagnosticable {
     Object.hashAll(shadowSm),
     Object.hashAll(shadowMd),
     Object.hashAll(shadowLg),
-    shapes,
+    shapeScheme,
     _chosenDensity,
     typeface,
     components,
@@ -1635,10 +1699,10 @@ class MinimalThemeData with Diagnosticable {
       ..add(DiagnosticsProperty<MinimalColors>('colors', colors))
       ..add(DiagnosticsProperty<MinimalTextTheme>('text', text))
       ..add(
-        DiagnosticsProperty<MinimalShapes>(
-          'shapes',
-          shapes,
-          defaultValue: MinimalShapes.look,
+        DiagnosticsProperty<RawShapeScheme>(
+          'shapeScheme',
+          shapeScheme,
+          defaultValue: defaultShapeScheme,
         ),
       )
       ..add(

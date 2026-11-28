@@ -634,7 +634,7 @@ class _MinimalMultiSelectState<T extends Object>
           widget.fieldStyle,
           t.components.textField,
         ], states);
-        final shape = so.shape ?? t.shapes.small;
+        final shape = so.outline(t, RawCorner.small);
         final within = states.contains(WidgetState.focused);
         return Container(
           constraints: BoxConstraints(

@@ -44,7 +44,9 @@ void main() {
     });
 
     test('copyWith changes what it names and nothing else', () {
-      final squared = light.copyWith(shapes: const MinimalShapes(radius: 0));
+      final squared = light.copyWith(
+        shapeScheme: const MinimalShapes(radius: 0).scheme,
+      );
       expect(squared.cardRadius, 0);
       expect(squared.controlRadius, 0);
       expect(squared.colors, light.colors);
@@ -103,8 +105,10 @@ void main() {
         MinimalThemeData.lerp(light, dark, .6).brightness,
         Brightness.dark,
       );
-      final rounder = light.copyWith(shapes: const MinimalShapes(radius: 16));
-      expect(MinimalThemeData.lerp(light, rounder, .5).controlRadius, 12);
+      final rounder = light.copyWith(
+        shapeScheme: const MinimalShapes(radius: 12).scheme,
+      );
+      expect(MinimalThemeData.lerp(light, rounder, .5).controlRadius, 10);
     });
 
     test('equality is by value', () {

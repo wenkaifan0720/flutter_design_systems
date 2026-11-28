@@ -316,7 +316,7 @@ class _MinimalInputGroupState extends State<MinimalInputGroup>
           widget.style,
           t.components.textField,
         ], states);
-        final shape = so.shape ?? t.shapes.small;
+        final shape = so.outline(t, RawCorner.small);
         final within = states.contains(WidgetState.focused);
         return Container(
           constraints: BoxConstraints(
@@ -717,7 +717,8 @@ class MinimalInputOtp extends StatelessWidget {
       style,
       t.components.textField,
     ], minimalStates(enabled: enabled, error: errorText != null));
-    final whole = frame.shape ?? t.shapes.small;
+    final whole = frame.outline(t, RawCorner.small);
+    final held = frame.heldCorners(t, RawCorner.small);
     final edge = frame.rim(errorText != null ? t.destructive : t.border, t.rim);
 
     Widget slot(RawOtpSlot s) {
@@ -730,13 +731,12 @@ class MinimalInputOtp extends StatelessWidget {
         ),
       );
       final at = s.index % group;
-      final cell = minimalCell(
-        whole,
-        index: at,
-        count: s.index ~/ group == (length - 1) ~/ group
-            ? length - (length - 1) ~/ group * group
-            : group,
-      );
+      final count = s.index ~/ group == (length - 1) ~/ group
+          ? length - (length - 1) ~/ group * group
+          : group;
+      final cell = held == null
+          ? minimalCell(whole, index: at, count: count)
+          : minimalHeldCell(t, held, index: at, count: count);
       final active = s.active && s.focused;
       return Container(
         width: so.minimumSize?.width ?? box.width,

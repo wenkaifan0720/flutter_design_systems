@@ -304,7 +304,10 @@ class BookPage extends StatelessWidget {
             MinimalProperty(
               icon: LucideIcons.calendar,
               label: 'Started',
-              value: started == null ? null : MinimalFormat.date(started),
+              value: started == null
+                  ? null
+                  : RawWidgetsLocalizations.of(context)
+                        .formatMediumDate(started),
               placeholder: 'Not yet',
             ),
             MinimalProperty(

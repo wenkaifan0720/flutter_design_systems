@@ -93,7 +93,9 @@ void main() {
       expect(screen.width - fab.right, MinimalChromeMetrics.gutter);
     });
 
-    testWidgets('a nav root may not own the bottom edge', (tester) async {
+    testWidgets("a nav root's footer docks above the shell's bar", (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _app(
           const MinimalShellInsets(
@@ -102,7 +104,10 @@ void main() {
           ),
         ),
       );
-      expect(tester.takeException(), isAssertionError);
+      expect(tester.takeException(), isNull);
+      final screen = tester.getSize(find.byType(Scaffold));
+      final footer = tester.getRect(find.text('Footer'));
+      expect(screen.height - footer.bottom, 90 + MinimalSpacing.s12);
     });
 
     testWidgets('a full-bleed body runs behind the bar and reads its height', (

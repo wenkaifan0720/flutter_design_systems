@@ -3,6 +3,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../component_themes.dart';
 import '../shapes.dart';
+import '../theme.dart';
 
 /// The states a part resolves its style for.
 Set<WidgetState> minimalStates({
@@ -70,6 +71,110 @@ extension MinimalStyleReading on RawStyleOf {
   }
 }
 
+/// What Minimal's parts read of their corners.
+extension MinimalCornerReading on RawStyleOf {
+  /// The outline a part whose own step is [own] draws: a layer's `shape`
+  /// as given (it wins); else a layer's `corners`, each held to Minimal's
+  /// steps over the part's own and drawn in [t]'s scale, start and end as
+  /// the part reads; else [t]'s own outline at [own].
+  OutlinedBorder outline(MinimalThemeData t, RawCorner own) =>
+      shape ?? minimalCornersOutline(t, corners, own);
+
+  /// The corners a layer names, held to Minimal's steps over the part's
+  /// own [own]; null when a layer's `shape` wins or none names corners
+  /// (the part draws its own outline).
+  RawCorners? heldCorners(MinimalThemeData t, RawCorner own) =>
+      shape != null ? null : minimalHeldCorners(t, corners, own);
+}
+
+// A capsule role squares with a square scheme.
+RawCorner _ownStep(MinimalThemeData t, RawCorner own) =>
+    own == RawCorner.full && t.shapes.square ? RawCorner.none : own;
+
+/// [corners] held to Minimal's steps over a part's own [own]; null when
+/// [corners] names none.
+RawCorners? minimalHeldCorners(
+  MinimalThemeData t,
+  RawCorners? corners,
+  RawCorner own,
+) {
+  if (corners == null || corners.isEmpty) return null;
+  return MinimalThemeData.shapeLimits.clampCorners(
+    corners,
+    base: RawCorners.all(_ownStep(t, own)),
+    look: 'Minimal',
+  );
+}
+
+/// The outline a part whose own step is [own] draws for [corners]: its own
+/// ([MinimalShapes.at]) when [corners] names none, else each corner at its
+/// held step in [t]'s scale.
+OutlinedBorder minimalCornersOutline(
+  MinimalThemeData t,
+  RawCorners? corners,
+  RawCorner own,
+) {
+  final held = minimalHeldCorners(t, corners, own);
+  return held == null ? t.shapes.at(own) : t.shapeScheme.corners.borderOf(held);
+}
+
+/// Cell [index] of [count] laid edge to edge along [axis] inside a frame
+/// whose corners are [held] (a part's own, [MinimalCornerReading.heldCorners]),
+/// [inset] px within it: the first cell takes the frame's start (or top)
+/// corners, the last its end (or bottom) corners, each shrunk by [inset] so
+/// the outlines stay concentric; every corner that faces a neighbour is
+/// square.
+OutlinedBorder minimalHeldCell(
+  MinimalThemeData t,
+  RawCorners held, {
+  required int index,
+  required int count,
+  double inset = 0,
+  Axis axis = Axis.horizontal,
+}) {
+  final first = index == 0, last = index == count - 1;
+  final cell = axis == Axis.horizontal
+      ? RawCorners(
+          topStart: first ? held.topStart : null,
+          bottomStart: first ? held.bottomStart : null,
+          topEnd: last ? held.topEnd : null,
+          bottomEnd: last ? held.bottomEnd : null,
+        )
+      : RawCorners(
+          topStart: first ? held.topStart : null,
+          topEnd: first ? held.topEnd : null,
+          bottomStart: last ? held.bottomStart : null,
+          bottomEnd: last ? held.bottomEnd : null,
+        );
+  final border = t.shapeScheme.corners.borderOf(cell);
+  return inset == 0 ? border : border.inset(EdgeInsets.all(inset));
+}
+
+/// Key [index] of [count] standing apart inside a frame whose corners are
+/// [held] ([MinimalCornerReading.heldCorners]), [inset] px within it (a
+/// segmented control's thumb, a menu bar's item): a key at either end takes
+/// the frame's corners on that end, every other corner the part's own
+/// [own], each shrunk by [inset] so the key stays concentric with the
+/// frame.
+OutlinedBorder minimalHeldKey(
+  MinimalThemeData t,
+  RawCorners held,
+  RawCorner own, {
+  required int index,
+  required int count,
+  double inset = 0,
+}) {
+  final first = index == 0, last = index == count - 1;
+  final key = RawCorners(
+    topStart: first ? held.topStart : own,
+    bottomStart: first ? held.bottomStart : own,
+    topEnd: last ? held.topEnd : own,
+    bottomEnd: last ? held.bottomEnd : own,
+  );
+  final border = t.shapeScheme.corners.borderOf(key);
+  return inset == 0 ? border : border.inset(EdgeInsets.all(inset));
+}
+
 /// [layers] as one style, every slot falling through them state by state
 /// as a part's own reading does: for a part that hands its style on to
 /// another (a list section to its card). Null when no layer is set.
@@ -87,6 +192,7 @@ MinimalStyle? minimalLayered(List<MinimalStyle?> layers) {
     overlay: each((s) => s.overlay),
     side: each((s) => s.side),
     shape: each((s) => s.shape),
+    corners: each((s) => s.corners),
     padding: each((s) => s.padding),
     minimumSize: each((s) => s.minimumSize),
     textStyle: each((s) => s.textStyle),

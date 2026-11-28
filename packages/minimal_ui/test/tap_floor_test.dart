@@ -314,7 +314,7 @@ void main() {
         ),
         view: Size(width, 900),
       );
-      await tester.tap(find.text(MinimalFormat.date(DateTime(2026, 11, 20))));
+      await tester.tap(find.text('Nov 20, 2026'));
       await tester.pumpAndSettle();
       expect(find.text('November 2026'), findsOneWidget);
       expect(find.text('Done'), sheet ? findsOneWidget : findsNothing);

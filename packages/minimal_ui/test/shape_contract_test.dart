@@ -749,7 +749,7 @@ void main() {
   for (final (f, MapEntry(key: family, value: shapes))
       in _families.entries.indexed) {
     group('under $family corners', () {
-      final theme = _look.copyWith(shapes: shapes);
+      final theme = _look.copyWith(shapeScheme: shapes.scheme);
       for (final (p, MapEntry(key: name, value: c))
           in _framed.entries.indexed) {
         testWidgets('$name draws its step', (tester) async {

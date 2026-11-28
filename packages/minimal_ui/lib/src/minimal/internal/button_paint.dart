@@ -201,7 +201,7 @@ class MinimalButtonPaint {
             EdgeInsets.symmetric(horizontal: hPad, vertical: MinimalSpacing.s2),
           ),
       decoration: minimalFrame(
-        so.shape ?? t.shapes.small,
+        so.outline(t, RawCorner.small),
         fill: fill,
         side: so.rim(border, t.rim),
       ),

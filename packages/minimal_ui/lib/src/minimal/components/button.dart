@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../chrome_metrics.dart';
 import '../component_themes.dart';
@@ -160,7 +161,7 @@ class MinimalButton extends StatelessWidget {
             // infer that, so the register is stated here.
             enabled: onPressed != null,
             style: rest.press,
-            shape: t.shapes.small,
+            shape: rest.outline(t, RawCorner.small),
             face: bg,
             ink: fg,
             builder: face,

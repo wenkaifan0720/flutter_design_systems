@@ -4,12 +4,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart' show RawFocusShown;
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../chrome_metrics.dart';
 import '../component_themes.dart';
 import '../internal/cap_label.dart';
 import '../internal/controls.dart';
 import '../internal/face.dart';
+import '../internal/field.dart';
 import '../internal/styled.dart';
 import '../internal/kit_paint.dart';
 import '../shapes.dart';
@@ -23,8 +25,11 @@ import 'pressable.dart';
 /// segment. Use chips for filters and a picker row
 /// for a longer set of choices.
 ///
-/// Segments share the width equally: the whole width by default, or the
-/// widest label's with `expand: false` for a control that sits beside other
+/// Segments share the width equally: the whole width by default (from the
+/// compact width up, a control's measure at most, [MinimalLayout.controlMax];
+/// labelled by a `MinimalFormField` it is one of the form's fields and takes
+/// the column's width, as the text fields beside it do), or the widest
+/// label's with `expand: false` for a control that sits beside other
 /// things. The control is ONE focus stop: focused, its thumb wears the 2 px
 /// focus ring and the arrow keys move the choice, Home and End jump to the
 /// ends — focus and choice never part, so a following Enter or Space
@@ -68,6 +73,9 @@ class MinimalSegmentedButton<T> extends StatefulWidget {
   final ValueChanged<T>? onChanged;
 
   /// What the choice is about, announced before the segments.
+  ///
+  /// Leave it null inside a [MinimalFormField]: the field's label names the
+  /// control, and a second name would be read twice.
   final String? semanticLabel;
 
   /// The 28 px register, for a toolbar or a dense header.
@@ -184,15 +192,26 @@ class _MinimalSegmentedButtonState<T> extends State<MinimalSegmentedButton<T>> {
     const pad = MinimalControlMetrics.segmentInset;
     final band = math.max(height, minimalTapFloor(context));
     final air = (band - height) / 2;
-    final outline = strip.shape ?? t.shapes.small;
+    final outline = strip.outline(t, RawCorner.small);
     // The thumb sits 2 px inside the strip, its corners as much rounder
-    // as keeps the two concentric.
-    final inner = MinimalShapes.inset(outline, pad);
+    // as keeps the two concentric; under a style's own corners it takes
+    // the strip's at either end and its own between.
+    final held = strip.heldCorners(t, RawCorner.small);
+    final n = segments.length;
+    final inner = held == null
+        ? MinimalShapes.inset(outline, pad)
+        : minimalHeldKey(
+            t,
+            held,
+            RawCorner.small,
+            index: math.max(index, 0),
+            count: n,
+            inset: pad,
+          );
     final chosen = MinimalStyleOf(
       layers,
       minimalStates(enabled: enabled, focused: _focus, selected: true),
     );
-    final n = segments.length;
     final ground = minimalGround(context);
 
     final thumb = Positioned.fill(
@@ -206,7 +225,9 @@ class _MinimalSegmentedButtonState<T> extends State<MinimalSegmentedButton<T>> {
         child: FractionallySizedBox(
           widthFactor: 1 / n,
           heightFactor: 1,
-          child: Container(
+          child: AnimatedContainer(
+            duration: instant ? Duration.zero : MinimalMotion.base,
+            curve: MinimalMotion.out,
             decoration: minimalFrame(
               inner,
               // A choice is said in ink, not a raised or tinted thumb: the
@@ -353,8 +374,11 @@ class _MinimalSegmentedButtonState<T> extends State<MinimalSegmentedButton<T>> {
     );
     if (!widget.expand) track = IntrinsicWidth(child: track);
     // Filling its column on a phone; from the compact width up it stops at
-    // a control's measure.
-    if (widget.expand) track = MinimalLayout.capControl(context, track);
+    // a control's measure, unless a form field labels it: then it is one of
+    // the form's fields, edge to edge with the rest.
+    if (widget.expand && !MinimalFieldErrorScope.around(context)) {
+      track = MinimalLayout.capControl(context, track);
+    }
     if (!enabled) track = Opacity(opacity: 0.45, child: track);
 
     return Semantics(

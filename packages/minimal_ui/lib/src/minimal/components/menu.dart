@@ -642,7 +642,7 @@ class _PopoverRoute<T> extends PopupRoute<T> {
               builder: (context) {
                 final t = context.minimalTheme;
                 final so = MinimalStyleOf([style, t.components.menu], const {});
-                final shape = so.shape ?? t.shapes.medium;
+                final shape = so.outline(t, RawCorner.medium);
                 return Material(
                   type: MaterialType.transparency,
                   child: Container(
@@ -911,7 +911,7 @@ class _MenuSurfaceState extends State<_MenuSurface> {
     final items = widget.items;
     final panel = MinimalStyleOf([widget.style, t.components.menu], const {});
     final rowShape = MinimalShapes.inset(
-      panel.shape ?? t.shapes.medium,
+      panel.outline(t, RawCorner.medium),
       MinimalSpacing.s4 + panel.rim(t.border, t.rim).strokeInset,
     );
     // A menu that picks one announces every item's selected state; a menu

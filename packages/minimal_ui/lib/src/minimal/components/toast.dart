@@ -153,9 +153,10 @@ class _MinimalToasterState extends State<MinimalToaster> {
     final t = context.minimalTheme;
     final data = v.toast.data;
     final look = data is _ToastLook ? data : const _ToastLook(null, null);
-    final shape =
-        MinimalStyleOf([look.style, t.components.snackBar], const {}).shape ??
-        t.shapes.medium;
+    final shape = MinimalStyleOf([
+      look.style,
+      t.components.snackBar,
+    ], const {}).outline(t, RawCorner.medium);
     final still = context.minimalStill;
     return AnimatedBuilder(
       animation: v.animation,
@@ -272,7 +273,7 @@ class MinimalSnackBar extends StatelessWidget {
     final so = MinimalStyleOf([style, t.components.snackBar], const {});
     final rim = so.rim(t.border, t.rim);
     final ink = so.foreground;
-    final shape = so.shape ?? t.shapes.medium;
+    final shape = so.outline(t, RawCorner.medium);
     final padding =
         so.paddingIn(context) ??
         const EdgeInsetsDirectional.only(

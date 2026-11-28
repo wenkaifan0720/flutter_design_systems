@@ -26,8 +26,8 @@ void main() {
           ),
         ),
       );
-      expect(find.text('21 Aug 2026'), findsOneWidget);
-      await tester.tap(find.text('21 Aug 2026'));
+      expect(find.text('Aug 21, 2026'), findsOneWidget);
+      await tester.tap(find.text('Aug 21, 2026'));
       await tester.pumpAndSettle();
       expect(find.text('August 2026'), findsOneWidget);
       await tester.tap(find.text('15'));
@@ -140,7 +140,7 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.text('31 Dec 2026'));
+      await tester.tap(find.text('Dec 31, 2026'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('24'));
       await tester.pump();
@@ -167,7 +167,7 @@ void main() {
         pill.getSemanticsData().flagsCollection.isEnabled,
         Tristate.isFalse,
       );
-      await tester.tap(find.text('2 Jun 2026'), warnIfMissed: false);
+      await tester.tap(find.text('Jun 2, 2026'), warnIfMissed: false);
       await tester.pumpAndSettle();
       expect(find.text('June 2026'), findsNothing);
       expect(find.text('07:12'), findsOneWidget);

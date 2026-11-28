@@ -155,8 +155,9 @@ void main() {
   for (final locale in const [Locale('en'), Locale('de'), Locale('ar')]) {
     final at = locale.languageCode;
     final shared = RawWidgetsLocalizations.forLocale(locale);
-    final month = shared.formatShortMonth(DateTime(2026, 11));
-    final date = at == 'ar' ? '٢٠ $month ٢٠٢٦' : '20 $month 2026';
+    // The day as the language writes a date in a field, as the calendar it
+    // opens reads (Arabic in its own months and digits).
+    final date = shared.formatMediumDate(DateTime(2026, 11, 20));
     testWidgets("$at: the compact row's date reads $date", (tester) async {
       await tester.pumpWidget(
         _app(

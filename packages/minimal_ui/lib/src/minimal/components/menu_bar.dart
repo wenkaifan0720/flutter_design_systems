@@ -146,28 +146,47 @@ class MinimalMenuBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
     final strip = MinimalStyleOf([style], const {});
-    final outline = strip.shape ?? t.shapes.small;
+    final outline = strip.outline(t, RawCorner.small);
     const pad = MinimalControlMetrics.segmentInset;
-    final item = MinimalShapes.inset(outline, pad);
+    final held = strip.heldCorners(t, RawCorner.small);
+    // An item stands concentric inside the strip; under a style's own
+    // corners the first and last take the strip's at their ends.
+    OutlinedBorder itemShape(RawMenuEntry entry) {
+      if (held == null) return MinimalShapes.inset(outline, pad);
+      final i = menus.indexWhere((m) => m.label == entry.label);
+      return minimalHeldKey(
+        t,
+        held,
+        RawCorner.small,
+        index: i,
+        count: menus.length,
+        inset: pad,
+      );
+    }
 
     // A top item stands a finger wide at a finger; the band round the bar
     // gives it the floor's height.
     final across = minimalTapFloor(context);
-    Widget top(RawMenuEntry entry, Set<WidgetState> states) => Container(
-      height: t.density.height(MinimalChromeMetrics.controlSm),
-      constraints: BoxConstraints(minWidth: across),
-      padding: const EdgeInsets.symmetric(
-        horizontal: MinimalControlMetrics.segmentPad,
-      ),
-      alignment: Alignment.center,
-      decoration: minimalFrame(item, fill: states.chosen ? t.muted : null),
-      foregroundDecoration: minimalStateLayer(t, item, states, inside: true),
-      child: Text(
-        entry.label,
-        style: t.bodySmall.medium.c(states.off ? t.textTertiary : t.foreground),
-        maxLines: 1,
-      ),
-    );
+    Widget top(RawMenuEntry entry, Set<WidgetState> states) {
+      final item = itemShape(entry);
+      return Container(
+        height: t.density.height(MinimalChromeMetrics.controlSm),
+        constraints: BoxConstraints(minWidth: across),
+        padding: const EdgeInsets.symmetric(
+          horizontal: MinimalControlMetrics.segmentPad,
+        ),
+        alignment: Alignment.center,
+        decoration: minimalFrame(item, fill: states.chosen ? t.muted : null),
+        foregroundDecoration: minimalStateLayer(t, item, states, inside: true),
+        child: Text(
+          entry.label,
+          style: t.bodySmall.medium.c(
+            states.off ? t.textTertiary : t.foreground,
+          ),
+          maxLines: 1,
+        ),
+      );
+    }
 
     // ui_core lights one row, the current one (hovered when the pointer
     // moved last, focused when a key did): the muted fill, and the keys'

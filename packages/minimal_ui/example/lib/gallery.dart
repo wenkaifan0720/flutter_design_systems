@@ -903,7 +903,7 @@ class Knobs {
         ? MinimalThemeData.preset(kitPreset, brightness)
         : MinimalThemeData.from(primary: accent!, brightness: brightness);
     return base.copyWith(
-      shapes: MinimalShapes(radius: radius),
+      shapeScheme: MinimalShapes(radius: radius).scheme,
       density: density.visual,
     );
   }

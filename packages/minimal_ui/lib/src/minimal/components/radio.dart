@@ -256,6 +256,9 @@ class MinimalRadioGroup<T> extends StatelessWidget {
   final Axis direction;
 
   /// The group's name, for a screen reader.
+  ///
+  /// Leave it null inside a [MinimalFormField]: the field's label names the
+  /// control, and a second name would be read twice.
   final String? semanticLabel;
 
   /// Every radio's style, over `components.radio`.

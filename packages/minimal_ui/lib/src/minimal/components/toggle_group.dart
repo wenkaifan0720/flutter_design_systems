@@ -105,6 +105,9 @@ class MinimalToggleGroup<T> extends StatelessWidget {
   final bool emptySelectionAllowed;
 
   /// What the group is about, announced before its toggles.
+  ///
+  /// Leave it null inside a [MinimalFormField]: the field's label names the
+  /// control, and a second name would be read twice.
   final String? semanticLabel;
 
   /// The 28 px register, for a dense toolbar.
@@ -132,7 +135,8 @@ class MinimalToggleGroup<T> extends StatelessWidget {
                 : MinimalChromeMetrics.control,
           ),
         );
-    final outline = strip.shape ?? t.shapes.small;
+    final outline = strip.outline(t, RawCorner.small);
+    final held = strip.heldCorners(t, RawCorner.small);
     final byValue = {for (final item in items) item.value: item};
     final n = items.length;
     int indexOf(T value) => items.indexWhere((item) => item.value == value);
@@ -149,9 +153,11 @@ class MinimalToggleGroup<T> extends StatelessWidget {
               : on
               ? t.foreground
               : t.mutedForeground);
-      final cell = outlined
+      final cell = !outlined
+          ? outline
+          : held == null
           ? minimalCell(outline, index: i, count: n, inset: t.rim)
-          : outline;
+          : minimalHeldCell(t, held, index: i, count: n, inset: t.rim);
       final glyph = item.icon;
       final words = item.label;
       // The cell's fill and ink lerp to each state (Minimal's short fade).

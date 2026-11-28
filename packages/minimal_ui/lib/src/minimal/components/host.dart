@@ -11,7 +11,8 @@ import 'toast.dart';
 /// appearance in force, the ground, the toasts and the status bar's ink.
 ///
 /// It builds the theme of [palette] by day and by night (or takes [light]
-/// and [dark] as given), follows the platform's appearance unless
+/// and [dark] as given), changes both as [customize] says (a palette with
+/// the app's own corners or density), follows the platform's appearance unless
 /// [brightness] pins one, and blends to a new appearance or palette in
 /// Minimal's slow fade (at once with reduced motion). It installs the theme
 /// with a [MinimalTheme] (the night theme riding along for media grounds),
@@ -20,7 +21,7 @@ import 'toast.dart';
 /// (200%), the largest size its parts are laid out for.
 ///
 /// ```dart
-/// MaterialApp(builder: (context, child) => MinimalHost(palette: MinimalThemeData.palettes[2], child: child!), home: const HomePage())
+/// MaterialApp(builder: (context, child) => MinimalHost(palette: MinimalThemeData.palettes[2], customize: (theme) => theme.copyWith(density: MinimalDensity.compact), child: child!), home: const HomePage())
 /// ```
 class MinimalHost extends StatelessWidget {
   /// Installs the theme for [brightness] (the platform's when null) above
@@ -31,6 +32,7 @@ class MinimalHost extends StatelessWidget {
     this.light,
     this.dark,
     this.brightness,
+    this.customize,
     super.key,
   });
 
@@ -47,6 +49,11 @@ class MinimalHost extends StatelessWidget {
   /// Pins the appearance; null follows the platform.
   final Brightness? brightness;
 
+  /// What the app changes in both appearances' themes, after they are built
+  /// from [palette] (or taken from [light] and [dark]): its own corners, its
+  /// density, its type. A change of palette or appearance still blends.
+  final MinimalThemeData Function(MinimalThemeData theme)? customize;
+
   /// The app: its navigator, as `MaterialApp.builder` hands it.
   final Widget child;
 
@@ -55,10 +62,13 @@ class MinimalHost extends StatelessWidget {
     final brightness =
         this.brightness ?? MediaQuery.platformBrightnessOf(context);
     final id = (palette ?? MinimalThemeData.palettes.first).id;
-    final dark = this.dark ?? MinimalThemeData.preset(id, Brightness.dark);
+    final customize = this.customize ?? (MinimalThemeData t) => t;
+    final dark = customize(
+      this.dark ?? MinimalThemeData.preset(id, Brightness.dark),
+    );
     final t = brightness == Brightness.dark
         ? dark
-        : light ?? MinimalThemeData.preset(id, Brightness.light);
+        : customize(light ?? MinimalThemeData.preset(id, Brightness.light));
     // Day to night (and a preset's change) blends, in Minimal's slow fade;
     // with reduced motion it switches at once.
     return AnimatedMinimalTheme(
@@ -109,6 +119,12 @@ class MinimalHost extends StatelessWidget {
       )
       ..add(
         EnumProperty<Brightness>('brightness', brightness, defaultValue: null),
+      )
+      ..add(
+        ObjectFlagProperty<MinimalThemeData Function(MinimalThemeData)>.has(
+          'customize',
+          customize,
+        ),
       );
   }
 }

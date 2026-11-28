@@ -3,6 +3,7 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../chrome_metrics.dart';
 import '../component_themes.dart';
@@ -91,7 +92,8 @@ class MinimalButtonGroup extends StatelessWidget {
     final t = context.minimalTheme;
     final layers = <MinimalStyle?>[style, t.components.secondaryButton];
     final so = MinimalStyleOf(layers, const {});
-    final frame = so.shape ?? t.shapes.small;
+    final frame = so.outline(t, RawCorner.small);
+    final held = so.heldCorners(t, RawCorner.small);
     final rim = so.rim(t.border, t.rim);
     final height = t.density.height(MinimalChromeMetrics.control);
     final n = items.length;
@@ -101,7 +103,9 @@ class MinimalButtonGroup extends StatelessWidget {
     Widget cell(int i) => _Cell(
       item: items[i],
       layers: layers,
-      shape: minimalCell(frame, index: i, count: n, inset: rim.width),
+      shape: held == null
+          ? minimalCell(frame, index: i, count: n, inset: rim.width)
+          : minimalHeldCell(t, held, index: i, count: n, inset: rim.width),
       height: height - 2 * rim.width,
     );
 

@@ -120,7 +120,7 @@ class MinimalCard extends StatelessWidget {
     final chosen = selected ?? false;
     final layers = <MinimalStyle?>[style, t.components.card];
     final so = MinimalStyleOf(layers, minimalStates(selected: chosen));
-    final shape = so.shape ?? t.shapes.medium;
+    final shape = so.outline(t, RawCorner.medium);
     final padding =
         (this.padding ?? so.paddingIn(context))?.resolve(
           Directionality.maybeOf(context),

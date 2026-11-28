@@ -26,18 +26,20 @@ import 'route_chrome.dart';
 /// safe-area inset, the shell's bar, or a floating control's allowance) in
 /// its scroll padding; with `scroll: false` that allowance is published to
 /// the body as MediaQuery bottom padding, so an inner scrollable reserves
-/// it itself. A nav root never owns the bottom edge — the shell's bar
-/// stands there — so [footer] and [floating] belong to pushed, sheet and
-/// shell-free pages. A [footer] is docked on the ground over a hairline and
-/// insets by the true device safe area.
+/// it itself. A [footer] is docked on the ground over a hairline and insets
+/// by the true device safe area. On a nav root the shell's bar stands at a
+/// phone's foot: the [footer] docks above it and a [floating] control floats
+/// above it, so a form that is itself a place (an "Add" tab) keeps its Save
+/// in the footer as the same form pushed does.
 ///
 /// In a sheet the screen is as tall as its content (up to the card's cap):
 /// the card, not the screen, is the surface.
 ///
-/// On a wide window [maxWidth] holds the page to a measure on its start
-/// edge: the body, the [topBar]'s title and actions and the [footer]'s
-/// content stand in one column, so an action never sits a window's width
-/// from what it acts on. [MinimalLayout.contentWidth] is Minimal's measure.
+/// On a wide window [maxWidth] holds the page to a measure in the middle
+/// of its pane: the body, the [topBar]'s title and actions and the
+/// [footer]'s content stand in one column, so an action never sits a
+/// window's width from what it acts on, and a toast, centred on the pane,
+/// stands on that column. [MinimalLayout.contentWidth] is Minimal's measure.
 ///
 /// ```dart
 /// MinimalScaffold(topBar: MinimalAppBar(title: 'Today', subtitle: 'Fri 28 Aug'), padding: EdgeInsets.zero, body: Column(children: rows))
@@ -64,8 +66,8 @@ class MinimalScaffold extends StatelessWidget {
 
   /// The widest the page's column grows, its padding included: the body,
   /// the [topBar]'s title and actions and the [footer]'s content stand in
-  /// it, on the start edge; the bar's and the footer's hairlines still span
-  /// the page. Null spans the page's whole width.
+  /// it, centred in the pane; the bar's and the footer's hairlines still
+  /// span the page. Null spans the page's whole width.
   final double? maxWidth;
 
   /// Usually a [MinimalAppBar]. Unset, a root has no bar and a pushed or
@@ -78,7 +80,8 @@ class MinimalScaffold extends StatelessWidget {
 
   /// A control floating over the body's bottom-trailing corner, the gutter
   /// in from the edge and [MinimalChromeMetrics.floatingGap] above the safe
-  /// area. Content scrolls beneath it; the body reserves
+  /// area (on a nav root, above the shell's bar). Content scrolls beneath it;
+  /// the body reserves
   /// [MinimalChromeMetrics.floatingAllowance] for it.
   final Widget? floating;
 
@@ -104,16 +107,12 @@ class MinimalScaffold extends StatelessWidget {
         topBar ??
         (register == MinimalRouteChrome.root ? null : const MinimalAppBar());
 
-    // The shell paints the nav bar itself and asks each nav root to reserve
-    // its height through MinimalShellInsets. A nav root never owns the bottom
-    // edge, and the assert is the teacher.
+    // The shell paints the nav bar itself over a nav root's foot and asks
+    // the root to reserve its height through MinimalShellInsets: a footer
+    // docks above it, a floating control floats above it. The allowance is
+    // measured from the display edge, so it spans the device inset.
     final shellAllowance = MinimalShellInsets.of(context);
-    assert(
-      shellAllowance == 0 || (footer == null && floating == null),
-      'a nav root never owns the bottom edge — the shell\'s bar stands '
-      'there; move the footer or floating control to a pushed, sheet, or '
-      'shell-free page',
-    );
+    final foot = math.max(mq.padding.bottom, shellAllowance);
 
     final inSheet = register == MinimalRouteChrome.sheet;
     // Kept clear of toasts (ui_core's RawToasterKeepClear), so a toast
@@ -154,11 +153,14 @@ class MinimalScaffold extends StatelessWidget {
           ),
           child: Padding(
             // The true device inset, less whatever an open keyboard already
-            // covers.
+            // covers; on a nav root, the shell's bar under it.
             padding: EdgeInsets.only(
-              bottom: (mq.viewPadding.bottom - mq.viewInsets.bottom).clamp(
-                0.0,
-                double.infinity,
+              bottom: math.max(
+                (mq.viewPadding.bottom - mq.viewInsets.bottom).clamp(
+                  0.0,
+                  double.infinity,
+                ),
+                shellAllowance,
               ),
             ),
             child: MinimalPageMeasure.hold(
@@ -185,9 +187,12 @@ class MinimalScaffold extends StatelessWidget {
     // shell's allowance and a floating control's are measured from the
     // display edge and already span the device inset, so they REPLACE the
     // ambient inset rather than stacking on it.
+    // A footer consumes both: it stands over the shell's bar itself.
     final bodyInset = footer == null ? mq.padding.bottom : 0.0;
     final floatAllowance = floating != null
-        ? mq.padding.bottom + MinimalChromeMetrics.floatingAllowance
+        ? foot + MinimalChromeMetrics.floatingAllowance
+        : footer != null
+        ? 0.0
         : shellAllowance;
     final bottomReserve = math.max(bodyInset, floatAllowance);
 
@@ -291,7 +296,7 @@ class MinimalScaffold extends StatelessWidget {
           if (floating != null)
             PositionedDirectional(
               end: MinimalChromeMetrics.gutter,
-              bottom: mq.padding.bottom + MinimalChromeMetrics.floatingGap,
+              bottom: foot + MinimalChromeMetrics.floatingGap,
               child: floating!,
             ),
         ],

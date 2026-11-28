@@ -614,8 +614,11 @@ final Map<String, DocExample> _examples = {
   'MinimalHeatmap': (context) => MinimalHeatmap(levels: last84, today: 81),
   'MaterialApp': (context) =>
       () => MaterialApp(
-        builder: (context, child) =>
-            MinimalHost(palette: MinimalThemeData.palettes[2], child: child!),
+        builder: (context, child) => MinimalHost(
+          palette: MinimalThemeData.palettes[2],
+          customize: (theme) => theme.copyWith(density: MinimalDensity.compact),
+          child: child!,
+        ),
         home: const HomePage(),
       ),
   'MinimalThemeData.preset': (context) {
@@ -1401,9 +1404,16 @@ final Map<String, DocExample> _examples = {
       ),
   'MinimalThemeData 4': (context) {
     final softer = MinimalThemeData.standard().copyWith(
-      shapes: const MinimalShapes(radius: 12),
+      shapeScheme: const MinimalShapes(radius: 12).scheme,
     );
     _use(softer);
+    return null;
+  },
+  'MinimalThemeData.shapeScheme': (context) {
+    final square = MinimalThemeData.standard().copyWith(
+      shapeScheme: const MinimalShapes(radius: 0).scheme,
+    );
+    _use(square);
     return null;
   },
   'MinimalIcon': (context) =>
@@ -1429,7 +1439,7 @@ final Map<String, DocExample> _examples = {
   'MinimalThemeData 7': (context) {
     final night = MinimalThemeData.preset('ember', Brightness.dark);
     final mine = night.copyWith(
-      shapes: const MinimalShapes(radius: 12),
+      shapeScheme: const MinimalShapes(radius: 12).scheme,
       density: MinimalDensity.compact,
       components: const MinimalComponentThemes(
         chip: MinimalStyle(shape: WidgetStatePropertyAll(StadiumBorder())),

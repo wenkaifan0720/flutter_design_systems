@@ -108,9 +108,21 @@ class MinimalSheet extends StatelessWidget {
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final onLeft = (side == MinimalSide.start) != rtl;
     final own = so.shape;
-    final shape = own == null
+    // A style's own corners round the inner edge alone; the outer edge
+    // stands square on the screen's.
+    final held = so.heldCorners(t, RawCorner.none);
+    final OutlinedBorder shape = own != null
+        ? _inner(own, onLeft: onLeft)
+        : held == null
         ? const RoundedRectangleBorder()
-        : _inner(own, onLeft: onLeft);
+        : t.shapeScheme.corners.borderOf(
+            side == MinimalSide.start
+                ? RawCorners(topEnd: held.topEnd, bottomEnd: held.bottomEnd)
+                : RawCorners(
+                    topStart: held.topStart,
+                    bottomStart: held.bottomStart,
+                  ),
+          );
     final leading = this.leading;
     final trailing = this.trailing;
     return Material(

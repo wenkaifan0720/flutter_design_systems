@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart' show RawFocusShown;
+import 'package:ui_core/ui_core.dart' show RawCorner;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
@@ -41,12 +42,20 @@ enum MinimalDatePickerMode {
 }
 
 /// How a [MinimalDatePicker] stands on the page: `compact` a form row whose
-/// mono value pills open the picker in place; `inline` the calendar itself
-/// (with the time columns under it for `dateAndTime`); `wheel` the hour and
-/// minute columns alone.
+/// mono value pills open the picker in place; `field` the label over a box,
+/// as a text field stands, for a form of boxed fields; `inline` the calendar
+/// itself (with the time columns under it for `dateAndTime`); `wheel` the
+/// hour and minute columns alone.
 enum MinimalDatePickerPresentation {
-  /// A form row whose value pills open the picker.
+  /// A form row whose value pills open the picker: for a settings list, or
+  /// a form of rows ([MinimalSelect], [MinimalSwitch] rows).
   compact,
+
+  /// The label over a box holding the value, as a `MinimalTextField`
+  /// stands, its edges and height the text field's: for a form of boxed
+  /// fields. A date and a time stand in two boxes side by side. Each box
+  /// opens its picker as a compact pill does.
+  field,
 
   /// The calendar itself, in the page.
   inline,
@@ -55,9 +64,14 @@ enum MinimalDatePickerPresentation {
   wheel,
 }
 
-/// Date and time selection in Minimal's grammar. The compact row prints
+/// Date and time selection in Minimal's grammar. In a form of boxed fields,
+/// [MinimalDatePickerPresentation.field] stands as one of them: the label
+/// over a box per value. The compact row prints
 /// the label in the quiet ink and the value as bordered mono pills — the
-/// date (`28 Aug 2026`), the clock (`21:30`) — each opening its own picker
+/// date as the app's language writes one in a field (`Aug 28, 2026` in
+/// English, `28 Aug 2026` in British English, as
+/// [RawWidgetsLocalizations.formatMediumDate] writes it), the clock
+/// (`21:30`) — each opening its own picker
 /// in an anchored popover: a month calendar with mono day numbers, the
 /// chosen day on the accent, [currentDate] a bar under its figure; or two scrolling columns of
 /// hours and minutes. Choosing a day closes the calendar. On a phone's
@@ -76,7 +90,8 @@ enum MinimalDatePickerPresentation {
 /// like a dense list's rows: each takes its whole row of the column.
 ///
 /// Minimal prints the 24-hour clock unless [use24HourFormat] is false. The
-/// calendar starts its weeks on Monday. Nothing here reads the clock: pass
+/// calendar starts its weeks where the app's language does (Sunday in
+/// English, Monday in British English). Nothing here reads the clock: pass
 /// [currentDate] to have it marked. [firstDate] and [lastDate] (the earliest and latest
 /// moments that can be chosen) grey the days outside them and clamp every
 /// change into range.
@@ -123,7 +138,8 @@ class MinimalDatePicker extends StatefulWidget {
   /// What it picks: a date, a time or both.
   final MinimalDatePickerMode mode;
 
-  /// Compact pills that open pickers, the calendar inline, or scrolling wheels.
+  /// Compact pills that open pickers, a boxed field beside text fields, the
+  /// calendar inline, or scrolling wheels.
   final MinimalDatePickerPresentation presentation;
 
   /// The earliest moment it can pick.
@@ -288,8 +304,10 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
 
   void _change(DateTime v) => widget.onChanged?.call(_clamp(v));
 
+  // The day as the app's language writes a date in a field, as the calendar
+  // it opens reads: Material's date field does the same.
   String _dateText(DateTime value) =>
-      MinimalFormat.date(value, words: MinimalLocalizations.of(context));
+      RawWidgetsLocalizations.of(context).formatMediumDate(value);
 
   String _timeText(DateTime value) => widget.use24HourFormat
       ? MinimalFormat.clock(value, words: MinimalLocalizations.of(context))
@@ -370,6 +388,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
     final t = context.minimalTheme;
     return switch (widget.presentation) {
       MinimalDatePickerPresentation.compact => _compact(context),
+      MinimalDatePickerPresentation.field => _field(context),
       MinimalDatePickerPresentation.wheel => _disabledAware(_timeColumns()),
       MinimalDatePickerPresentation.inline =>
         widget.mode == MinimalDatePickerMode.time
@@ -572,6 +591,137 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
         // Dimmed, the row says so to a screen reader too: its label is
         // an inactive control's, not text the page asks anyone to read.
         : Semantics(container: true, enabled: false, child: row);
+  }
+
+  // The label over a box per value, as a text field stands, the boxes
+  // taking the text field's height, rim and corners: a date picker in a
+  // form of boxed fields reads as one of them. Each box opens its picker as
+  // a compact pill does.
+  Widget _field(BuildContext context) {
+    final t = context.minimalTheme;
+    final value = widget.value;
+    final enabled = widget.onChanged != null;
+    // In a form field showing an error the boxes' rims take the danger
+    // colour, as a text field's does.
+    final wrong = MinimalFieldErrorScope.of(context);
+    final height = minimalGrownHeight(
+      context,
+      t.density.height(MinimalChromeMetrics.control),
+    );
+    final so = MinimalStyleOf([
+      t.components.textField,
+    ], minimalStates(enabled: enabled, error: wrong));
+    final shape = so.outline(t, RawCorner.small);
+    Widget box(String? text, MinimalDatePickerMode mode) {
+      final unset = text == null;
+      final first =
+          mode == MinimalDatePickerMode.date ||
+          widget.mode == MinimalDatePickerMode.time;
+      final label =
+          '${widget.labelText}, '
+          '${mode == MinimalDatePickerMode.time ? 'time' : 'date'}';
+      final face = Container(
+        constraints: BoxConstraints(minHeight: height),
+        padding: t.density.padding(
+          const EdgeInsets.symmetric(horizontal: MinimalFieldMetrics.inset),
+        ),
+        decoration: minimalFrame(
+          shape,
+          fill: so.fill ?? (enabled ? t.card : t.sunken),
+          side: so.rim(wrong ? t.destructive : t.border, t.rim),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: minimalCapLabel(
+                Text(
+                  text ??
+                      widget.hintText ??
+                      MinimalLocalizations.of(context).choose,
+                  // Words, not figures: unset, the sans at the value's size
+                  // in the quiet ink, as a field's hint.
+                  style: unset
+                      ? t.body
+                            .copyWith(
+                              fontSize: t.monoValue.fontSize,
+                              height: t.monoValue.height,
+                            )
+                            .c(t.mutedForeground)
+                      : t.monoValue.c(
+                          enabled ? t.foreground : t.mutedForeground,
+                        ),
+                ),
+              ),
+            ),
+            const MinimalGap(MinimalSpacing.s8),
+            MinimalIcon(
+              mode == MinimalDatePickerMode.time
+                  ? LucideIcons.clock
+                  : LucideIcons.calendar,
+              size: MinimalIconSize.i16,
+              color: t.mutedForeground,
+            ),
+          ],
+        ),
+      );
+      return enabled
+          ? Builder(
+              builder: (boxContext) => MinimalPressable(
+                focusNode: first ? widget.focusNode : null,
+                onPressed: () => _open(mode, boxContext),
+                shape: shape,
+                semanticLabel: label,
+                child: face,
+              ),
+            )
+          : Semantics(
+              container: true,
+              button: true,
+              enabled: false,
+              label: label,
+              child: face,
+            );
+    }
+
+    final date = widget.mode != MinimalDatePickerMode.time;
+    final time = widget.mode != MinimalDatePickerMode.date;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // The boxes carry the name to a screen reader: the label is read
+        // once, with each box's value.
+        ExcludeSemantics(
+          child: Text(
+            widget.labelText,
+            style: t.caption.medium.c(t.foreground),
+          ),
+        ),
+        const MinimalGap(MinimalChromeMetrics.iconGap),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (date)
+              Expanded(
+                flex: 3,
+                child: box(
+                  value == null ? null : _dateText(value),
+                  MinimalDatePickerMode.date,
+                ),
+              ),
+            if (date && time) const MinimalGap(MinimalSpacing.s8),
+            if (time)
+              Expanded(
+                flex: 2,
+                child: box(
+                  value == null ? null : _timeText(value),
+                  MinimalDatePickerMode.time,
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
   }
 
   int _daysIn(DateTime month) => DateTime(month.year, month.month + 1, 0).day;

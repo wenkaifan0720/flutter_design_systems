@@ -80,7 +80,7 @@ void main() {
         scale,
       );
       expect(t.takeException(), isNull);
-      const date = '20 Nov 2026';
+      const date = 'Nov 20, 2026';
       _whole(t, date);
       final value = t.getRect(find.text(date));
       final pill = t.getRect(

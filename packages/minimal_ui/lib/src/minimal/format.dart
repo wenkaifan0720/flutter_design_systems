@@ -33,7 +33,10 @@ abstract final class MinimalFormat {
 
   /// The full day: "28 Aug 2026". Day first, month as a word — a numeric
   /// month is the one date shape that means two different days on two sides
-  /// of the Atlantic.
+  /// of the Atlantic. This is the app's own helper and keeps that order in
+  /// every language; a [MinimalDatePicker]'s field follows the app's
+  /// language instead ([RawWidgetsLocalizations.formatMediumDate]: "Aug 28, 2026"
+  /// in English, "28 Aug 2026" in British English).
   static String date(
     DateTime d, {
     MinimalLocalizations words = const MinimalLocalizationsEn(),

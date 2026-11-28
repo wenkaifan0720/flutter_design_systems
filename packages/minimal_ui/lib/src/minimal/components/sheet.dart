@@ -234,9 +234,18 @@ class MinimalBottomSheet extends StatelessWidget {
     required bool floating,
     MinimalStyle? style,
   }) {
-    final shape =
-        MinimalStyleOf([style, t.components.bottomSheet], const {}).shape ??
-        t.shapes.large;
+    final so = MinimalStyleOf([style, t.components.bottomSheet], const {});
+    // A style's own corners: all four on a floating card, the top two on a
+    // drawer, whose foot stands square on the screen's edge.
+    final held = so.heldCorners(t, RawCorner.large);
+    if (held != null) {
+      return t.shapeScheme.corners.borderOf(
+        floating
+            ? held
+            : RawCorners(topStart: held.topStart, topEnd: held.topEnd),
+      );
+    }
+    final shape = so.shape ?? t.shapes.large;
     return floating ? shape : _topOnly(shape);
   }
 

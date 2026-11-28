@@ -153,6 +153,6 @@ void main() {
     await tester.tap(find.text('18'));
     await tester.pumpAndSettle();
     expect(picked, DateTime(2026, 11, 18));
-    expect(find.text('18 Nov 2026'), findsOneWidget);
+    expect(find.text('Nov 18, 2026'), findsOneWidget);
   });
 }
