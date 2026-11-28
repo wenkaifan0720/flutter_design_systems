@@ -24,6 +24,9 @@ import 'theme.dart';
 /// error mark; [onSaved] hands the text over when the form saves, and resetting the form brings [initialValue] back.
 /// Keep the text in a [controller] or start it at [initialValue], not both.
 ///
+/// With a controller, the field's initial value is the controller's text when it was last built; reset() restores it.
+/// To empty a form, call reset() and then clear the controllers.
+///
 /// ```dart
 /// NeumorphicTextFormField(labelText: 'Title', validator: (v) => (v ?? '').trim().isEmpty ? 'Enter the title' : null, onSaved: (v) => title = v!)
 /// ```

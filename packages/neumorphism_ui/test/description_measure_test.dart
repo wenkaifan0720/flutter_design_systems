@@ -1,5 +1,5 @@
-// A description list on a wide page keeps each detail near its term: the list stands at a reading measure at the
-// start, its rules too; on a phone it takes the width it is given.
+// A description list on a wide page keeps each detail near its term: the list stands at a reading page's measure
+// (760) at the start, its rules too; on a phone it takes the width it is given.
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,7 +9,7 @@ import 'support.dart';
 
 void main() {
   for (final direction in TextDirection.values) {
-    for (final width in [340.0, 860.0]) {
+    for (final width in [340.0, 1100.0]) {
       testWidgets('details stay near their terms at $width ${direction.name}', (
         tester,
       ) async {
@@ -43,7 +43,7 @@ void main() {
             : details.right - term.left;
         expect(
           span,
-          lessThanOrEqualTo(480),
+          lessThanOrEqualTo(760),
           reason: 'the detail near its term',
         );
         // It starts where the box starts.
@@ -51,7 +51,7 @@ void main() {
           rtl ? box.right - term.right : term.left - box.left,
           lessThan(1),
         );
-        if (width < 480) {
+        if (width < 760) {
           expect(
             rtl ? details.left - box.left : box.right - details.right,
             lessThan(1),

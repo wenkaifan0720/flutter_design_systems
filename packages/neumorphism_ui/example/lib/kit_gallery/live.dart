@@ -504,12 +504,14 @@ class _LiveExampleState extends State<LiveExample> {
             ),
         ],
       );
-      // A part's own corners: a style's corners take two diagonal corners of a card and of the button on it to the
-      // least, the others keeping their own (mirrored right to left); the filled act beside it keeps its round.
+      // A part's own corners: a style's corners give a card and the button on it their top corners one step and their
+      // bottom corners another, the same on both sides; the filled act beside it keeps its round.
       const cut = NeumorphicStyle(
         corners: WidgetStatePropertyAll(
           RawCorners(
-            topStart: RawCorner.extraSmall,
+            topStart: RawCorner.extraLarge,
+            topEnd: RawCorner.extraLarge,
+            bottomStart: RawCorner.extraSmall,
             bottomEnd: RawCorner.extraSmall,
           ),
         ),
@@ -524,8 +526,8 @@ class _LiveExampleState extends State<LiveExample> {
             style: cut,
             children: [
               Text(
-                "A style's corners take two of this card's corners and two of its button's to the least; the others "
-                'keep their own. The filled act keeps its round.',
+                "A style's corners round this card's top corners and its button's to the largest step and their "
+                'bottom corners to the least. The filled act keeps its round.',
                 style: t.textTheme.body.copyWith(color: t.colors.inkSecondary),
               ),
               Wrap(

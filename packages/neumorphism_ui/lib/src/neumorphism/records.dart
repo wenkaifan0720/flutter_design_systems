@@ -267,12 +267,14 @@ class NeumorphicDescription {
   final bool live;
 }
 
-// How wide a description list grows: its details stay near their terms on a wide page.
-const double _descriptionMeasure = 480;
+// How wide a description list grows: a reading page's measure, so on such a page its details end where the page's
+// words and its bar's keys end, and on a wider card they stay near their terms.
+const double _descriptionMeasure = 760;
 
 /// Terms and their details, a ruled row each, the details bold at the end; when the two can't share a line the
-/// details drop under the term. For a record's facts: an order, a booking, a device. On a wide page it keeps to a
-/// reading measure (480) at the start, so a detail never stands at the far side of a wide card from its term.
+/// details drop under the term. For a record's facts: an order, a booking, a device. It takes its column's width up
+/// to a reading page's measure (760), so on a reading page its details end where the page's words end, and on a wider
+/// card it keeps to that measure at the start, a detail never at the far side of the card from its term.
 ///
 /// ```dart
 /// NeumorphicDescriptionList([NeumorphicDescription('Table', '12'), NeumorphicDescription('Guests', '4')])

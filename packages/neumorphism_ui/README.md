@@ -52,6 +52,13 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: 'Shelf',
+    // The parts' own words in 30 languages, and Material's (from material_ui).
+    localizationsDelegates: const [
+      RawWidgetsLocalizations.delegate,
+      NeumorphicLocalizations.delegate,
+      ...GlobalMaterialLocalizations.delegates,
+    ],
+    supportedLocales: RawWidgetsLocalizations.supportedLocales,
     // brightness: null follows the platform; Brightness.light or
     // Brightness.dark pins it. palette: one of the six, porcelain by default.
     builder: (context, child) => NeumorphicHost(
@@ -67,9 +74,22 @@ class App extends StatelessWidget {
 }
 ```
 
-A `CupertinoApp` (from `cupertino_ui`) or a bare `WidgetsApp` takes the same `builder:`. `NeumorphicHost(theme:,
-darkTheme:)` takes themes of your own instead of a palette. To theme one subtree, wrap it in `NeumorphicTheme(data:
-…)`; `AnimatedNeumorphicTheme` eases between two.
+These delegates are the whole list: `RawWidgetsLocalizations.delegate` (the words every look shares: Cancel, Today,
+Close, in 30 languages), `NeumorphicLocalizations.delegate` (the look's own) and `GlobalMaterialLocalizations.delegates`,
+which `material_ui` exports with Flutter's translations: an app on material_ui needs no `flutter_localizations`
+dependency. A `CupertinoApp` (from `cupertino_ui`) or a bare `WidgetsApp` takes the same `builder:` and delegates.
+
+`NeumorphicHost(theme:, darkTheme:)` takes themes of your own instead of a palette's; the one you leave out is the
+palette's in that appearance. `density:` and `shapeScheme:` (the corners and the relief's depth) stand over both, so a
+stored palette and a depth from your settings go together:
+`NeumorphicHost(palette: palette, shapeScheme: NeumorphicThemeData.defaultShapeScheme.copyWith(depth: depth), child: child!)`.
+The window's width changes none of these: the parts follow the width themselves. To theme one subtree, wrap it in
+`NeumorphicTheme(data: …)`; `AnimatedNeumorphicTheme` eases between two.
+
+The look has a few words of its own, used through this page: the **wall** is the background every part is moulded
+from, the **pigment** is the accent colour (it marks what is live and the page's one action), a **well** is a part
+pressed into the wall (a field, a track), a **place** is a navigation destination, and the **pilaster** is the
+sidebar.
 
 ## Build an app
 
@@ -79,8 +99,8 @@ list with a pushed page, a form, a dialog and settings with the six palettes. Co
 
 ### The shell
 
-`NeumorphicAppShell` is the app's frame: its places in the raised tab bar along a phone's foot, on the pilaster down
-the start edge from 1024 wide. The place shown is pressed into the wall. Each place keeps its own stack of pages; a
+`NeumorphicAppShell` is the app's frame: a bottom tab bar on a phone, and a sidebar (the pilaster) down the start edge
+from 1024 wide, each holding the app's destinations (its places). The destination shown is pressed into the wall. Each place keeps its own stack of pages; a
 page pushed in a place keeps the pilaster beside it while the tab bar steps away, and back pops it. Toasts keep clear
 of the tab bar.
 
@@ -153,7 +173,8 @@ class BooksPage extends StatelessWidget {
             leading: NeumorphicMonogram(book.name.substring(0, 1)),
             title: book.name,
             subtitle: book.author,
-            trailing: book.reading ? const NeumorphicTag('Reading') : null,
+            // A status in words; the one under way now is live, in the pigment.
+            trailing: NeumorphicStatus(book.reading ? 'Reading' : 'To read', live: book.reading),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute<void>(builder: (context) => BookPage(book: book)),
             ),
@@ -182,20 +203,34 @@ class BookPage extends StatelessWidget {
 }
 ```
 
-A description list keeps each value beside its term up to 480 wide, however wide its column.
+A status that matters now is `live`: `NeumorphicStatus` sets it in the pigment with a lit LED, and every other status
+in plain ink, so the books being read stand out from the rest. A `NeumorphicTag` is a kind or a count, the same
+stamped grey whatever it says. A description list takes its column's width up to 760, a reading page's measure: on
+such a page its details end where the page's words and its bar's keys end.
 
 ### Forms
 
-Neumorphism's form fields are Flutter `FormField`s: put them in a `Form`, and `validate()` shows each one's error
-under it, marked as an error: its words and the warning glyph in the danger ink (`NeumorphicColors.danger`, a red at
-4.5:1 or more on every face), the glyph once, at the field's end or else on the line. In a column every field takes the column's width.
+`NeumorphicTextFormField` is a Flutter `FormField`: put it in a `Form`, and `validate()` shows its error under it,
+marked as an error: its words and the warning glyph in the danger ink (`NeumorphicColors.danger`, a red at 4.5:1 or
+more on every face), the glyph once, at the field's end or else on the line. The other parts a form holds are
+controlled, as Material's are: `NeumorphicDateField`, `NeumorphicSelect`, `NeumorphicSegmentedButton` and
+`NeumorphicSwitchRow` take a value and `onChanged`. Keep their values in your state and check them when the form
+saves; a date field and a select take an `errorText`, and a segmented button or a radio group takes its label and its
+error from a `NeumorphicFormField` round it. In a column every field takes the column's width.
+
+Set the form's `autovalidateMode` to `AutovalidateMode.onUserInteraction` after a save that fails, and each error
+clears as its field is put right. A text form field resets as Material's `TextFormField` does: with a controller, its
+initial value is the controller's text when it was last built, so `reset()` brings back the words typed. To clear the
+form after a save and stay on the page, call `reset()` and then clear the controllers, as `_save` does here:
 
 ```dart
 import 'package:material_ui/material_ui.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 class NewBookPage extends StatefulWidget {
-  const NewBookPage({super.key});
+  const NewBookPage({super.key, required this.onAdd});
+
+  final void Function(String title, String status, DateTime? started) onAdd;
 
   @override
   State<NewBookPage> createState() => _NewBookPageState();
@@ -203,14 +238,39 @@ class NewBookPage extends StatefulWidget {
 
 class _NewBookPageState extends State<NewBookPage> {
   final _form = GlobalKey<FormState>();
-  String _name = '';
+  final _title = TextEditingController();
+  var _check = AutovalidateMode.disabled;
+  String _status = 'toRead';
   DateTime? _started;
+  String? _startedError;
   bool _favourite = false;
 
+  @override
+  void dispose() {
+    _title.dispose();
+    super.dispose();
+  }
+
   void _save() {
-    if (!_form.currentState!.validate()) return;
-    _form.currentState!.save();
-    Navigator.of(context).pop(_name);
+    // The date is controlled: the page checks it and hands the field its error.
+    final started = _status != 'toRead' && _started == null ? 'Pick the day you started' : null;
+    final titled = _form.currentState!.validate();
+    setState(() => _startedError = started);
+    if (!titled || started != null) {
+      setState(() => _check = AutovalidateMode.onUserInteraction);
+      return;
+    }
+    widget.onAdd(_title.text.trim(), _status, _started);
+    // Clear the form after a save: reset() takes the errors away, then the
+    // controller and the controlled values empty the fields.
+    _form.currentState!.reset();
+    _title.clear();
+    setState(() {
+      _check = AutovalidateMode.disabled;
+      _status = 'toRead';
+      _started = null;
+      _favourite = false;
+    });
   }
 
   @override
@@ -219,21 +279,39 @@ class _NewBookPageState extends State<NewBookPage> {
     topBar: const NeumorphicAppBar(title: 'New book'),
     body: Form(
       key: _form,
+      autovalidateMode: _check,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: 20,
         children: [
           NeumorphicTextFormField(
             labelText: 'Title',
+            controller: _title,
             validator: (value) => (value ?? '').trim().isEmpty ? 'Enter the title' : null,
-            onSaved: (value) => _name = value!.trim(),
+          ),
+          NeumorphicFormField(
+            labelText: 'Status',
+            child: NeumorphicSegmentedButton<String>(
+              semanticLabel: 'Status',
+              segments: const [
+                NeumorphicButtonSegment('toRead', 'To read'),
+                NeumorphicButtonSegment('reading', 'Reading'),
+                NeumorphicButtonSegment('done', 'Done'),
+              ],
+              value: _status,
+              onChanged: (value) => setState(() => _status = value),
+            ),
           ),
           NeumorphicDateField(
             labelText: 'Started',
             value: _started,
             hintText: 'Not yet',
+            errorText: _startedError,
             lastDate: DateTime.now(),
-            onChanged: (value) => setState(() => _started = value),
+            onChanged: (value) => setState(() {
+              _started = value;
+              _startedError = null;
+            }),
           ),
           NeumorphicSwitchRow(
             label: 'Favourite',
@@ -285,7 +363,9 @@ Future<void> deleteBook(BuildContext context, String name) async {
 ### The palette picker
 
 Each palette by its name, its colours right beside it (`swatchesFor` the brightness shown); hand the chosen one to
-the host.
+the host, with a depth or a density of your own beside it (`NeumorphicHost(palette:, shapeScheme:, density:)`, under
+Mount the host). A slider shows no number of its own: to show the reader a value, write it in its field's help, as
+`NeumorphicFormField(labelText: 'Depth', helperText: '${depth.toStringAsFixed(2)}×', child: …)`.
 
 ```dart
 import 'dart:math' as math;
@@ -435,7 +515,7 @@ final custom = NeumorphicThemeData.from(
 
 The settings are the ones a product team turns: a palette or your own colours, light and dark, the `typeface` (its `fallback` faces reach every text style, as `ThemeData.fontFamilyFallback` does, for a script Manrope lacks), `density` (the platform's by default: compact with a pointer, standard on touch), `shapeScheme` (the corners and the depth) and `highContrast`. The shape scheme opens within the look's bands, `NeumorphicThemeData.shapeLimits`, and the theme clamps a value outside one to its nearer end: the least corner is 6, small 6 to 10, medium 8 to 16, large and extra large 14 to 28, a capsule's end 24, and the depth 0.5 to 1.5, since shallower reads as flat print and deeper as a skeuomorphic object. There is no stroke: depth alone draws every edge. Every radius moves with its step, nested faces with it. The corners are the look's: radios, avatars, stepper keys and moving thumbs are circles, chips, badges, switches and segmented tracks capsules, fields, cards and raised panels their own frame steps, and nested faces subtract their inset from the enclosing radius, never going under the smallest corner (6). A component theme's or a style's `shape` changes one part within the look's family: a `NeumorphicRoundedBorder` at least 6 round, a `NeumorphicStadiumBorder` or a `NeumorphicCircleBorder`. A sharper corner or another `OutlinedBorder` fails an assert in debug builds, naming the rule: the surface is moulded, with no sharp corner, and its relief is drawn round its own borders only.
 
-A style's `corners` takes one part's corners by step, the start and end ones following the reading direction: two diagonal corners of a card, say, or a button's top start one alone. Each is held to the look's bands (a square corner to the least, 6, since the relief wraps every fillet) and drawn at the theme's scale; the others keep the part's own. A circle stays a circle, a switch's slot and a slider's track keep their capsule, and a segmented button's strip takes the corners at its ends. A style's `shape` wins over its `corners`.
+A style's `corners` takes one part's corners by step, the start and end ones following the reading direction: a card's top corners one step and its bottom corners another, say. Each is held to the look's bands (a square corner to the least, 6, since the relief wraps every fillet) and drawn at the theme's scale; the others keep the part's own. A circle stays a circle, a switch's slot and a slider's track keep their capsule, and a segmented button's strip takes the corners at its ends. A style's `shape` wins over its `corners`.
 
 ```dart
 import 'package:material_ui/material_ui.dart';
@@ -445,7 +525,12 @@ const card = NeumorphicCard(
   title: 'On pace',
   style: NeumorphicStyle(
     corners: WidgetStatePropertyAll(
-      RawCorners(topStart: RawCorner.extraSmall, bottomEnd: RawCorner.extraSmall),
+      RawCorners(
+        topStart: RawCorner.extraLarge,
+        topEnd: RawCorner.extraLarge,
+        bottomStart: RawCorner.extraSmall,
+        bottomEnd: RawCorner.extraSmall,
+      ),
     ),
   ),
 );
@@ -491,7 +576,7 @@ Widget quieter(BuildContext context, Widget panel) => NeumorphicTheme(
 );
 ```
 
-The parts' built-in words come from `RawWidgetsLocalizations`, the words every look of the kit shares. Dates use `intl`; numbers are written in the reader's digits through ui_core's `formatDecimal`. Your app owns its content and localization delegates.
+The parts' built-in words come from `RawWidgetsLocalizations`, the words every look of the kit shares. Dates use `intl`; numbers are written in the reader's digits through ui_core's `formatDecimal`. Your app owns its content; its delegates are the list under Mount the host.
 
 ## Accessibility and languages
 
@@ -504,7 +589,7 @@ The parts' built-in words come from `RawWidgetsLocalizations`, the words every l
 
 Known limits:
 
-- The words every look shares (Cancel, Today, Close, "3 of 10" and the rest) come from ui_core's `RawWidgetsLocalizations`, which speaks 30 languages once your app adds `RawWidgetsLocalizations.delegate` beside Flutter's delegates (ui_core's README shows how). Install `NeumorphicLocalizations.delegate` beside it: it serves every locale, and the time picker's words (its hour, minute and AM and PM), Done, Try again, the required mark and a table's sort hints come from `RawWidgetsLocalizations` in the reader's language. The rest of the look's own words (a file drop's prompts and a few more) stay English unless your app subclasses `NeumorphicLocalizations` and adds a delegate that loads it.
+- The words every look shares (Cancel, Today, Close, "3 of 10" and the rest) come from ui_core's `RawWidgetsLocalizations`, which speaks 30 languages once your app adds `RawWidgetsLocalizations.delegate` beside Flutter's delegates (the list under Mount the host). Install `NeumorphicLocalizations.delegate` beside it: it serves every locale, and the time picker's words (its hour, minute and AM and PM), Done, Try again, the required mark and a table's sort hints come from `RawWidgetsLocalizations` in the reader's language. The rest of the look's own words (a file drop's prompts and a few more) stay English unless your app subclasses `NeumorphicLocalizations` and adds a delegate that loads it.
 - Dates are formatted with `intl`: in the app's locale with `NeumorphicLocalizations.delegate` installed (in English where `intl` lacks the locale), else in English unless your subclass names another `localeName`. Numbers take the reader's digits and separators from ui_core (Arabic-Indic in Arabic). Short weekday names are English, and the day tray's times show in 24-hour form.
 
 ## Pictures
@@ -533,7 +618,8 @@ night; run it with `flutter run -t lib/gallery.dart` from `example/`.
 
 ## Requirements
 
-Flutter 3.47.0 or later (Dart 3.13), on Android, iOS, web, macOS, Windows and Linux.
+Flutter 3.47.0 or later (Dart 3.13), on Android, iOS, web, macOS, Windows and Linux. The package depends on ui_core
+^0.8.7 and re-exports it.
 
 ## Licence
 

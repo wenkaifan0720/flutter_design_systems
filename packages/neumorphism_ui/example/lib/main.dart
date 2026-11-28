@@ -119,6 +119,14 @@ class ShelfApp extends StatelessWidget {
     builder: (context, _) => MaterialApp(
       title: 'Shelf',
       debugShowCheckedModeBanner: false,
+      // The parts' own words in 30 languages, and Material's: material_ui
+      // brings Flutter's translations, so no flutter_localizations.
+      localizationsDelegates: const [
+        RawWidgetsLocalizations.delegate,
+        NeumorphicLocalizations.delegate,
+        ...GlobalMaterialLocalizations.delegates,
+      ],
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
       // The one mount: the palette by day and by night (easing between
       // them), Neumorphism's page motion, and the toasts.
       builder: (context, child) => NeumorphicHost(

@@ -294,9 +294,9 @@ class NeumorphicColors {
         );
 
   /// A copy with the given colours replaced. The pigment's six colours go by the names [NeumorphicThemeData.from]
-  /// takes its pigment by: [pigment] is the [accent], [onPigment] the [onAccent] and [pigmentInk] the [accentInk];
-  /// [pigmentHi] and [pigmentDk] are its gradient's lit and deep ends, and [pigmentInkLit] its words over a wash.
-  /// Replace them together, so the pigment's words keep their contrast.
+  /// takes its pigment by. [pigment] is the [accent]. [onPigment] is the [onAccent]. [pigmentInk] is the [accentInk].
+  /// [pigmentHi] is the lit end of the pigment's gradient. [pigmentDk] is its deep end. [pigmentInkLit] is the
+  /// pigment's words over a wash. Replace them together, so the pigment's words keep their contrast.
   NeumorphicColors copyWith({
     bool? dark,
     Color? ground,

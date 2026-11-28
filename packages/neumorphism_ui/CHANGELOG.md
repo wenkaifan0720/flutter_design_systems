@@ -1,3 +1,27 @@
+## 0.9.2
+
+- `neumorphicLoadFonts` loads the Lucide icon font the parts draw their glyphs from, as well as Manrope. On the web a
+  glyph had come up as an empty box on some loads (2 of 22 in an adopter's test) until a reload.
+- `NeumorphicHost` takes `density` and `shapeScheme`, next to `palette` and `brightness`: they stand over both the day
+  and the night theme. Its doc says how `theme`, `darkTheme`, `palette` and these knobs combine; the window's width
+  changes none of them.
+- A record's description list (`NeumorphicDescriptionList`) stands on the page's column up to 760 wide, as the top bar's
+  content does, where it stopped at 480 and left a wide desk page's terms in a narrow strip.
+- `NeumorphicTextFormField`'s doc says what a form's `reset()` does with a controller: the field's initial value is the
+  controller's text when it was last built, and `reset()` writes it back. To empty a form, call `reset()` and then
+  clear the controllers. A test holds both.
+- `NeumorphicSlider`'s doc says it shows no number of its own, as Material's slider shows none at rest, and how to write
+  the value beside it; `valueLabel` is what a screen reader says. A stray sentence on its `style` is gone.
+- The README gives one list of localization delegates (`RawWidgetsLocalizations.delegate`,
+  `NeumorphicLocalizations.delegate` and `GlobalMaterialLocalizations.delegates` from material_ui, with
+  `RawWidgetsLocalizations.supportedLocales`) and says an app on material_ui needs no `flutter_localizations`. The
+  example lists the same delegates, and its pubspec no longer lists `flutter_localizations`.
+- The README's Forms section says which parts are form fields, shows how to clear a form after a save, and has a line
+  on `autovalidateMode`. Its list shows a reading book with `NeumorphicStatus(live: true)`, its glossary names the
+  wall, pigment, well, place and pilaster, and its corners example is symmetric: top corners one step, bottom corners
+  another. The Overview's "Corners of its own" tile is symmetric too, where it was diagonal.
+- `NeumorphicColors.copyWith`'s doc gives each pigment colour its own sentence.
+
 ## 0.9.1
 
 - Requires ui_core 0.8.7.

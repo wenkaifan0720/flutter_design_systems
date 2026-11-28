@@ -5901,6 +5901,10 @@ class _ThumbLift extends CustomPainter {
 
 /// A level you drag: a groove, a pigment fill, a raised round thumb. At zero the fill goes and the thumb's point turns ink.
 ///
+/// It shows no number of its own, as Material's slider shows none at rest: where the reader needs the value, write it
+/// beside the slider, in its field's label or help (`NeumorphicFormField(helperText: '${depth.toStringAsFixed(2)}×')`).
+/// [valueLabel] is what a screen reader says.
+///
 /// ```dart
 /// NeumorphicSlider(semanticLabel: 'Level', value: .3, onChanged: (v) {})
 /// ```
@@ -5922,7 +5926,6 @@ class NeumorphicSlider extends StatefulWidget {
   }) : assert(max >= min),
        assert(divisions == null || divisions > 0);
 
-  /// A level between [min] and [max].
   /// Active track fill, knob, outline and target size before the slider theme.
   final NeumorphicStyle? style;
 
