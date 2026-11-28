@@ -887,6 +887,12 @@ class _Overview extends StatelessWidget {
             w.toggleGroupsText,
             kitSpecimenToggleGroupAlign(),
           ),
+          (
+            'Corners of its own',
+            w.ownCorners,
+            w.ownCornersText,
+            kitSpecimenOwnCorners(w.ownCornersAct),
+          ),
         ];
         const gap = ExpressiveSpacing.s16;
         final columns = wide ? (column >= 860 ? 3 : 2) : (width >= 600 ? 2 : 1);

@@ -256,7 +256,13 @@ void main() {
           expect(gap, closeTo(2, .5));
           expect(
             frame.matches(
-              ((choice.center.dx + other.center.dx) * _ratio / 2).floor(),
+              // The gap's middle: segments at their own widths differ.
+              ((dir == TextDirection.ltr
+                          ? choice.right + other.left
+                          : other.right + choice.left) *
+                      _ratio /
+                      2)
+                  .floor(),
               (choice.center.dy * _ratio).floor(),
               _paper,
             ),

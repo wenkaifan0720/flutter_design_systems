@@ -8,6 +8,7 @@ import 'package:ui_core/ui_core.dart';
 import '../color.dart';
 import '../component_themes.dart';
 import '../elevation.dart';
+import '../internal/corners.dart';
 import '../internal/tokens/behavior.g.dart';
 import '../internal/tokens/elevated_card_tokens.g.dart';
 import '../internal/tokens/filled_card_tokens.g.dart';
@@ -329,7 +330,13 @@ class ExpressiveCard extends StatelessWidget {
     final resolved = theme.cardTheme.layeredUnder(style);
     final restingStates = expressiveComponentStates(enabled: active);
     final customShape = resolved.shape?.resolve(restingStates);
-    final shownShape = customShape ?? shape;
+    final shownShape =
+        customShape ??
+        expressiveCornersOver(
+          theme,
+          resolved.corners?.resolve(restingStates),
+          shape,
+        );
     final styledOutline = resolved.outline?.resolve(restingStates);
     final shownSide =
         resolved.side?.resolve(restingStates) ??

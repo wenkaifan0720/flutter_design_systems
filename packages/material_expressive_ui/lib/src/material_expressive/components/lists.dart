@@ -11,6 +11,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../component_themes.dart';
 import '../internal/cap_label.dart';
+import '../internal/corners.dart';
 import '../internal/state_face.dart' show ExpressiveFocusRingBox;
 import '../internal/styled_content.dart';
 import '../elevation.dart';
@@ -578,6 +579,10 @@ class _ExpressiveListTileState extends State<ExpressiveListTile> {
         (segmented
             ? _segmentShape(s, segment!.index!, segment.count!)
             : s.of(ListTokens.itemContainerExpressiveShape));
+    // A segment's style corners reach the group's outer edge only.
+    final reach = segmented
+        ? ExpressiveOuterCorners.inColumn(segment!.index!, segment.count!)
+        : ExpressiveOuterCorners.all;
     final draggedShape = s.of(ReorderListTokens.itemShape);
     final rest = dragged
         ? draggedShape
@@ -720,6 +725,7 @@ class _ExpressiveListTileState extends State<ExpressiveListTile> {
             style: widget.style,
             componentStyle: component,
             shapes: shapes,
+            outerCorners: reach,
             motion: ListItemBehavior.shapeMotion,
             // Rows stack flush: the ring stands inside the row, as
             // Material's web list items draw it, where the next row's
@@ -746,7 +752,14 @@ class _ExpressiveListTileState extends State<ExpressiveListTile> {
           );
         }
         return _StaticItem(
-          shape: customShape ?? (dragged ? draggedShape : base),
+          shape:
+              customShape ??
+              expressiveCornersOver(
+                context.expressiveTheme,
+                styled.corners?.resolve(states),
+                dragged ? draggedShape : base,
+                reach: reach,
+              ),
           side: side,
           overlay: styled.overlayColor?.resolve(states),
           color: p.container,

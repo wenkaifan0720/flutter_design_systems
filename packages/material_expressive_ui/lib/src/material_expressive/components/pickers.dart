@@ -14,6 +14,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../component_themes.dart';
 import '../internal/cap_label.dart';
+import '../internal/corners.dart';
 import '../internal/field_node.dart';
 import '../internal/focus_ring.dart';
 import '../internal/styled_content.dart';
@@ -2679,9 +2680,10 @@ class _RangeCalendarState extends State<_RangeCalendar> {
 /// the look's medium date with the year in English ([ExpressiveFormat.date]:
 /// 3 Oct 2026, never read as another day), the locale's short date in
 /// another language (or as [format] prints it), whose tap (or calendar button)
-/// raises the calendar in a popover below it — no header, no toggle. A
-/// chosen day is reported through [onChanged] at once; the popover stays
-/// until a tap outside, Escape or the system back closes it.
+/// raises the calendar in a popover beside it — below where it fits, else
+/// above, never over the field — with no header and no toggle. A chosen day
+/// is reported through [onChanged] and closes the popover; a tap outside,
+/// Escape or the system back closes it too.
 class ExpressiveDockedDatePicker extends StatefulWidget {
   /// A docked date picker showing [value] and reporting a choice through [onChanged].
   const ExpressiveDockedDatePicker({
@@ -2851,23 +2853,29 @@ class _ExpressiveDockedDatePickerState
       label: widget.label ?? ExpressiveLocalizations.of(context).date,
       // The docked calendar keeps its container's width under its field,
       // however wide the window (a desk's list beside its detail).
-      builder: (context) => SizedBox(
-        width: DatePickerModalTokens.containerWidth,
-        child: StatefulBuilder(
-          builder: (context, update) => ExpressiveDatePicker(
-            style: widget.style,
-            selected: chosen,
-            showHeader: false,
-            showModeToggle: false,
-            firstDate: widget.firstDate,
-            lastDate: widget.lastDate,
-            selectableDayPredicate: widget.selectableDayPredicate,
-            currentDate: widget.currentDate,
-            firstDayOfWeek: widget.firstDayOfWeek,
-            onChanged: (d) {
-              update(() => chosen = d);
-              widget.onChanged?.call(d);
-            },
+      // Where the window has less room than the calendar beside its field
+      // (a field mid-way down a phone), the calendar scrolls in the room
+      // it has rather than covering the field.
+      builder: (context) => SingleChildScrollView(
+        child: SizedBox(
+          width: DatePickerModalTokens.containerWidth,
+          child: StatefulBuilder(
+            builder: (context, update) => ExpressiveDatePicker(
+              style: widget.style,
+              selected: chosen,
+              showHeader: false,
+              showModeToggle: false,
+              firstDate: widget.firstDate,
+              lastDate: widget.lastDate,
+              selectableDayPredicate: widget.selectableDayPredicate,
+              currentDate: widget.currentDate,
+              firstDayOfWeek: widget.firstDayOfWeek,
+              onChanged: (d) {
+                update(() => chosen = d);
+                widget.onChanged?.call(d);
+                ExpressivePopover.close(context);
+              },
+            ),
           ),
         ),
       ),
@@ -5217,9 +5225,12 @@ class _ExpressiveScrollFieldState extends State<ExpressiveScrollField> {
     };
     final visual = _pickerControlStyle(t.timePickerTheme)
         .layeredUnder(widget.style);
-    final shape =
-        visual.shape?.resolve(states) ??
-        t.shapes.of(ExpressiveShapeKey.cornerLarge);
+    final shape = expressiveOutline(
+      t,
+      visual,
+      states,
+      t.shapes.of(ExpressiveShapeKey.cornerLarge),
+    );
     // A pointer, the keyboard's focus or a drag lays the `onSurface` state
     // layer on the container (a style's own overlay replaces it), and the
     // keyboard's focus rings it: a wheel the arrow keys turn shows it has

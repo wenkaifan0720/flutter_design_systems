@@ -139,14 +139,22 @@ class _HandoffState extends State<_Handoff> {
                       ),
                     ),
                     const Spacer(),
-                    ExpressiveSplashScreenAnchor(
-                      corner: ExpressiveCorner.full,
-                      color: t.colors.primary,
-                      child: ExpressiveFilledButton(
-                        'Measure now',
-                        size: ExpressiveButtonSize.medium,
-                        expand: true,
-                        onPressed: () {},
+                    // The screen's one act across its column, a form's
+                    // 640 at most on a wide window.
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 640),
+                        child: ExpressiveSplashScreenAnchor(
+                          corner: ExpressiveCorner.full,
+                          color: t.colors.primary,
+                          child: ExpressiveFilledButton(
+                            'Measure now',
+                            size: ExpressiveButtonSize.medium,
+                            expand: true,
+                            onPressed: () {},
+                          ),
+                        ),
                       ),
                     ),
                   ],

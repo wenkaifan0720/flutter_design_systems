@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import '../icons.dart';
 import '../component_themes.dart';
 import '../elevation.dart';
+import '../internal/corners.dart';
 import '../internal/tokens/behavior.g.dart';
 import '../internal/tokens/filled_card_tokens.g.dart';
 import '../motion.dart';
@@ -351,9 +352,12 @@ class ExpressiveSkeleton extends StatelessWidget {
     final t = context.expressiveTheme;
     final visual = t.skeletonTheme.layeredUnder(style);
     const states = <WidgetState>{};
-    final shape =
-        visual.shape?.resolve(states) ??
-        (circle ? const CircleBorder() : t.shapes.corner(corner));
+    final shape = expressiveOutline(
+      t,
+      visual,
+      states,
+      circle ? const CircleBorder() : t.shapes.corner(corner),
+    );
     Widget bone(double? w, double h) => SizedBox(
       width:
           w?.clamp(

@@ -10,6 +10,7 @@ import 'package:flutter/widgets.dart';
 
 import '../component_themes.dart';
 import '../internal/cap_label.dart';
+import '../internal/corners.dart';
 import '../internal/styled_content.dart';
 import '../color.dart';
 import '../elevation.dart';
@@ -724,6 +725,7 @@ class ExpressiveSplitLeadingButton extends StatelessWidget {
       style: style,
       componentStyle: theme.splitButtonTheme,
       shapes: _leadingShapes(theme.shapes, metrics),
+      outerCorners: ExpressiveOuterCorners.start,
       motion: SplitButtonBehavior.pressMotion,
       color: paint.container,
       contentColor: paint.content,
@@ -919,6 +921,7 @@ class _ExpressiveSplitTrailingButtonState
       style: widget.style,
       componentStyle: theme.splitButtonTheme,
       shapes: shapes,
+      outerCorners: ExpressiveOuterCorners.end,
       motion: SplitButtonBehavior.pressMotion,
       color: paint.container,
       contentColor: paint.content,
@@ -951,11 +954,15 @@ class _ExpressiveSplitTrailingButtonState
               motion: SplitButtonBehavior.pressMotion,
               child: content,
               builder: (context, shape, child) => _OpticalCenter(
-                shape:
-                    ExpressiveStyleScope.maybeOf(context)!.style.shape?.resolve(
-                      ExpressiveStyleScope.maybeOf(context)!.states,
-                    ) ??
-                    shape,
+                shape: shape is OutlinedBorder
+                    ? expressiveOutline(
+                        theme,
+                        ExpressiveStyleScope.maybeOf(context)!.style,
+                        ExpressiveStyleScope.maybeOf(context)!.states,
+                        shape,
+                        reach: ExpressiveOuterCorners.end,
+                      )
+                    : shape,
                 maxStart: metrics.trailingStart,
                 maxEnd: metrics.trailingEnd,
                 devicePixelRatio: MediaQuery.devicePixelRatioOf(context),

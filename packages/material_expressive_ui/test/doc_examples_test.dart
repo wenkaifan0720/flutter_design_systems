@@ -17,6 +17,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 import 'package:material_expressive_ui/material_expressive_host.dart';
+import 'package:material_expressive_ui/src/material_expressive/internal/corners.dart';
 
 import 'doc_examples.dart';
 
@@ -55,6 +56,25 @@ const _week = [
 ];
 
 final Map<String, DocExample> _examples = {
+  'ExpressiveThemeData.shapeScheme': (context) =>
+      ExpressiveThemeData.baseline().copyWith(
+        shapeScheme: ExpressiveThemeData.defaultShapeScheme.copyWith(
+          corners: ExpressiveThemeData.defaultShapeScheme.corners.copyWith(
+            medium: 16,
+          ),
+        ),
+      ),
+  'expressiveOutline': (context) => expressiveOutline(
+    context.expressiveTheme,
+    const ExpressiveComponentThemeData(),
+    const {},
+    context.expressiveTheme.shapes.medium,
+  ),
+  'expressiveCornersOver': (context) => expressiveCornersOver(
+    context.expressiveTheme,
+    const RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none),
+    context.expressiveTheme.shapes.medium,
+  ),
   'ExpressiveColorScheme.copyWith': (context) =>
       context.expressiveTheme.colors.copyWith(primary: const Color(0xFF006A60)),
   'ExpressiveComponentThemeData on a theme': (context) {

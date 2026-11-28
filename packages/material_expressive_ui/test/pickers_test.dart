@@ -295,8 +295,8 @@ void main() {
       expect(result, DateTime(2026, 9, 12));
     });
 
-    testWidgets('docked date commits immediately and Escape dismisses its '
-        'popover', (tester) async {
+    testWidgets('docked date commits a pick at once and closes; Escape '
+        'dismisses its popover', (tester) async {
       DateTime? value = DateTime(2026, 9, 5);
       await tester.pumpWidget(
         host(
@@ -322,11 +322,15 @@ void main() {
       await tester.tap(pressableOf(find.text('12')));
       await tester.pumpAndSettle();
       expect(value, DateTime(2026, 9, 12));
-      expect(find.text('September 2026'), findsOneWidget);
+      expect(find.text('September 2026'), findsNothing);
       expect(find.text('12 Sep 2026'), findsOneWidget);
+      await tester.tap(find.byType(ExpressiveDockedDatePicker));
+      await tester.pumpAndSettle();
+      expect(find.text('September 2026'), findsOneWidget);
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pumpAndSettle();
       expect(find.text('September 2026'), findsNothing);
+      expect(value, DateTime(2026, 9, 12));
     });
 
     testWidgets('docked date is a filled field like its neighbours, or '

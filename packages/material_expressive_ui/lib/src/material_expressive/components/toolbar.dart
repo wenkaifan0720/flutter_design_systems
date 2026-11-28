@@ -10,6 +10,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import '../component_themes.dart';
+import '../internal/corners.dart';
 import '../internal/styled_content.dart';
 import '../elevation.dart';
 import '../motion.dart';
@@ -580,7 +581,14 @@ class _ToolbarBody extends StatelessWidget {
     final side =
         resolved.side?.resolve(states) ??
         BorderSide.none.copyWith(color: resolved.outline?.resolve(states));
-    final shape = (supplied ?? this.shape).copyWith(side: side);
+    final shape =
+        (supplied ??
+                expressiveCornersOver(
+                  theme,
+                  resolved.corners?.resolve(states),
+                  this.shape,
+                ))
+            .copyWith(side: side);
     final color = Color.alphaBlend(
       resolved.overlayColor?.resolve(states) ?? expressiveTransparent,
       resolved.backgroundColor?.resolve(states) ?? this.color,

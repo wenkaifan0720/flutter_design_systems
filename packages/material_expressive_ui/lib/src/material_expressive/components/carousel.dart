@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
+import '../internal/corners.dart';
 import '../internal/tokens/behavior.g.dart';
 import '../internal/styled_content.dart';
 import '../component_themes.dart';
@@ -2241,8 +2242,10 @@ class _ExpressiveCarouselState extends State<ExpressiveCarouselView> {
     final selected = index == _controller.currentItem;
     final adapted = visual.copyWith(
       shape: WidgetStateProperty.resolveWith(
-        (states) =>
-            _MaskedBorder(shown, visual.shape?.resolve(states) ?? nativeShape),
+        (states) => _MaskedBorder(
+          shown,
+          expressiveOutline(theme, visual, states, nativeShape),
+        ),
       ),
     );
     Widget content(BuildContext context, Set<WidgetState> states) {

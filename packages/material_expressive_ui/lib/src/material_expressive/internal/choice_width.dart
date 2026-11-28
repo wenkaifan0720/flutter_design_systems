@@ -1,4 +1,4 @@
-/// Constrains choice fields and expanded controls on windows at least 600
+/// Widens a select's field to its widest option on windows at least 600
 /// logical pixels wide.
 library;
 
@@ -10,73 +10,6 @@ import 'package:flutter/widgets.dart';
 
 import '../components/menus.dart' show ExpressiveMenu;
 import '../components/select.dart' show ExpressiveSelect;
-
-/// [face], an expanded button: in a window [ExpressiveSelect.wideFrom] or
-/// wider, at most [ExpressiveSelect.wideMaxWidth] wide at its column's start
-/// (a form grid's narrower cell bounds it as before); on a phone, its
-/// column's width. A field (a select, a combobox) takes its column's width
-/// at every window width.
-///
-/// [fitContent], never narrower than [face] needs for its content on one
-/// line (a segmented control's labels, read from its intrinsic width; its
-/// segments must answer intrinsics).
-Widget expressiveChoiceWidth(
-  BuildContext context,
-  Widget face, {
-  bool fitContent = false,
-}) {
-  if (MediaQuery.sizeOf(context).width < ExpressiveSelect.wideFrom) {
-    return face;
-  }
-  // Its own height too: offered more (a Center's, a dialog's), it stays
-  // the control's height.
-  return Align(
-    alignment: AlignmentDirectional.centerStart,
-    widthFactor: 1,
-    heightFactor: 1,
-    child: fitContent
-        ? _ControlWidth(child: face)
-        : ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: ExpressiveSelect.wideMaxWidth,
-            ),
-            child: face,
-          ),
-  );
-}
-
-class _ControlWidth extends SingleChildRenderObjectWidget {
-  const _ControlWidth({required super.child});
-
-  @override
-  RenderObject createRenderObject(BuildContext context) =>
-      _RenderControlWidth();
-}
-
-// At most a control's width, unless its content needs more on one line
-// (within what it is given): a segmented control whose labels would wrap at
-// 320 is as wide as they are.
-class _RenderControlWidth extends RenderProxyBox {
-  @override
-  void performLayout() {
-    final face = child;
-    if (face == null) {
-      size = constraints.smallest;
-      return;
-    }
-    final content = face.getMaxIntrinsicWidth(double.infinity);
-    final cap = math.max(ExpressiveSelect.wideMaxWidth, content.ceilToDouble());
-    final maxWidth = math.min(constraints.maxWidth, cap);
-    face.layout(
-      constraints.copyWith(
-        minWidth: math.min(constraints.minWidth, maxWidth),
-        maxWidth: maxWidth,
-      ),
-      parentUsesSize: true,
-    );
-    size = constraints.constrain(face.size);
-  }
-}
 
 /// [face], a select's read-only field: in a window
 /// [ExpressiveSelect.wideFrom] or wider, at least as wide as its widest

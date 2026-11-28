@@ -1589,7 +1589,9 @@ class _ControlRow extends StatelessWidget {
   final EdgeInsetsGeometry? contentPadding;
 
   /// How far the control's visible mark sits inside its own box (its
-  /// padding), so a [contentPadding] measures to the mark, not the box.
+  /// padding), so a [contentPadding] measures to the mark, not the box: the
+  /// box's padding hangs past the row's space where the padding leaves it
+  /// too little.
   final double controlInset;
   final ExpressivePressRole role;
   final bool selected;
@@ -1606,37 +1608,32 @@ class _ControlRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final row = _row(context);
     final padding = contentPadding;
-    if (padding == null) return row;
+    if (padding == null) {
+      return _row(
+        context,
+        ListTokens.itemLeadingSpace,
+        ListTokens.itemTrailingSpace,
+      );
+    }
     final direction = Directionality.of(context);
     final p = padding.resolve(direction);
     final (padStart, padEnd) = direction == TextDirection.ltr
         ? (p.left, p.right)
         : (p.right, p.left);
-    final lead = controlLeads ? controlInset : 0.0;
-    final trail = controlLeads ? 0.0 : controlInset;
-    // The row keeps the list's space inside it; it reaches past its edges
-    // by what the padding leaves of that space, and pads by any beyond it.
-    final start = ListTokens.itemLeadingSpace + lead - padStart;
-    final end = ListTokens.itemTrailingSpace + trail - padEnd;
-    final reach = ExpressiveReach(
-      start: math.max(0, start),
-      end: math.max(0, end),
-      child: row,
+    // The padding measures to the control's mark: the row and its highlight
+    // keep to its own box, and the mark's own padding hangs past the space
+    // the padding leaves it (none at zero: the mark on the edge).
+    return _row(
+      context,
+      padStart - (controlLeads ? controlInset : 0.0),
+      padEnd - (controlLeads ? 0.0 : controlInset),
     );
-    return start >= 0 && end >= 0
-        ? reach
-        : Padding(
-            padding: EdgeInsetsDirectional.only(
-              start: math.max(0, -start),
-              end: math.max(0, -end),
-            ),
-            child: reach,
-          );
   }
 
-  Widget _row(BuildContext context) {
+  /// The row with [start] and [end] between its edges and what it holds; a
+  /// negative one is how far the control hangs past its own box there.
+  Widget _row(BuildContext context, double start, double end) {
     final t = context.expressiveTheme;
     final c = t.colors;
     // Disabled text: onSurface at the disabled content opacity.
@@ -1691,6 +1688,13 @@ class _ControlRow extends StatelessWidget {
                 ),
             ],
           );
+    final hung = start >= 0 && end >= 0
+        ? control
+        : ExpressiveReach(
+            start: controlLeads ? math.max(0, -start) : 0,
+            end: controlLeads ? 0 : math.max(0, -end),
+            child: control,
+          );
     return ExpressivePressable(
       focusNode: focusNode,
       autofocus: autofocus,
@@ -1723,8 +1727,8 @@ class _ControlRow extends StatelessWidget {
                   : ListTokens.itemOneLineContainerHeight,
             ),
             padding: EdgeInsetsDirectional.only(
-              start: ListTokens.itemLeadingSpace,
-              end: ListTokens.itemTrailingSpace,
+              start: math.max(0, start),
+              end: math.max(0, end),
               top: twoLine ? ListTokens.itemTopSpace : 0,
               bottom: twoLine ? ListTokens.itemBottomSpace : 0,
             ),
@@ -1733,11 +1737,11 @@ class _ControlRow extends StatelessWidget {
             child: Row(
               spacing: ExpressiveSpacing.s16,
               children: [
-                if (controlLeads) control,
+                if (controlLeads) hung,
                 if (leading case final leading?)
                   ExcludeSemantics(child: leading),
                 Expanded(child: text(scope)),
-                if (!controlLeads) control,
+                if (!controlLeads) hung,
               ],
             ),
           );
@@ -1774,11 +1778,12 @@ class ExpressiveCheckboxRow extends StatelessWidget {
 
   /// The row's start and end space around its control and words, as
   /// `ListTile.contentPadding`: the list's own (16 and 24dp, the row a
-  /// full-width list's) when null. [EdgeInsets.zero] puts the control's mark
-  /// on the start (or, for a switch, the end) edge, so a row in a padded
-  /// column lines up with the fields and buttons above it, while its
-  /// highlight and touch area reach past the edges into the column's margin
-  /// by the list's space. Only the horizontal sides are read.
+  /// full-width list's) when null. Given, it measures to the control's mark,
+  /// and the row's highlight and touch area keep to the row's own box:
+  /// [EdgeInsets.zero] puts the mark on the start (or, for a switch, the end)
+  /// edge, so a row in a padded column lines up with the fields and buttons
+  /// above it and stays inside the column. Only the horizontal sides are
+  /// read.
   final EdgeInsetsGeometry? contentPadding;
 
   /// The row's label.
@@ -1914,11 +1919,12 @@ class ExpressiveRadioRow extends StatelessWidget {
 
   /// The row's start and end space around its control and words, as
   /// `ListTile.contentPadding`: the list's own (16 and 24dp, the row a
-  /// full-width list's) when null. [EdgeInsets.zero] puts the control's mark
-  /// on the start (or, for a switch, the end) edge, so a row in a padded
-  /// column lines up with the fields and buttons above it, while its
-  /// highlight and touch area reach past the edges into the column's margin
-  /// by the list's space. Only the horizontal sides are read.
+  /// full-width list's) when null. Given, it measures to the control's mark,
+  /// and the row's highlight and touch area keep to the row's own box:
+  /// [EdgeInsets.zero] puts the mark on the start (or, for a switch, the end)
+  /// edge, so a row in a padded column lines up with the fields and buttons
+  /// above it and stays inside the column. Only the horizontal sides are
+  /// read.
   final EdgeInsetsGeometry? contentPadding;
 
   /// The row's label.
@@ -2035,11 +2041,12 @@ class ExpressiveSwitchRow extends StatelessWidget {
 
   /// The row's start and end space around its control and words, as
   /// `ListTile.contentPadding`: the list's own (16 and 24dp, the row a
-  /// full-width list's) when null. [EdgeInsets.zero] puts the control's mark
-  /// on the start (or, for a switch, the end) edge, so a row in a padded
-  /// column lines up with the fields and buttons above it, while its
-  /// highlight and touch area reach past the edges into the column's margin
-  /// by the list's space. Only the horizontal sides are read.
+  /// full-width list's) when null. Given, it measures to the control's mark,
+  /// and the row's highlight and touch area keep to the row's own box:
+  /// [EdgeInsets.zero] puts the mark on the start (or, for a switch, the end)
+  /// edge, so a row in a padded column lines up with the fields and buttons
+  /// above it and stays inside the column. Only the horizontal sides are
+  /// read.
   final EdgeInsetsGeometry? contentPadding;
 
   /// The row's label.

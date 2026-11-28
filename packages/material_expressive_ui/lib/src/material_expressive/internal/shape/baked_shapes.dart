@@ -4,6 +4,7 @@
 library;
 
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../shape.dart';
 import '../themes/baked_theme.dart';
@@ -82,6 +83,25 @@ ExpressiveCornerBorder _cornerBorderOf(CornersToken corners) =>
       bottomEnd: _cornerSizeOf(corners.bottomEnd),
       bottomStart: _cornerSizeOf(corners.bottomStart),
     );
+
+/// [baked]'s five corner steps as a scheme: each step's start corner, in
+/// logical pixels (every baked theme's corners are round and alike).
+RawShapeScheme expressiveResolveShapeScheme(ExpressiveBakedTheme baked) {
+  final s = baked.shapes;
+  double dp(CornersToken corners) => switch (corners.topStart) {
+    CornerDp(:final dp) => dp,
+    CornerPercent() => 0,
+  };
+  return RawShapeScheme(
+    corners: RawCornerScale(
+      extraSmall: dp(s.extraSmall),
+      small: dp(s.small),
+      medium: dp(s.medium),
+      large: dp(s.large),
+      extraLarge: dp(s.extraLarge),
+    ),
+  );
+}
 
 /// [baked]'s shape scale in [brightness] (shapes do not vary with it).
 ExpressiveShapes expressiveResolveShapes(

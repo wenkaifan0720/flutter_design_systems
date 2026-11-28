@@ -19,7 +19,22 @@ import 'gallery_support.dart';
 
 const _look = 'Material Expressive';
 const _rows = DesignRowCheck(look: _look);
-const _widths = DesignWidthCheck(look: _look);
+// An expanded control is the app's ask to fill its column: a form's action
+// and its choices as wide as the fields over them (Material's buttons fill
+// a stretched column at every width), up to the form's measure.
+const _widths = DesignWidthCheck(
+  look: _look,
+  limits: {
+    DesignWidthKind.button: DesignWidthLimit(
+      720,
+      "an expanded button fills its column, a form's action as wide as its fields",
+    ),
+    DesignWidthKind.segmentedControl: DesignWidthLimit(
+      720,
+      "an expanded segmented button fills its column, as wide as a form's fields",
+    ),
+  },
+);
 
 /// The density the platform under test gets (the look's
 /// `adaptivePlatformDensity`).

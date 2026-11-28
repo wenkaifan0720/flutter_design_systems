@@ -254,11 +254,18 @@ class _Variants extends StatelessWidget {
           onPressed: _noop,
         ),
       ]),
-      const ExpressiveFilledButton(
-        'Confirm booking',
-        size: ExpressiveButtonSize.medium,
-        expand: true,
-        onPressed: _noop,
+      // Expanded, a form's one act fills its column: here a form's 640.
+      Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 640),
+          child: const ExpressiveFilledButton(
+            'Confirm booking',
+            size: ExpressiveButtonSize.medium,
+            expand: true,
+            onPressed: _noop,
+          ),
+        ),
       ),
     ],
   );
@@ -742,3 +749,37 @@ class _AlignmentSampleState extends State<_AlignmentSample> {
     ],
   );
 }
+
+/// A style's corners, each a step of the theme's scale: the button's
+/// diagonal pair cut square, the card's leading top corner the extra-large
+/// step and its far one square. [act] is the button's word.
+Widget kitSpecimenOwnCorners(String act) => Row(
+  mainAxisSize: MainAxisSize.min,
+  spacing: ExpressiveSpacing.s16,
+  children: [
+    ExpressiveFilledButton(
+      act,
+      size: ExpressiveButtonSize.medium,
+      style: const ExpressiveComponentThemeData(
+        corners: WidgetStatePropertyAll(
+          RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none),
+        ),
+      ),
+      onPressed: () {},
+    ),
+    const SizedBox.square(
+      dimension: 72,
+      child: ExpressiveCard.outlined(
+        style: ExpressiveComponentThemeData(
+          corners: WidgetStatePropertyAll(
+            RawCorners(
+              topStart: RawCorner.extraLarge,
+              bottomEnd: RawCorner.none,
+            ),
+          ),
+        ),
+        child: Center(child: ExpressiveIcon(ExpressiveSymbols.hiking)),
+      ),
+    ),
+  ],
+);

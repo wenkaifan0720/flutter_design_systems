@@ -58,42 +58,44 @@ void main() {
     expect(nested.color, theme.colors.onSurface);
   });
 
-  test('the shape scale is the one way to an app\'s corners', () {
+  test('the shape scheme is the one way to an app\'s corners', () {
     final base = ExpressiveThemeData.preset('baseline', Brightness.light);
-    const zero = ExpressiveCornerBorder.all(ExpressiveCornerSize.zero);
-    const square = ExpressiveShapes(
-      none: zero,
-      extraSmall: zero,
-      small: zero,
-      medium: zero,
-      large: zero,
-      largeIncreased: zero,
-      extraLarge: zero,
-      extraLargeIncreased: zero,
-      extraExtraLarge: zero,
-      full: zero,
+    const low = RawShapeScheme(
+      corners: RawCornerScale(
+        extraSmall: 0,
+        small: 4,
+        medium: 8,
+        large: 12,
+        extraLarge: 20,
+      ),
     );
-    final themed = base.copyWith(shapes: square);
-    for (final step in ExpressiveCorner.values) {
-      expect(
-        themed.shapes.corner(step).topStart.resolve(const Size(100, 40)),
-        0,
-        reason: step.name,
-      );
-    }
-    expect(themed, base.copyWith(shapes: square));
-    expect(themed.hashCode, base.copyWith(shapes: square).hashCode);
-    expect(themed, isNot(base));
-    expect(themed.copyWith().shapes, square);
+    final themed = base.copyWith(shapeScheme: low);
+    double at(ExpressiveThemeData t, ExpressiveCorner step) =>
+        t.shapes.corner(step).topStart.resolve(const Size(100, 40));
     expect(
-      ExpressiveThemeData.lerp(
-        base,
-        themed,
-        .5,
-      ).shapes.medium.topStart.resolve(const Size(100, 40)),
-      base.shapes.medium.topStart.resolve(const Size(100, 40)) / 2,
+      [
+        for (final step in const [
+          ExpressiveCorner.none,
+          ExpressiveCorner.extraSmall,
+          ExpressiveCorner.small,
+          ExpressiveCorner.medium,
+          ExpressiveCorner.large,
+          ExpressiveCorner.extraLarge,
+          ExpressiveCorner.full,
+        ])
+          at(themed, step),
+      ],
+      [0, 0, 4, 8, 12, 20, 20],
     );
-    expect(themed.toDiagnosticsNode().toStringDeep(), contains('shapes'));
+    expect(themed, base.copyWith(shapeScheme: low));
+    expect(themed.hashCode, base.copyWith(shapeScheme: low).hashCode);
+    expect(themed, isNot(base));
+    expect(themed.copyWith().shapeScheme, low);
+    expect(
+      at(ExpressiveThemeData.lerp(base, themed, .5), ExpressiveCorner.medium),
+      (at(base, ExpressiveCorner.medium) + 8) / 2,
+    );
+    expect(themed.toDiagnosticsNode().toStringDeep(), contains('shapeScheme'));
   });
 
   test('a nested outline subtracts the actual inset in rounded and square outlines', () {

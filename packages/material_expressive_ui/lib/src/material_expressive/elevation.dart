@@ -9,9 +9,11 @@ import 'package:flutter/widgets.dart';
 
 import 'color.dart';
 import 'component_themes.dart';
+import 'internal/corners.dart';
 import 'internal/tokens/behavior.g.dart';
 import 'internal/tokens/keys.g.dart';
 import 'motion.dart';
+import 'shape.dart';
 import 'theme.dart';
 import 'internal/style_layers.dart';
 
@@ -496,6 +498,7 @@ class ExpressiveSurface extends StatelessWidget {
     this.shadowElevation = ExpressiveElevationLevel.level0,
     this.elevationMotion = ExpressiveMotionKey.defaultEffects,
     this.clipBehavior = Clip.antiAlias,
+    this.outerCorners = ExpressiveOuterCorners.all,
     super.key,
   });
 
@@ -541,6 +544,10 @@ class ExpressiveSurface extends StatelessWidget {
   /// How content is clipped to [shape].
   final Clip clipBehavior;
 
+  /// Which corners of [shape] a style's `corners` reach: every one, or a
+  /// joined surface's outer ones.
+  final ExpressiveOuterCorners outerCorners;
+
   /// The absolute tonal elevation at [context], in dp: the sum of every
   /// enclosing surface's (Compose's `LocalAbsoluteTonalElevation`).
   static double absoluteTonalElevationOf(BuildContext context) =>
@@ -555,8 +562,16 @@ class ExpressiveSurface extends StatelessWidget {
     final styled = (componentStyle ?? const ExpressiveComponentThemeData())
         .layeredUnder(style);
     final supplied = styled.shape?.resolve(states);
+    final own = this.shape;
     final shape = supplied == null
-        ? this.shape
+        ? (own is OutlinedBorder
+              ? expressiveCornersOver(
+                  theme,
+                  styled.corners?.resolve(states),
+                  own,
+                  reach: outerCorners,
+                )
+              : own)
         : shapeDecorator?.call(supplied) ?? supplied;
     final outline = styled.outline?.resolve(states);
     final side =
@@ -675,6 +690,13 @@ class ExpressiveSurface extends StatelessWidget {
         ObjectFlagProperty<ShapeBorder Function(OutlinedBorder)?>.has(
           'shapeDecorator',
           shapeDecorator,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveOuterCorners>(
+          'outerCorners',
+          outerCorners,
+          defaultValue: ExpressiveOuterCorners.all,
         ),
       )
       ..add(

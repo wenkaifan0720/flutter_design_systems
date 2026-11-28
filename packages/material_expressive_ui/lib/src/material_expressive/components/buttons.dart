@@ -9,12 +9,12 @@ import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../chrome_metrics.dart';
 import '../color.dart';
 import '../component_themes.dart';
 import '../elevation.dart';
 import '../icons.dart';
 import '../internal/cap_label.dart';
-import '../internal/choice_width.dart';
 import '../internal/group_radio.dart';
 import '../internal/state_face.dart';
 import '../internal/tokens/behavior.g.dart';
@@ -265,9 +265,8 @@ abstract class ExpressiveButton extends StatelessWidget {
   /// [label] stays the button's name for assistive technology.
   final Widget? child;
 
-  /// Fill the available width on a phone (a sticky bottom action). From
-  /// 600dp wide the button keeps at most 320dp at its column's start, as a
-  /// button stays button-sized on a larger screen.
+  /// Fill the available width: a phone's sticky bottom action, a form
+  /// column's own action as wide as its fields at every window width.
   final bool expand;
 
   /// What a screen reader says instead of [label].
@@ -347,9 +346,7 @@ abstract class ExpressiveButton extends StatelessWidget {
         ),
       ),
     );
-    // Expanded, it fills a phone's column; from [ExpressiveSelect.wideFrom]
-    // it keeps to a control's width at its column's start.
-    return expand ? expressiveChoiceWidth(context, button) : button;
+    return button;
   }
 
   @override
@@ -589,7 +586,8 @@ class ExpressiveToggleButton extends StatelessWidget {
     super.key,
   }) : _role = ExpressivePressRole.toggle,
        _inSegments = false,
-       _focusTarget = null;
+       _focusTarget = null,
+       _outer = ExpressiveOuterCorners.all;
 
   const ExpressiveToggleButton._segment({
     required this.value,
@@ -602,6 +600,7 @@ class ExpressiveToggleButton extends StatelessWidget {
     required this.shapes,
     required this._role,
     this._focusTarget,
+    required this._outer,
   }) : focusNode = null,
        shape = ExpressiveButtonShape.round,
        child = null,
@@ -646,9 +645,8 @@ class ExpressiveToggleButton extends StatelessWidget {
   /// Shapes in place of the size's (a connected group's position shapes).
   final ExpressivePressShapes? shapes;
 
-  /// Fill the available width on a phone. From 600dp wide the button keeps
-  /// at most 320dp at its column's start, as a button stays button-sized on
-  /// a larger screen.
+  /// Fill the available width, as wide as a form column's fields at every
+  /// window width.
   final bool expand;
 
   /// What a screen reader says instead of [label].
@@ -666,6 +664,9 @@ class ExpressiveToggleButton extends StatelessWidget {
   /// A segment of a segmented button: themed by
   /// [ExpressiveThemeData.segmentedButtonTheme], not the button theme.
   final bool _inSegments;
+
+  // The corners a style's `corners` reach: a segment's outer ones.
+  final ExpressiveOuterCorners _outer;
 
   @override
   Widget build(BuildContext context) {
@@ -756,6 +757,7 @@ class ExpressiveToggleButton extends StatelessWidget {
                           ),
                   ),
           shapes: shapes,
+          outerCorners: _outer,
           motion: ToggleButtonBehavior.shapeMotion,
           color: paint.container,
           contentColor: paint.content,
@@ -780,9 +782,7 @@ class ExpressiveToggleButton extends StatelessWidget {
         ),
       ),
     );
-    // Expanded, it fills a phone's column; from [ExpressiveSelect.wideFrom]
-    // it keeps to a control's width at its column's start.
-    return expand ? expressiveChoiceWidth(context, button) : button;
+    return button;
   }
 
   @override
@@ -1033,11 +1033,7 @@ class _ExpressiveButtonGroupState extends State<ExpressiveButtonGroup>
           ),
       ],
     );
-    // Expanded, it fills a phone's column; from [ExpressiveSelect.wideFrom]
-    // it keeps to a control's width at its column's start.
-    return widget.expand
-        ? expressiveChoiceWidth(context, group, fitContent: true)
-        : group;
+    return group;
   }
 }
 
@@ -1104,7 +1100,7 @@ class ExpressiveSegmentedButton<T> extends StatelessWidget {
     this.kind = ExpressiveToggleButtonKind.filled,
     this.style,
     this.size = ExpressiveButtonSize.small,
-    this.expand = true,
+    this.expand,
     super.key,
   });
 
@@ -1127,9 +1123,12 @@ class ExpressiveSegmentedButton<T> extends StatelessWidget {
   /// The size (`ConnectedButtonGroup*Tokens`).
   final ExpressiveButtonSize size;
 
-  /// Share the available width equally (Compose's samples weight each
-  /// segment 1); otherwise each segment takes its own width.
-  final bool expand;
+  /// Share its column's width equally between the segments at every
+  /// window width (Compose's samples weight each segment 1), a form's choice
+  /// as wide as the fields over it; false: each segment takes its own width.
+  /// Unset, it fills a phone's column and, from 600 wide, keeps to its
+  /// segments' own widths, as a lone filter does.
+  final bool? expand;
 
   @override
   Widget build(BuildContext context) {
@@ -1179,7 +1178,7 @@ class ExpressiveSegmentedButton<T> extends StatelessWidget {
           defaultValue: ExpressiveButtonSize.small,
         ),
       )
-      ..add(DiagnosticsProperty<bool>('expand', expand, defaultValue: true));
+      ..add(DiagnosticsProperty<bool?>('expand', expand, defaultValue: null));
   }
 }
 
@@ -1202,7 +1201,7 @@ class ExpressiveMultiChoiceSegmentedButton<T> extends StatelessWidget {
     this.kind = ExpressiveToggleButtonKind.filled,
     this.style,
     this.size = ExpressiveButtonSize.small,
-    this.expand = true,
+    this.expand,
     super.key,
   });
 
@@ -1227,9 +1226,12 @@ class ExpressiveMultiChoiceSegmentedButton<T> extends StatelessWidget {
   /// The size (`ConnectedButtonGroup*Tokens`).
   final ExpressiveButtonSize size;
 
-  /// Share the available width equally (Compose's samples weight each
-  /// segment 1); otherwise each segment takes its own width.
-  final bool expand;
+  /// Share its column's width equally between the segments at every
+  /// window width (Compose's samples weight each segment 1), a form's choice
+  /// as wide as the fields over it; false: each segment takes its own width.
+  /// Unset, it fills a phone's column and, from 600 wide, keeps to its
+  /// segments' own widths, as a lone filter does.
+  final bool? expand;
 
   @override
   Widget build(BuildContext context) {
@@ -1293,7 +1295,7 @@ class ExpressiveMultiChoiceSegmentedButton<T> extends StatelessWidget {
           defaultValue: ExpressiveButtonSize.small,
         ),
       )
-      ..add(DiagnosticsProperty<bool>('expand', expand, defaultValue: true));
+      ..add(DiagnosticsProperty<bool?>('expand', expand, defaultValue: null));
   }
 }
 
@@ -1321,21 +1323,36 @@ class _ConnectedSegments<T> extends StatelessWidget {
   /// Stateful visual overrides before the component theme.
   final ExpressiveComponentThemeData? style;
   final ExpressiveButtonSize size;
-  final bool expand;
+  final bool? expand;
 
   @override
   Widget build(BuildContext context) {
     assert(segments.isNotEmpty, 'a segmented button has segments');
+    final fill =
+        expand ??
+        MediaQuery.sizeOf(context).width <
+            ExpressiveChromeMetrics.railMinWindowWidth;
     final connected = _ConnectedMetrics.of(size);
     final count = segments.length;
     final onToggle = this.onToggle;
-    Widget layout(BuildContext context, List<Widget> items) =>
-        ExpressiveButtonGroup._connected(
-          size: size,
-          expand: expand,
-          spacing: connected.between,
-          children: items,
-        );
+    Widget layout(BuildContext context, List<Widget> items) {
+      final group = ExpressiveButtonGroup._connected(
+        size: size,
+        expand: fill,
+        spacing: connected.between,
+        children: items,
+      );
+      // At its segments' own widths it stands at its column's start, its
+      // box no wider than they are (and its own height where offered more).
+      return fill
+          ? group
+          : Align(
+              alignment: AlignmentDirectional.centerStart,
+              widthFactor: 1,
+              heightFactor: 1,
+              child: group,
+            );
+    }
 
     Widget segment(
       int index,
@@ -1355,6 +1372,7 @@ class _ConnectedSegments<T> extends StatelessWidget {
         style: style,
         size: size,
         shapes: connected.shapes(first: index == 0, last: index == count - 1),
+        outer: ExpressiveOuterCorners.inRow(index, count),
         role: radio ? ExpressivePressRole.radio : ExpressivePressRole.none,
         focusTarget: focusTarget,
       );

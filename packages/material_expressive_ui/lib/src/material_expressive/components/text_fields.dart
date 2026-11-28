@@ -16,6 +16,7 @@ import '../component_themes.dart';
 import '../icons.dart';
 import '../internal/field_node.dart';
 import '../internal/cap_label.dart';
+import '../internal/corners.dart';
 import '../internal/tokens/behavior.g.dart';
 import '../internal/tokens/filled_text_field_tokens.g.dart';
 import '../internal/tokens/keys.g.dart';
@@ -1531,7 +1532,12 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
     );
     final customShape = styled.shape?.resolve(states);
     final shape =
-        customShape ?? _shapeOf(theme, widget.kind, rounded: widget.rounded);
+        customShape ??
+        expressiveCornersOver(
+          theme,
+          styled.corners?.resolve(states),
+          _shapeOf(theme, widget.kind, rounded: widget.rounded),
+        );
     final side = styled.side?.resolve(states);
     final width =
         side?.width ?? _indicatorWidthOf(widget.kind, on: focused && enabled);
@@ -2787,7 +2793,12 @@ class _ExpressiveCodeInputState extends State<ExpressiveInputOtp> {
       };
       final customShape = styled.shape?.resolve(states);
       final shape =
-          customShape ?? _shapeOf(theme, widget.kind, rounded: widget.rounded);
+          customShape ??
+          expressiveCornersOver(
+            theme,
+            styled.corners?.resolve(states),
+            _shapeOf(theme, widget.kind, rounded: widget.rounded),
+          );
       final side = styled.side?.resolve(states);
       final padding =
           (styled.padding

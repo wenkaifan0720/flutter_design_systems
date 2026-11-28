@@ -6,6 +6,7 @@ import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import 'internal/shape/graphics/graphics.dart';
 import 'internal/shape/library.dart';
@@ -278,6 +279,109 @@ class ExpressiveCornerBorder extends OutlinedBorder {
       'ExpressiveCornerBorder($topStart, $topEnd, $bottomEnd, $bottomStart)';
 }
 
+/// Which of a part's corners an app's own corners reach (a style's
+/// `corners`): all four on a part that stands alone, a joined part's outer
+/// ones (a split button's halves, a connected group's ends, a sheet's top),
+/// its inner joins keeping the part's own.
+@immutable
+class ExpressiveOuterCorners {
+  /// The corners an override reaches; every one by default.
+  const ExpressiveOuterCorners({
+    this.topStart = true,
+    this.topEnd = true,
+    this.bottomStart = true,
+    this.bottomEnd = true,
+  });
+
+  /// Every corner: a part that stands alone.
+  static const ExpressiveOuterCorners all = ExpressiveOuterCorners();
+
+  /// The start corners: the first of a row of joined parts.
+  static const ExpressiveOuterCorners start = ExpressiveOuterCorners(
+    topEnd: false,
+    bottomEnd: false,
+  );
+
+  /// The end corners: the last of a row of joined parts.
+  static const ExpressiveOuterCorners end = ExpressiveOuterCorners(
+    topStart: false,
+    bottomStart: false,
+  );
+
+  /// The top corners: a sheet risen from the screen's foot.
+  static const ExpressiveOuterCorners top = ExpressiveOuterCorners(
+    bottomStart: false,
+    bottomEnd: false,
+  );
+
+  /// The bottom corners: the last of a column of joined parts.
+  static const ExpressiveOuterCorners bottom = ExpressiveOuterCorners(
+    topStart: false,
+    topEnd: false,
+  );
+
+  /// The corners of the [index]th of [count] parts joined in a row: all
+  /// four alone, the start ones first, the end ones last, none between.
+  static ExpressiveOuterCorners inRow(int index, int count) => count <= 1
+      ? all
+      : index == 0
+      ? start
+      : index == count - 1
+      ? end
+      : none;
+
+  /// The corners of the [index]th of [count] parts joined in a column: all
+  /// four alone, the top ones first, the bottom ones last, none between.
+  static ExpressiveOuterCorners inColumn(int index, int count) => count <= 1
+      ? all
+      : index == 0
+      ? top
+      : index == count - 1
+      ? bottom
+      : none;
+
+  /// No corner: a part between two others.
+  static const ExpressiveOuterCorners none = ExpressiveOuterCorners(
+    topStart: false,
+    topEnd: false,
+    bottomStart: false,
+    bottomEnd: false,
+  );
+
+  /// Whether the start top corner takes the override.
+  final bool topStart;
+
+  /// Whether the end top corner takes the override.
+  final bool topEnd;
+
+  /// Whether the start bottom corner takes the override.
+  final bool bottomStart;
+
+  /// Whether the end bottom corner takes the override.
+  final bool bottomEnd;
+
+  /// [corners] on the corners this reaches; null on the others.
+  RawCorners? of(RawCorners? corners) => corners == null
+      ? null
+      : RawCorners(
+          topStart: topStart ? corners.topStart : null,
+          topEnd: topEnd ? corners.topEnd : null,
+          bottomStart: bottomStart ? corners.bottomStart : null,
+          bottomEnd: bottomEnd ? corners.bottomEnd : null,
+        );
+
+  @override
+  bool operator ==(Object other) =>
+      other is ExpressiveOuterCorners &&
+      other.topStart == topStart &&
+      other.topEnd == topEnd &&
+      other.bottomStart == bottomStart &&
+      other.bottomEnd == bottomEnd;
+
+  @override
+  int get hashCode => Object.hash(topStart, topEnd, bottomStart, bottomEnd);
+}
+
 /// The shape scale of one theme: Compose's `Shapes` plus none and full.
 @immutable
 class ExpressiveShapes with Diagnosticable {
@@ -294,6 +398,29 @@ class ExpressiveShapes with Diagnosticable {
     required this.extraExtraLarge,
     required this.full,
   });
+
+  /// The scale of [scheme]'s five steps (`RawShapeScheme.corners`), each
+  /// corner round, with the steps M3 Expressive derives from them: large
+  /// increased is large plus 4, extra large increased extra large plus 4,
+  /// and extra extra large extra large times 12/7 (Compose's 20, 32 and 48
+  /// over 16 and 28). Full is half the shorter side.
+  factory ExpressiveShapes.fromScheme(RawShapeScheme scheme) {
+    final c = scheme.corners;
+    ExpressiveCornerBorder at(double dp) =>
+        ExpressiveCornerBorder.all(ExpressiveCornerSize.dp(dp));
+    return ExpressiveShapes(
+      none: const ExpressiveCornerBorder(),
+      extraSmall: at(c.extraSmall),
+      small: at(c.small),
+      medium: at(c.medium),
+      large: at(c.large),
+      largeIncreased: at(c.large + 4),
+      extraLarge: at(c.extraLarge),
+      extraLargeIncreased: at(c.extraLarge + 4),
+      extraExtraLarge: at(c.extraLarge * 12 / 7),
+      full: const ExpressiveCornerBorder.all(ExpressiveCornerSize.fraction(.5)),
+    );
+  }
 
   /// The square step, with no rounding.
   final ExpressiveCornerBorder none;

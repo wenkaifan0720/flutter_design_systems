@@ -391,13 +391,13 @@ class ExpressiveStatusColors {
 class ExpressiveThemeData with Diagnosticable {
   /// A theme from its parts. Prefer [preset] or [forApp]: a theme's colours
   /// are baked from its record, never typed.
-  const ExpressiveThemeData({
+  ExpressiveThemeData({
     required this.id,
     required this.brightness,
     required this.expression,
     required this.colors,
     required this.type,
-    required this.shapes,
+    RawShapeScheme? shapeScheme,
     required this.motion,
     this.buttonTheme = const ExpressiveComponentThemeData(),
     this.iconButtonTheme = const ExpressiveComponentThemeData(),
@@ -450,7 +450,10 @@ class ExpressiveThemeData with Diagnosticable {
     this.loadingIndicatorTheme = const ExpressiveComponentThemeData(),
     this._density,
     this._status,
-  });
+  }) : shapeScheme = shapeLimits.clamp(
+         shapeScheme ?? defaultShapeScheme,
+         look: 'Expressive',
+       );
 
   /// Derives a palette from an app's seed using Material's tonal colour
   /// algorithm (`ColorScheme.fromSeed`), at [contrastLevel], Material's
@@ -645,8 +648,8 @@ class ExpressiveThemeData with Diagnosticable {
     Brightness brightness = Brightness.light,
   ]) => preset('grove', brightness);
 
-  /// `ember`: a burnt orange seed (#C25A1F), the hue-rotating expressive
-  /// variant, Expressive motion, bold.
+  /// `ember`: a burnt orange seed (#C25A1F), vibrant, Expressive motion,
+  /// bold.
   factory ExpressiveThemeData.ember([
     Brightness brightness = Brightness.light,
   ]) => preset('ember', brightness);
@@ -741,8 +744,8 @@ class ExpressiveThemeData with Diagnosticable {
     RawNamedPalette(
       id: 'ember',
       label: 'Ember',
-      swatches: [Color(0xFF994719), Color(0xFFFFF8F5)],
-      darkSwatches: [Color(0xFFFFBD9F), Color(0xFF1A0A02)],
+      swatches: [Color(0xFF9C3F00), Color(0xFFFFF4EF)],
+      darkSwatches: [Color(0xFFFF9159), Color(0xFF1C0900)],
     ),
     RawNamedPalette(
       id: 'tide',
@@ -838,7 +841,7 @@ class ExpressiveThemeData with Diagnosticable {
     expression: ExpressiveExpression.values.byName(baked.expression),
     colors: expressiveResolveColors(baked, brightness),
     type: expressiveResolveTextTheme(baked, brightness),
-    shapes: expressiveResolveShapes(baked, brightness),
+    shapeScheme: expressiveResolveShapeScheme(baked),
     motion: expressiveResolveMotion(baked, brightness),
     status: _resolveStatus(baked, brightness),
   );
@@ -858,10 +861,63 @@ class ExpressiveThemeData with Diagnosticable {
   /// The type scale (`type.dart`).
   final ExpressiveTextTheme type;
 
-  /// The shape scale (M3's `extraSmall` to `extraExtraLarge` and `full`),
-  /// shared by every part's surface and every token-painted corner: the
-  /// one way to an app's corners. A component theme sets one part's shape.
-  final ExpressiveShapes shapes;
+  /// The shapes an app can change, held to [shapeLimits]: M3's five corner
+  /// steps. A chip, a menu and a snackbar take extra small or small; a card
+  /// and the square button shapes medium; a sheet and a navigation drawer
+  /// large; a dialog and a large FAB extra large. Large increased (large
+  /// plus 4), extra large increased (extra large plus 4) and extra extra
+  /// large (extra large times 12/7) follow their step, as M3 Expressive
+  /// derives them. Full stays round: buttons, FABs and chips morph between
+  /// full and their size's square step as they are pressed and toggled, and
+  /// a capped full would turn that round end into another step. Corners
+  /// stay round, and Expressive opens no stroke and no depth: Material sets
+  /// each outline's weight per part, and an elevation level sets a surface's
+  /// tone with its shadow.
+  ///
+  /// | Shape | Expressive's | Band | Why |
+  /// |---|---|---|---|
+  /// | extra small | 4 | 0–8 | past 8 it meets small |
+  /// | small | 8 | 4–12 | between its neighbours, so the scale keeps its order |
+  /// | medium | 12 | 8–16 | cards and the square button shapes read from it |
+  /// | large | 16 | 12–24 | sheets and navigation drawers |
+  /// | extra large | 28 | 20–36 | well above large: M3 Expressive's roundness contrast |
+  /// | full | round | fixed | the round end of the press morph |
+  ///
+  /// [shapes] is this scheme as the ten steps the parts read. A part's own
+  /// corners go on its style as `corners`, each corner a step of this scale.
+  ///
+  /// ```dart
+  /// ExpressiveThemeData.baseline().copyWith(shapeScheme: ExpressiveThemeData.defaultShapeScheme.copyWith(corners: ExpressiveThemeData.defaultShapeScheme.corners.copyWith(medium: 16)))
+  /// ```
+  final RawShapeScheme shapeScheme;
+
+  /// Expressive's own corner steps (M3's): 4, 8, 12, 16 and 28.
+  static const RawShapeScheme defaultShapeScheme = RawShapeScheme(
+    corners: RawCornerScale(
+      extraSmall: 4,
+      small: 8,
+      medium: 12,
+      large: 16,
+      extraLarge: 28,
+    ),
+  );
+
+  /// The bands an app's [shapeScheme] is held to, and its per-part corners:
+  /// a step per corner, from square to full.
+  static const RawShapeLimits shapeLimits = RawShapeLimits(
+    extraSmall: RawBand(0, 8),
+    small: RawBand(4, 12),
+    medium: RawBand(8, 16),
+    large: RawBand(12, 24),
+    extraLarge: RawBand(20, 36),
+    cornerFreedom: RawCornerFreedom.perCorner,
+  );
+
+  /// The shape scale every part reads (M3's `extraSmall` to
+  /// `extraExtraLarge` and `full`): [shapeScheme]'s steps and the steps
+  /// derived from them. A component theme's `shape` or `corners` sets one
+  /// part's.
+  late final ExpressiveShapes shapes = ExpressiveShapes.fromScheme(shapeScheme);
 
   final ExpressiveDensity? _density;
 
@@ -1162,7 +1218,7 @@ class ExpressiveThemeData with Diagnosticable {
     ExpressiveExpression? expression,
     ExpressiveColorScheme? colors,
     ExpressiveTextTheme? type,
-    ExpressiveShapes? shapes,
+    RawShapeScheme? shapeScheme,
     ExpressiveDensity? density,
     ExpressiveMotion? motion,
     ExpressiveStatusColors? status,
@@ -1221,7 +1277,7 @@ class ExpressiveThemeData with Diagnosticable {
     expression: expression ?? this.expression,
     colors: colors ?? this.colors,
     type: type ?? this.type,
-    shapes: shapes ?? this.shapes,
+    shapeScheme: shapeScheme ?? this.shapeScheme,
     density: density ?? _density,
     motion: motion ?? this.motion,
     status: status ?? _status,
@@ -1286,7 +1342,7 @@ class ExpressiveThemeData with Diagnosticable {
       other.expression == expression &&
       other.colors == colors &&
       other.type == type &&
-      other.shapes == shapes &&
+      other.shapeScheme == shapeScheme &&
       other._density == _density &&
       other.motion == motion &&
       other.status == status &&
@@ -1299,7 +1355,7 @@ class ExpressiveThemeData with Diagnosticable {
     expression,
     colors,
     type,
-    shapes,
+    shapeScheme,
     _density,
     motion,
     status,
@@ -1311,9 +1367,9 @@ class ExpressiveThemeData with Diagnosticable {
   /// [ExpressiveColorScheme.lerp], the status tones colour by colour, the
   /// component themes slot by slot
   /// ([ExpressiveComponentThemeData.lerp]), and the parts that do not interpolate
-  /// (the id, the brightness, the expression budget, the type scale, the
-  /// shape scale and the motion scheme) taken from [a] below one half and
-  /// from [b] from it. [t] may overshoot, as a spring does.
+  /// (the id, the brightness, the expression budget and the motion scheme)
+  /// taken from [a] below one half and from [b] from it. The type scale
+  /// and the shape scheme ([RawShapeScheme.lerp]) interpolate. [t] may overshoot, as a spring does.
   static ExpressiveThemeData lerp(
     ExpressiveThemeData a,
     ExpressiveThemeData b,
@@ -1327,7 +1383,7 @@ class ExpressiveThemeData with Diagnosticable {
       expression: near.expression,
       colors: ExpressiveColorScheme.lerp(a.colors, b.colors, t),
       type: ExpressiveTextTheme.lerp(a.type, b.type, t),
-      shapes: ExpressiveShapes.lerp(a.shapes, b.shapes, t),
+      shapeScheme: RawShapeScheme.lerp(a.shapeScheme, b.shapeScheme, t),
       density: a._density == null && b._density == null
           ? null
           : ExpressiveDensity.lerp(a.density, b.density, t),
@@ -1574,7 +1630,7 @@ class ExpressiveThemeData with Diagnosticable {
       ..add(EnumProperty<ExpressiveExpression>('expression', expression))
       ..add(DiagnosticsProperty<ExpressiveColorScheme>('colors', colors))
       ..add(DiagnosticsProperty<ExpressiveTextTheme>('type', type))
-      ..add(DiagnosticsProperty<ExpressiveShapes>('shapes', shapes))
+      ..add(DiagnosticsProperty<RawShapeScheme>('shapeScheme', shapeScheme))
       ..add(DiagnosticsProperty<ExpressiveDensity>('density', density))
       ..add(DiagnosticsProperty<ExpressiveMotion>('motion', motion))
       ..add(DiagnosticsProperty<ExpressiveStatusColors>('status', status));

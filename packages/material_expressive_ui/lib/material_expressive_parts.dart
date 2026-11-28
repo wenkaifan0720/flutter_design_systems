@@ -19,6 +19,7 @@ export 'src/material_expressive/internal/badge_anchor.dart';
 export 'src/material_expressive/internal/cap_label.dart';
 export 'src/material_expressive/internal/choice_width.dart';
 export 'src/material_expressive/internal/color/baked_colors.dart';
+export 'src/material_expressive/internal/corners.dart';
 export 'src/material_expressive/internal/density.dart';
 export 'src/material_expressive/internal/field_node.dart';
 export 'src/material_expressive/internal/focus_ring.dart';

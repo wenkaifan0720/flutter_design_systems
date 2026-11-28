@@ -398,6 +398,10 @@ class TripWords {
   String get twoThirdsDone => 'Two thirds done';
   String get toggleGroups => 'Toggle groups';
   String get toggleGroupsText => 'A choice of a few, the chosen one rounder.';
+  String get ownCorners => 'Corners of its own';
+  String get ownCornersText =>
+      "Each corner a step of the theme's scale, held to Expressive's bands.";
+  String get ownCornersAct => 'Book';
   String get everyComponent => 'Every component';
 
   /// A gallery destination's [title] and [about], by its English title.
@@ -1027,6 +1031,13 @@ class _ArabicTripWords extends TripWords {
   String get toggleGroups => 'مجموعات التبديل';
   @override
   String get toggleGroupsText => 'اختيار من قليل، والمختار أكثر استدارة.';
+  @override
+  String get ownCorners => 'زوايا خاصة به';
+  @override
+  String get ownCornersText =>
+      'كل زاوية درجة من مقياس السمة، ضمن حدود Expressive.';
+  @override
+  String get ownCornersAct => 'احجز';
   @override
   String get everyComponent => 'كل المكوّنات';
   @override

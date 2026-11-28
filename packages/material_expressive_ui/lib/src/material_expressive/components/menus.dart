@@ -349,6 +349,10 @@ class ExpressiveMenuSurface extends StatelessWidget {
                       _MenuGroup(
                         group: visible[i],
                         shapes: _groupShapes(context, i, visible.length),
+                        reach: ExpressiveOuterCorners.inColumn(
+                          i,
+                          visible.length,
+                        ),
                         vibrant: vibrant,
                       ),
                   ],
@@ -473,6 +477,7 @@ class _MenuGroup extends StatefulWidget {
     required this.shapes,
     required this.vibrant,
     this.scrolls = false,
+    this.reach = ExpressiveOuterCorners.all,
   });
 
   final ExpressiveMenuGroup group;
@@ -482,6 +487,9 @@ class _MenuGroup extends StatefulWidget {
   /// Whether its items scroll inside its padding when its height is bounded
   /// (a menu of one group).
   final bool scrolls;
+
+  /// The corners a menu style's `corners` reach: a group's outer ones.
+  final ExpressiveOuterCorners reach;
 
   @override
   State<_MenuGroup> createState() => _MenuGroupState();
@@ -517,6 +525,7 @@ class _MenuGroupState extends State<_MenuGroup> {
         builder: (context, shape, _) => ExpressiveSurface(
           componentStyle: t.menuTheme,
           states: {if (_hovered) WidgetState.hovered},
+          outerCorners: widget.reach,
           shape: shape,
           color: container,
           shadowElevation: MenuTokens.containerElevation,
@@ -1846,6 +1855,7 @@ Future<bool?> _showMenuRoute(
   bool listKeys = false,
   bool focusItem = false,
   VoidCallback? onShown,
+  bool clearOfAnchor = false,
 }) {
   final navigator = Navigator.of(context, rootNavigator: true);
   final ground = navigator.overlay!.context.findRenderObject()! as RenderBox;
@@ -1883,6 +1893,7 @@ Future<bool?> _showMenuRoute(
       listKeys: listKeys,
       focusItem: focusItem,
       onShown: onShown,
+      clearOfAnchor: clearOfAnchor,
       child: Builder(builder: content),
     ),
   );
@@ -1979,11 +1990,17 @@ class _MenuPopup extends StatefulWidget {
     this.focusItem = false,
     this.onShown,
     this.onEscape,
+    this.clearOfAnchor = false,
   });
 
   final Rect anchor;
   final ExpressiveMenuPosition position;
   final String? label;
+
+  /// Whether the popup keeps clear of its anchor (a popover, which
+  /// explains or extends what opened it): below or above it whole, else on
+  /// the roomier side, held to that side's room.
+  final bool clearOfAnchor;
 
   /// Whether the popup is a list from a field: as wide as the anchor
   /// (`exposedDropdownSize(matchAnchorWidth = true)`), wider only as far
@@ -2242,6 +2259,7 @@ class _MenuPopupState extends State<_MenuPopup>
           textDirection: widget.textDirection,
           matchAnchorWidth: widget.matchAnchorWidth,
           maxHeight: widget.maxHeight,
+          clearOfAnchor: widget.clearOfAnchor,
           child: child,
         ),
       ),
@@ -2260,6 +2278,7 @@ class _MenuPlacement extends SingleChildRenderObjectWidget {
     required this.textDirection,
     required this.matchAnchorWidth,
     required this.maxHeight,
+    required this.clearOfAnchor,
     super.child,
   });
 
@@ -2269,12 +2288,14 @@ class _MenuPlacement extends SingleChildRenderObjectWidget {
   final TextDirection textDirection;
   final bool matchAnchorWidth;
   final double? maxHeight;
+  final bool clearOfAnchor;
 
   @override
   RenderObject createRenderObject(BuildContext context) =>
       _RenderMenuPlacement(anchor, position, scale, textDirection)
         .._matchAnchorWidth = matchAnchorWidth
-        .._maxHeight = maxHeight;
+        .._maxHeight = maxHeight
+        .._clearOfAnchor = clearOfAnchor;
 
   @override
   void updateRenderObject(
@@ -2287,7 +2308,8 @@ class _MenuPlacement extends SingleChildRenderObjectWidget {
       ..scale = scale
       ..textDirection = textDirection
       ..matchAnchorWidth = matchAnchorWidth
-      ..maxHeight = maxHeight;
+      ..maxHeight = maxHeight
+      ..clearOfAnchor = clearOfAnchor;
   }
 }
 
@@ -2352,6 +2374,13 @@ class _RenderMenuPlacement extends RenderBox
     markNeedsLayout();
   }
 
+  bool _clearOfAnchor = false;
+  set clearOfAnchor(bool value) {
+    if (value == _clearOfAnchor) return;
+    _clearOfAnchor = value;
+    markNeedsLayout();
+  }
+
   Offset _offset = Offset.zero;
   Offset _origin = Offset.zero;
 
@@ -2401,7 +2430,30 @@ class _RenderMenuPlacement extends RenderBox
       ),
       parentUsesSize: true,
     );
-    final menu = child.size;
+    var menu = child.size;
+    // A popover keeps clear of its anchor: on a side where it fits whole,
+    // else on the roomier side, held to that side's room, never over what
+    // opened it.
+    final clear =
+        _clearOfAnchor &&
+        (_position == ExpressiveMenuPosition.below ||
+            _position == ExpressiveMenuPosition.above);
+    final roomBelow = size.height - v - a.bottom;
+    final roomAbove = a.top - v;
+    if (clear && menu.height > roomBelow && menu.height > roomAbove) {
+      child.layout(
+        BoxConstraints(
+          minWidth: width ?? 0,
+          maxWidth: width ?? maxWidth,
+          maxHeight: math.min(
+            maxHeight,
+            math.max(math.max(roomBelow, roomAbove), 0.0),
+          ),
+        ),
+        parentUsesSize: true,
+      );
+      menu = child.size;
+    }
     final ltr = _textDirection == TextDirection.ltr;
     // The window-edge candidate on the anchor's side of the window.
     final windowX = a.center.dx < size.width / 2
@@ -2443,13 +2495,40 @@ class _RenderMenuPlacement extends RenderBox
       ),
     };
     final x = _pick(xs, menu.width, size.width, h);
-    final y = _pick(ys, menu.height, size.height, v);
+    final y = _pick(
+      clear ? _clearSides(a, menu.height, roomBelow, roomAbove) : ys,
+      menu.height,
+      size.height,
+      v,
+    );
     _offset = Offset(x, y);
     final placed = _offset & menu;
     _origin = Offset(
       _pivot(a.left, a.right, placed.left, placed.right) * menu.width,
       _pivot(a.top, a.bottom, placed.top, placed.bottom) * menu.height,
     );
+  }
+
+  /// A popover's tops beside [a], the side it was asked for first: where
+  /// [height] fits whole, else the roomier side.
+  List<double> _clearSides(
+    Rect a,
+    double height,
+    double roomBelow,
+    double roomAbove,
+  ) {
+    const slack = 0.01;
+    final fitsBelow = height <= roomBelow + slack;
+    final fitsAbove = height <= roomAbove + slack;
+    final belowFirst = _position == ExpressiveMenuPosition.below;
+    if (!fitsBelow && !fitsAbove) {
+      return [if (roomBelow >= roomAbove) a.bottom else a.top - height];
+    }
+    return [
+      if (belowFirst && fitsBelow) a.bottom,
+      if (fitsAbove) a.top - height,
+      if (!belowFirst && fitsBelow) a.bottom,
+    ];
   }
 
   /// The widest [child]'s items need (its intrinsic width), or null when it
@@ -2751,6 +2830,9 @@ abstract class _MenuAnchorState<W extends StatefulWidget> extends State<W>
   ExpressiveMenuPosition get position;
   String? get label;
   bool get canOpen;
+
+  /// Whether its popup keeps clear of the anchor ([_MenuPopup.clearOfAnchor]).
+  bool get clearOfAnchor => false;
   Widget? get anchorChild;
   Widget Function(BuildContext, ExpressiveMenuController)? get anchorBuilder;
   WidgetBuilder get popupContent;
@@ -2868,6 +2950,7 @@ abstract class _MenuAnchorState<W extends StatefulWidget> extends State<W>
       listKeys: listKeys,
       onShown: _shown,
       onRoute: (route) => _route = route,
+      clearOfAnchor: clearOfAnchor,
     );
     _controller._changed();
     if (mounted) setState(() {});
@@ -2926,6 +3009,7 @@ abstract class _MenuAnchorState<W extends StatefulWidget> extends State<W>
           closing: _closing,
           listKeys: listKeys,
           onShown: _shown,
+          clearOfAnchor: clearOfAnchor,
           onEscape: _escape,
           child: TapRegion(
             groupId: this,
@@ -3325,6 +3409,7 @@ Future<void> showExpressivePopover(
     anchor: anchor,
     position: position,
     label: label,
+    clearOfAnchor: true,
     content: (context) => ExpressivePopoverSurface(
       padding: padding,
       style: style,
@@ -3348,6 +3433,9 @@ class _ExpressivePopoverState extends _MenuAnchorState<ExpressivePopover> {
 
   @override
   bool get canOpen => true;
+
+  @override
+  bool get clearOfAnchor => true;
 
   @override
   Widget? get anchorChild => widget.child;

@@ -197,7 +197,7 @@ void main() {
       expect(grove.expression, 'balanced');
       expect(grove.motion.scheme, 'expressive');
       expect(ember.seed, 0xFFC25A1F);
-      expect(ember.variant, 'expressive');
+      expect(ember.variant, 'vibrant');
       expect(ember.expression, 'bold');
       expect(ember.motion.scheme, 'expressive');
       for (final theme in <ExpressiveBakedTheme>[slate, bloom, grove, ember]) {

@@ -89,7 +89,8 @@ The gallery, every component on a page of its own, is `example/lib/gallery.dart`
 `ExpressiveAppShell.branches` holds the app's places: the navigation bar along a phone's foot, the rail from 600 wide
 and the expanded rail from 1200. Each place keeps its own pages; a page pushed on one stands beside the rail (a phone's
 bar steps away for it), back pops it, and choosing the place again goes back to its first page. The arrow keys move
-between the places. An `action` (a FAB) floats over a phone's pages and heads the rail.
+between the places. An `action` (a FAB) floats over a phone's pages and heads the rail. A modal bottom sheet
+(`showExpressiveBottomSheet`) covers the navigation bar, as Material's does.
 
 ```dart
 import 'package:material_expressive_ui/material_expressive_ui.dart';
@@ -346,13 +347,47 @@ class PalettePicker extends StatelessWidget {
 | `slate` | #52667A | neutral | standard |
 | `bloom` | #B5487A | vibrant | expressive |
 | `grove` | #2E7D5B | tonal spot | expressive |
-| `ember` | #C25A1F | expressive | expressive |
+| `ember` | #C25A1F | vibrant | expressive |
 | `tide` | #3D7EA0 | tonal spot | expressive |
 
-Use `copyWith` to set density, typography, shapes (Compose's `Shapes`, from extra-small to extra-extra-large),
-motion or a component theme. An individual widget's `style` overrides the component theme for that widget, and a
+A variant is how the seed spreads over the colour roles: tonal spot keeps every role in the seed's family, soft;
+vibrant keeps them there, fuller; neutral is nearly grey. The secondary roles (the navigation indicator, a slider's
+inactive track) stay in the seed's family in every preset.
+
+Use `copyWith` to set density, typography, the shape scheme, motion or a component theme. An individual widget's `style` overrides the component theme for that widget, and a
 `WidgetStateProperty` can vary a colour or shape for focus, selection and other states. The colour roles, shapes and
 motion stay Material's: a theme changes their values, not what each role is for.
+
+### Your corners
+
+The theme's corners are M3's five steps, 4, 8, 12, 16 and 28, in `ExpressiveThemeData.shapeScheme`. An app can give its
+own, and each step is held to Expressive's band for it (`ExpressiveThemeData.shapeLimits`), so the scale keeps its
+order and extra large stays well above large:
+
+```dart
+final theme = ExpressiveThemeData.baseline().copyWith(
+  shapeScheme: ExpressiveThemeData.defaultShapeScheme.copyWith(
+    corners: ExpressiveThemeData.defaultShapeScheme.corners.copyWith(medium: 16),
+  ),
+);
+```
+
+One part's corners go on its style, each corner a step of the theme's scale; start and end follow the reading
+direction, and a press still morphs the part on its spring:
+
+```dart
+ExpressiveFilledButton(
+  'Send',
+  style: const ExpressiveComponentThemeData(
+    corners: WidgetStatePropertyAll(
+      RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none),
+    ),
+  ),
+  onPressed: send,
+)
+```
+
+A joined part (a segmented button, a split button, a menu's group) takes them at its outer corners only.
 
 ## Accessibility and languages
 

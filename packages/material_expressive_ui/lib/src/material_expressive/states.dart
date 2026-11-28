@@ -25,7 +25,9 @@ import 'elevation.dart';
 import 'internal/focus_ring.dart';
 import 'internal/group_tap_target.dart';
 import 'internal/width_probe.dart';
+import 'internal/corners.dart';
 import 'motion.dart';
+import 'shape.dart';
 import 'theme.dart';
 import 'internal/style_layers.dart';
 
@@ -208,6 +210,7 @@ class ExpressivePressable extends StatefulWidget {
     this.focusRing = true,
     this.markFace = false,
     this.focusTarget,
+    this.outerCorners = ExpressiveOuterCorners.all,
     super.key,
   }) : assert(
          focusTarget == null || (focusNode == null && !autofocus),
@@ -222,6 +225,11 @@ class ExpressivePressable extends StatefulWidget {
 
   /// The shapes the container morphs between: a component's tokens.
   final ExpressivePressShapes shapes;
+
+  /// Which corners an app's `corners` (on [style] or [componentStyle])
+  /// reach: every one, or a joined part's outer ones. The shape morphs to
+  /// each state's outline with them, on [motion]'s spring.
+  final ExpressiveOuterCorners outerCorners;
 
   /// The spring the shape morphs on: the component's motion key.
   final ExpressiveMotionKey motion;
@@ -405,6 +413,13 @@ class ExpressivePressable extends StatefulWidget {
         ),
       )
       ..add(DiagnosticsProperty<ExpressivePressShapes>('shapes', shapes))
+      ..add(
+        DiagnosticsProperty<ExpressiveOuterCorners>(
+          'outerCorners',
+          outerCorners,
+          defaultValue: ExpressiveOuterCorners.all,
+        ),
+      )
       ..add(EnumProperty<ExpressiveMotionKey>('motion', motion))
       ..add(ColorProperty('color', color))
       ..add(ColorProperty('contentColor', contentColor))
@@ -634,14 +649,18 @@ class _ExpressivePressableState extends State<ExpressivePressable> {
     final resolved =
         (widget.componentStyle ?? const ExpressiveComponentThemeData())
             .layeredUnder(widget.style);
-    final target =
-        resolved.shape?.resolve(states) ??
-        widget.shapes.resolve(
-          pressed: _pressed,
-          selected: widget.selected,
-          focused: _keyboard && states.contains(WidgetState.focused),
-          hovered: states.contains(WidgetState.hovered),
-        );
+    final target = expressiveOutline(
+      theme,
+      resolved,
+      states,
+      widget.shapes.resolve(
+        pressed: _pressed,
+        selected: widget.selected,
+        focused: _keyboard && states.contains(WidgetState.focused),
+        hovered: states.contains(WidgetState.hovered),
+      ),
+      reach: widget.outerCorners,
+    );
 
     // The focus ring fades in and out on the fast effects spring (ringT,
     // 0 to 1) rather than appearing at once.

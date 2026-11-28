@@ -14,6 +14,7 @@ import '../component_themes.dart';
 import '../elevation.dart';
 import '../internal/badge_anchor.dart';
 import '../internal/cap_label.dart';
+import '../internal/corners.dart';
 import '../internal/shell_destinations.dart';
 import 'app_shell.dart' show ExpressiveAppShell;
 import '../internal/styled_content.dart';
@@ -1270,9 +1271,12 @@ class _NavItem extends StatelessWidget {
       if (!enabled) WidgetState.disabled,
     };
     final visual = componentStyle.layeredUnder(item.style);
-    final indicatorShape =
-        visual.shape?.resolve(states) ??
-        t.shapes.of(NavigationBarTokens.itemActiveIndicatorShape);
+    final indicatorShape = expressiveOutline(
+      t,
+      visual,
+      states,
+      t.shapes.of(NavigationBarTokens.itemActiveIndicatorShape),
+    );
     final outline = visual.outline?.resolve(states);
     final side =
         visual.side?.resolve(states) ??

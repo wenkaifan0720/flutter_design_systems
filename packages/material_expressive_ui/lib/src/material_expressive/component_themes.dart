@@ -45,6 +45,7 @@ import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 /// A component style with stateful visual slots, resolved before the look's tokens.
 ///
@@ -64,6 +65,7 @@ class ExpressiveComponentThemeData with Diagnosticable {
     this.overlayColor,
     this.side,
     this.shape,
+    this.corners,
     this.padding,
     this.minimumSize,
     this.textStyle,
@@ -124,6 +126,7 @@ class ExpressiveComponentThemeData with Diagnosticable {
       overlayColor: combine((s) => s.overlayColor),
       side: combine((s) => s.side),
       shape: combine((s) => s.shape),
+      corners: combine((s) => s.corners),
       padding: combine((s) => s.padding),
       minimumSize: combine((s) => s.minimumSize),
       textStyle: combine((s) => s.textStyle),
@@ -147,8 +150,15 @@ class ExpressiveComponentThemeData with Diagnosticable {
   /// The outline stroke.
   final WidgetStateProperty<BorderSide?>? side;
 
-  /// The outline; any Flutter OutlinedBorder is accepted.
+  /// The outline; any Flutter OutlinedBorder is accepted. It wins over
+  /// [corners] and is drawn as given.
   final WidgetStateProperty<OutlinedBorder?>? shape;
+
+  /// The part's own corners: a step of the theme's scale at each corner
+  /// (ui_core's `RawCorners`), start and end as the text reads, held to
+  /// `ExpressiveThemeData.shapeLimits`. A corner left null keeps the part's
+  /// own, and its press and selection morphs with it.
+  final WidgetStateProperty<RawCorners?>? corners;
 
   /// The foregroundColor padding before the outline safe inset.
   final WidgetStateProperty<EdgeInsetsGeometry?>? padding;
@@ -170,6 +180,7 @@ class ExpressiveComponentThemeData with Diagnosticable {
       overlayColor == null &&
       side == null &&
       shape == null &&
+      corners == null &&
       padding == null &&
       minimumSize == null &&
       textStyle == null &&
@@ -190,6 +201,7 @@ class ExpressiveComponentThemeData with Diagnosticable {
     WidgetStateProperty<Color?>? overlayColor,
     WidgetStateProperty<BorderSide?>? side,
     WidgetStateProperty<OutlinedBorder?>? shape,
+    WidgetStateProperty<RawCorners?>? corners,
     WidgetStateProperty<EdgeInsetsGeometry?>? padding,
     WidgetStateProperty<Size?>? minimumSize,
     WidgetStateProperty<TextStyle?>? textStyle,
@@ -201,6 +213,7 @@ class ExpressiveComponentThemeData with Diagnosticable {
     overlayColor: overlayColor ?? this.overlayColor,
     side: side ?? this.side,
     shape: shape ?? this.shape,
+    corners: corners ?? this.corners,
     padding: padding ?? this.padding,
     minimumSize: minimumSize ?? this.minimumSize,
     textStyle: textStyle ?? this.textStyle,
@@ -224,6 +237,7 @@ class ExpressiveComponentThemeData with Diagnosticable {
       overlayColor: overlayColor ?? other.overlayColor,
       side: side ?? other.side,
       shape: shape ?? other.shape,
+      corners: corners ?? other.corners,
       padding: padding ?? other.padding,
       minimumSize: minimumSize ?? other.minimumSize,
       textStyle: textStyle ?? other.textStyle,
@@ -277,6 +291,12 @@ class ExpressiveComponentThemeData with Diagnosticable {
         t,
         (a, b, t) => ShapeBorder.lerp(a, b, t) as OutlinedBorder?,
       ),
+      corners: WidgetStateProperty.lerp<RawCorners?>(
+        a.corners,
+        b.corners,
+        t,
+        (a, b, t) => t < .5 ? a : b,
+      ),
       padding: WidgetStateProperty.lerp<EdgeInsetsGeometry?>(
         a.padding,
         b.padding,
@@ -314,6 +334,7 @@ class ExpressiveComponentThemeData with Diagnosticable {
           other.overlayColor == overlayColor &&
           other.side == side &&
           other.shape == shape &&
+          other.corners == corners &&
           other.padding == padding &&
           other.minimumSize == minimumSize &&
           other.textStyle == textStyle &&
@@ -327,6 +348,7 @@ class ExpressiveComponentThemeData with Diagnosticable {
     overlayColor,
     side,
     shape,
+    corners,
     padding,
     minimumSize,
     textStyle,
@@ -375,6 +397,13 @@ class ExpressiveComponentThemeData with Diagnosticable {
       DiagnosticsProperty<WidgetStateProperty<OutlinedBorder?>>(
         'shape',
         shape,
+        defaultValue: null,
+      ),
+    );
+    properties.add(
+      DiagnosticsProperty<WidgetStateProperty<RawCorners?>>(
+        'corners',
+        corners,
         defaultValue: null,
       ),
     );

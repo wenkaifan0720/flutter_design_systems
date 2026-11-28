@@ -6,6 +6,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -738,41 +739,111 @@ class _ValueIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
     final scope = ExpressiveStyleScope.maybeOf(context)!;
-    return IgnorePointer(
-      child: ExpressiveSpringValue(
-        value: visible ? 1 : 0,
-        motion: ExpressiveMotionKey.fastEffects,
-        builder: (context, shown, child) => shown <= 0
-            ? const SizedBox.shrink()
-            : Opacity(opacity: shown.clamp(0.0, 1.0), child: child),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: ExpressiveSpacing.s48),
-          child: ExpressiveSurface(
-            states: scope.states,
-            style: ExpressiveComponentThemeData(
-              side: scope.style.side,
-              overlayColor: scope.style.overlayColor,
-              textStyle: scope.style.textStyle,
-              foregroundColor: scope.style.foregroundColor,
-            ),
-            color: t.colors.role(SliderTokens.valueIndicatorContainerColor),
-            contentColor: t.colors.role(
-              SliderTokens.valueIndicatorLabelTextColor,
-            ),
-            shape: t.shapes.full,
-            padding: const EdgeInsets.symmetric(
-              horizontal: ExpressiveSpacing.s16,
-              vertical: ExpressiveSpacing.s12,
-            ),
-            child: DefaultTextStyle.merge(
-              style: t.type
-                  .of(SliderTokens.valueIndicatorLabelTextFont)
-                  .merge(scope.style.textStyle?.resolve(scope.states)),
-              child: Text(text, textAlign: TextAlign.center, maxLines: 1),
+    return _InsideWindow(
+      width: MediaQuery.maybeSizeOf(context)?.width ?? double.infinity,
+      child: IgnorePointer(
+        child: ExpressiveSpringValue(
+          value: visible ? 1 : 0,
+          motion: ExpressiveMotionKey.fastEffects,
+          builder: (context, shown, child) => shown <= 0
+              ? const SizedBox.shrink()
+              : Opacity(opacity: shown.clamp(0.0, 1.0), child: child),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: ExpressiveSpacing.s48),
+            child: ExpressiveSurface(
+              states: scope.states,
+              style: ExpressiveComponentThemeData(
+                side: scope.style.side,
+                overlayColor: scope.style.overlayColor,
+                textStyle: scope.style.textStyle,
+                foregroundColor: scope.style.foregroundColor,
+              ),
+              color: t.colors.role(SliderTokens.valueIndicatorContainerColor),
+              contentColor: t.colors.role(
+                SliderTokens.valueIndicatorLabelTextColor,
+              ),
+              shape: t.shapes.full,
+              padding: const EdgeInsets.symmetric(
+                horizontal: ExpressiveSpacing.s16,
+                vertical: ExpressiveSpacing.s12,
+              ),
+              child: DefaultTextStyle.merge(
+                style: t.type
+                    .of(SliderTokens.valueIndicatorLabelTextFont)
+                    .merge(scope.style.textStyle?.resolve(scope.states)),
+                child: Text(text, textAlign: TextAlign.center, maxLines: 1),
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Keeps [child] inside a window [width] wide, [ExpressiveSpacing.s8] in
+/// from its edges: a value bubble over a handle at the track's end slides
+/// in along the track rather than leaving the window.
+class _InsideWindow extends SingleChildRenderObjectWidget {
+  const _InsideWindow({required this.width, super.child});
+
+  final double width;
+
+  @override
+  _RenderInsideWindow createRenderObject(BuildContext context) =>
+      _RenderInsideWindow(width);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderInsideWindow renderObject,
+  ) {
+    renderObject.width = width;
+  }
+}
+
+class _RenderInsideWindow extends RenderProxyBox {
+  _RenderInsideWindow(this._width);
+
+  double _width;
+  set width(double value) {
+    if (value == _width) return;
+    _width = value;
+    markNeedsPaint();
+  }
+
+  /// How far the child moves along to stay inside the window: its start
+  /// edge wins when it is wider than the window's room.
+  double get _shift {
+    if (!attached || !hasSize || !_width.isFinite) return 0;
+    const margin = ExpressiveSpacing.s8;
+    final left = localToGlobal(Offset.zero).dx;
+    final right = left + size.width;
+    var dx = 0.0;
+    if (right > _width - margin) dx = _width - margin - right;
+    if (left + dx < margin) dx = margin - left;
+    return dx;
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    final child = this.child;
+    if (child != null) context.paintChild(child, offset.translate(_shift, 0));
+  }
+
+  @override
+  void applyPaintTransform(RenderBox child, Matrix4 transform) {
+    transform.multiply(Matrix4.translationValues(_shift, 0, 0));
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    final child = this.child;
+    if (child == null) return false;
+    return result.addWithPaintOffset(
+      offset: Offset(_shift, 0),
+      position: position,
+      hitTest: (result, position) => child.hitTest(result, position: position),
     );
   }
 }

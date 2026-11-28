@@ -72,22 +72,6 @@ Rect _track(WidgetTester tester) => tester.getRect(
       .first,
 );
 
-const _zero = ExpressiveCornerBorder.all(ExpressiveCornerSize.zero);
-
-/// An app's square shape scale: every step 0.
-const _squareShapes = ExpressiveShapes(
-  none: _zero,
-  extraSmall: _zero,
-  small: _zero,
-  medium: _zero,
-  large: _zero,
-  largeIncreased: _zero,
-  extraLarge: _zero,
-  extraLargeIncreased: _zero,
-  extraExtraLarge: _zero,
-  full: _zero,
-);
-
 /// ui_core's touch floor (`RawTapTargets.fallback`), Expressive's for a
 /// finger and a pointer alike.
 const double _floor = 40;
@@ -449,83 +433,71 @@ void main() {
 
   // The ink surface must paint the entire 40dp halo around the 24dp control.
   testWidgets('hover paints the whole 40dp halo about a checkbox and a '
-      'radio: a circle, a square only for the checkbox on a square scale', (
-    tester,
-  ) async {
-    for (final square in [false, true]) {
-      for (final radio in [false, true]) {
-        final where =
-            '${radio ? 'radio' : 'checkbox'}, '
-            '${square ? 'a square' : 'Material\'s'} shape scale';
-        const key = ValueKey<String>('halo');
-        await tester.pumpWidget(
-          _app(
-            RepaintBoundary(
-              key: key,
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: radio
-                    ? ExpressiveRadio(selected: false, onPressed: () {})
-                    : ExpressiveCheckbox(value: false, onChanged: (_) {}),
-              ),
+      'radio: a circle', (tester) async {
+    for (final radio in [false, true]) {
+      final where = radio ? 'radio' : 'checkbox';
+      const key = ValueKey<String>('halo');
+      await tester.pumpWidget(
+        _app(
+          RepaintBoundary(
+            key: key,
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: radio
+                  ? ExpressiveRadio(selected: false, onPressed: () {})
+                  : ExpressiveCheckbox(value: false, onChanged: (_) {}),
             ),
-            theme: square ? _theme.copyWith(shapes: _squareShapes) : null,
           ),
-        );
-        await tester.pumpAndSettle();
-        final boundary = tester.renderObject<RenderRepaintBoundary>(
-          find.byKey(key),
-        );
-        final origin = tester.getTopLeft(find.byKey(key));
-        final centre =
-            tester.getCenter(
-              find.byType(radio ? ExpressiveRadio : ExpressiveCheckbox),
-            ) -
-            origin;
-        Future<ByteData> shot() async => (await tester.runAsync(() async {
-          final image = await boundary.toImage();
-          final data = await image.toByteData();
-          image.dispose();
-          return data!;
-        }))!;
-        int pixel(ByteData data, Offset at) => data.getUint32(
-          (at.dy.floor() * boundary.size.width.round() + at.dx.floor()) * 4,
-        );
-        final idle = await shot();
-        final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
-        await mouse.addPointer(location: tester.getCenter(find.byKey(key)));
-        await tester.pumpAndSettle();
-        final hovered = await shot();
-        await mouse.removePointer();
-        bool tinted(Offset at) =>
-            pixel(idle, centre + at) != pixel(hovered, centre + at);
+        ),
+      );
+      await tester.pumpAndSettle();
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        find.byKey(key),
+      );
+      final origin = tester.getTopLeft(find.byKey(key));
+      final centre =
+          tester.getCenter(
+            find.byType(radio ? ExpressiveRadio : ExpressiveCheckbox),
+          ) -
+          origin;
+      Future<ByteData> shot() async => (await tester.runAsync(() async {
+        final image = await boundary.toImage();
+        final data = await image.toByteData();
+        image.dispose();
+        return data!;
+      }))!;
+      int pixel(ByteData data, Offset at) => data.getUint32(
+        (at.dy.floor() * boundary.size.width.round() + at.dx.floor()) * 4,
+      );
+      final idle = await shot();
+      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await mouse.addPointer(location: tester.getCenter(find.byKey(key)));
+      await tester.pumpAndSettle();
+      final hovered = await shot();
+      await mouse.removePointer();
+      bool tinted(Offset at) =>
+          pixel(idle, centre + at) != pixel(hovered, centre + at);
 
-        // Past the control's 24dp box, inside the 20dp radius.
-        for (final at in const [
-          Offset(0, 17),
-          Offset(17, 0),
-          Offset(0, -17),
-          Offset(-17, 0),
-        ]) {
-          expect(tinted(at), isTrue, reason: '$where: no halo at $at');
-        }
-        // Outside the circle, inside its square: tinted only where the
-        // halo is a square.
-        for (final at in const [
-          Offset(16, 16),
-          Offset(-16, 16),
-          Offset(16, -16),
-          Offset(-16, -16),
-        ]) {
-          expect(
-            tinted(at),
-            square && !radio,
-            reason: '$where: the halo at $at',
-          );
-        }
-        // Nothing past the halo.
-        expect(tinted(const Offset(0, 22)), isFalse, reason: where);
+      // Past the control's 24dp box, inside the 20dp radius.
+      for (final at in const [
+        Offset(0, 17),
+        Offset(17, 0),
+        Offset(0, -17),
+        Offset(-17, 0),
+      ]) {
+        expect(tinted(at), isTrue, reason: '$where: no halo at $at');
       }
+      // Outside the circle, inside its square: untinted.
+      for (final at in const [
+        Offset(16, 16),
+        Offset(-16, 16),
+        Offset(16, -16),
+        Offset(-16, -16),
+      ]) {
+        expect(tinted(at), isFalse, reason: '$where: the halo at $at');
+      }
+      // Nothing past the halo.
+      expect(tinted(const Offset(0, 22)), isFalse, reason: where);
     }
     // Drawn pixels are the rasterizer's, as a golden's: macOS runs it.
   }, tags: const ['goldens']);

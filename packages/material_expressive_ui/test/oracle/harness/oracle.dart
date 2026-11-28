@@ -254,7 +254,7 @@ ExpressiveThemeData oracleTheme(String label, Brightness brightness) {
     expression: preset.expression,
     colors: expressiveResolveColors(baked, brightness, contrast: contrast),
     type: preset.type,
-    shapes: preset.shapes,
+    shapeScheme: preset.shapeScheme,
     motion: preset.motion,
   );
 }

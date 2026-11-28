@@ -165,10 +165,6 @@ class ExpressiveSelect<T> extends StatefulWidget {
   /// Material's medium window class, where the shell's rail stands in.
   static const double wideFrom = ExpressiveChromeMetrics.railMinWindowWidth;
 
-  /// An expanded button's widest (a primary act's at a form's foot) in a
-  /// window [wideFrom] or wider; a select itself takes its column's width.
-  static const double wideMaxWidth = 320;
-
   @override
   State<ExpressiveSelect<T>> createState() => _ExpressiveSelectState<T>();
 

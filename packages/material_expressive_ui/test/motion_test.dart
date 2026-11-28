@@ -267,7 +267,7 @@ void main() {
               expression: data.expression,
               colors: data.colors,
               type: data.type,
-              shapes: data.shapes,
+              shapeScheme: data.shapeScheme,
               motion: ExpressiveMotion(scheme: theme),
             ),
             child: probe,
