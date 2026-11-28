@@ -31,11 +31,11 @@ class ShelfApp extends StatelessWidget {
         title: 'Shelf',
         debugShowCheckedModeBanner: false,
         localizationsDelegates: const [
-          DefaultRawWidgetsLocalizations.delegate,
+          RawWidgetsLocalizations.delegate,
           ExpressiveLocalizations.delegate,
-          DefaultMaterialLocalizations.delegate,
-          DefaultWidgetsLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
         ],
+        supportedLocales: RawWidgetsLocalizations.supportedLocales,
         builder: (context, child) => ExpressiveHost(
           brightness: shelf.appearance.brightness,
           palette: shelf.palette,

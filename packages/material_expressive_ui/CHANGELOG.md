@@ -1,3 +1,11 @@
+## 0.9.1
+
+- On a tablet and a desk (from 600 wide), `ExpressiveScaffold`'s `footer` stands at the start of the page's column, as wide as its keys, an `expand` key too, under the start of what the page holds. It had spanned the window from margin to margin: at 1440 a form's "Save book" ran from 16 to 1424, far past its 640 column. A phone's footer is unchanged.
+- `ExpressiveHost.density` sets how tight the controls stand, by day and by night, in whichever theme the host wears, next to `palette` and `brightness`. The host's doc says how `theme`, `darkTheme`, the high-contrast pair, `palette` and `brightness` combine, and that the window's width plays no part.
+- `ExpressiveTextField`'s doc says what a form does with it: it is not a `FormField`, so a `Form`'s `reset()` and `validate()` pass it by and its text stays; clear its controller to empty it.
+- The README gives one list of localization delegates: `RawWidgetsLocalizations.delegate` (30 languages), `ExpressiveLocalizations.delegate` and material_ui's `GlobalMaterialLocalizations.delegates`, with `RawWidgetsLocalizations.supportedLocales`, and says an app on material_ui needs no `flutter_localizations`. It had listed the English-only defaults. The example lists the same delegates. The Forms section empties the form after a save, says Expressive's fields need no `Form`, `validator` or `autovalidateMode`, and says where the footer stands on a desk.
+- The Overview's "Corners of its own" tile and the README's example round a part's top corners one step and its bottom ones another, where they cut two diagonal corners.
+
 ## 0.9.0
 
 - Needs ui_core 0.8.7.

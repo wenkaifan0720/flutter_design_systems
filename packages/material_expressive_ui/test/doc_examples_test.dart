@@ -72,7 +72,7 @@ final Map<String, DocExample> _examples = {
   ),
   'expressiveCornersOver': (context) => expressiveCornersOver(
     context.expressiveTheme,
-    const RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none),
+    const RawCorners(bottomStart: RawCorner.none, bottomEnd: RawCorner.none),
     context.expressiveTheme.shapes.medium,
   ),
   'ExpressiveColorScheme.copyWith': (context) =>
@@ -1045,6 +1045,12 @@ final Map<String, DocExample> _examples = {
       ),
       child: child,
     );
+  },
+  'ExpressiveHost.density': (context) {
+    // The app builder's child.
+    Widget app() => const ExpressiveFilledButton('Save');
+    final child = app();
+    return ExpressiveHost(density: ExpressiveDensity.compact, child: child);
   },
   'ExpressiveThemeData.palettes': (context) {
     const id = 'grove';

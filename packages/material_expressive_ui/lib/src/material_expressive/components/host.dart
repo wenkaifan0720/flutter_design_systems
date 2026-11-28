@@ -27,6 +27,16 @@ import 'page_transitions.dart' show expressivePageTransitions;
 ///
 /// Mounted once, around the router's Navigator:
 /// `MaterialApp.router(builder: (context, child) => ExpressiveHost(child: child!))`.
+///
+/// Which theme it wears: [brightness] (or the platform's, when null) picks
+/// day or night. By day it wears [theme], by night [darkTheme]; while the
+/// platform asks for high contrast, [highContrastTheme] and
+/// [highContrastDarkTheme] come first. Where the theme for that brightness
+/// is null, it wears [palette]'s (or Baseline's when [palette] is null too),
+/// at high contrast when the platform asks for it; a theme given wins over
+/// [palette]. [density], when set, is the density of whichever theme it
+/// wears, the app's own or a palette's; null leaves each theme's own. The
+/// window's width plays no part: the shell and the pages adapt to it.
 class ExpressiveHost extends StatefulWidget {
   /// A host mounting the Expressive theme over [child].
   const ExpressiveHost({
@@ -37,6 +47,7 @@ class ExpressiveHost extends StatefulWidget {
     this.highContrastDarkTheme,
     this.brightness,
     this.palette,
+    this.density,
     super.key,
   });
 
@@ -79,6 +90,17 @@ class ExpressiveHost extends StatefulWidget {
   /// app's own ([ExpressiveThemeData.fromPalette]); null is Baseline. A
   /// change of palette springs across, as a change of brightness does.
   final RawNamedPalette? palette;
+
+  /// How tight the controls stand, by day and by night, in whichever theme
+  /// the host wears ([ExpressiveDensity.standard], `comfortable` or
+  /// `compact`); null leaves each theme's own, which adapts to the platform
+  /// when the theme sets none. A reader's choice of density goes here, next
+  /// to [palette] and [brightness].
+  ///
+  /// ```dart
+  /// ExpressiveHost(density: ExpressiveDensity.compact, child: child)
+  /// ```
+  final ExpressiveDensity? density;
 
   /// The thin Material [ThemeData] the primitives read under [theme] on
   /// [platform]: built once per pair, since a [ThemeData] is costly to make.
@@ -264,6 +286,13 @@ class ExpressiveHost extends StatefulWidget {
           palette,
           defaultValue: null,
         ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveDensity?>(
+          'density',
+          density,
+          defaultValue: null,
+        ),
       );
   }
 }
@@ -348,15 +377,22 @@ class _ExpressiveHostState extends State<ExpressiveHost> {
             brightness,
             contrastLevel: high ? 1 : 0,
           );
-    final dark =
-        (high ? widget.highContrastDarkTheme : null) ??
-        widget.darkTheme ??
-        preset(Brightness.dark);
+    final density = widget.density;
+    // The host's density over whichever theme it wears.
+    ExpressiveThemeData dense(ExpressiveThemeData t) =>
+        density == null ? t : t.copyWith(density: density);
+    final dark = dense(
+      (high ? widget.highContrastDarkTheme : null) ??
+          widget.darkTheme ??
+          preset(Brightness.dark),
+    );
     final theme = wanted == Brightness.dark
         ? dark
-        : (high ? widget.highContrastTheme : null) ??
-              widget.theme ??
-              preset(Brightness.light);
+        : dense(
+            (high ? widget.highContrastTheme : null) ??
+                widget.theme ??
+                preset(Brightness.light),
+          );
     // Behaviour follows the platform: never pinned, and a
     // preview frame's register inside one.
     final platform = PreviewFrame.targetPlatformOf(context);

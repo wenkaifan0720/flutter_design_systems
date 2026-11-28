@@ -750,9 +750,11 @@ class _AlignmentSampleState extends State<_AlignmentSample> {
   );
 }
 
-/// A style's corners, each a step of the theme's scale: the button's
-/// diagonal pair cut square, the card's leading top corner the extra-large
-/// step and its far one square. [act] is the button's word.
+/// A style's corners, each a step of the theme's scale: the button's top
+/// corners the large step and its bottom ones square, as a tab's are; the
+/// card's top corners extra large and its bottom ones small. One step along
+/// the top, another along the bottom, never a diagonal. [act] is the
+/// button's word.
 Widget kitSpecimenOwnCorners(String act) => Row(
   mainAxisSize: MainAxisSize.min,
   spacing: ExpressiveSpacing.s16,
@@ -762,7 +764,12 @@ Widget kitSpecimenOwnCorners(String act) => Row(
       size: ExpressiveButtonSize.medium,
       style: const ExpressiveComponentThemeData(
         corners: WidgetStatePropertyAll(
-          RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none),
+          RawCorners(
+            topStart: RawCorner.large,
+            topEnd: RawCorner.large,
+            bottomStart: RawCorner.none,
+            bottomEnd: RawCorner.none,
+          ),
         ),
       ),
       onPressed: () {},
@@ -774,7 +781,9 @@ Widget kitSpecimenOwnCorners(String act) => Row(
           corners: WidgetStatePropertyAll(
             RawCorners(
               topStart: RawCorner.extraLarge,
-              bottomEnd: RawCorner.none,
+              topEnd: RawCorner.extraLarge,
+              bottomStart: RawCorner.small,
+              bottomEnd: RawCorner.small,
             ),
           ),
         ),

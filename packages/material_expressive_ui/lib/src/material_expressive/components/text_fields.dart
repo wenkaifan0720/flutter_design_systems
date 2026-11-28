@@ -68,6 +68,11 @@ enum ExpressiveLabelPosition {
 ///
 /// The field keeps Compose's minimum size (280 × 56dp) where its parent
 /// leaves it free, and stretches where its parent stretches it.
+///
+/// It is not a [FormField]: a [Form]'s `reset()` and `validate()` pass it
+/// by, and its text stays. Check its words when the reader saves and give a
+/// problem to [errorText]. To empty it after a save, clear its [controller]
+/// (`controller.clear()`).
 class ExpressiveTextField extends StatefulWidget {
   /// A single-line text field.
   const ExpressiveTextField({

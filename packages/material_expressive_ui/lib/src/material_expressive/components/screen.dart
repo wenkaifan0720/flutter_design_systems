@@ -40,7 +40,10 @@ ScrollViewKeyboardDismissBehavior _keyboardDismiss(BuildContext context) =>
 /// is docked above it and fills its colour on scroll.
 ///
 /// Bottom: [footer] (sticky actions) or [bottomNav] (a docked bar) own the
-/// bottom edge and inset by the device's safe area; [floating] chrome (a
+/// bottom edge and inset by the device's safe area. On a phone the footer
+/// takes the page's width; from 600 wide (a rail's window) its keys stand at
+/// the start of the page's column, as wide as they are, under the start of
+/// what the page holds; [floating] chrome (a
 /// FAB) stands 16dp in from the bottom end, over the body, which reserves
 /// room for it. A shell's branch root reserves the shell's allowance
 /// (`ShellInsets`) and never owns the bottom edge itself.
@@ -81,7 +84,8 @@ class ExpressiveScaffold extends StatefulWidget {
   final Widget? bottomNav;
 
   /// Pinned above the bottom edge (sticky actions), with the screen's
-  /// horizontal margin.
+  /// horizontal margin. From 600 wide it is as wide as its keys (an
+  /// `expand` key too), at the start of the page's column.
   final Widget? footer;
 
   /// Floating chrome at the bottom end: a FAB.
@@ -401,7 +405,17 @@ class _ExpressiveScreenState extends State<ExpressiveScaffold>
                       ExpressiveChromeMetrics.margin,
                       ExpressiveSpacing.s8 + media.padding.bottom,
                     ),
-                    child: footer,
+                    // From a rail's window the keys stand at the column's
+                    // start, as wide as they are: a key across a desk's
+                    // window ends far from the form it saves.
+                    child:
+                        media.size.width <
+                            ExpressiveChromeMetrics.railMinWindowWidth
+                        ? footer
+                        : Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: IntrinsicWidth(child: footer),
+                          ),
                   ),
                 if (bottomNav != null)
                   MediaQuery(

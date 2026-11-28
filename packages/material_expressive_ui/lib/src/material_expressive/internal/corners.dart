@@ -34,7 +34,7 @@ OutlinedBorder expressiveOutline(
 /// shape, a circle) stays as it is.
 ///
 /// ```dart
-/// expressiveCornersOver(context.expressiveTheme, const RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none), context.expressiveTheme.shapes.medium)
+/// expressiveCornersOver(context.expressiveTheme, const RawCorners(bottomStart: RawCorner.none, bottomEnd: RawCorner.none), context.expressiveTheme.shapes.medium)
 /// ```
 OutlinedBorder expressiveCornersOver(
   ExpressiveThemeData t,

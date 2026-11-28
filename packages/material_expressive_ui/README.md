@@ -62,11 +62,11 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
     localizationsDelegates: const [
-      DefaultRawWidgetsLocalizations.delegate,
+      RawWidgetsLocalizations.delegate,
       ExpressiveLocalizations.delegate,
-      DefaultMaterialLocalizations.delegate,
-      DefaultWidgetsLocalizations.delegate,
+      ...GlobalMaterialLocalizations.delegates,
     ],
+    supportedLocales: RawWidgetsLocalizations.supportedLocales,
     builder: (context, child) => ExpressiveHost(brightness: appearance, child: child!),
     home: const ExpressiveScaffold(
       topBar: ExpressiveAppBar(title: 'Shelf'),
@@ -76,8 +76,12 @@ class App extends StatelessWidget {
 }
 ```
 
-Under a `CupertinoApp` (from `cupertino_ui`) or a bare `WidgetsApp` the host goes in the same place; a field is
-Flutter's Material text field underneath, so list `DefaultMaterialLocalizations.delegate` there too.
+These are the delegates an app lists: `RawWidgetsLocalizations.delegate` (ui_core's words for shared actions, in 30
+languages), `ExpressiveLocalizations.delegate` (Expressive's own, English for every locale until the app gives its own)
+and material_ui's `GlobalMaterialLocalizations.delegates` (the pickers' titles, modes and field labels, in each of
+Material's languages). An app on material_ui needs no `flutter_localizations`: `GlobalMaterialLocalizations` comes
+from material_ui. Under a `CupertinoApp` (from `cupertino_ui`) or a bare `WidgetsApp` the host goes in the same
+place, with the same delegates: a field is Flutter's Material text field underneath.
 
 ## Build an app
 
@@ -175,6 +179,11 @@ move the focus to the first one. An `ExpressiveDockedDatePicker` with a null `va
 day prints as 3 Oct 2026. Rows of choices (`ExpressiveRadioGroup`, `ExpressiveSwitchRow`) take
 `contentPadding: EdgeInsets.zero` to put their marks on the column's edges.
 
+Expressive's fields are not `FormField`s, so a form needs no `Form`, no `validator` and no `autovalidateMode`:
+check on save, as below, and clear an answer's error as the reader puts it right if you like (`onChanged`). A
+`Form`'s `reset()` passes the fields by; to empty the form after a save, clear the controllers and the values, as
+`_save` does. On a desk the footer of an `ExpressiveScaffold` stands at the column's start, as wide as its keys.
+
 ```dart
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 import 'package:material_ui/material_ui.dart';
@@ -209,6 +218,12 @@ class _AddBookFormState extends State<AddBookForm> {
     setState(() => _titleError = _checkTitle(_title.text));
     if (_titleError != null) return _titleFocus.requestFocus();
     widget.onSaved(_title.text.trim(), _format, _started);
+    // Saved: the form is empty again for the next book.
+    _title.clear();
+    setState(() {
+      _format = 'paperback';
+      _started = null;
+    });
   }
 
   @override
@@ -373,14 +388,20 @@ final theme = ExpressiveThemeData.baseline().copyWith(
 ```
 
 One part's corners go on its style, each corner a step of the theme's scale; start and end follow the reading
-direction, and a press still morphs the part on its spring:
+direction, and a press still morphs the part on its spring. Here the key rounds its top corners and keeps its bottom
+ones square, as a tab's are: one step along the top, another along the bottom:
 
 ```dart
 ExpressiveFilledButton(
   'Send',
   style: const ExpressiveComponentThemeData(
     corners: WidgetStatePropertyAll(
-      RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none),
+      RawCorners(
+        topStart: RawCorner.large,
+        topEnd: RawCorner.large,
+        bottomStart: RawCorner.none,
+        bottomEnd: RawCorner.none,
+      ),
     ),
   ),
   onPressed: send,
@@ -395,7 +416,7 @@ A joined part (a segmented button, a split button, a menu's group) takes them at
 - Touch targets are at least 40 dp, ui_core's touch floor, for a finger and a pointer alike; a `RawTapTargetScope` under the theme raises the floor for an app's pages. Groups of chips and tags stand 8 dp apart, their targets meeting in the room between them. Text scales with the platform setting, and the parts Material caps (a date picker's month label at 2×) are capped the same way.
 - The layout follows `Directionality`, so a right-to-left app mirrors its rows, menus and navigation.
 - Roboto Flex draws Latin, Greek and Cyrillic; other scripts fall back to the platform's fonts (on the web, Flutter fetches them). An app that ships its own faces for them, Noto Sans JP or Noto Sans Arabic say, names them in `ExpressiveTextTheme.fontFamilyFallback` (`theme.copyWith(type: theme.type.copyWith(fontFamilyFallback: ['NotoSansJP', 'NotoSansArabic']))`): every text style takes the list, and so does the Material theme `ExpressiveHost` lays under the parts.
-- Use `ExpressiveLocalizations` for component text and `RawWidgetsLocalizations` for shared actions. Both include English defaults, and `ExpressiveLocalizations.delegate` takes every locale. Supply delegates for your app's other languages. Until you do, a time picker's words come from `RawWidgetsLocalizations`, which ui_core speaks in 30 languages, and the pickers' titles, modes and field labels come from the app's `MaterialLocalizations`, as Material's own pickers' do: in each of Material's languages, from `GlobalMaterialLocalizations.delegates` or, when the app lists no Material localizations, from the host.
+- List the delegates under "Mount Expressive": `RawWidgetsLocalizations` speaks ui_core's shared actions (a time picker's words among them) in 30 languages, `ExpressiveLocalizations` gives Expressive's component text, English for every locale until the app supplies its own, and the pickers' titles, modes and field labels come from the app's `MaterialLocalizations`, as Material's own pickers' do: in each of Material's languages, from `GlobalMaterialLocalizations.delegates` or, when the app lists no Material localizations, from the host.
 - Give icon-only controls a `semanticLabel`, and give a rating a name such as “Rate this trip”, so a screen reader announces it in context.
 
 ## Custom components
