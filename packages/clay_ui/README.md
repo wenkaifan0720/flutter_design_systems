@@ -66,11 +66,12 @@ class App extends StatelessWidget {
     theme: ThemeData(
       pageTransitionsTheme: const PageTransitionsTheme(builders: clayPageTransitions),
     ),
+    // Clay's own words in 30 languages, and Material's (from material_ui).
     localizationsDelegates: const [
-      DefaultRawWidgetsLocalizations.delegate,
-      DefaultMaterialLocalizations.delegate,
-      DefaultWidgetsLocalizations.delegate,
+      RawWidgetsLocalizations.delegate,
+      ...GlobalMaterialLocalizations.delegates,
     ],
+    supportedLocales: RawWidgetsLocalizations.supportedLocales,
     builder: (context, child) => ClayHost(brightness: appearance, child: child!),
     home: const ClayScreen(
       topBar: ClayTopBar(title: 'Shelf'),
@@ -82,7 +83,10 @@ class App extends StatelessWidget {
 
 `clayPageTransitions` gives each platform its page transition, the iOS swipe back included. Under a `CupertinoApp`
 (from `cupertino_ui`) or a bare `WidgetsApp` the host goes in the same place; a field is Flutter's Material text
-field underneath, so list `DefaultMaterialLocalizations.delegate` there too.
+field underneath, so list the same delegates there too. `ClayHost` takes a `density` beside its `palette` and
+`brightness`, which stands over the theme by day and by night: `ClayHost(density: ClayDensity.compact, child: child!)`.
+A `theme` or `darkTheme` you give is used as it is, and the one you leave out is the palette's in that brightness. The
+window's width changes neither: the parts follow the width themselves.
 
 ## Build an app
 
@@ -95,7 +99,9 @@ The gallery, every component on a page of its own, is `example/lib/gallery.dart`
 the sidebar from 1024. Each place keeps its own pages; a page pushed on one stands beside the rail or the sidebar (a
 phone's dock steps away for it), back pops it, and choosing the place again goes back to its first page. The arrow
 keys move between the places. An `action`, the app's one key, stands at the dock's end and under the `brand` on a
-rail or a sidebar.
+rail or a sidebar. The `brand`, the app's mark, keeps its own size: at the start of a sidebar's head and in the
+middle of a rail's. A rail is 96 wide and a sidebar 264, so the snippet shows the mark alone on a rail and the app's
+name beside it on a sidebar.
 
 ```dart
 import 'package:clay_ui/clay_ui.dart';
@@ -121,6 +127,14 @@ class _ShelfShellState extends State<ShelfShell> {
     ],
     selectedIndex: _place,
     onDestinationSelected: (place) => setState(() => _place = place),
+    brand: LayoutBuilder(
+      builder: (context, room) {
+        const mark = ClayIconTile(child: Icon(LucideIcons.bookOpen));
+        return room.maxWidth < 160
+            ? mark
+            : const Row(mainAxisSize: MainAxisSize.min, spacing: 12, children: [mark, Text('Shelf')]);
+      },
+    ),
     branches: [
       (context) => const ClayScreen(topBar: ClayTopBar(title: 'Books'), body: Text('Your reading list')),
       (context) => const ClayScreen(topBar: ClayTopBar(title: 'Add a book'), body: Text('Title')),
@@ -183,12 +197,16 @@ class BooksPage extends StatelessWidget {
 Stand the fields in a `Column` with `ClaySpacing.large` between them, in a column of a readable width (the example
 holds its pages to 640 from the start edge). Every field takes the column's width. A control that is not a field (a
 segmented button, a slider) takes its label and help from `ClayFormField`, so its words start where a field's do. A
+switch in a form stands in a `ClayFormField` too, its label above it like a field's. A
 slider says its value as a percentage of its range, as Material's does; give it `semanticFormatterCallback` to say
 a count instead: `semanticFormatterCallback: (goal) => '${goal.round()} books'`.
 Check the answers when the reader saves: give each problem to its field's `errorText`, in words, and move the focus
 to the first one. A `ClayDatePicker` with a null `value` is an optional date; a chosen day prints in the app's locale,
 as Material's dates do: Oct 2, 2026 in English, 2 Oct 2026 in British English (`Locale('en', 'GB')` in
-`supportedLocales`). The page's one coral key stands in `ClayScreen`'s `footer` on a phone, in the thumb's reach.
+`supportedLocales`). That is `MaterialLocalizations.of(context).formatMediumDate(day)`; write a day the same way
+elsewhere on the page with it. The page's one coral key stands in `ClayScreen`'s `footer`: on a phone across the
+foot, in the thumb's reach; from 600 wide, beside a rail or a sidebar, at the start of the page's column, under the
+form's fields.
 
 ```dart
 import 'package:clay_ui/clay_ui.dart';
@@ -269,6 +287,78 @@ class _AddBookFormState extends State<AddBookForm> {
           firstDate: DateTime(1900),
           lastDate: DateTime(2100),
           onChanged: (day) => setState(() => _started = day),
+        ),
+      ],
+    ),
+  );
+}
+```
+
+To clear the form after a save and stay on the page for the next book, empty the controllers and set the other
+answers back: `_title.clear(); setState(() { _format = 'paperback'; _status = 'toRead'; _started = null; });`.
+
+A form can also check itself, as Material's `Form` does. Put each field in a `RawFormField` under a `ClayForm`; on a
+submit that fails, the form shows every error, moves the focus to the first and checks each field again as the reader
+puts it right (Material's `autovalidateMode: AutovalidateMode.onUserInteraction`; give a `RawFormField` that
+`autovalidateMode` to check it from the first keystroke). With a controller, a form field's initial value is its
+`initialValue`: `reset()` takes the errors away and restores that value, and leaves the controller's text as it is.
+To empty the form, call `reset()` and then clear the controllers:
+
+```dart
+import 'package:clay_ui/clay_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+class QuickAdd extends StatefulWidget {
+  const QuickAdd({super.key, required this.onAdd});
+
+  final ValueChanged<String> onAdd;
+
+  @override
+  State<QuickAdd> createState() => _QuickAddState();
+}
+
+class _QuickAddState extends State<QuickAdd> {
+  final _form = GlobalKey<RawFormState>();
+  final _title = TextEditingController();
+  final _titleFocus = FocusNode();
+
+  @override
+  void dispose() {
+    _title.dispose();
+    _titleFocus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => ClayForm(
+    key: _form,
+    onSubmit: () {
+      widget.onAdd(_title.text.trim());
+      // Clear the form after a save: reset() takes the errors away, then the
+      // controller empties the field.
+      _form.currentState!.reset();
+      _title.clear();
+    },
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: ClaySpacing.large,
+      children: [
+        RawFormField<String>(
+          focusNode: _titleFocus,
+          validator: (_) => _title.text.trim().isEmpty ? 'Enter the book’s title' : null,
+          builder: (field) => ClayTextField(
+            labelText: 'Title',
+            controller: _title,
+            focusNode: _titleFocus,
+            errorText: field.errorText,
+            onChanged: field.didChange,
+          ),
+        ),
+        Builder(
+          builder: (context) => ClayButton.filled(
+            'Add',
+            onPressed: () => RawForm.of(context).submit(),
+          ),
         ),
       ],
     ),
@@ -474,13 +564,29 @@ the platform setting. Dialogs, sheets, tabs, toasts and the navigation respect r
 ## Right to left and languages
 
 Controls follow the ambient `Directionality`, and the light falls from the top-leading corner in either direction.
-Add `DefaultRawWidgetsLocalizations.delegate` to your app for the controls' own words in 30 languages. Use
-`clayPlural` for phrases that depend on a count. Figures follow the locale: dates, times, the number field, the
+The controls' own words (a field's Clear, a dialog's Cancel, how many fields need attention) come in 30 languages from
+`RawWidgetsLocalizations.delegate`; `DefaultRawWidgetsLocalizations.delegate` is English alone. Give the app this
+whole list, as the Mount snippet does:
+
+```dart
+MaterialApp(
+  localizationsDelegates: const [
+    RawWidgetsLocalizations.delegate, // Clay's own words
+    ...GlobalMaterialLocalizations.delegates, // Material's, Cupertino's and the widgets'
+  ],
+  supportedLocales: RawWidgetsLocalizations.supportedLocales,
+  builder: (context, child) => ClayHost(child: child!),
+)
+```
+
+`GlobalMaterialLocalizations` comes from `material_ui`, which brings Flutter's translations with it: an app on
+material_ui needs no `flutter_localizations` dependency. The example lists the same delegates. Use `clayPlural` for
+phrases that depend on a count. Figures follow the locale: dates, times, the number field, the
 charts' scales, readouts and shares, and a meter's percentage write the reader's digits, Arabic-Indic in Arabic.
 
 ## Requirements
 
-Flutter 3.47 or later (Dart 3.13). The package depends on ui_core ^0.8.4 and re-exports it.
+Flutter 3.47 or later (Dart 3.13). The package depends on ui_core ^0.8.8 and re-exports it.
 
 ## Licence
 

@@ -987,7 +987,13 @@ class ClayScaffold extends StatelessWidget {
   /// ([ClayScaffold.branches]); the rail and the sidebar stay.
   final bool hideBarOnPush;
 
-  /// The app's mark atop a rail or a sidebar.
+  /// The app's mark atop a rail or a sidebar: its name, or a small mark of
+  /// its own.
+  ///
+  /// It keeps its own size, at the start of a sidebar's head and in the
+  /// middle of a rail's. A rail is 96 wide and a sidebar 264, so a mark that
+  /// shows the app's name beside it on a sidebar reads its room with a
+  /// [LayoutBuilder]: `brand: LayoutBuilder(builder: (context, room) => room.maxWidth < 160 ? mark : Row(mainAxisSize: MainAxisSize.min, spacing: 12, children: [mark, const Text('Shelf')]))`.
   final Widget? brand;
 
   /// The screen's one key: at the dock's end on a phone, under the brand on
@@ -1144,15 +1150,20 @@ class ClayScaffold extends StatelessWidget {
   );
 
   Widget? _head(bool wide) {
+    // The mark keeps its own size: a sidebar's head would stretch it across.
+    final own = brand;
+    final mark = own == null || !wide
+        ? own
+        : Align(alignment: AlignmentDirectional.centerStart, child: own);
     final act = action;
-    if (act == null) return brand;
+    if (act == null) return mark;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: wide
           ? CrossAxisAlignment.stretch
           : CrossAxisAlignment.center,
       children: [
-        ?brand,
+        ?mark,
         Padding(
           padding: EdgeInsets.only(top: brand == null ? 0 : ClaySpacing.large),
           child: wide

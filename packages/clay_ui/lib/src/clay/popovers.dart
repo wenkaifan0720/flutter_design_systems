@@ -52,7 +52,8 @@ const double _menuMaxWidth = 320;
 
 /// A menu that floats under the key [builder] makes: a slab of clay, its
 /// items as rows that dent under the pointer and the keys. Down on the key
-/// opens it; the arrows walk it; Escape closes it.
+/// opens it; the arrows walk it; Escape closes it. A tooltip on the key
+/// stays down while the menu is open.
 ///
 /// ```dart
 /// ClayMenu(items: [ClayMenuItem(label: 'Edit', onPressed: () {})], builder: (context, toggle, open) => ClayIconButton(onPressed: toggle, icon: const Icon(IconData(0x2026)), tooltip: 'More'))
@@ -111,7 +112,10 @@ class ClayMenu extends StatelessWidget {
           anchor.open();
           return KeyEventResult.handled;
         },
-        child: builder(context, anchor.toggle, anchor.isOpen),
+        child: _Opened(
+          open: anchor.isOpen,
+          child: builder(context, anchor.toggle, anchor.isOpen),
+        ),
       ),
       overlayBuilder: (context, info) => ClayMenuReveal(
         info: info,
@@ -270,7 +274,8 @@ class _Card extends StatelessWidget {
 }
 
 /// A popover: a small slab of clay floating beside the key [builder]
-/// makes, holding [content]; a tap beside it or Escape closes it.
+/// makes, holding [content]; a tap beside it or Escape closes it. A
+/// tooltip on the key stays down while the popover is open.
 ///
 /// ```dart
 /// ClayPopover(builder: (context, toggle, open) => ClayButton('Streak', onPressed: toggle), content: (context, close) => const Text('Twelve days running'))
@@ -317,8 +322,10 @@ class ClayPopover extends StatelessWidget {
     ),
     dampingRatio: ClayMotion.panelDamping,
     stiffness: ClayMotion.panelStiffness,
-    anchorBuilder: (context, anchor) =>
-        builder(context, anchor.toggle, anchor.isOpen),
+    anchorBuilder: (context, anchor) => _Opened(
+      open: anchor.isOpen,
+      child: builder(context, anchor.toggle, anchor.isOpen),
+    ),
     overlayBuilder: (context, info) => ClayMenuReveal(
       info: info,
       child: _Card(
@@ -402,7 +409,8 @@ class ClayHoverCard extends StatelessWidget {
 
 /// A tooltip: a small dark slab of clay with [message], floating above
 /// [child] once the pointer rests on it, or on a long press. One shows at a
-/// time; Escape hides it. Where no overlay stands over it (a toast's key,
+/// time; Escape hides it, and it stays down while a [ClayMenu] or
+/// [ClayPopover] that [child] opened is open. Where no overlay stands over it (a toast's key,
 /// over the app's navigator) it shows nothing and names [child] for a
 /// screen reader alone.
 ///
@@ -463,16 +471,22 @@ class ClayTooltip extends StatelessWidget {
           reverseDuration: Duration(milliseconds: 300),
         ),
         positionDelegate: positionDelegate,
-        tooltipBuilder: (context, shown) => _TipPresence(
-          shown: shown,
-          builder: (context, presence) => _TipReveal(
-            presence: presence,
-            above:
-                (RawTooltipPlacement.sideOf(context) ?? RawPopoverSide.above) ==
-                RawPopoverSide.above,
-            child: _Tip(message: message, style: style),
-          ),
-        ),
+        // Down while the menu or popover its control opened is open: a
+        // click on the web with its semantics on reaches the control as the
+        // tree's tap, and the tip hears no pointer go down to hide it.
+        tooltipBuilder: (context, shown) => _Opened.isOpen(context)
+            ? const SizedBox.shrink()
+            : _TipPresence(
+                shown: shown,
+                builder: (context, presence) => _TipReveal(
+                  presence: presence,
+                  above:
+                      (RawTooltipPlacement.sideOf(context) ??
+                          RawPopoverSide.above) ==
+                      RawPopoverSide.above,
+                  child: _Tip(message: message, style: style),
+                ),
+              ),
         child: RawTooltipFocusFix(child: child),
       ),
     ),
@@ -483,6 +497,20 @@ class ClayTooltip extends StatelessWidget {
     super.debugFillProperties(properties);
     properties.add(StringProperty('message', message));
   }
+}
+
+/// Whether the menu or popover that the control under it opens is open: a
+/// tip on that control stays down while it is, never over what it opened.
+class _Opened extends InheritedWidget {
+  const _Opened({required this.open, required super.child});
+
+  final bool open;
+
+  static bool isOpen(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_Opened>()?.open ?? false;
+
+  @override
+  bool updateShouldNotify(_Opened old) => open != old.open;
 }
 
 /// The tip's presence: to 1 on an effects spring while [shown] says it

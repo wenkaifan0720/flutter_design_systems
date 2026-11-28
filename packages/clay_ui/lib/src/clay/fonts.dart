@@ -41,15 +41,16 @@ List<FontVariation> clayWeight(FontWeight weight) => [
   FontVariation.weight(weight.value.toDouble().clamp(300, 900)),
 ];
 
-/// Loads the face Clay bundles, so the first frame is set in it. Await it
-/// before `runApp`: on the web a bundled face otherwise arrives after the
-/// first frames, which flash in a fallback face.
+/// Loads the face Clay bundles and the Lucide icon font its parts draw their
+/// glyphs from, so the first frame is set in them. Await it before
+/// `runApp`: on the web a bundled font otherwise arrives after the first
+/// frames, which flash in a fallback face, and a glyph shows as an empty box.
 ///
 /// ```dart
 /// Future<void> main() async {WidgetsFlutterBinding.ensureInitialized(); await clayLoadFonts(); runApp(const Placeholder());}
 /// ```
 Future<void> clayLoadFonts() {
-  final loader = FontLoader(clayRegisteredFamily(clayFontFamily))
+  final face = FontLoader(clayRegisteredFamily(clayFontFamily))
     ..addFont(
       rootBundle.load(
         clayFontPackage == null
@@ -57,5 +58,10 @@ Future<void> clayLoadFonts() {
             : 'packages/$clayFontPackage/assets/fonts/Rubik.ttf',
       ),
     );
-  return loader.load();
+  // The family `LucideIcons` names, as Flutter registers a package's font.
+  final icons = FontLoader('packages/lucide_icons_flutter/Lucide')
+    ..addFont(
+      rootBundle.load('packages/lucide_icons_flutter/assets/lucide.ttf'),
+    );
+  return Future.wait([face.load(), icons.load()]);
 }

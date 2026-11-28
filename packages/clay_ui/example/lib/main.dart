@@ -38,11 +38,13 @@ class ShelfApp extends StatelessWidget {
             builders: clayPageTransitions,
           ),
         ),
+        // Clay's own words in 30 languages, and Material's: material_ui
+        // brings Flutter's translations, so no flutter_localizations.
         localizationsDelegates: const [
-          DefaultRawWidgetsLocalizations.delegate,
-          DefaultMaterialLocalizations.delegate,
-          DefaultWidgetsLocalizations.delegate,
+          RawWidgetsLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
         ],
+        supportedLocales: RawWidgetsLocalizations.supportedLocales,
         builder: (context, child) {
           final media = MediaQuery.of(context);
           return MediaQuery(

@@ -1,8 +1,9 @@
 // On a tablet and a desk, a page's top bar and its footer stand on the
-// page's column: the back ball starts where the body does and the footer's
-// last key ends where the body ends, right to left too. The bar spread to
-// the window's margins, 16 px out from the body at 1440, and the footer
-// 17 px past it.
+// page's column: the back ball starts where the body does, the bar's last
+// key ends where the body ends, and the footer's first key starts where the
+// body starts, right to left too. The bar spread to the window's margins,
+// 16 px out from the body at 1440, and the footer 17 px past it; then the
+// footer's keys stood at the column's far end, away from a narrower form.
 import 'package:clay_ui/clay_ui.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -66,9 +67,10 @@ void main() {
         final body = tester.getRect(_face(find.byType(ClayGroup)));
         final ball = tester.getRect(_face(find.byType(ClayIconButton).first));
         final action = tester.getRect(_face(find.byType(ClayIconButton).last));
-        final footEnd = tester.getRect(
-          _face(find.widgetWithText(ClayButton, 'Edit')),
+        final footStart = tester.getRect(
+          _face(find.widgetWithText(ClayButton, 'Delete')),
         );
+        final framed = width >= ClayMetrics.railBreakpoint;
         final rtl = direction == TextDirection.rtl;
         expect(
           rtl ? ball.right : ball.left,
@@ -80,11 +82,13 @@ void main() {
           moreOrLessEquals(rtl ? body.left : body.right, epsilon: 0.5),
           reason: 'the bar\'s key ($action) is off the body ($body)',
         );
-        expect(
-          rtl ? footEnd.left : footEnd.right,
-          moreOrLessEquals(rtl ? body.left : body.right, epsilon: 0.5),
-          reason: 'the footer ($footEnd) is off the body ($body)',
-        );
+        if (framed) {
+          expect(
+            rtl ? footStart.right : footStart.left,
+            moreOrLessEquals(rtl ? body.right : body.left, epsilon: 0.5),
+            reason: 'the footer ($footStart) is off the body ($body)',
+          );
+        }
       });
     }
   }

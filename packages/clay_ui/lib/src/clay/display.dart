@@ -1063,9 +1063,11 @@ class ClayTag extends StatelessWidget {
       ClayTagTone.success => (c.success, c.ink),
       ClayTagTone.danger => (c.danger, c.dangerInk),
     };
+    // A status takes a third of its tone, so the four stand apart in every
+    // palette (Mint's accent and success are both green).
     final fill =
         layered.fill ??
-        Color.lerp(c.well, hue, tone == ClayTagTone.neutral ? 0.3 : 0.22)!;
+        Color.lerp(c.well, hue, tone == ClayTagTone.neutral ? 0.3 : 0.34)!;
     // The word is read: its tone's ink, as dark (or as light) as reading on
     // the tag's fill takes, with a hair to spare for the well's inner shade,
     // which darkens the ground under the word a little.

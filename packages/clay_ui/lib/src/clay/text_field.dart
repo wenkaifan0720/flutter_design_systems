@@ -178,6 +178,11 @@ class ClayFieldMessage extends StatelessWidget {
 /// [RawFormField] under a [ClayForm], hand it the field's error, and give
 /// both one [focusNode], so a failed submit moves the focus to it.
 ///
+/// With a controller, the form field's initial value is its `initialValue`;
+/// reset() restores that value and takes the error away, and leaves the
+/// controller's text as it is. To empty a form, call reset() and then clear
+/// the controllers.
+///
 /// ```dart
 /// RawFormField<String>(
 ///   validator: (value) =>

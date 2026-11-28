@@ -734,7 +734,9 @@ class ClayDatePicker extends StatelessWidget {
       helper: helperText,
       error: errorText,
       box: RawPopover(
-        semanticLabel: labelText,
+        // The open month is named for what it is, not with the field's
+        // label: the field already says its label.
+        semanticLabel: words.datePickerHelpText,
         // The calendar wants its whole month before it picks a side: low on
         // a phone it opens above the field rather than below in a sliver.
         placement: const RawPopoverPlacement(
@@ -856,7 +858,9 @@ class ClayDateRangePicker extends StatelessWidget {
       helper: helperText,
       error: errorText,
       box: RawPopover(
-        semanticLabel: labelText,
+        // The open month is named for what it is, not with the field's
+        // label: the field already says its label.
+        semanticLabel: words.datePickerHelpText,
         // The calendar wants its whole month before it picks a side: low on
         // a phone it opens above the field rather than below in a sliver.
         placement: const RawPopoverPlacement(

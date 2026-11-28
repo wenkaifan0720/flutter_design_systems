@@ -969,64 +969,62 @@ class ClaySwipeRow extends StatelessWidget {
       destructive: a.isDestructiveAction,
       data: a,
     );
-    return ClipRect(
-      child: RawSwipeActions(
-        startActions: [for (final a in startActions) wrap(a)],
-        endActions: [for (final a in endActions) wrap(a)],
-        actionExtent: 88,
-        dampingRatio: ClayMotion.panelDamping,
-        stiffness: ClayMotion.panelStiffness,
-        actionBuilder: (context, action, details) {
-          final a = action.data! as ClaySwipeAction;
-          final pressed = details.states.contains(WidgetState.pressed);
-          final fill = a.isDestructiveAction
-              ? c.danger
-              : layered.fill ?? c.accent;
-          final ink = a.isDestructiveAction
-              ? c.onColor(fill)
-              : layered.foreground ?? c.onColor(fill);
-          // A plate of clay level with the row, so it casts nothing for the
-          // row's edges to cut; a press dents it. On a group's slab its
-          // corners keep concentric with the slab's, as a row's plate does.
-          final slab = ClaySlabCorner.of(context);
-          return Padding(
-            padding: const EdgeInsets.all(ClaySpacing.tight),
-            child: AnimatedClaySurface(
-              face:
-                  ClayFace.raised(
-                    c,
-                    color: fill,
-                    radius: slab == null
-                        ? theme.shapeScheme.corners.medium
-                        : math.max(0.0, slab - ClaySpacing.tight),
-                  ).copyWith(
-                    elevation: 0,
-                    press: pressed ? 1 : 0,
-                    focus: details.states.contains(WidgetState.focused) ? 1 : 0,
-                    focusColor: ink,
-                  ),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (a.icon != null) Icon(a.icon, size: 20, color: ink),
-                    Text(
-                      a.label,
-                      maxLines: 1,
-                      style: theme.textTheme.caption.copyWith(
-                        color: ink,
-                        fontWeight: FontWeight.w600,
-                        fontVariations: clayWeight(FontWeight.w600),
-                      ),
-                    ),
-                  ],
+    return RawSwipeActions(
+      startActions: [for (final a in startActions) wrap(a)],
+      endActions: [for (final a in endActions) wrap(a)],
+      actionExtent: 88,
+      dampingRatio: ClayMotion.panelDamping,
+      stiffness: ClayMotion.panelStiffness,
+      actionBuilder: (context, action, details) {
+        final a = action.data! as ClaySwipeAction;
+        final pressed = details.states.contains(WidgetState.pressed);
+        final fill = a.isDestructiveAction
+            ? c.danger
+            : layered.fill ?? c.accent;
+        final ink = a.isDestructiveAction
+            ? c.onColor(fill)
+            : layered.foreground ?? c.onColor(fill);
+        // A plate of clay level with the row, so it casts nothing for the
+        // row's edges to cut; a press dents it. On a group's slab its
+        // corners keep concentric with the slab's, as a row's plate does.
+        final slab = ClaySlabCorner.of(context);
+        return Padding(
+          padding: const EdgeInsets.all(ClaySpacing.tight),
+          child: AnimatedClaySurface(
+            face:
+                ClayFace.raised(
+                  c,
+                  color: fill,
+                  radius: slab == null
+                      ? theme.shapeScheme.corners.medium
+                      : math.max(0.0, slab - ClaySpacing.tight),
+                ).copyWith(
+                  elevation: 0,
+                  press: pressed ? 1 : 0,
+                  focus: details.states.contains(WidgetState.focused) ? 1 : 0,
+                  focusColor: ink,
                 ),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (a.icon != null) Icon(a.icon, size: 20, color: ink),
+                  Text(
+                    a.label,
+                    maxLines: 1,
+                    style: theme.textTheme.caption.copyWith(
+                      color: ink,
+                      fontWeight: FontWeight.w600,
+                      fontVariations: clayWeight(FontWeight.w600),
+                    ),
+                  ),
+                ],
               ),
             ),
-          );
-        },
-        child: child,
-      ),
+          ),
+        );
+      },
+      child: child,
     );
   }
 

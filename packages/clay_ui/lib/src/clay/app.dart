@@ -30,13 +30,16 @@ import 'theme.dart';
 /// ```
 class ClayHost extends StatelessWidget {
   /// Hosts [child] in [theme] or [darkTheme], as [brightness] (or the platform)
-  /// asks; either left out is [palette] in that brightness.
+  /// asks; either left out is [palette] in that brightness. [density], when
+  /// given, stands over both. The window's width changes none of them: the
+  /// parts follow the width themselves.
   const ClayHost({
     super.key,
     this.theme,
     this.darkTheme,
     this.palette,
     this.brightness,
+    this.density,
     required this.child,
   });
 
@@ -55,6 +58,10 @@ class ClayHost extends StatelessWidget {
   /// platform's.
   final Brightness? brightness;
 
+  /// How tight the controls stand, by day and by night; null keeps the
+  /// theme's own (a palette's follows the platform: compact on a desktop).
+  final ClayDensity? density;
+
   /// The app.
   final Widget child;
 
@@ -64,12 +71,14 @@ class ClayHost extends StatelessWidget {
         brightness ??
         PreviewFrame.maybeOf(context)?.brightness ??
         MediaQuery.platformBrightnessOf(context);
-    final data =
+    final chosen =
         (wanted == Brightness.dark ? darkTheme : theme) ??
         ClayThemeData.fromPalette(
           palette ?? ClayThemeData.palettes.first,
           wanted,
         );
+    final tight = density;
+    final data = tight == null ? chosen : chosen.copyWith(density: tight);
     return AnimatedClayTheme(
       data: data,
       child: ClayToaster(
@@ -110,6 +119,13 @@ class ClayHost extends StatelessWidget {
           brightness,
           defaultValue: null,
         ),
+      )
+      ..add(
+        DiagnosticsProperty<ClayDensity>(
+          'density',
+          density,
+          defaultValue: null,
+        ),
       );
   }
 }
@@ -117,9 +133,12 @@ class ClayHost extends StatelessWidget {
 /// A page: its [topBar] (a pushed page's way back stands in it), its [body]
 /// on the ground in the page's margins, no wider than 1080 px, and its
 /// [footer] fixed at its foot, the page fading into the ground above it:
-/// the page's one coral key in reach. A toast stands above the footer, as a
-/// Scaffold keeps a snackbar above its persistent footer buttons. In a sheet
-/// it is as tall as its content allows and stands on the sheet's clay.
+/// the page's one coral key in reach. On a phone the footer takes the page's
+/// width; on a rail or a sidebar (from 600 wide) its keys stand at the start
+/// of the page's column, under the start of what the page holds, a form's
+/// fields say. A toast stands above the footer, as a Scaffold keeps a
+/// snackbar above its persistent footer buttons. In a sheet it is as tall as
+/// its content allows and stands on the sheet's clay.
 ///
 /// ```dart
 /// ClayScreen(topBar: ClayTopBar(title: 'Drink water', leading: ClayTopBar.autoLeading(context)), body: const Text('Eight glasses a day.'))
@@ -143,7 +162,8 @@ class ClayScreen extends StatelessWidget {
   /// its own head.
   final Widget? topBar;
 
-  /// What stands fixed at the foot: the page's one action, a coral key.
+  /// What stands fixed at the foot: the page's one action, a coral key. From
+  /// 600 wide it is as wide as its keys, at the start of the page's column.
   final Widget? footer;
 
   /// Whether the page scrolls; false gives [body] the height left, to
@@ -236,8 +256,9 @@ class ClayScreen extends StatelessWidget {
           ?bar,
           if (sheet) Flexible(child: above) else Expanded(child: above),
           if (foot != null)
-            // Toasts stand above the foot, as above the dock. Its keys end
-            // where the page's column does.
+            // Toasts stand above the foot, as above the dock. Beside a rail
+            // or a sidebar its keys start where the page's column does, under
+            // the fields of a form however wide it is.
             RawToasterKeepClear(
               child: Align(
                 alignment: Alignment.topCenter,
@@ -254,11 +275,8 @@ class ClayScreen extends StatelessWidget {
                     ),
                     child: framed
                         ? Align(
-                            alignment: AlignmentDirectional.centerEnd,
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 360),
-                              child: foot,
-                            ),
+                            alignment: AlignmentDirectional.centerStart,
+                            child: IntrinsicWidth(child: foot),
                           )
                         : foot,
                   ),
