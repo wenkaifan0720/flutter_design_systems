@@ -193,7 +193,7 @@ class CivicButtonFace extends StatelessWidget {
             // contrast either way.
             final deepens = (so.foreground ?? ink).computeLuminance() > 0.5;
             final over = secondary
-                ? Color.lerp(rest, so.edge ?? edge, 0.45)!
+                ? _towardKeeping(rest, so.edge ?? edge, so.foreground ?? ink)
                 : deepens
                 ? Color.lerp(
                     rest,
@@ -352,4 +352,16 @@ class CivicButtonFace extends StatelessWidget {
       ),
     );
   }
+}
+
+// A tinted face's step under a pointer: from [rest] toward its [edge], at
+// most 0.45 of the way, and only as far as [words] keep 4.5:1 on it. By night
+// the edge is the lighter tint, so a full step took a destructive secondary's
+// words from 5.7:1 to 4.35:1.
+Color _towardKeeping(Color rest, Color edge, Color words) {
+  for (var k = 0.45; k > 0; k -= 0.01) {
+    final face = Color.lerp(rest, edge, k)!;
+    if (RawPalette.contrastRatio(face, words) >= 4.5) return face;
+  }
+  return rest;
 }

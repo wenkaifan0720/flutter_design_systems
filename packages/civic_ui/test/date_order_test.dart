@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use_from_same_package, the context-free forms stay until 1.0.0.
 // A typed date's order is the app's locale's, as ui_core's localizations
 // give it (RawWidgetsLocalizations.dateFieldPattern): month first in
 // American English. An app that writes every date one way gives its own

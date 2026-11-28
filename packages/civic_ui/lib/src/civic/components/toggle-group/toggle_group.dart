@@ -47,8 +47,10 @@ class CivicSegment<T> {
 /// form use checkboxes.
 ///
 /// Tab reaches the group once; the arrow keys move along it, Space and
-/// Enter turn the face on or off. Where the faces do not fit the width
-/// (a phone, large text) they stack, each the whole width, so no word is
+/// Enter turn the face on or off. Where the faces do not fit one row (a
+/// phone, large text) they wrap into the fewest rows that hold them,
+/// balanced (four as two and two, never three and one), each row the whole
+/// width; where no two fit side by side they stack, one to a row. No word is
 /// ever cut.
 ///
 /// Reads [CivicStyle]'s fill, foreground and edge by state (selected among
@@ -443,8 +445,13 @@ class _CivicSegmentRadiosState<T> extends State<_CivicSegmentRadios<T>> {
 /// use radios, which hold a hint for each answer.
 ///
 /// Tab reaches the band once, at the answer chosen; the arrow keys choose
-/// as they move, as a platform's segmented control does. Where the answers
-/// do not fit the width they stack, each the whole width.
+/// as they move, as a platform's segmented control does. The faces share
+/// the band equally where that fits; where it does not but every answer's
+/// words do, the band stays one row and each face takes its words and a
+/// share of the room left, so three one-word answers (System, Light, Dark)
+/// stay one row on a phone. Where one row does not hold them, the answers
+/// wrap into the fewest rows that do, balanced (four as two and two), each
+/// row the whole width; where no two fit side by side they stack.
 ///
 /// Reads [CivicStyle]'s fill, foreground and edge by state (selected among
 /// them), padding, textStyle and corners (or shape, the band's outer

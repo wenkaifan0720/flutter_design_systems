@@ -66,7 +66,9 @@ Future<T?> showCivicDialog<T>({
 /// raised surface), its corners rounded, floating on a hairline and a soft
 /// shadow over the scrim, its [title] as a heading,
 /// its [content] under it, its [actions] at the foot (the one that does
-/// what the title asks first; full width below 600).
+/// what the title asks first; full width below 600). What it holds takes
+/// its face for its page: by night a calendar's days and a field's well sit
+/// on the raised surface, not on the darker page under the scrim.
 ///
 /// Reads [CivicStyle]'s fill, edge, foreground, padding, textStyle (the
 /// question) and corners (or shape): its `style:`, then [CivicThemeData.dialogStyle]. The edge's
@@ -108,6 +110,10 @@ class CivicDialog extends StatelessWidget {
     final body = content;
     final so = RawStyleOf([style, t.dialogStyle], const {});
     final words = text.body.copyWith(color: so.foreground);
+    // By night it stands on the raised band, and what it holds takes that
+    // band for its page, as a popover's content does: a calendar's days and
+    // a field's well sit on the dialog, not on the darker page under it.
+    final face = so.fill ?? (t.isDark ? t.surface : t.background);
     return SafeArea(
       child: Center(
         child: Padding(
@@ -127,53 +133,56 @@ class CivicDialog extends StatelessWidget {
                 // A card over the scrim, its corners a card's; by night it
                 // stands on the raised band, apart from the page under it.
                 decoration: civicFloating(
-                  face: so.fill ?? (t.isDark ? t.surface : t.background),
+                  face: face,
                   hairline: so.edge ?? t.rule,
                   dark: t.isDark,
                   shape: civicShape(t, so, RawCorner.medium),
                 ),
-                child: SingleChildScrollView(
-                  // The room under the last button matches the room the
-                  // title's line leaves over its words.
-                  padding:
-                      so.padding(Directionality.of(context)) ??
-                      (narrow
-                          ? const EdgeInsets.fromLTRB(
-                              CivicSpacing.s20,
-                              CivicSpacing.s20,
-                              CivicSpacing.s20,
-                              CivicSpacing.s24,
-                            )
-                          : const EdgeInsets.fromLTRB(
-                              CivicSpacing.s32,
-                              CivicSpacing.s32,
-                              CivicSpacing.s32,
-                              CivicSpacing.s40,
-                            )),
-                  child: DefaultTextStyle(
-                    style: words,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Semantics(
-                          header: true,
-                          child: Text(
-                            title,
-                            style: text.headingM
-                                .copyWith(color: so.foreground)
-                                .merge(so.textStyle),
+                child: CivicTheme(
+                  data: t.copyWith(background: face),
+                  child: SingleChildScrollView(
+                    // The room under the last button matches the room the
+                    // title's line leaves over its words.
+                    padding:
+                        so.padding(Directionality.of(context)) ??
+                        (narrow
+                            ? const EdgeInsets.fromLTRB(
+                                CivicSpacing.s20,
+                                CivicSpacing.s20,
+                                CivicSpacing.s20,
+                                CivicSpacing.s24,
+                              )
+                            : const EdgeInsets.fromLTRB(
+                                CivicSpacing.s32,
+                                CivicSpacing.s32,
+                                CivicSpacing.s32,
+                                CivicSpacing.s40,
+                              )),
+                    child: DefaultTextStyle(
+                      style: words,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Semantics(
+                            header: true,
+                            child: Text(
+                              title,
+                              style: text.headingM
+                                  .copyWith(color: so.foreground)
+                                  .merge(so.textStyle),
+                            ),
                           ),
-                        ),
-                        if (body != null) ...[
-                          const SizedBox(height: CivicSpacing.s16),
-                          body,
+                          if (body != null) ...[
+                            const SizedBox(height: CivicSpacing.s16),
+                            body,
+                          ],
+                          if (actions.isNotEmpty) ...[
+                            const SizedBox(height: CivicSpacing.s32),
+                            CivicDialogActions(actions: actions),
+                          ],
                         ],
-                        if (actions.isNotEmpty) ...[
-                          const SizedBox(height: CivicSpacing.s32),
-                          CivicDialogActions(actions: actions),
-                        ],
-                      ],
+                      ),
                     ),
                   ),
                 ),

@@ -441,11 +441,11 @@ class _Words extends StatelessWidget {
           rows: [
             CivicSummaryRow(
               label: 'A date',
-              value: Text(CivicFormat.date(sent, weekday: true)),
+              value: Text(CivicFormat.dateOf(context, sent, weekday: true)),
             ),
             CivicSummaryRow(
               label: 'Two dates',
-              value: Text(CivicFormat.dateRange(sent, ends)),
+              value: Text(CivicFormat.dateRangeOf(context, sent, ends)),
             ),
             CivicSummaryRow(
               label: 'Times',

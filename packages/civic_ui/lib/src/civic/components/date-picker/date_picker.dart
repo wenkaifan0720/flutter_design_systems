@@ -25,12 +25,12 @@ export 'package:ui_core/ui_core.dart' show RawTimeOfDay;
 /// The order and the marks between the parts are the app's locale's, as
 /// ui_core's localizations give them
 /// (`RawWidgetsLocalizations.dateFieldPattern`; `M/d/y` in American
-/// English). An app that writes every date one way gives its own: extend
-/// `DefaultRawWidgetsLocalizations`, override `dateFieldPattern` (and
-/// `formatMediumDate`), and list its delegate first in
-/// `localizationsDelegates`. [exampleOf] and the calendar follow it.
-/// [CivicFormat.date] writes the month in words ("27 March 2026"), the same
-/// in every locale, so a date it writes never reads as another day.
+/// English). For day-first English, give the app `locale: Locale('en',
+/// 'GB')` (`dd/MM/y`). [exampleOf] and the calendar follow it, and so does
+/// [CivicFormat.dateOf], which writes a day in the same order with its month
+/// in words ("March 27, 2026" in American English, "27 March 2026" in
+/// British), so a page never writes a day two ways and a day never reads as
+/// another.
 ///
 /// [value] in, [onChanged] out: the day once every part is typed or a day
 /// is chosen, null when a part is cleared. Days before [firstDate] or after

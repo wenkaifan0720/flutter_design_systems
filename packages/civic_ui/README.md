@@ -60,7 +60,11 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    localizationsDelegates: const [RawWidgetsLocalizations.delegate],
+    localizationsDelegates: const [
+      RawWidgetsLocalizations.delegate,
+      ...GlobalMaterialLocalizations.delegates,
+    ],
+    supportedLocales: RawWidgetsLocalizations.supportedLocales,
     builder: (context, child) => CivicHost(brightness: appearance, child: child!),
     home: const CivicScreen(
       topBar: CivicTopBar(title: 'Shelf'),
@@ -119,7 +123,9 @@ class _ShelfShellState extends State<ShelfShell> {
 ### A list and its pages
 
 A list of rows, each pushing its own page. The pushed page's `CivicTopBar.autoLeading` is its way back (from 1024 wide it
-hangs in the gutter, so the title keeps the column's line).
+hangs in the gutter, so the title keeps the column's line). The bar names the page's place ("Book"); the page says
+what it is in a `CivicPageHeading`, which a screen reader hears as the page's heading. On a phone a row's tag stands
+on a line of its own under its title, so a long title never squeezes it; from 600 wide it stands at the row's end.
 
 ```dart
 import 'package:civic_ui/civic_ui.dart';
@@ -143,8 +149,8 @@ class BooksPage extends StatelessWidget {
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (context) => CivicScreen(
-                  topBar: CivicTopBar(title: title, leading: CivicTopBar.autoLeading(context)),
-                  body: Text(title),
+                  topBar: CivicTopBar(title: 'Book', leading: CivicTopBar.autoLeading(context)),
+                  body: CivicPageHeading(title),
                 ),
               ),
             ),
@@ -158,8 +164,21 @@ class BooksPage extends StatelessWidget {
 ### Forms
 
 Check the answers when the reader saves. Say each problem twice: in a `CivicErrorSummary` at the top of the form
-(it takes the focus and scrolls into view, and each line moves the focus to its field) and at the field
-(`errorText`). Fields take their column's width; put them in a `Column` with Civic's spacing between them.
+(it takes the focus and scrolls into view with the page's heading over it, and each line moves the focus to its
+field) and at the field (`errorText`). Fields take their column's width; put them in a `Column` with
+`CivicSpacing.s24` between them and `s32` before the action.
+
+Civic's fields are no `FormField`s: the page holds the answers (a controller, a value) and checks them on save, as a
+public service does, never as the reader types, so there is no `autovalidateMode` to set. Once a field's problem is
+shown, check again on the next save; the summary takes the focus each time. A place of the app's shell keeps its
+first page, so clear the form after a save: clear the controllers and set the other answers back, as `_save` does
+below.
+
+A date field shows a day in the order of the app's locale (11/14/2026 under a default `MaterialApp`, which is
+American English), and `CivicFormat.dateOf` writes it in the same order with its month in words ("November 14,
+2026"), so a page never writes a day two ways. For day-first English, give the app `locale: Locale('en', 'GB')` and
+list it in `supportedLocales` (`[Locale('en', 'GB'), ...RawWidgetsLocalizations.supportedLocales]`): the field
+shows 14/11/2026 and `dateOf` writes "14 November 2026".
 
 ```dart
 import 'package:civic_ui/civic_ui.dart';
@@ -189,13 +208,17 @@ class _BookFormState extends State<BookForm> {
 
   void _save() {
     setState(() => _titleError = _title.text.trim().isEmpty ? 'Enter the book’s title' : null);
-    if (_titleError == null) widget.onSaved(_title.text.trim(), _started);
+    if (_titleError != null) return;
+    widget.onSaved(_title.text.trim(), _started);
+    // Clear the form after a save: the place keeps this page.
+    _title.clear();
+    setState(() => _started = null);
   }
 
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
-    spacing: CivicSpacing.s32,
+    spacing: CivicSpacing.s24,
     children: [
       if (_titleError case final error?)
         CivicErrorSummary(
@@ -216,6 +239,7 @@ class _BookFormState extends State<BookForm> {
         lastDate: DateTime(2100),
         onChanged: (day) => setState(() => _started = day),
       ),
+      const SizedBox(height: CivicSpacing.s8), // s32 before the action
       CivicButton(onPressed: _save, child: const Text('Save book')),
     ],
   );
@@ -316,7 +340,7 @@ class PalettePicker extends StatelessWidget {
 | Charts | `CivicBarChart`, `CivicLineChart`, `CivicAreaChart`, `CivicPieChart`, `CivicSparkline` |
 | Status | `CivicTag`, `CivicBadge`, `CivicAvatar`, `CivicMeter`, `CivicProgressBar`, `CivicSpinner`, `CivicSkeleton`, `CivicStepIndicator`, `CivicPageDots` |
 | Over the page | `showCivicDialog` and `CivicDialog`, `showCivicBottomSheet`, `showCivicSideSheet`, `showCivicActionSheet`, `showCivicCommandPalette`, `CivicMenu`, `CivicPopover`, `CivicTooltip` |
-| Layout | `CivicCard`, `CivicGrid`, `CivicSplitView`, `CivicAccordion`, `CivicDetails`, `CivicTabBar`, `CivicBreadcrumbs`, `CivicSectionHeader`, `CivicSectionBreak`, `CivicScrollArea`, `CivicCarousel`, `CivicImage`, `CivicChip`, `CivicKbd`, `CivicPullToRefresh` |
+| Layout | `CivicCard`, `CivicGrid`, `CivicSplitView`, `CivicAccordion`, `CivicDetails`, `CivicTabBar`, `CivicBreadcrumbs`, `CivicPageHeading`, `CivicSectionHeader`, `CivicSectionBreak`, `CivicScrollArea`, `CivicCarousel`, `CivicImage`, `CivicChip`, `CivicKbd`, `CivicPullToRefresh` |
 
 Atkinson Hyperlegible Next is the default typeface. One colour marks actions (blue, or one of six palettes), red marks
 errors, and a yellow focus with a dark ink bar shows which control the keyboard will move, by day and by night.
@@ -404,14 +428,20 @@ CivicThemeData.light().copyWith(
 )
 ```
 
-One part's own corners, a step at each, start and end as the text reads. A full corner is held to extra large:
+One part's own corners, a step at each, start and end as the text reads: here rounded along the top and square along
+the bottom, as a file's tab is. A full corner is held to extra large:
 
 ```dart
 CivicCard(
   title: 'Your permit',
   style: const CivicStyle(
     corners: WidgetStatePropertyAll(
-      RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none),
+      RawCorners(
+        topStart: RawCorner.large,
+        topEnd: RawCorner.large,
+        bottomStart: RawCorner.none,
+        bottomEnd: RawCorner.none,
+      ),
     ),
   ),
   child: const Text('Zone B, until 2 November'),
@@ -432,9 +462,24 @@ bounces.
 
 ## Languages and right to left
 
-Civic's parts take their own words (Back, Close) from ui_core's localizations, in 30 languages: add
-`RawWidgetsLocalizations.delegate` to your app's `localizationsDelegates`. The words of your
-service (Continue, There is a problem, Step 1 of 3, Change) are yours to give, in your reader's language.
+Civic's parts take their own words (Back, Close), and a date field and `CivicFormat`'s dates their order, month
+words and digits, from ui_core's localizations, in 30 languages. Give a `MaterialApp` one list of delegates, as the
+mount above does:
+
+```dart
+MaterialApp(
+  localizationsDelegates: const [
+    RawWidgetsLocalizations.delegate, // Civic's own words, in 30 languages
+    ...GlobalMaterialLocalizations.delegates, // material_ui's, Cupertino's and the widgets'
+  ],
+  supportedLocales: RawWidgetsLocalizations.supportedLocales,
+  home: const Text('Your reading list'),
+)
+```
+
+`GlobalMaterialLocalizations` comes from material_ui, so an app on material_ui needs no `flutter_localizations`. An
+app that serves a region lists it too (`Locale('en', 'GB')` writes the day first). The words of your service
+(Continue, There is a problem, Step 1 of 3, Change) are yours to give, in your reader's language.
 
 A page in Arabic reads right to left in Noto Sans Arabic, and the example service says its counts in the form each
 number takes. For another script, load a face for it and name it in `CivicThemeData.from(fontFamilyFallback:)`:

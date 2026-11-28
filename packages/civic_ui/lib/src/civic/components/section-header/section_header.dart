@@ -62,3 +62,67 @@ class CivicSectionHeader extends StatelessWidget {
       ..add(FlagProperty('isLarge', value: isLarge, ifTrue: 'large'));
   }
 }
+
+/// A page's title: the extra-large heading at the top of a page's content,
+/// a screen reader's heading, so a reader who moves by headings lands on it
+/// first. One to a page, under the top bar, which names the page's place
+/// ("Add"); the heading says what the page is for ("Add a book"). With a
+/// [caption], a quieter line over it names the section or the step the page
+/// belongs to ("Your reading list"). It takes no room of its own round it:
+/// the page's column sets the gap under it.
+///
+/// Its words grow with the reader's text size, up to the cap Civic's large
+/// headings keep, and wrap; a word too long for the width shrinks to fit.
+///
+/// ```dart
+/// CivicPageHeading('Add a book', caption: 'Your reading list')
+/// ```
+class CivicPageHeading extends StatelessWidget {
+  /// A page's title saying [title].
+  const CivicPageHeading(this.title, {super.key, this.caption});
+
+  /// The heading's words: what the page is for.
+  final String title;
+
+  /// A quieter line over the heading: the section or the step the page
+  /// belongs to; null shows none.
+  final String? caption;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = context.civicText;
+    final over = caption;
+    final heading = Semantics(
+      header: true,
+      child: CivicFitWords(
+        title,
+        style: text.headingXL,
+        most: CivicLayout.headingScaleMost,
+      ),
+    );
+    if (over == null) return heading;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      spacing: CivicSpacing.s8,
+      children: [
+        Text(
+          over,
+          style: text.headingM.copyWith(
+            color: context.civicTheme.textSecondary,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+        heading,
+      ],
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('caption', caption, defaultValue: null));
+  }
+}

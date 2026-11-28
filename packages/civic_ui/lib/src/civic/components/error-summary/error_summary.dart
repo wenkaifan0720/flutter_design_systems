@@ -181,12 +181,14 @@ class _CivicErrorSummaryState extends State<CivicErrorSummary> {
     }
   }
 
-  /// Scrolls the summary into view when it is above it (the page was sent
-  /// from its foot): where the whole of it shows from the page's start, the
-  /// page goes back to its start, the summary where the page sets it (a
-  /// page that opens with it keeps its back link); else it stands
-  /// [CivicSpacing.s16] under the view's top edge, never flush under the
-  /// app's bar.
+  /// Brings the summary into view with what stands over it. Where the whole
+  /// of it shows from the page's start, the page goes back to its start, so
+  /// the page's heading over it shows whole and the summary stands where the
+  /// page sets it (a page that opens with it keeps its back link), even when
+  /// the summary was already in view: a page scrolled a little left its
+  /// heading cut by the app's bar. Else, when the summary is above the view
+  /// (the page was sent from its foot), it stands [CivicSpacing.s16] under
+  /// the view's top edge, never flush under the bar.
   void _reveal() {
     final box = context.findRenderObject();
     final scrollable = Scrollable.maybeOf(context);
@@ -195,15 +197,17 @@ class _CivicErrorSummaryState extends State<CivicErrorSummary> {
     if (viewport == null) return;
     final position = scrollable.position;
     final top = viewport.getOffsetToReveal(box, 0).offset;
-    if (position.pixels <= top) return;
     final height = box is RenderBox ? box.size.height : 0.0;
     final fromStart =
         top + height <= position.minScrollExtent + position.viewportDimension;
-    position.jumpTo(
-      fromStart
-          ? position.minScrollExtent
-          : math.max(position.minScrollExtent, top - CivicSpacing.s16),
-    );
+    if (fromStart) {
+      if (position.pixels > position.minScrollExtent) {
+        position.jumpTo(position.minScrollExtent);
+      }
+      return;
+    }
+    if (position.pixels <= top - CivicSpacing.s16) return;
+    position.jumpTo(math.max(position.minScrollExtent, top - CivicSpacing.s16));
   }
 
   void _announce() {

@@ -7,6 +7,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../internal/option.dart';
+import '../avatar/avatar.dart';
 import '../../internal/paint.dart';
 import '../../internal/row_hover.dart';
 import '../../internal/spring.dart';
@@ -71,9 +72,18 @@ class CivicListRow extends StatelessWidget {
   /// What else to know, under the title.
   final Widget? subtitle;
 
-  /// A glyph or a picture before the words ([CivicAvatar]). A screen reader
-  /// leaves it out of the row's name, which it would only repeat: what it
-  /// means goes in the [title], or in the [trailing] status.
+  /// What stands before the words: a glyph, a picture or a monogram (an
+  /// [Icon], an [Image], a [CivicAvatar]), or a control (a [CivicCheckbox]).
+  ///
+  /// A screen reader leaves a glyph, a picture or a monogram out of the
+  /// row's name, which it would only repeat: what it means goes in the
+  /// [title], or in the [trailing] status. Any other leading is heard. A
+  /// control keeps its state, its action and its focus: in a row of words
+  /// the row takes them, as a checkbox list tile does, so the row reads
+  /// "checked" and a tap on it ticks the box; in a row that goes somewhere
+  /// ([onTap]) the control keeps a node of its own beside the row's. Wrap a
+  /// leading of your own that only repeats the title in an
+  /// [ExcludeSemantics].
   final Widget? leading;
 
   /// A status at the end, read in the row's name after its words.
@@ -120,6 +130,12 @@ class CivicListRow extends StatelessWidget {
     final acts = onTap != null;
     final grouped = _GroupScope.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
+    final heard = leading != null && !_onlyRepeats(leading!);
+    // A row that names itself keeps its own words out of its node; a leading
+    // that is heard stays in the tree beside them.
+    Widget named(Widget words) => acts && heard && semanticLabel != null
+        ? ExcludeSemantics(child: words)
+        : words;
     Widget body(Set<WidgetState> states, double focus) {
       final so = RawStyleOf([style, t.listRowStyle], states);
       final titleInk = Color.lerp(
@@ -151,23 +167,28 @@ class CivicListRow extends StatelessWidget {
                       size: 24,
                     ),
                     // Out of the row's name: a glyph or a monogram only
-                    // repeats the title; a status goes in [trailing].
-                    child: ExcludeSemantics(child: lead),
+                    // repeats the title; a status goes in [trailing]. A
+                    // control is heard.
+                    child: heard ? lead : ExcludeSemantics(child: lead),
                   ),
-            words: _Beside(
-              gap: CivicSpacing.s12,
-              textScale: MediaQuery.textScalerOf(context).scale(16) / 16,
-              title: DefaultTextStyle.merge(
-                style: text.label.merge(so.textStyle).copyWith(color: titleInk),
-                child: title,
+            words: named(
+              _Beside(
+                gap: CivicSpacing.s12,
+                textScale: MediaQuery.textScalerOf(context).scale(16) / 16,
+                title: DefaultTextStyle.merge(
+                  style: text.label
+                      .merge(so.textStyle)
+                      .copyWith(color: titleInk),
+                  child: title,
+                ),
+                subtitle: sub == null
+                    ? null
+                    : DefaultTextStyle(
+                        style: text.bodySmall.copyWith(color: subInk),
+                        child: sub,
+                      ),
+                status: end,
               ),
-              subtitle: sub == null
-                  ? null
-                  : DefaultTextStyle(
-                      style: text.bodySmall.copyWith(color: subInk),
-                      child: sub,
-                    ),
-              status: end,
             ),
             end: !(acts && showChevron)
                 ? null
@@ -192,7 +213,10 @@ class CivicListRow extends StatelessWidget {
             focusNode: focusNode,
             semanticLabel: semanticLabel,
             semanticValue: semanticValue,
-            excludeSemantics: semanticLabel != null,
+            excludeSemantics: semanticLabel != null && !heard,
+            // A control before the words keeps a node of its own, which a
+            // screen reader reaches apart; the words still name the row.
+            mergeSemantics: !heard,
             link: true,
             button: false,
             semanticSelected: selected ? true : null,
@@ -260,6 +284,13 @@ class CivicListRow extends StatelessWidget {
       child: row,
     );
   }
+
+  // A glyph, a picture or a monogram: what it means is in the row's words.
+  static bool _onlyRepeats(Widget leading) =>
+      leading is Icon ||
+      leading is Image ||
+      leading is CivicAvatar ||
+      leading is CivicAvatarGroup;
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {

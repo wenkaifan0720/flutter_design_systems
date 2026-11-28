@@ -31,7 +31,11 @@ class ShelfApp extends StatelessWidget {
       builder: (context, _) => MaterialApp(
         title: 'Shelf',
         debugShowCheckedModeBanner: false,
-        localizationsDelegates: const [RawWidgetsLocalizations.delegate],
+        localizationsDelegates: const [
+          RawWidgetsLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        supportedLocales: RawWidgetsLocalizations.supportedLocales,
         builder: (context, child) => CivicHost(
           brightness: shelf.appearance.brightness,
           palette: shelf.palette,
@@ -87,7 +91,7 @@ class BooksPage extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _Heading('Your reading list'),
+          const CivicPageHeading('Your reading list'),
           const SizedBox(height: CivicSpacing.s24),
           CivicMeter(
             label: 'Reading goal for 2026',
@@ -189,7 +193,7 @@ class BookPage extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _Heading(book.title),
+          CivicPageHeading(book.title),
           const SizedBox(height: CivicSpacing.s16),
           Align(
             alignment: AlignmentDirectional.centerStart,
@@ -206,7 +210,7 @@ class BookPage extends StatelessWidget {
                 'Date started',
                 book.started == null
                     ? 'Not given'
-                    : CivicFormat.date(book.started!),
+                    : CivicFormat.dateOf(context, book.started!),
               ),
             ],
           ),
@@ -364,7 +368,7 @@ class _BookFormState extends State<BookForm> {
             ),
           ],
         ),
-      _Heading(widget.heading),
+      CivicPageHeading(widget.heading),
       CivicTextField(
         labelText: 'Title',
         controller: _title,
@@ -429,7 +433,7 @@ class SettingsPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: CivicSpacing.s48,
         children: [
-          const _Heading('Settings'),
+          const CivicPageHeading('Settings'),
           CivicSegmentedControl<Appearance>(
             labelText: 'Appearance',
             helperText: 'System follows your device.',
@@ -501,19 +505,6 @@ class PaletteSwatches extends StatelessWidget {
       ],
     );
   }
-}
-
-/// A page's one heading, which a screen reader hears as one.
-class _Heading extends StatelessWidget {
-  const _Heading(this.words);
-
-  final String words;
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    header: true,
-    child: Text(words, style: context.civicText.headingXL),
-  );
 }
 
 // The app's state: the books, and how the reader likes the app.

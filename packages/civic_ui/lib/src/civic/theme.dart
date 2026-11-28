@@ -938,8 +938,8 @@ final class CivicThemeData with Diagnosticable {
   /// 12), no stroke and no depth.
   ///
   /// A part's own corners (its style's `corners`) take a step per corner:
-  /// an app can cut two diagonal corners of a card, or square all but its
-  /// top start, as a form's tabs and tickets do. Each corner takes none to
+  /// an app can round a card's top corners and square its bottom ones, as a
+  /// file's tab is, or set any corner on its own. Each corner takes none to
   /// extra large; a full corner is held to extra large, and debug says so
   /// once.
   static const RawShapeLimits shapeLimits = RawShapeLimits(

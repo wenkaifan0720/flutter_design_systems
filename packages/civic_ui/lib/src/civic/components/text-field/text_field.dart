@@ -43,6 +43,11 @@ import '../../theme.dart';
 /// is fine), and say the same problems in a `CivicErrorSummary` at the top
 /// of the form, each line moving the focus to its field (its [focusNode]).
 ///
+/// It is not a form field: a Material `Form`'s `reset()` and `validate()`
+/// pass it by, so its text stays and no `autovalidateMode` applies. The page
+/// holds the answer (in [controller], or as [onChanged] gives it) and checks
+/// it on save. To clear the form after a save, clear the controller.
+///
 /// ```dart
 /// void save() => setState(() {
 ///   postcodeError = postcode.trim().isEmpty ? 'Enter your postcode' : null;

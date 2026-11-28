@@ -25,9 +25,9 @@ import '../scaffold/scaffold.dart';
 ///     title: 'Your permit',
 ///     leading: CivicTopBar.autoLeading(context),
 ///   ),
-///   body: Column(
+///   body: const Column(
 ///     crossAxisAlignment: CrossAxisAlignment.stretch,
-///     children: [Text('Your permit', style: context.civicText.headingXL)],
+///     children: [CivicPageHeading('Your permit')],
 ///   ),
 /// )
 /// ```

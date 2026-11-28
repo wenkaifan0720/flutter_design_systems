@@ -17,6 +17,12 @@ import 'routes.dart';
 /// Material's `AnimatedTheme` does. It never clamps the text scale: a
 /// reader at 200% gets 200%, and Civic's parts grow to hold it.
 ///
+/// How its settings combine: [brightness], else the platform, picks day or
+/// night. That side's theme is [theme] by day or [darkTheme] by night when
+/// given, else [palette]'s theme for that side, else Civic's blue. Civic has
+/// no density setting: its controls keep one size at every width, as a
+/// public service's do. The window's width changes none of these.
+///
 /// Mount it once, above the app's Navigator, so every page, dialog and menu
 /// stands inside it. Behaviour (scrolling, selection, the way back) follows
 /// the platform, or inside a preview frame the frame's.

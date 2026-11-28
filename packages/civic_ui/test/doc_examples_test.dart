@@ -310,9 +310,9 @@ class _Caller {
         title: 'Your permit',
         leading: CivicTopBar.autoLeading(context),
       ),
-      body: Column(
+      body: const Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [Text('Your permit', style: context.civicText.headingXL)],
+        children: [CivicPageHeading('Your permit')],
       ),
     ),
     // app/states.dart
@@ -575,6 +575,8 @@ class _Caller {
     ),
     'CivicSectionBreak': (context) =>
         const CivicSectionBreak(size: CivicSectionBreakSize.large),
+    'CivicPageHeading': (context) =>
+        const CivicPageHeading('Add a book', caption: 'Your reading list'),
     'CivicSectionHeader': (context) => CivicSectionHeader(
       title: 'Your permits',
       action: CivicLink(onPressed: openAll, child: const Text('View all')),
@@ -1246,7 +1248,9 @@ class _Caller {
     // format.dart
     'CivicFormat': (context) {
       final permit = (ends: DateTime(2026, 11, 3));
-      return Text('Your permit ends on ${CivicFormat.date(permit.ends)}');
+      return Text(
+        'Your permit ends on ${CivicFormat.dateOf(context, permit.ends)}',
+      );
     },
   };
 }

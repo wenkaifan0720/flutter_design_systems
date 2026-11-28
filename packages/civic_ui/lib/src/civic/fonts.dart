@@ -34,9 +34,11 @@ const Map<String, List<String>> _faces = {
   'NotoSansArabic': ['NotoSansArabic-400', 'NotoSansArabic-700'],
 };
 
-/// Loads the faces Civic bundles, so the first frame is set in them. Await
-/// it before `runApp`: on the web a bundled face otherwise arrives after the
-/// first frames, which flash in a fallback face.
+/// Loads the faces Civic bundles and the Lucide icon font its parts draw
+/// their glyphs in, so the first frame is set in them. Await it before
+/// `runApp`: on the web a face otherwise arrives after the first frames,
+/// which flash in a fallback face, and a glyph can come up as an empty box
+/// until a reload.
 ///
 /// ```dart
 /// Future<void> main() async {
@@ -48,6 +50,11 @@ const Map<String, List<String>> _faces = {
 Future<void> civicLoadFonts() => Future.wait([
   for (final MapEntry(key: family, value: files) in _faces.entries)
     _loader(family, files).load(),
+  // The family `LucideIcons` names, as Flutter registers a package's font.
+  (FontLoader('packages/lucide_icons_flutter/Lucide')..addFont(
+        rootBundle.load('packages/lucide_icons_flutter/assets/lucide.ttf'),
+      ))
+      .load(),
 ]);
 
 FontLoader _loader(String family, List<String> files) {

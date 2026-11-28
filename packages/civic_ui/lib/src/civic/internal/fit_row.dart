@@ -4,9 +4,13 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 /// Lays [children] side by side, each as wide as the widest needs ([equal])
-/// or as its words, with [spacing] between, while that fits the width;
-/// where it does not (a phone, large text, long words), stacks them, each
-/// the whole width. So a row of choices never clips or squeezes a word.
+/// or as its words, with [spacing] between, while that fits the width. Where
+/// equal shares do not fit but every child's own words do, they stay one
+/// row, each its words and a share of what is left. Where one row does not
+/// fit (a phone, large text, long words), they wrap into the fewest rows
+/// that do, balanced (four as 2 + 2, never 3 + 1), each row the whole width;
+/// where none do, they stack, one to a row. So a row of choices never clips
+/// or squeezes a word.
 class CivicFitRow extends MultiChildRenderObjectWidget {
   /// A row that stacks when it does not fit.
   const CivicFitRow({
@@ -81,7 +85,7 @@ class RenderCivicFitRow extends RenderBox
     markNeedsLayout();
   }
 
-  /// Whether the last layout stacked the children.
+  /// Whether the last layout put the children on more than one row.
   bool get stacked => _stacked;
   bool _stacked = false;
 
@@ -115,6 +119,69 @@ class RenderCivicFitRow extends RenderBox
         : needs.fold<double>(0, (a, b) => a + b) + gaps;
   }
 
+  double _ownNeed(Iterable<double> needs) => needs.isEmpty
+      ? 0
+      : needs.fold<double>(0, (a, b) => a + b) + _spacing * (needs.length - 1);
+
+  // How the children stand at [maxW]: the rows, each a run of children and
+  // whether its children share it equally. One row while it fits: equal
+  // shares where they fit, else each its own words and a share of what is
+  // left over (three short answers stay one row on a phone). Else the fewest
+  // rows that fit, balanced (four as 2 + 2, five as 3 + 2, never 3 + 1),
+  // each the whole width; else a stack, one to a row.
+  List<(List<int>, bool)> _plan(List<double> needs, double maxW) {
+    final n = needs.length;
+    final all = [for (var i = 0; i < n; i++) i];
+    if (_rowNeed(needs) <= maxW) return [(all, _equal)];
+    if (_equal && _ownNeed(needs) <= maxW) return [(all, false)];
+    for (var rows = 2; rows < n; rows++) {
+      final runs = <List<int>>[];
+      var at = 0;
+      for (var r = 0; r < rows; r++) {
+        final count = n ~/ rows + (r < n % rows ? 1 : 0);
+        runs.add(all.sublist(at, at + count));
+        at += count;
+      }
+      bool fitsEqual(List<int> run) =>
+          _rowNeed([for (final i in run) needs[i]]) <= maxW;
+      bool fitsOwn(List<int> run) =>
+          _ownNeed([for (final i in run) needs[i]]) <= maxW;
+      if (runs.every((run) => fitsEqual(run) || fitsOwn(run))) {
+        return [for (final run in runs) (run, _equal && fitsEqual(run))];
+      }
+    }
+    return [
+      for (final i in all) ([i], true),
+    ];
+  }
+
+  // The width of each child of [run] in a row [width] wide.
+  List<double> _widths(
+    List<int> run,
+    bool equal,
+    List<double> needs,
+    double width,
+  ) {
+    final gaps = _spacing * (run.length - 1);
+    if (equal) return List.filled(run.length, (width - gaps) / run.length);
+    final spare =
+        (width - _ownNeed([for (final i in run) needs[i]])) / run.length;
+    return [for (final i in run) needs[i] + spare];
+  }
+
+  // The width the rows take: a single row its need (or all of [maxW] where
+  // it stretches), wrapped rows all of it.
+  double _width(List<(List<int>, bool)> plan, List<double> needs, double maxW) {
+    if (plan.length == 1) {
+      final (run, equal) = plan.single;
+      final need = equal
+          ? _rowNeed([for (final i in run) needs[i]])
+          : _ownNeed([for (final i in run) needs[i]]);
+      return _stretch && maxW.isFinite ? maxW : need;
+    }
+    return maxW.isFinite ? maxW : _rowNeed(needs);
+  }
+
   @override
   double computeMinIntrinsicWidth(double height) => _children.fold<double>(
     0,
@@ -136,11 +203,18 @@ class RenderCivicFitRow extends RenderBox
     final kids = _children;
     if (kids.isEmpty) return 0;
     final needs = _needs(double.infinity);
-    if (_rowNeed(needs) <= width) {
-      return kids.fold<double>(0, (a, c) => math.max(a, h(c, double.infinity)));
+    final plan = _plan(needs, width);
+    final total = _width(plan, needs, width);
+    var height = 0.0;
+    for (final (run, equal) in plan) {
+      final widths = _widths(run, equal, needs, total);
+      var tallest = 0.0;
+      for (var j = 0; j < run.length; j++) {
+        tallest = math.max(tallest, h(kids[run[j]], widths[j]));
+      }
+      height += tallest;
     }
-    return kids.fold<double>(0, (a, c) => a + h(c, width)) +
-        _spacing * (kids.length - 1);
+    return height + _spacing * (plan.length - 1);
   }
 
   @override
@@ -154,64 +228,45 @@ class RenderCivicFitRow extends RenderBox
     final kids = _children;
     if (kids.isEmpty) return constraints.smallest;
     final needs = _needs(double.infinity);
-    final need = _rowNeed(needs);
     final maxW = constraints.maxWidth;
-    final fits = need <= maxW;
-    if (!dry) _stacked = !fits;
-    if (fits) {
-      final width = _stretch && maxW.isFinite ? maxW : need;
-      final gaps = _spacing * (kids.length - 1);
-      final widths = _equal
-          ? List.filled(kids.length, (width - gaps) / kids.length)
-          : [for (final n in needs) n + (width - need) / kids.length];
+    final plan = _plan(needs, maxW);
+    if (!dry) _stacked = plan.length > 1;
+    final width = _width(plan, needs, maxW);
+    var y = 0.0;
+    for (final (run, equal) in plan) {
+      final widths = _widths(run, equal, needs, width);
       var height = 0.0;
       final sizes = <Size>[];
-      for (var i = 0; i < kids.length; i++) {
-        final c = BoxConstraints(
-          minWidth: widths[i],
-          maxWidth: widths[i],
-          maxHeight: constraints.maxHeight,
-        );
+      for (var j = 0; j < run.length; j++) {
+        final c = BoxConstraints(minWidth: widths[j], maxWidth: widths[j]);
+        final kid = kids[run[j]];
         final s = dry
-            ? kids[i].getDryLayout(c)
-            : (kids[i]..layout(c, parentUsesSize: true)).size;
+            ? kid.getDryLayout(c)
+            : (kid..layout(c, parentUsesSize: true)).size;
         sizes.add(s);
         height = math.max(height, s.height);
       }
-      final box = constraints.constrain(Size(width, height));
       if (!dry) {
-        // Every child stands as tall as the tallest, so faces line up.
-        for (var i = 0; i < kids.length; i++) {
-          if (sizes[i].height < height) {
-            kids[i].layout(
-              BoxConstraints.tightFor(width: widths[i], height: height),
+        // Every child of a row stands as tall as its tallest, so faces line
+        // up.
+        var x = 0.0;
+        for (var j = 0; j < run.length; j++) {
+          final kid = kids[run[j]];
+          if (sizes[j].height < height) {
+            kid.layout(
+              BoxConstraints.tightFor(width: widths[j], height: height),
               parentUsesSize: true,
             );
           }
-        }
-        var x = 0.0;
-        for (var i = 0; i < kids.length; i++) {
-          final w = widths[i];
-          // Right to left, the row starts at the box's right edge, however
+          final w = widths[j];
+          // Right to left, a row starts at the box's right edge, however
           // much wider than the row the box is held.
-          final dx = _direction == TextDirection.rtl ? box.width - x - w : x;
-          (kids[i].parentData! as CivicFitRowParentData).offset = Offset(dx, 0);
+          final dx = _direction == TextDirection.rtl ? width - x - w : x;
+          (kid.parentData! as CivicFitRowParentData).offset = Offset(dx, y);
           x += w + _spacing;
         }
       }
-      return box;
-    }
-    final width = maxW.isFinite ? maxW : need;
-    var y = 0.0;
-    for (final kid in kids) {
-      final c = BoxConstraints.tightFor(width: width);
-      final s = dry
-          ? kid.getDryLayout(c)
-          : (kid..layout(c, parentUsesSize: true)).size;
-      if (!dry) {
-        (kid.parentData! as CivicFitRowParentData).offset = Offset(0, y);
-      }
-      y += s.height + _spacing;
+      y += height + _spacing;
     }
     return constraints.constrain(Size(width, y - _spacing));
   }

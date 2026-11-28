@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use_from_same_package, the context-free forms stay until 1.0.0.
 // Civic's words for dates, times, sums and counts: the plain shapes a
 // public service prints, the same on every machine.
 import 'package:civic_ui/civic_ui.dart';

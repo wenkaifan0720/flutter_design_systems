@@ -183,14 +183,20 @@ class PermitsOverview extends StatelessWidget {
   }
 }
 
-/// An app's own corners on a part: a card and its button each cut two
-/// diagonal corners square, as a permit's ticket is.
+/// An app's own corners on a part: a card and its button each round their
+/// top corners and keep the bottom ones square, as a file's tab is: one step
+/// along the top, another along the bottom, never a diagonal.
 class _OwnCorners extends StatelessWidget {
   const _OwnCorners();
 
   static const _ticket = CivicStyle(
     corners: WidgetStatePropertyAll(
-      RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none),
+      RawCorners(
+        topStart: RawCorner.medium,
+        topEnd: RawCorner.medium,
+        bottomStart: RawCorner.none,
+        bottomEnd: RawCorner.none,
+      ),
     ),
   );
 
@@ -205,9 +211,9 @@ class _OwnCorners extends StatelessWidget {
           corners: WidgetStatePropertyAll(
             RawCorners(
               topStart: RawCorner.large,
-              topEnd: RawCorner.none,
+              topEnd: RawCorner.large,
               bottomStart: RawCorner.none,
-              bottomEnd: RawCorner.large,
+              bottomEnd: RawCorner.none,
             ),
           ),
         ),
@@ -217,8 +223,9 @@ class _OwnCorners extends StatelessWidget {
           children: [
             const Text(
               'A part takes its own step at each corner from its style: this '
-              "card and its button cut two diagonal corners square, as a "
-              "permit's ticket is. A corner takes square to extra large.",
+              'card and its button round their top corners and keep the '
+              "bottom ones square, as a file's tab is. A corner takes square "
+              'to extra large.',
             ),
             CivicButton(
               onPressed: () {},

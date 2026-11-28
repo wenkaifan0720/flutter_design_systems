@@ -1,3 +1,53 @@
+## 0.9.1
+
+- Needs ui_core 0.8.7.
+- **Three short answers stay one row on a phone.** A `CivicSegmentedControl` whose faces don't fit the width in equal
+  shares, but whose answers' words do, stays one row: each face takes its words and a share of the room left. At 390
+  wide, "System / Light / Dark" and "Added / Title / Author" had stacked into three full-width faces, three times as
+  tall and reading as three separate buttons. Where one row doesn't hold the answers, a segmented control and a
+  `CivicToggleGroup` wrap into the fewest rows that do, balanced (four as two and two, five as three and two, never
+  three and one), each row the whole width; where no two fit side by side they stack, as before.
+- **Dates in the app's locale.** `CivicFormat.dateOf`, `dayMonthOf`, `dateRangeOf` and `relativeOf` write a day in
+  the order, month words and digits of the app's locale (`RawWidgetsLocalizations`), the order its date fields use, so
+  a page never writes a day two ways: "November 14, 2026" in American English beside a field showing 11/14/2026, "14
+  November 2026" in British English beside 14/11/2026, "١٤ نوفمبر ٢٠٢٦" in Arabic. The month stays in words, so a day
+  never reads as another. An adopter's default app showed 11/2/2026 in the date field and "2 November 2026" on the
+  next page. `CivicFormat.date`, `dayMonth`, `dateRange` and `relative`, which write English day first in every
+  locale, are deprecated toward them and go in 1.0.0. The example's book page and the gallery write their dates with
+  `dateOf`; the README's Forms section says how to put the day first (`locale: Locale('en', 'GB')`, listed in
+  `supportedLocales`).
+- **`CivicPageHeading`.** A page's title as a part: the extra-large heading, a screen reader's heading, with an
+  optional quieter caption over it. The page title the docs showed (a `Text` in `headingXL`) was plain text to a
+  screen reader. `CivicScreen`'s example, the README's list page and the example app use it.
+- **A failed send shows the page's heading whole.** `CivicErrorSummary` brings the page back to its start whenever the
+  whole summary shows from there, even when it was already in view. On a page scrolled a little (less than its
+  heading's height) it had stayed where it was, the heading cut under the app's bar.
+- **A secondary button under a pointer keeps its words at 4.5:1.** Its face steps toward its edge only as far as the
+  words keep that. By night the full step took a destructive secondary's words to 4.35:1 in every palette, and a plain
+  one's to 4.2 to 4.4:1 in Civic, Harbour and Heather.
+- **A control before a row's words is heard.** A `CivicListRow` leaves only a glyph, a picture or a monogram (an
+  `Icon`, an `Image`, a `CivicAvatar`) out of its name. Since 0.8.0 it had left every leading out of the screen
+  reader's tree, so a `CivicCheckbox` there went unheard: no checked state, no tap, no focus. In a row of words the
+  row now takes the checkbox's state and tap, as a checkbox list tile does; in a row that goes somewhere the checkbox
+  keeps a node of its own beside the row's, and a row with its own `semanticLabel` keeps it too.
+- **What a dialog holds sits on the dialog.** By night a `CivicDialog` stands on the raised surface, and what it
+  holds now takes that surface for its page, as a popover's content does. A calendar in a dialog had painted its days
+  on the page's darker ground, so the month read as a dark block with a ragged end; a field's well in a dialog sits on
+  it too. By day nothing changes.
+- `civicLoadFonts` loads the Lucide icon font Civic's parts draw their glyphs in, as well as its faces, so on the web a
+  glyph never comes up as an empty box until a reload.
+- The README gives one list of localization delegates (`RawWidgetsLocalizations.delegate` and material_ui's
+  `GlobalMaterialLocalizations.delegates`, with `RawWidgetsLocalizations.supportedLocales`) and says an app on
+  material_ui needs no `flutter_localizations`; the example lists the same, and its pubspec no longer lists
+  `flutter_localizations`. The Forms section spaces fields by `CivicSpacing.s24` and the action by `s32`, as
+  `CivicSpacing` says; says Civic checks on save, with no `autovalidateMode`; and clears the form after a save. `CivicTextField`'s doc says
+  what a form does to it: it is no form field, so a `Form`'s `reset()` and `validate()` pass it by and its text stays;
+  clear its controller to empty it. `CivicHost`'s doc says how `brightness`, `theme`, `darkTheme` and `palette`
+  combine, and that Civic has no density setting. The
+  list page's bar names the page's place, and the README says where a phone row's tag stands.
+- The Overview's "Corners of its own" tile, the README's example and `CivicThemeData.shapeLimits`' doc round a part's
+  top corners and square its bottom ones, where they cut two diagonal corners.
+
 ## 0.9.0
 
 - Needs ui_core 0.8.5.
