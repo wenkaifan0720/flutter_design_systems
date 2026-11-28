@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/rendering.dart' show RenderProxyBox;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -171,41 +170,10 @@ class _RaisedRoute<T> extends PopupRoute<T> with _EscapeCloses<T> {
   final String closeLabel;
   CurvedAnimation? _curve;
 
-  /// How much of the barrier the sheet covers, so a screen reader outlines the barrier where a tap reaches it: above
-  /// a phone's sheet, as Material's bottom sheet does.
-  final _covered = ValueNotifier<EdgeInsets>(EdgeInsets.zero);
-
   @override
   void dispose() {
     _curve?.dispose();
-    _covered.dispose();
     super.dispose();
-  }
-
-  @override
-  Widget buildModalBarrier() {
-    if (kind != _RaisedKind.sheet) return super.buildModalBarrier();
-    final veil = barrierColor;
-    if (veil == null || veil.a == 0 || offstage) {
-      return ModalBarrier(
-        dismissible: barrierDismissible,
-        semanticsLabel: barrierLabel,
-        barrierSemanticsDismissible: semanticsDismissible,
-        clipDetailsNotifier: _covered,
-      );
-    }
-    return AnimatedModalBarrier(
-      color: animation!.drive(
-        ColorTween(
-          begin: veil.withValues(alpha: 0),
-          end: veil,
-        ).chain(CurveTween(curve: barrierCurve)),
-      ),
-      dismissible: barrierDismissible,
-      semanticsLabel: barrierLabel,
-      barrierSemanticsDismissible: semanticsDismissible,
-      clipDetailsNotifier: _covered,
-    );
   }
 
   @override
@@ -227,10 +195,7 @@ class _RaisedRoute<T> extends PopupRoute<T> with _EscapeCloses<T> {
     Animation<double> secondaryAnimation,
   ) => carried.wrap(
     kind == _RaisedKind.sheet
-        ? _SheetHost(
-            route: this,
-            child: Builder(builder: builder),
-          )
+        ? _SheetHost(child: Builder(builder: builder))
         : Builder(builder: builder),
   );
   @override
@@ -248,31 +213,16 @@ class _RaisedRoute<T> extends PopupRoute<T> with _EscapeCloses<T> {
     if (kind == _RaisedKind.menu) {
       return FadeTransition(opacity: curve, child: child);
     }
-    final sheet =
-        kind == _RaisedKind.sheet && MediaQuery.sizeOf(context).width < 840;
     return FadeTransition(
       opacity: curve,
       child: SlideTransition(
         position: Tween(
-          begin: Offset(0, sheet ? .2 : .025),
+          begin: const Offset(0, .025),
           end: Offset.zero,
         ).animate(curve),
         child: child,
       ),
     );
-  }
-
-  void drag(double delta, double height) {
-    if (height > 0 && controller != null) controller!.value -= delta / height;
-  }
-
-  void release(double velocity) {
-    if (controller == null) return;
-    if (velocity > 500 || controller!.value < .7) {
-      navigator?.pop();
-    } else {
-      controller!.forward();
-    }
   }
 }
 
@@ -537,53 +487,94 @@ class _Actions extends StatelessWidget {
   Widget build(BuildContext context) => NeumorphicActionBar(children: children);
 }
 
-class _SheetDrag extends InheritedWidget {
-  const _SheetDrag({
-    required this.route,
-    required this.floating,
-    required super.child,
-  });
-  final _RaisedRoute<dynamic> route;
+// A sheet below a desktop's width (showNeumorphicBottomSheet), on ui_core's RawBottomSheetRoute: it stands on the
+// shell's tab bar and a page's foot standing on it, or on the keyboard where that is taller, the bar whole under the
+// veil (a tap there closes it, as anywhere on the veil). The whole slab drags, and a drag down closes it. It rises on a
+// spring as long as the theme's raise and fades in as it rises; the newest raised surface takes Escape first. From a
+// desktop's width the sheet floats in the middle of the window ([_RaisedRoute]).
+class _SheetRoute<T> extends RawBottomSheetRoute<T> with _EscapeCloses<T> {
+  _SheetRoute({
+    required _Carried carried,
+    required WidgetBuilder builder,
+    required super.barrierDismissible,
+    required String super.barrierLabel,
+  }) : _raise = carried.motion.raise,
+       _leave = carried.motion.leave,
+       super(
+         useSafeArea: true,
+         stiffness: neumorphicRouteStiffness(carried.motion.raise),
+         closeStiffness: neumorphicRouteStiffness(carried.motion.leave),
+         barrierColor: neumorphicVeil(carried.theme.colors),
+         builder: (context, details) => carried.wrap(
+           FadeTransition(
+             opacity: details.animation,
+             child: PrimaryScrollController(
+               controller: details.scrollController,
+               child: _SheetPlace(
+                 close: barrierDismissible ? details.close : null,
+                 child: Builder(builder: builder),
+               ),
+             ),
+           ),
+         ),
+       );
 
-  /// Whether the sheet floats in the middle of a wide window rather than standing on the window's foot: a handle
-  /// says "drag me down" and means nothing there, so it is left off (its close key stays).
-  final bool floating;
+  final Duration _raise;
+  final Duration _leave;
+
+  // With the theme's raise or leave cut to nothing (Reduce Motion, as NeumorphicMotion.of gives it) it stands and goes
+  // at once, as the look's other raised surfaces do.
   @override
-  bool updateShouldNotify(_SheetDrag old) =>
-      old.route != route || old.floating != floating;
+  Simulation createSimulation({required bool forward}) =>
+      (forward ? _raise : _leave) == Duration.zero
+      ? _AtOnce(forward ? 1 : 0)
+      : super.createSimulation(forward: forward);
 }
 
-class _SheetHost extends StatelessWidget {
-  const _SheetHost({required this.route, required this.child});
-  final _RaisedRoute<dynamic> route;
+// Where it is going from the start.
+class _AtOnce extends Simulation {
+  _AtOnce(this.to);
+  final double to;
+  @override
+  double x(double time) => to;
+  @override
+  double dx(double time) => 0;
+  @override
+  bool isDone(double time) => true;
+}
+
+// A sheet on ui_core's route: a slab at most 560 wide in the middle of the room's foot, at most nine tenths of the
+// screen tall and 16 under its top inset (the room is already the screen less that inset and what stands under the
+// sheet). A tap on the veil beside a narrower slab closes it, as one above it does.
+class _SheetPlace extends StatelessWidget {
+  const _SheetPlace({required this.close, required this.child});
+  final VoidCallback? close;
   final Widget child;
   @override
   Widget build(BuildContext context) {
-    final media = MediaQuery.of(context);
-    final desk = media.size.width >= 840;
-    final height = math.max(
-      0.0,
-      media.size.height - media.viewInsets.bottom - media.padding.top - 16,
-    );
+    final most = MediaQuery.sizeOf(context).height * .9;
     return SafeArea(
-      bottom: desk,
-      child: Padding(
-        padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
-        child: Align(
-          alignment: desk ? Alignment.center : Alignment.bottomCenter,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: 560,
-              maxHeight: math.min(height, media.size.height * .9),
-            ),
-            // A phone's sheet tells its barrier what it covers; a desk's panel floats in the middle of it.
-            child: _SizeReport(
-              onSize: (size) => route._covered.value = desk
-                  ? EdgeInsets.zero
-                  : EdgeInsets.only(
-                      bottom: size.height + media.viewInsets.bottom,
-                    ),
-              child: _SheetDrag(route: route, floating: desk, child: child),
+      top: false,
+      bottom: false,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        excludeFromSemantics: true,
+        onTap: close,
+        child: LayoutBuilder(
+          builder: (context, room) => Align(
+            alignment: Alignment.bottomCenter,
+            heightFactor: 1,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              excludeFromSemantics: true,
+              onTap: () {},
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: 560,
+                  maxHeight: math.max(0, math.min(room.maxHeight - 16, most)),
+                ),
+                child: child,
+              ),
             ),
           ),
         ),
@@ -592,33 +583,39 @@ class _SheetHost extends StatelessWidget {
   }
 }
 
-/// Reports its child's size after each layout.
-class _SizeReport extends SingleChildRenderObjectWidget {
-  const _SizeReport({required this.onSize, super.child});
-  final ValueChanged<Size> onSize;
-
+// A sheet from a desktop's width: a phone-wide slab floating in the middle of the window, clear of its insets and the
+// keyboard.
+class _SheetHost extends StatelessWidget {
+  const _SheetHost({required this.child});
+  final Widget child;
   @override
-  RenderObject createRenderObject(BuildContext context) =>
-      _RenderSizeReport(onSize);
-
-  @override
-  void updateRenderObject(BuildContext context, _RenderSizeReport report) =>
-      report.onSize = onSize;
-}
-
-class _RenderSizeReport extends RenderProxyBox {
-  _RenderSizeReport(this.onSize);
-  ValueChanged<Size> onSize;
-
-  @override
-  void performLayout() {
-    super.performLayout();
-    onSize(size);
+  Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    final height = math.max(
+      0.0,
+      media.size.height - media.viewInsets.bottom - media.padding.top - 16,
+    );
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: 560,
+              maxHeight: math.min(height, media.size.height * .9),
+            ),
+            child: child,
+          ),
+        ),
+      ),
+    );
   }
 }
 
-/// Raises a sheet from a phone's foot, or as a centered panel on a wide window.
-/// Its grip, back, Escape and dismissible scrim close it and return focus.
+/// Raises a sheet. Below a desktop's width (1024, where the app shell shows its tab bar) it rises from the screen's
+/// foot on ui_core's [RawBottomSheetRoute] and stands on the shell's tab bar, a page's foot standing on it, or the
+/// keyboard; the bar stays whole under the veil, and a drag down on the slab closes it. From a desktop's width it
+/// floats as a slab in the middle of the window. Back, Escape and a dismissible veil close it and return focus.
 ///
 /// ```dart
 /// showNeumorphicBottomSheet<void>(context, builder: (context) => NeumorphicBottomSheet(title: 'Filters', child: filters))
@@ -631,15 +628,24 @@ Future<T?> showNeumorphicBottomSheet<T>(
   String? closeLabel,
 }) {
   final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
+  final carried = _Carried(context, navigator.context);
+  final label = closeLabel ?? NeumorphicLocalizations.of(context).close;
   return _push(
     context,
-    _RaisedRoute<T>(
-      carried: _Carried(context, navigator.context),
-      builder: builder,
-      kind: _RaisedKind.sheet,
-      dismissible: barrierDismissible,
-      closeLabel: closeLabel ?? NeumorphicLocalizations.of(context).close,
-    ),
+    carried.theme.desk
+        ? _RaisedRoute<T>(
+            carried: carried,
+            builder: builder,
+            kind: _RaisedKind.sheet,
+            dismissible: barrierDismissible,
+            closeLabel: label,
+          )
+        : _SheetRoute<T>(
+            carried: carried,
+            builder: builder,
+            barrierDismissible: barrierDismissible,
+            barrierLabel: label,
+          ),
     useRootNavigator,
   );
 }
@@ -698,42 +704,34 @@ class NeumorphicBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
-    final drag = inPlace
-        ? null
-        : context.dependOnInheritedWidgetOfExactType<_SheetDrag>();
+    final route = inPlace ? null : ModalRoute.of(context);
+    // Raised from a desktop's width the slab floats in the middle of the window: a grip says "drag me down" and means
+    // nothing there, so it is left off (its close key stays).
+    final floating = route is _RaisedRoute;
+    // On ui_core's sheet route the whole slab drags, and its scroll view hands a drag down at its top to the sheet.
+    final onSheet = route is _SheetRoute;
     final close =
         onClose ??
-        (drag == null ? null : () => Navigator.of(context).maybePop());
+        (floating || onSheet ? () => Navigator.of(context).maybePop() : null);
+    final primary = onSheet && controller == null ? true : null;
     final header = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (drag?.floating ?? false)
+        if (floating)
           const SizedBox(height: 16)
         else
           ExcludeSemantics(
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onVerticalDragUpdate: drag == null
-                  ? null
-                  : (d) => drag.route.drag(
-                      d.delta.dy,
-                      MediaQuery.sizeOf(context).height,
-                    ),
-              onVerticalDragEnd: drag == null
-                  ? null
-                  : (d) => drag.route.release(d.velocity.pixelsPerSecond.dy),
-              child: SizedBox(
-                height: NeumorphicChromeMetrics.targetOf(context).height,
-                width: double.infinity,
-                child: Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: t.colors.quiet,
-                      borderRadius: BorderRadius.circular(
-                        t.shapes.corner(2).radius,
-                      ),
+            child: SizedBox(
+              height: NeumorphicChromeMetrics.targetOf(context).height,
+              width: double.infinity,
+              child: Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: t.colors.quiet,
+                    borderRadius: BorderRadius.circular(
+                      t.shapes.corner(2).radius,
                     ),
                   ),
                 ),
@@ -786,12 +784,14 @@ class NeumorphicBottomSheet extends StatelessWidget {
     Widget body({bool nested = false}) => slivers == null
         ? SingleChildScrollView(
             controller: nested ? null : controller,
+            primary: nested ? null : primary,
             physics: nested ? const NeverScrollableScrollPhysics() : null,
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: child ?? const SizedBox.shrink(),
           )
         : CustomScrollView(
             controller: nested ? null : controller,
+            primary: nested ? null : primary,
             physics: nested ? const NeverScrollableScrollPhysics() : null,
             shrinkWrap: true,
             slivers: slivers!,
@@ -824,6 +824,7 @@ class NeumorphicBottomSheet extends StatelessWidget {
               if (scrollAll) {
                 return SingleChildScrollView(
                   controller: controller,
+                  primary: primary,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,

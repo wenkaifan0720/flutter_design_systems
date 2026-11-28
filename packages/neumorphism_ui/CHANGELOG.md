@@ -1,3 +1,16 @@
+## 0.9.1
+
+- Requires ui_core 0.8.7.
+- A bottom sheet stops at the app's tab bar. Below a desktop's width (1024, where `NeumorphicAppShell` shows its tab
+  bar) `showNeumorphicBottomSheet`, and the action sheet and pickers raised through it, opens on ui_core's
+  `RawBottomSheetRoute`, as the family's sheets do: it stands on the shell's tab bar and on a page's foot standing on
+  it, or on the keyboard where that is taller. It covered the bar. The bar stays whole under the veil and keeps the
+  bottom inset, and a tap on it closes the sheet. The whole slab drags and a drag down closes it, where only the grip
+  did. A screen reader still hears it named by its title. From 840 to 1023 wide, where the bar shows, the sheet now
+  rises onto the bar, at most 560 wide in the middle, where it floated in the middle of the window; from 1024 it still
+  floats there. Under Reduce Motion it still stands and goes at once. Code that told a phone's sheet by its route's type
+  reads `RawBottomSheetRoute`.
+
 ## 0.9.0
 
 - Requires ui_core 0.8.6.

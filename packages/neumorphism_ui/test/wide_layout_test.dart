@@ -428,12 +428,24 @@ void main() {
         );
         await tester.tap(find.text('Help'));
         await tester.pumpAndSettle();
-        final drags = find.descendant(
-          of: find.byType(NeumorphicBottomSheet),
+        final sheet = find.byType(NeumorphicBottomSheet);
+        // Its grip, and the drag ui_core's sheet route gives the whole slab.
+        final grip = find.descendant(
+          of: sheet,
+          matching: find.byWidgetPredicate(
+            (w) =>
+                w is Container &&
+                w.constraints ==
+                    const BoxConstraints.tightFor(width: 36, height: 4),
+          ),
+        );
+        final drags = find.ancestor(
+          of: sheet,
           matching: find.byWidgetPredicate(
             (w) => w is GestureDetector && w.onVerticalDragUpdate != null,
           ),
         );
+        expect(grip, handle ? findsOneWidget : findsNothing, reason: '$width');
         expect(drags, handle ? findsOneWidget : findsNothing, reason: '$width');
         expect(
           find.descendant(

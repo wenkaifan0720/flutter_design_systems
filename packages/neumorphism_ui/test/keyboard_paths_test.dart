@@ -598,9 +598,11 @@ void main() {
             // their enclosing NeumorphicTap still owns focus and keyboard input.
             : file.path.endsWith('/moves.dart')
             ? 1
-            // The sheet's drag; the tooltip's hold is Flutter's (RawTooltip).
+            // A tap on the veil beside a sheet narrower than the screen closes it, as one above it does, and a tap on the
+            // sheet stays its own: ui_core's sheet route holds the whole width for the slab's drag. The tooltip's hold
+            // is Flutter's (RawTooltip).
             : file.path.endsWith('/raised.dart')
-            ? 1
+            ? 2
             // A press on a field's padding, off its text, focuses the text, as a Material field's decorator does.
             : file.path.endsWith('/text_entry.dart')
             ? 1
