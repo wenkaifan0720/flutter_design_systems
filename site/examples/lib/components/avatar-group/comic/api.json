@@ -4,6 +4,6 @@
     "faces": "People in reading order.",
     "max": "Maximum visible faces before the remaining count.",
     "size": "Preferred frame size. Custom marks and the avatar theme may enlarge it.",
-    "label": "Overrides the joined names or initials."
+    "semanticLabel": "Overrides the joined names or initials."
   }
 }

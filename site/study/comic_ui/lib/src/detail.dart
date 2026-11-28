@@ -142,7 +142,7 @@ class _EditorState extends State<_Editor> {
                             ),
                             ComicLabel(w.priority),
                             ComicSegmentedButton(
-                              label: w.priority,
+                              semanticLabel: w.priority,
                               segments: [
                                 for (final p in Priority.values)
                                   ComicButtonSegment(p, w.priorityName(p)),

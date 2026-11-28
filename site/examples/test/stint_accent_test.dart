@@ -21,32 +21,41 @@ import 'package:neumorphism_ui/neumorphism_ui.dart' show NeumorphicThemeData;
 import 'package:retro_desktop_ui/retro_desktop_ui.dart'
     show RetroDesktopThemeData;
 import 'package:stint_core/stint_core.dart';
+import 'package:ui_core/ui_core.dart' show RawNamedPalette;
 import 'package:studio_ui/studio_ui.dart' show StudioThemeData;
 import 'package:terminal_ui/terminal_ui.dart' show TermThemeData;
 
-/// Each look's palettes as its package names them, its default first.
-final presets = <String, List<String>>{
-  'appliance': ApplianceThemeData.presets,
-  'brutal': BrutalThemeData.presets,
-  'civic': CivicThemeData.presets,
-  'clay': ClayThemeData.presets,
-  'comic': ComicThemeData.presets,
-  'fluent2': Fluent2ThemeData.presets,
-  'frosted': FrostedThemeData.presets,
-  'gloss': GlossThemeData.presets,
-  'keycap': KeycapThemeData.presets,
-  'ledger': LedgerThemeData.presets,
+/// Each look's six palettes as its package names them, its default first.
+final named = <String, List<RawNamedPalette>>{
+  'appliance': ApplianceThemeData.palettes,
+  'brutal': BrutalThemeData.palettes,
+  'civic': CivicThemeData.palettes,
+  'clay': ClayThemeData.palettes,
+  'comic': ComicThemeData.palettes,
+  'fluent2': Fluent2ThemeData.palettes,
+  'frosted': FrostedThemeData.palettes,
+  'gloss': GlossThemeData.palettes,
+  'keycap': KeycapThemeData.palettes,
+  'ledger': LedgerThemeData.palettes,
   'material_expressive': [
-    ExpressiveThemeData.defaultPreset,
-    ...ExpressiveThemeData.presets.where(
-      (id) => id != ExpressiveThemeData.defaultPreset,
+    ...ExpressiveThemeData.palettes.where(
+      (p) => p.id == ExpressiveThemeData.defaultPreset,
+    ),
+    ...ExpressiveThemeData.palettes.where(
+      (p) => p.id != ExpressiveThemeData.defaultPreset,
     ),
   ],
-  'minimal': MinimalThemeData.presets,
-  'neumorphism': NeumorphicThemeData.presets,
-  'retro_desktop': RetroDesktopThemeData.presets,
-  'studio': StudioThemeData.presets,
-  'terminal': TermThemeData.presets,
+  'minimal': MinimalThemeData.palettes,
+  'neumorphism': NeumorphicThemeData.palettes,
+  'retro_desktop': RetroDesktopThemeData.palettes,
+  'studio': StudioThemeData.palettes,
+  'terminal': TermThemeData.palettes,
+};
+
+/// Each edition's palette ids, its own first.
+final presets = <String, List<String>>{
+  for (final MapEntry(:key, :value) in named.entries)
+    key: [for (final p in value) p.id],
   // The reference editions: their own colours, then Stint's five seeds.
   'material': ['look', for (final a in StintAccent.values) a.name],
   'cupertino': ['look', for (final a in StintAccent.values) a.name],
@@ -63,6 +72,17 @@ void main() {
   test('every edition has its look\'s palettes listed here', () {
     expect(presets.keys.toSet(), looks.toSet());
   });
+  // The look pages print these names; they follow the packages.
+  test('looks.json names each look\'s six palettes as its package does', () {
+    final listed = jsonDecode(
+      File('../looks.json').readAsStringSync(),
+    ) as Map<String, dynamic>;
+    for (final MapEntry(:key, :value) in named.entries) {
+      expect((listed[key] as Map)['palettes'], [
+        for (final p in value) p.label,
+      ], reason: key);
+    }
+  });
   for (final look in looks) {
     testWidgets('$look offers its look\'s six palettes, its own first', (
       tester,
@@ -78,6 +98,11 @@ void main() {
       expect(offered.map((p) => p.id), presets[look]);
       expect(offered, hasLength(6));
       expect(offered.map((p) => p.name).toSet(), hasLength(6));
+      if (named[look] case final palettes?) {
+        expect(offered.map((p) => p.name), [
+          for (final p in palettes) p.label,
+        ], reason: 'each palette by the name its package gives it');
+      }
       expect(settings.palette, offered.first, reason: 'the look\'s own');
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(seconds: 1));

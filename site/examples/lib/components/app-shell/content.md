@@ -1,6 +1,6 @@
 # App shell
 
-An app shell holds the current page and its main navigation together. Use the look’s scaffold to give related pages a consistent place to live.
+An app shell holds the app’s places and their navigation: a tab bar on a phone, a rail or a sidebar on a wider window. Each place keeps its own pages, so a page opened in one place is still there when the reader comes back to it. Use the look’s app shell for an app’s top-level places.
 
 ## Navigate a workspace
 

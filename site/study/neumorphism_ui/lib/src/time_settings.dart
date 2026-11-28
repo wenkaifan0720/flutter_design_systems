@@ -14,7 +14,7 @@ extension _Timesheet on _WorkspaceState {
           children: [
             NeumorphicIconButton(
               LucideIcons.chevronLeftDir,
-              label: w.previousWeek,
+              semanticLabel: w.previousWeek,
               onPressed: () => c.shiftWeek(-1),
             ),
             Expanded(
@@ -43,7 +43,7 @@ extension _Timesheet on _WorkspaceState {
             ),
             NeumorphicIconButton(
               LucideIcons.chevronRightDir,
-              label: w.nextWeek,
+              semanticLabel: w.nextWeek,
               onPressed: () => c.shiftWeek(1),
             ),
           ],
@@ -100,7 +100,7 @@ extension _Timesheet on _WorkspaceState {
                 title: '${w.weekday(day)}${w.dot}${w.shortDate(day)}',
                 children: [
                   NeumorphicTimeline(
-                    label: w.entries,
+                    semanticLabel: w.entries,
                     stops: [
                       for (final e in entries.where((e) => e.date == day))
                         NeumorphicTimelineStop(
@@ -219,7 +219,7 @@ extension _Timesheet on _WorkspaceState {
         _FieldGroup(
           label: w.density,
           child: NeumorphicSegmentedButton<bool>(
-            label: w.density,
+            semanticLabel: w.density,
             value: s.compact,
             segments: [
               NeumorphicButtonSegment(false, w.standard),
@@ -236,10 +236,7 @@ extension _Timesheet on _WorkspaceState {
         NeumorphicListTile(
           title: c.personName('maya'),
           subtitle: w.teamName,
-          leading: NeumorphicAvatar(
-            w.mayaInitials,
-            name: c.personName('maya'),
-          ),
+          leading: NeumorphicAvatar(w.mayaInitials, name: c.personName('maya')),
           isFirst: true,
         ),
         NeumorphicButton(

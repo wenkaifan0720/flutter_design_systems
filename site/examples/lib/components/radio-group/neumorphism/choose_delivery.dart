@@ -18,7 +18,7 @@ class _ChooseDeliveryState extends State<ChooseDelivery> {
       mainAxisSize: MainAxisSize.min,
       children: [
         NeumorphicRadioGroup<String>(
-          label: 'Delivery method',
+          semanticLabel: 'Delivery method',
           value: delivery,
           options: const [
             NeumorphicRadio('Pickup', 'Pickup'),

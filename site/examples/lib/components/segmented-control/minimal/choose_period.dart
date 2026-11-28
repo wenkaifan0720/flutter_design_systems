@@ -21,7 +21,7 @@ class _ChoosePeriodState extends State<ChoosePeriod> {
             MinimalButtonSegment('Week', 'Week'),
             MinimalButtonSegment('Month', 'Month'),
           ],
-          label: 'Reporting period',
+          semanticLabel: 'Reporting period',
           value: period,
           onChanged: (next) => setState(() => period = next),
         ),

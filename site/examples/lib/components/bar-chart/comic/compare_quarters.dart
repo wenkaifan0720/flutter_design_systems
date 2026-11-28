@@ -30,7 +30,7 @@ class _CompareQuartersState extends State<CompareQuarters> {
           ComicBarChart(
             labels: months,
             series: [ComicChartSeries('Orders', orders)],
-            label: '$period monthly orders',
+            semanticLabel: '$period monthly orders',
           ),
           const SizedBox(height: 12),
           ComicButton(

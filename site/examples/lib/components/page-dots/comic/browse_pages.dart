@@ -20,7 +20,7 @@ class _BrowsePagesState extends State<BrowsePages> {
       ComicPageDots(
         pageCount: titles.length,
         selectedIndex: page,
-        label: 'Guide pages',
+        semanticLabel: 'Guide pages',
         onPageChanged: (next) => setState(() => page = next),
       ),
     ],

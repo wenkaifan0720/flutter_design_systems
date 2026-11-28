@@ -1,10 +1,9 @@
 {
-  "widget": "ExpressiveShellScaffold",
+  "widget": "ExpressiveAppShell",
   "parameters": {
-    "tabs": "Main destinations, including the location of each branch.",
-    "selectedIndex": "Index of the visible branch.",
-    "onDestinationSelected": "Receives the selected branch.",
-    "body": "Content of the current branch."
-  },
-  "library": "material_expressive_host"
+    "destinations": "The places, each an icon and a label, in reading order.",
+    "selectedIndex": "The place on screen.",
+    "onDestinationSelected": "Receives the place the reader chooses.",
+    "branches": "Builds each place’s first page; each place keeps its own pages, and choosing it again returns to its first."
+  }
 }

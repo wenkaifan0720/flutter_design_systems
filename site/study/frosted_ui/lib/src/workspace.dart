@@ -463,7 +463,12 @@ class _IconAct extends StatelessWidget {
   Widget build(BuildContext context) {
     return FrostedTooltip(
       message: label,
-      child: FrostedIconButton(icon, label: label, onPressed: act, size: size),
+      child: FrostedIconButton(
+        icon,
+        semanticLabel: label,
+        onPressed: act,
+        size: size,
+      ),
     );
   }
 }

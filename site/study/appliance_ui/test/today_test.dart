@@ -129,7 +129,9 @@ void main() {
           await tester.pumpWidget(
             StintAppliance(
               key: UniqueKey(),
-              launch: StintLaunch(language: ar ? StintLanguage.ar : StintLanguage.en),
+              launch: StintLaunch(
+                language: ar ? StintLanguage.ar : StintLanguage.en,
+              ),
               repository: repo,
             ),
           );

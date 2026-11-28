@@ -151,7 +151,7 @@ extension _TaskList on _WorkspaceState {
                   if (c.selected.isNotEmpty)
                     MinimalMenu.button(
                       LucideIcons.ellipsis,
-                      label: w.actions,
+                      semanticLabel: w.actions,
                       items: _items(c.selected),
                     ),
                 ],
@@ -187,7 +187,7 @@ extension _TaskList on _WorkspaceState {
     final ids = {t.id};
     return MinimalMenu(
       trigger: MinimalMenuTrigger.longPress,
-      label: w.actions,
+      semanticLabel: w.actions,
       items: _items(ids),
       child: MinimalListTile(
         title: w.text(t.title),
@@ -197,7 +197,7 @@ extension _TaskList on _WorkspaceState {
             : c.draft?.task.id == t.id,
         leading: c.selecting
             ? MinimalCheckbox(
-                label: w.text(t.title),
+                semanticLabel: w.text(t.title),
                 value: c.selected.contains(t.id),
                 onChanged: (_) => c.toggleSelection(t.id),
               )
@@ -211,7 +211,7 @@ extension _TaskList on _WorkspaceState {
             ? null
             : MinimalMenu.button(
                 LucideIcons.ellipsis,
-                label: '${w.actions}${w.dot}${t.id}',
+                semanticLabel: '${w.actions}${w.dot}${t.id}',
                 items: _items(ids),
               ),
         onTap: () => c.selecting ? c.toggleSelection(t.id) : open(t),

@@ -24,7 +24,7 @@ class _FindTitleState extends State<FindTitle> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Fluent2SearchBox(
-          label: 'Find a title',
+          semanticLabel: 'Find a title',
           hintText: 'Search titles',
           onChanged: filter,
         ),

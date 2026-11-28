@@ -2,7 +2,7 @@
   "widget": "MinimalTag",
   "parameters": {
     "label": "What it says.",
-    "tone": "Its tint.",
+    "tone": "Its tint, a MinimalTone: neutral, primary, success, warning, destructive.",
     "icon": "A 12 px glyph before the label, in the tone's ink.",
     "dot": "Sets the tone of the dot beside the label."
   }

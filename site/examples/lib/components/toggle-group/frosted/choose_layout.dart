@@ -16,7 +16,7 @@ class _ChooseLayoutState extends State<ChooseLayout> {
     mainAxisSize: MainAxisSize.min,
     children: [
       FrostedToggleGroup<String>(
-        label: 'Layout',
+        semanticLabel: 'Layout',
         segments: const [
           FrostedButtonSegment('List', 'List'),
           FrostedButtonSegment('Grid', 'Grid'),

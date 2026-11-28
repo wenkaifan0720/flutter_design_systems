@@ -6,7 +6,7 @@
     "onChanged": "Receives the chosen index.",
     "child": "Content in the panel joined to the open folder tab.",
     "counts": "Optional figures beside the labels.",
-    "label": "Accessible name for the strip.",
+    "semanticLabel": "Accessible name for the strip.",
     "style": "Overrides the appearance of the tabs."
   }
 }

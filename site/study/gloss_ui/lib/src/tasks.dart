@@ -173,8 +173,13 @@ extension _Tasks on _WorkspaceState {
     // the screen's own measure, margins and foot.
     final media = MediaQuery.of(context);
     final margin = GlossSpacing.pageMargin(media.size.width);
-    final well = GlossFace.well(theme.colors, radius: GlossMetrics.wellRadius);
-    const corner = Radius.circular(GlossMetrics.wellRadius);
+    final well = GlossFace.well(
+      theme.colors,
+      radius: GlossTheme.of(context).shapeScheme.corners.medium,
+    );
+    final corner = Radius.circular(
+      GlossTheme.of(context).shapeScheme.corners.medium,
+    );
     return GlossPullToRefresh(
       onRefresh: c.refresh,
       child: GlossScreen(

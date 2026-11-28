@@ -21,7 +21,7 @@ class _ResizeCoverState extends State<ResizeCover> {
             width: 156,
             child: RetroDesktopMedia(
               slotId: 'route-guide',
-              label: 'Route guide cover',
+              semanticLabel: 'Route guide cover',
               aspect: square ? 1.0 : 16 / 9,
             ),
           ),

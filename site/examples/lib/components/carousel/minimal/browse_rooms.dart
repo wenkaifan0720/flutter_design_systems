@@ -7,7 +7,7 @@ class BrowseRooms extends StatelessWidget {
   Widget build(BuildContext context) => ConstrainedBox(
     constraints: const BoxConstraints(maxWidth: 440),
     child: const MinimalCarouselView(
-      label: 'Rooms',
+      semanticLabel: 'Rooms',
       height: 112,
       children: [
         Center(child: Text('Hall')),

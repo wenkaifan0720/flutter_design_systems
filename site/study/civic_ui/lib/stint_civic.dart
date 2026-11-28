@@ -71,7 +71,7 @@ class _StintCivicState extends State<StintCivic> {
           ),
           child: CivicTheme(
             data: CivicThemeData.preset(
-              p.presetOf(CivicThemeData.presets),
+              p.presetOf(_paletteIds),
               switch (p.appearance) {
                 Appearance.day => Brightness.light,
                 Appearance.night => Brightness.dark,
@@ -104,6 +104,13 @@ class _StintCivicState extends State<StintCivic> {
 
 /// Civic's six palettes, the look's own first, for a host's palette menu.
 final _palettes = [
-  for (final id in CivicThemeData.presets)
-    StintPalette(id, CivicThemeData.preset(id, Brightness.light).action),
+  for (final palette in CivicThemeData.palettes)
+    StintPalette(
+      palette.id,
+      CivicThemeData.preset(palette.id, Brightness.light).action,
+      label: palette.label,
+    ),
 ];
+
+/// The palettes' ids, the theme's preset for each.
+final _paletteIds = [for (final palette in _palettes) palette.id];

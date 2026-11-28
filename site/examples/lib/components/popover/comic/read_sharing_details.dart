@@ -6,7 +6,7 @@ class ReadSharingDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ComicPopover(
-    label: 'Sharing details',
+    semanticLabel: 'Sharing details',
     anchorBuilder: (_, anchor) =>
         ComicButton('Sharing details', onPressed: anchor.toggle),
     builder: (_, close) =>

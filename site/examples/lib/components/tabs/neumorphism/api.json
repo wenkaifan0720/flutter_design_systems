@@ -4,7 +4,7 @@
     "tabs": "Section names in reading order.",
     "selectedIndex": "Index of the visible section.",
     "onChanged": "Receives the chosen index.",
-    "label": "Accessible name for the group.",
+    "semanticLabel": "Accessible name for the group.",
     "style": "Overrides the tab faces and labels."
   }
 }

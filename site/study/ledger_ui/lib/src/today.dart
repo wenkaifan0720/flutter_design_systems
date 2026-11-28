@@ -560,7 +560,7 @@ extension _Today on _BookState {
       key: ValueKey('plan-${task.id}'),
       onTap: () => c.changeTasks([task.id], done: !task.done),
       checked: task.done,
-      label: [title, project, if (running) w.runningTimer].join(', '),
+      semanticLabel: [title, project, if (running) w.runningTimer].join(', '),
       child: ColoredBox(
         color: ink.background.withValues(alpha: 0),
         child: Padding(

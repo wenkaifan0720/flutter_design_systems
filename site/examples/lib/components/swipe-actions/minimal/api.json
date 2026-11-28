@@ -3,7 +3,7 @@
   "parameters": {
     "child": "The row — usually a MinimalThemeData.rowHeight row with its own hairline.",
     "leading": "Actions revealed by a drag toward the trailing edge, first nearest the leading edge.",
-    "trailing": "Actions revealed by a drag toward the leading edge, first nearest the trailing edge.",
+    "trailing": "Actions revealed by a drag toward the leading edge, first nearest the trailing edge. Each is a MinimalSwipeAction: its label, onPressed, an optional icon, and destructive: true for a delete, drawn in the danger tone.",
     "allowsFullSwipe": "A long swipe past 60 % of the row performs the first action on that edge.",
     "initiallyOpen": "Starts the row with its actions revealed."
   }

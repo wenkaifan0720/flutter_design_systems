@@ -20,7 +20,7 @@ class _SortFilesState extends State<SortFiles> {
           onPressed: () async {
             final sort = await FrostedMenu.show<String>(
               anchor,
-              label: 'Sort files',
+              semanticLabel: 'Sort files',
               items: const [
                 FrostedMenuItem('Name', 'Name'),
                 FrostedMenuItem('Date', 'Date'),

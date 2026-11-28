@@ -8,6 +8,6 @@
     "initiallyExpanded": "The nodes open at first.",
     "onSelected": "Called with the node selected (a press, or Space).",
     "onActivate": "A node's Enter, or a press on a leaf.",
-    "label": "What a screen reader calls the tree."
+    "semanticLabel": "What a screen reader calls the tree."
   }
 }

@@ -782,7 +782,7 @@ class _Line extends StatelessWidget {
                       child: ExcludeSemantics(
                         child: FrostedCheckbox(
                           value: checked,
-                          label: title,
+                          semanticLabel: title,
                           onChanged: (_) {},
                         ),
                       ),
@@ -800,7 +800,7 @@ class _Line extends StatelessWidget {
       onPressed: onPressed,
       role: checked == null ? FrostedPressRole.link : FrostedPressRole.control,
       checked: checked,
-      label: [title, ?meta, ?spoken].join(', '),
+      semanticLabel: [title, ?meta, ?spoken].join(', '),
       radius: FrostedCorners.r10,
       ringInsets: const EdgeInsets.symmetric(horizontal: -8),
       ringInside: true,

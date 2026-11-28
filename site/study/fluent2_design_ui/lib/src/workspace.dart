@@ -86,14 +86,16 @@ class _WorkspaceState extends State<_Workspace> {
     }
   }
 
-  Widget icon(IconData glyph, String label, VoidCallback pressed) =>
-      _tip(label, Fluent2IconButton(glyph, label: label, onPressed: pressed));
+  Widget icon(IconData glyph, String label, VoidCallback pressed) => _tip(
+    label,
+    Fluent2IconButton(glyph, semanticLabel: label, onPressed: pressed),
+  );
   Widget get commands =>
       icon(Fluent2Icons.search, '${w.commands}  ${modifier}K', palette);
   Widget _personAvatar(Person person, {double size = 32}) => Fluent2Avatar(
     name: person.name.$1,
     initials: fluent2Initials(w.text(person.name)),
-    label: w.text(person.name),
+    semanticLabel: w.text(person.name),
     color: Fluent2AvatarColor.colorful,
     size: size,
   );
@@ -211,7 +213,7 @@ class _WorkspaceState extends State<_Workspace> {
           ),
         ),
         fieldBuilder: (ctx, f) => Fluent2SearchBox(
-          label: hint,
+          semanticLabel: hint,
           hintText: hint,
           controller: f.controller,
           focusNode: f.focusNode,

@@ -10,24 +10,25 @@ class NavigateWorkspace extends StatefulWidget {
 
 class _NavigateWorkspaceState extends State<NavigateWorkspace> {
   int selected = 0;
-  static const destinations = [
-    CivicNavigationDestination(icon: Icons.home_outlined, label: 'Home'),
-    CivicNavigationDestination(icon: Icons.search, label: 'Search'),
-  ];
-  void selectPage(int index) => setState(() => selected = index);
 
   @override
-  Widget build(BuildContext context) => CivicScaffold(
-    navigationBar: CivicNavigationBar(
-      destinations: destinations,
-      selectedIndex: selected,
-      onDestinationSelected: selectPage,
-    ),
-    sideNavigation: CivicSideNavigation(
-      destinations: destinations,
-      selectedIndex: selected,
-      onDestinationSelected: selectPage,
-    ),
-    body: Center(child: Text(selected == 0 ? 'Home page' : 'Search page')),
+  Widget build(BuildContext context) => CivicAppShell.branches(
+    brand: 'Workspace',
+    destinations: const [
+      CivicNavItem(Icons.home_outlined, 'Home'),
+      CivicNavItem(Icons.search, 'Search'),
+    ],
+    selectedIndex: selected,
+    onDestinationSelected: (next) => setState(() => selected = next),
+    branches: [
+      (context) => const CivicScreen(
+        topBar: CivicTopBar(title: 'Home'),
+        body: Center(child: Text('Home page')),
+      ),
+      (context) => const CivicScreen(
+        topBar: CivicTopBar(title: 'Search'),
+        body: Center(child: Text('Search page')),
+      ),
+    ],
   );
 }

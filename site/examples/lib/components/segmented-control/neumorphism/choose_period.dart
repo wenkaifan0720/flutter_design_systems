@@ -21,7 +21,7 @@ class _ChoosePeriodState extends State<ChoosePeriod> {
             NeumorphicButtonSegment('Week', 'Week'),
             NeumorphicButtonSegment('Month', 'Month'),
           ],
-          label: 'Reporting period',
+          semanticLabel: 'Reporting period',
           value: period,
           onChanged: (next) => setState(() => period = next),
         ),

@@ -83,7 +83,7 @@ class _StintGlossState extends State<StintGloss> {
             ),
             child: GlossTheme(
               data: GlossThemeData.preset(
-                settings.presetOf(GlossThemeData.presets),
+                settings.presetOf(_paletteIds),
                 brightness,
                 density: settings.compact
                     ? GlossDensity.compact
@@ -129,6 +129,13 @@ class _Workspace extends StatefulWidget {
 
 /// Gloss's six gels, the look's own first, for a host's palette menu.
 final _palettes = [
-  for (final id in GlossThemeData.presets)
-    StintPalette(id, GlossThemeData.preset(id, Brightness.light).colors.jade),
+  for (final palette in GlossThemeData.palettes)
+    StintPalette(
+      palette.id,
+      GlossThemeData.preset(palette.id, Brightness.light).colors.jade,
+      label: palette.label,
+    ),
 ];
+
+/// The palettes' ids, the theme's preset for each.
+final _paletteIds = [for (final palette in _palettes) palette.id];

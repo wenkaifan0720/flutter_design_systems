@@ -4,6 +4,6 @@
     "child": "Supplies the contents of the component.",
     "padding": "Sets the space inside the component.",
     "onPressed": "Runs when the reader activates the component.",
-    "label": "The label exposed to a screen reader."
+    "semanticLabel": "The label exposed to a screen reader."
   }
 }

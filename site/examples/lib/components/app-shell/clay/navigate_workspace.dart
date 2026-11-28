@@ -10,16 +10,24 @@ class NavigateWorkspace extends StatefulWidget {
 
 class _NavigateWorkspaceState extends State<NavigateWorkspace> {
   int selected = 0;
-  static const destinations = [
-    ClayDestination(icon: Icons.home_outlined, label: 'Home'),
-    ClayDestination(icon: Icons.search, label: 'Search'),
-  ];
 
   @override
-  Widget build(BuildContext context) => ClayScaffold(
-    destinations: destinations,
+  Widget build(BuildContext context) => ClayScaffold.branches(
+    destinations: const [
+      ClayDestination(icon: Icons.home_outlined, label: 'Home'),
+      ClayDestination(icon: Icons.search, label: 'Search'),
+    ],
     selectedIndex: selected,
     onDestinationSelected: (next) => setState(() => selected = next),
-    body: Center(child: Text(selected == 0 ? 'Home page' : 'Search page')),
+    branches: [
+      (context) => const ClayScreen(
+        topBar: ClayTopBar(title: 'Home'),
+        body: Center(child: Text('Home page')),
+      ),
+      (context) => const ClayScreen(
+        topBar: ClayTopBar(title: 'Search'),
+        body: Center(child: Text('Search page')),
+      ),
+    ],
   );
 }

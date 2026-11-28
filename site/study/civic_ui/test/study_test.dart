@@ -292,8 +292,15 @@ void main() {
       const StintLaunch(place: Place.tasks),
       repo: StintRepository(failNext: true),
     );
+    // The shell takes its mode from its width (Civic's modeFor) unless an
+    // app fixes one.
+    final shellAt = find.byType(RawAdaptiveShell);
+    final shell = t.widget<RawAdaptiveShell>(shellAt);
     expect(
-      t.widget<RawAdaptiveShell>(find.byType(RawAdaptiveShell)).mode,
+      shell.mode ??
+          (shell.modeForWidth ?? RawNavigationMode.fromWidth)(
+            t.getSize(shellAt).width,
+          ),
       RawNavigationMode.rail,
     );
     await tap(t, text('Try again'));

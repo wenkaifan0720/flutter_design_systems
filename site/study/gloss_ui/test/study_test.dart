@@ -532,7 +532,7 @@ void main() {
     tester,
   ) async {
     window(tester, 390);
-    for (final accent in GlossThemeData.presets) {
+    for (final accent in GlossThemeData.palettes.map((p) => p.id)) {
       for (final appearance in [Appearance.day, Appearance.night]) {
         await launch(
           tester,

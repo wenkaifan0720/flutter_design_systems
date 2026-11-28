@@ -8,7 +8,7 @@ class BrowseStops extends StatelessWidget {
     constraints: const BoxConstraints(maxWidth: 440),
     child: MinimalScrollArea(
       height: 150,
-      label: 'Route stops',
+      semanticLabel: 'Route stops',
       alwaysShown: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -125,7 +125,10 @@ void main() {
         await tester.pumpWidget(
           StintMinimal(
             key: UniqueKey(),
-            launch: StintLaunch(language: ar ? StintLanguage.ar : StintLanguage.en, scale: 2),
+            launch: StintLaunch(
+              language: ar ? StintLanguage.ar : StintLanguage.en,
+              scale: 2,
+            ),
             repository: repo,
           ),
         );
@@ -163,7 +166,9 @@ void main() {
           await tester.pumpWidget(
             StintMinimal(
               key: UniqueKey(),
-              launch: StintLaunch(language: ar ? StintLanguage.ar : StintLanguage.en),
+              launch: StintLaunch(
+                language: ar ? StintLanguage.ar : StintLanguage.en,
+              ),
               repository: StintRepository(),
             ),
           );

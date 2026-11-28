@@ -245,15 +245,22 @@ class _Workspace extends StatefulWidget {
 }
 
 /// Material Expressive's six presets, its default first.
-final _presets = [
-  ExpressiveThemeData.defaultPreset,
-  ...ExpressiveThemeData.presets.where(
-    (id) => id != ExpressiveThemeData.defaultPreset,
-  ),
+/// Expressive's six palettes, its default first, for a host's palette menu.
+final _palettes = [
+  for (final palette in [
+    ...ExpressiveThemeData.palettes.where(
+      (p) => p.id == ExpressiveThemeData.defaultPreset,
+    ),
+    ...ExpressiveThemeData.palettes.where(
+      (p) => p.id != ExpressiveThemeData.defaultPreset,
+    ),
+  ])
+    StintPalette(
+      palette.id,
+      ExpressiveThemeData.preset(palette.id, Brightness.light).colors.primary,
+      label: palette.label,
+    ),
 ];
 
-/// [_presets] for a host's palette menu.
-final _palettes = [
-  for (final id in _presets)
-    StintPalette(id, ExpressiveThemeData.preset(id, Brightness.light).colors.primary),
-];
+/// The palettes' ids, the theme's preset for each.
+final _presets = [for (final palette in _palettes) palette.id];

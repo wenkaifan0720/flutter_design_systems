@@ -18,7 +18,7 @@ class _ReadMessagesState extends State<ReadMessages> {
       children: [
         const Text('Inbox'),
         const SizedBox(height: 12),
-        NeumorphicBadge(unread, label: '$unread unread messages'),
+        NeumorphicBadge(unread, semanticLabel: '$unread unread messages'),
         const SizedBox(height: 12),
         NeumorphicButton(
           unread == 0 ? 'Reset inbox' : 'Mark one read',

@@ -219,8 +219,7 @@ extension _TimeAndSettings on _WorkspaceState {
                         for (final l in StintLanguage.values)
                           Fluent2Option(l, l.nativeName),
                       ],
-                      onChanged: (v) =>
-                          prefs.update(() => prefs.language = v),
+                      onChanged: (v) => prefs.update(() => prefs.language = v),
                     ),
                   ),
                   Fluent2FormField(

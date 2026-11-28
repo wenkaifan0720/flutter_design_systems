@@ -5,6 +5,7 @@
     "max": "Highest volume the thumb can reach.",
     "divisions": "Number of equal intervals on the track.",
     "semanticLabel": "Names the volume control.",
+    "semanticFormatterCallback": "What a screen reader says the value is; null: a percentage.",
     "onChanged": "Receives the new volume."
   }
 }

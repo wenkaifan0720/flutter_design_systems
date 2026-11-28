@@ -7,7 +7,7 @@
     "height": "Its height, for a vertical area in a page that scrolls itself.",
     "width": "Its width, for a sideways area in a row.",
     "alwaysShown": "Show the scrollbar whenever there is anything to scroll.",
-    "label": "What a screen reader calls the region.",
+    "semanticLabel": "What a screen reader calls the region.",
     "shape": "Chooses the outline of the component.",
     "padding": "Space round the content, inside the scrolling.",
     "focusNode": "The area's keyboard stop (the arrow and page keys scroll it).",

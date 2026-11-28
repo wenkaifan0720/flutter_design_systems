@@ -1,7 +1,7 @@
 {
   "widget": "FrostedCheckbox",
   "parameters": {
-    "label": "Names the choice.",
+    "semanticLabel": "Names the choice.",
     "value": "Whether a receipt is requested.",
     "onChanged": "Updates the request when the checkbox changes."
   }

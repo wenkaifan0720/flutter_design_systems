@@ -22,7 +22,7 @@ class _BrowseStopsState extends State<BrowseStops> {
       height: 150,
       child: RetroDesktopScrollArea(
         controller: scroll,
-        label: 'Route stops',
+        semanticLabel: 'Route stops',
         child: ListView(
           controller: scroll,
           children: [

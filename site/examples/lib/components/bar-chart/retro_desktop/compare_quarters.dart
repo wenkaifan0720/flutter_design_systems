@@ -30,7 +30,7 @@ class _CompareQuartersState extends State<CompareQuarters> {
           RetroDesktopBarChart(
             labels: months,
             series: [RetroDesktopChartSeries('Orders', orders)],
-            label: '$period monthly orders',
+            semanticLabel: '$period monthly orders',
           ),
           const SizedBox(height: 12),
           RetroDesktopButton(

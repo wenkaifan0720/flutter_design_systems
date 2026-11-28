@@ -99,11 +99,11 @@ class _StintFrostedState extends State<StintFrosted> {
             ),
             child: FrostedHost(
               theme: FrostedThemeData.preset(
-                s.presetOf(FrostedThemeData.presets),
+                s.presetOf(_paletteIds),
                 Brightness.light,
               ).copyWith(density: density),
               darkTheme: FrostedThemeData.preset(
-                s.presetOf(FrostedThemeData.presets),
+                s.presetOf(_paletteIds),
                 Brightness.dark,
               ).copyWith(density: density),
               brightness: s.appearance == Appearance.system
@@ -159,9 +159,13 @@ class _Workspace extends StatefulWidget {
 
 /// Frosted's six palettes, the look's own first, for a host's palette menu.
 final _palettes = [
-  for (final id in FrostedThemeData.presets)
+  for (final palette in FrostedThemeData.palettes)
     StintPalette(
-      id,
-      FrostedThemeData.preset(id, Brightness.light).colorScheme.accent,
+      palette.id,
+      FrostedThemeData.preset(palette.id, Brightness.light).colorScheme.accent,
+      label: palette.label,
     ),
 ];
+
+/// The palettes' ids, the theme's preset for each.
+final _paletteIds = [for (final palette in _palettes) palette.id];

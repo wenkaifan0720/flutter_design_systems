@@ -2,8 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:ledger_ui/ledger_host.dart'
-    show LedgerChromeMetrics, LedgerHost;
+import 'package:ledger_ui/ledger_host.dart' show LedgerChromeMetrics;
 import 'package:ledger_ui/ledger_parts.dart'
     show
         LedgerPressable,
@@ -94,11 +93,11 @@ class _LedgerAppState extends State<StintLedger> {
             ),
             child: LedgerHost(
               theme: LedgerThemeData.preset(
-                p.presetOf(LedgerThemeData.presets),
+                p.presetOf(_paletteIds),
                 Brightness.light,
               ).copyWith(density: density),
               darkTheme: LedgerThemeData.preset(
-                p.presetOf(LedgerThemeData.presets),
+                p.presetOf(_paletteIds),
                 Brightness.dark,
               ).copyWith(density: density),
               brightness: switch (p.appearance) {
@@ -133,8 +132,15 @@ class _LedgerAppState extends State<StintLedger> {
   );
 }
 
-/// Ledger's six presets, the look's own first, for a host's palette menu.
+/// Ledger's six palettes, the look's own first, for a host's palette menu.
 final _palettes = [
-  for (final id in LedgerThemeData.presets)
-    StintPalette(id, LedgerThemeData.preset(id, Brightness.light).accent),
+  for (final palette in LedgerThemeData.palettes)
+    StintPalette(
+      palette.id,
+      LedgerThemeData.preset(palette.id, Brightness.light).accent,
+      label: palette.label,
+    ),
 ];
+
+/// The palettes' ids, the theme's preset for each.
+final _paletteIds = [for (final palette in _palettes) palette.id];

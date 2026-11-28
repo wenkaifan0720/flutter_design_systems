@@ -1,9 +1,9 @@
 {
   "widget": "ClayScaffold",
   "parameters": {
-    "destinations": "The app's places; none: a page with no places (a pushed page).",
-    "selectedIndex": "The current place.",
-    "onDestinationSelected": "Called with the place chosen.",
-    "body": "The page."
+    "destinations": "The places, each an icon and a label, in reading order.",
+    "selectedIndex": "The place on screen.",
+    "onDestinationSelected": "Receives the place the reader chooses.",
+    "branches": "Builds each place’s first page; each place keeps its own pages, and choosing it again returns to its first."
   }
 }

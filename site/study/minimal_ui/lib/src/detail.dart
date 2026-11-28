@@ -134,7 +134,7 @@ class _EditorState extends State<_TaskEditor> {
                       ),
                       _FieldLabel(w.priority),
                       MinimalSegmentedButton(
-                        label: w.priority,
+                        semanticLabel: w.priority,
                         expand:
                             MediaQuery.textScalerOf(context).scale(1) <= 1.4,
                         segments: [
@@ -165,7 +165,7 @@ class _EditorState extends State<_TaskEditor> {
                           MinimalListTile(
                             title: w.done,
                             trailing: MinimalCheckbox(
-                              label: w.done,
+                              semanticLabel: w.done,
                               value: t.done,
                               onChanged: (v) => draft.edit(t.copyWith(done: v)),
                             ),

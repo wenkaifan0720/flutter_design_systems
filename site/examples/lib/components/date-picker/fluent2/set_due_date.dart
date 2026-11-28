@@ -21,7 +21,7 @@ class _SetDueDateState extends State<SetDueDate> {
           Fluent2DatePicker(
             firstDate: DateTime(2026, 11),
             lastDate: DateTime(2026, 12, 31),
-            label: 'Due date',
+            semanticLabel: 'Due date',
             value: due,
             onChanged: (next) => setState(() => due = next),
             today: DateTime(2026, 11, 12),

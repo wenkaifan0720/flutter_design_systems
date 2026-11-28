@@ -219,7 +219,7 @@ class _EditorState extends State<_Editor> {
                               ),
                             ),
                             FrostedCheckbox(
-                              label: w.done,
+                              semanticLabel: w.done,
                               value: task.done,
                               onChanged: (v) =>
                                   d.edit(task.copyWith(done: v ?? false)),

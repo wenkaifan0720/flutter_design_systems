@@ -407,7 +407,7 @@ void main() {
     'Today\'s week bars are the Time chart\'s trace in every palette',
     (tester) async {
       window(tester, 390);
-      for (final accent in ApplianceThemeData.presets) {
+      for (final accent in ApplianceThemeData.palettes.map((p) => p.id)) {
         for (final appearance in [Appearance.day, Appearance.night]) {
           await launch(
             tester,

@@ -18,7 +18,7 @@ class _ReadMessagesState extends State<ReadMessages> {
       children: [
         const Text('Inbox'),
         const SizedBox(height: 12),
-        RetroDesktopBadge(unread, label: '$unread unread messages'),
+        RetroDesktopBadge(unread, semanticLabel: '$unread unread messages'),
         const SizedBox(height: 12),
         RetroDesktopButton(
           unread == 0 ? 'Reset inbox' : 'Mark one read',

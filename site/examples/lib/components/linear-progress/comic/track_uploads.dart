@@ -18,7 +18,7 @@ class _TrackUploadsState extends State<TrackUploads> {
       children: [
         ComicLinearProgressIndicator(
           value: completed / 4,
-          label: 'Uploading files',
+          semanticLabel: 'Uploading files',
         ),
         const SizedBox(height: 12),
         Text('Uploaded $completed of 4 files'),

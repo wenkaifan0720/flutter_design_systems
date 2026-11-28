@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'package:frosted_ui/frosted_host.dart' show FrostedHost;
 import 'package:frosted_ui/frosted_ui.dart';
 
 export 'package:frosted_ui/frosted_ui.dart' show frostedLoadFonts;

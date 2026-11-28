@@ -3,7 +3,7 @@
   "parameters": {
     "title": "The heading displayed above the content.",
     "subtitle": "Secondary information displayed with the main content.",
-    "label": "The visible or accessible name of this part.",
+    "semanticLabel": "The visible or accessible name of this part.",
     "note": "Supporting text shown with the main content.",
     "leading": "Places a widget before the main label.",
     "trailing": "A figure or a RetroDesktopFlag beside the title, held to a share of the row.",

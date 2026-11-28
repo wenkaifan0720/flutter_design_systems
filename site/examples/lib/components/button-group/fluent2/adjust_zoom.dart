@@ -16,7 +16,7 @@ class _AdjustZoomState extends State<AdjustZoom> {
     mainAxisSize: MainAxisSize.min,
     children: [
       Fluent2ToolbarGroup(
-        label: 'Zoom',
+        semanticLabel: 'Zoom',
         items: [
           Fluent2ToolbarItem.button(
             icon: Fluent2Icons.subtract,

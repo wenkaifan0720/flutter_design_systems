@@ -9,19 +9,20 @@ class NavigateWorkspace extends StatefulWidget {
 
 class _NavigateWorkspaceState extends State<NavigateWorkspace> {
   int selected = 0;
-  static const destinations = [
-    ComicNavItem(label: 'Home', short: 'Home', icon: ComicGlyphs.house),
-    ComicNavItem(label: 'Search', short: 'Search', icon: ComicGlyphs.search),
-  ];
 
   @override
-  Widget build(BuildContext context) => ComicScaffold(
-    scroll: false,
-    footer: ComicNavigationBar(
-      destinations: destinations,
-      selectedIndex: selected,
-      onDestinationSelected: (next) => setState(() => selected = next),
-    ),
-    body: Center(child: Text(selected == 0 ? 'Home page' : 'Search page')),
+  Widget build(BuildContext context) => ComicAppShell.branches(
+    brand: 'Workspace',
+    destinations: const [
+      ComicNavItem(label: 'Home', short: 'Home', icon: ComicGlyphs.house),
+      ComicNavItem(label: 'Search', short: 'Search', icon: ComicGlyphs.search),
+    ],
+    selectedIndex: selected,
+    onDestinationSelected: (next) => setState(() => selected = next),
+    branches: [
+      (context) => const ComicScaffold(body: Center(child: Text('Home page'))),
+      (context) =>
+          const ComicScaffold(body: Center(child: Text('Search page'))),
+    ],
   );
 }

@@ -30,7 +30,7 @@ class _CompareBudgetsState extends State<CompareBudgets> {
               NeumorphicPieSlice('Travel', amounts[1]),
               NeumorphicPieSlice('Fees', amounts[2]),
             ],
-            label: '$period budget by category',
+            semanticLabel: '$period budget by category',
           ),
           const SizedBox(height: 12),
           NeumorphicButton(

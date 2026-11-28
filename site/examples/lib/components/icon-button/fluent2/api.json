@@ -2,7 +2,7 @@
   "widget": "Fluent2IconButton",
   "parameters": {
     "icon": "Plus symbol for extending the loan.",
-    "label": "Accessible name for the icon-only action.",
+    "semanticLabel": "Accessible name for the icon-only action.",
     "onPressed": "Adds one day to the current loan period."
   }
 }

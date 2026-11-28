@@ -18,7 +18,7 @@ class _ReadMessagesState extends State<ReadMessages> {
       children: [
         const Text('Inbox'),
         const SizedBox(height: 12),
-        Fluent2Badge(unread, label: '$unread unread messages'),
+        Fluent2Badge(unread, semanticLabel: '$unread unread messages'),
         const SizedBox(height: 12),
         Fluent2Button(
           unread == 0 ? 'Reset inbox' : 'Mark one read',

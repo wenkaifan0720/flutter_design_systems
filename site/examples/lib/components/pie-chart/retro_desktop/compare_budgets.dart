@@ -23,7 +23,7 @@ class _CompareBudgetsState extends State<CompareBudgets> {
           Text('$period · budget by category'),
           const SizedBox(height: 12),
           RetroDesktopPieChart(
-            label: '$period budget by category',
+            semanticLabel: '$period budget by category',
             labels: const ['Supplies', 'Travel', 'Fees'],
             series: [RetroDesktopChartSeries('Budget', amounts)],
           ),

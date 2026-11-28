@@ -6,6 +6,6 @@
     "onChanged": "Receives the updated value.",
     "initiallyExpanded": "The branches open on the first frame.",
     "size": "Selects the size of the component.",
-    "label": "What a screen reader calls the tree."
+    "semanticLabel": "What a screen reader calls the tree."
   }
 }

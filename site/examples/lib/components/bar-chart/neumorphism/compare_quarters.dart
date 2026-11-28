@@ -30,7 +30,7 @@ class _CompareQuartersState extends State<CompareQuarters> {
           NeumorphicBarChart(
             labels: months,
             series: [NeumorphicChartSeries('Orders', orders)],
-            label: '$period monthly orders',
+            semanticLabel: '$period monthly orders',
           ),
           const SizedBox(height: 12),
           NeumorphicButton(

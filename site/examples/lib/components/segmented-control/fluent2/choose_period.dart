@@ -21,7 +21,7 @@ class _ChoosePeriodState extends State<ChoosePeriod> {
             Fluent2ButtonSegment('Week', 'Week'),
             Fluent2ButtonSegment('Month', 'Month'),
           ],
-          label: 'Reporting period',
+          semanticLabel: 'Reporting period',
           value: period,
           onChanged: (next) => setState(() => period = next),
         ),

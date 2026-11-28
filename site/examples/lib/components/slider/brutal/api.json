@@ -5,6 +5,7 @@
     "max": "Highest volume the thumb can reach.",
     "divisions": "Number of equal intervals on the track.",
     "semanticLabel": "Names the volume control.",
+    "semanticFormatterCallback": "How a screen reader says a value ((v) => '${v.round()} km').",
     "onChanged": "Receives the new volume."
   }
 }

@@ -1,7 +1,7 @@
 {
   "widget": "MinimalToggleGroup",
   "parameters": {
-    "label": "Names the group.",
+    "semanticLabel": "Names the group.",
     "items": "List and Grid, in reading order.",
     "selected": "Current layout.",
     "onSelectionChanged": "Receives the new selection."

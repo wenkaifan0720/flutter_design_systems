@@ -9,11 +9,11 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  gloss_ui: ^0.5.0
+  gloss_ui: ^0.6.1
   stint_core:
     path: ../stint_core
   lucide_icons_flutter: '>=3.1.25 <5.0.0'
-  material_ui: ^1.9.0
+  material_ui: ^1.11.1
   cupertino_icons: ^1.0.8
 dev_dependencies:
   flutter_test:

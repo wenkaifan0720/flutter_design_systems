@@ -89,7 +89,8 @@ void main() {
           ),
         );
         Finder button(String label) => find.byWidgetPredicate(
-          (widget) => widget is RetroDesktopIconButton && widget.label == label,
+          (widget) =>
+              widget is RetroDesktopIconButton && widget.semanticLabel == label,
         );
         final previous = button(words.previousWeek),
             next = button(words.nextWeek);
@@ -249,7 +250,7 @@ void main() {
     (w) => w is RetroDesktopSelect && w.labelText == label,
   );
   Finder menuKey(String label) => find.byWidgetPredicate(
-    (w) => w is RetroDesktopIconButton && w.label == label,
+    (w) => w is RetroDesktopIconButton && w.semanticLabel == label,
   );
 
   testWidgets('search, filter keys, dividers and row menus share their edges', (

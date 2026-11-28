@@ -81,7 +81,7 @@ extension _TaskDesk on _WorkspaceState {
       actions: [
         NeumorphicIconButton(
           LucideIcons.refreshCw,
-          label: w.refresh,
+          semanticLabel: w.refresh,
           onPressed: c.refresh,
         ),
         command,
@@ -263,7 +263,7 @@ extension _TaskDesk on _WorkspaceState {
       message: label,
       child: NeumorphicIconButton(
         LucideIcons.ellipsis,
-        label: label,
+        semanticLabel: label,
         size: 38,
         onPressed: ids.isEmpty ? null : () => taskActions(anchor, Set.of(ids)),
       ),

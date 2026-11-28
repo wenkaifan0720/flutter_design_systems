@@ -5,7 +5,7 @@
     "child": "Supplies the content inside the component.",
     "max": "Above this the badge reads \"max+\".",
     "tone": "Selects the colour treatment for the status.",
-    "label": "Names what the badge counts for a screen reader.",
+    "semanticLabel": "Names what the badge counts for a screen reader.",
     "style": "This badge's style, over components.badge."
   }
 }

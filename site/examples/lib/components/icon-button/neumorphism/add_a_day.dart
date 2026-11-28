@@ -17,7 +17,7 @@ class _AddADayState extends State<AddADay> {
     children: [
       NeumorphicIconButton(
         NeumorphicGlyphs.plus,
-        label: 'Add a day',
+        semanticLabel: 'Add a day',
         onPressed: () => setState(() => days++),
       ),
       const SizedBox(height: 12),

@@ -6,6 +6,6 @@
     "axis": "The direction the content scrolls.",
     "alwaysShown": "Keeps the scrollbar visible while there is content to scroll.",
     "focusable": "Allows the region to receive keyboard focus.",
-    "label": "The label exposed to a screen reader."
+    "semanticLabel": "The label exposed to a screen reader."
   }
 }

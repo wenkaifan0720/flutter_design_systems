@@ -6,7 +6,7 @@ class ReadSharingDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Fluent2Popover(
-    label: 'Sharing details',
+    semanticLabel: 'Sharing details',
     trigger: (_, toggle) => Fluent2Button('Sharing details', onPressed: toggle),
     content: const Text('Only invited people can read this file.'),
   );

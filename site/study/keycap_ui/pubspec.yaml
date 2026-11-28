@@ -9,11 +9,11 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  keycap_ui: ^0.5.0
+  keycap_ui: ^0.6.2
   stint_core:
     path: ../stint_core
   lucide_icons_flutter: '>=3.1.25 <5.0.0'
-  material_ui: ^1.9.0
+  material_ui: ^1.11.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -54,6 +54,7 @@ class StintWords {
   String text(TeamText value) => value.inLanguage(language);
   String get today => _w('Today', 'اليوم', '今日', 'Heute');
   String get tasks => _w('Tasks', 'المهام', 'タスク', 'Aufgaben');
+
   /// The timesheet place. German names the tracking, as Japanese names the
   /// work time: 'Zeit' alone reads as time in general.
   String get time => _w('Time', 'الوقت', '作業時間', 'Zeiterfassung');
@@ -81,8 +82,7 @@ class StintWords {
     '今週の作業時間',
     'Stunden diese Woche',
   );
-  String get upNext =>
-      _w('Up next', 'المهام القادمة', '次のタスク', 'Als Nächstes');
+  String get upNext => _w('Up next', 'المهام القادمة', '次のタスク', 'Als Nächstes');
   String get runningTimer =>
       _w('Running timer', 'المؤقّت يعمل', 'タイマー計測中', 'Timer läuft');
   String get stoppedTimer =>
@@ -114,8 +114,12 @@ class StintWords {
     '今日の記録はまだありません。',
     'Heute noch keine Zeit erfasst.',
   );
-  String get laterThisWeek =>
-      _w('Later this week', 'لاحقًا هذا الأسبوع', '今週の残り', 'Später diese Woche');
+  String get laterThisWeek => _w(
+    'Later this week',
+    'لاحقًا هذا الأسبوع',
+    '今週の残り',
+    'Später diese Woche',
+  );
   String get teamActivity =>
       _w('Team activity', 'نشاط الفريق', 'チームのアクティビティ', 'Teamaktivität');
   String get recentActivity => _w(
@@ -249,12 +253,8 @@ class StintWords {
     'タイムシートを表示',
     'Stundenzettel anzeigen',
   );
-  String get search => _w(
-    'Search tasks',
-    'البحث في المهام',
-    'タスクを検索',
-    'Aufgaben durchsuchen',
-  );
+  String get search =>
+      _w('Search tasks', 'البحث في المهام', 'タスクを検索', 'Aufgaben durchsuchen');
   String get filters => _w('Filters', 'تصفية', '絞り込み', 'Filter');
   String get status => _w('Status', 'الحالة', 'ステータス', 'Status');
   String get all => _w('All', 'الكل', 'すべて', 'Alle');
@@ -271,28 +271,19 @@ class StintWords {
   );
   String get calendar =>
       _w('Open calendar', 'فتح التقويم', 'カレンダーを開く', 'Kalender öffnen');
-  String get due =>
-      _w('Due date', 'تاريخ الاستحقاق', '期限', 'Fälligkeitsdatum');
+  String get due => _w('Due date', 'تاريخ الاستحقاق', '期限', 'Fälligkeitsdatum');
   String get priority => _w('Priority', 'الأولوية', '優先度', 'Priorität');
   String get title => _w('Title', 'العنوان', 'タイトル', 'Titel');
   String get low => _w('Low', 'منخفضة', '低', 'Niedrig');
   String get normal => _w('Normal', 'عادية', '中', 'Normal');
   String get high => _w('High', 'عالية', '高', 'Hoch');
-  String get reset => _w(
-    'Clear filters',
-    'مسح التصفية',
-    '絞り込みを解除',
-    'Filter zurücksetzen',
-  );
+  String get reset =>
+      _w('Clear filters', 'مسح التصفية', '絞り込みを解除', 'Filter zurücksetzen');
   String get apply => _w('Apply', 'تطبيق', '適用', 'Anwenden');
   String get select =>
       _w('Select tasks', 'تحديد المهام', 'タスクを選択', 'Aufgaben auswählen');
-  String get stopSelecting => _w(
-    'Cancel selection',
-    'إلغاء التحديد',
-    '選択をやめる',
-    'Auswahl abbrechen',
-  );
+  String get stopSelecting =>
+      _w('Cancel selection', 'إلغاء التحديد', '選択をやめる', 'Auswahl abbrechen');
   String get selectAll => _w(
     'Select all results',
     'تحديد كل النتائج',
@@ -301,14 +292,9 @@ class StintWords {
   );
   String get actions =>
       _w('Task actions', 'إجراءات المهمة', 'タスクの操作', 'Aufgabenaktionen');
-  String get complete => _w(
-    'Mark done',
-    'تحديد كمكتملة',
-    '完了にする',
-    'Als erledigt markieren',
-  );
-  String get reopen =>
-      _w('Reopen', 'إعادة فتح', '未完了に戻す', 'Wieder öffnen');
+  String get complete =>
+      _w('Mark done', 'تحديد كمكتملة', '完了にする', 'Als erledigt markieren');
+  String get reopen => _w('Reopen', 'إعادة فتح', '未完了に戻す', 'Wieder öffnen');
   String get move => _w(
     'Move to project',
     'نقل إلى مشروع',
@@ -332,8 +318,7 @@ class StintWords {
     'ワークスペースを読み込めませんでした',
     'Arbeitsbereich konnte nicht geladen werden',
   );
-  String get retry =>
-      _w('Retry', 'إعادة المحاولة', '再試行', 'Erneut versuchen');
+  String get retry => _w('Retry', 'إعادة المحاولة', '再試行', 'Erneut versuchen');
   String get retryHelp => _w(
     'Try again to load the team’s latest work.',
     'حاول مجددًا لعرض أحدث أعمال الفريق.',
@@ -360,12 +345,8 @@ class StintWords {
     '検索語を変えるか、絞り込みを解除してください。',
     'Versuche einen anderen Suchbegriff oder setze die Filter zurück.',
   );
-  String get chooseTask => _w(
-    'Choose a task',
-    'اختر مهمة',
-    'タスクを選んでください',
-    'Wähle eine Aufgabe',
-  );
+  String get chooseTask =>
+      _w('Choose a task', 'اختر مهمة', 'タスクを選んでください', 'Wähle eine Aufgabe');
   String get chooseTaskHelp => _w(
     'Open a row to see the details and edit it here.',
     'افتح صفًا لعرض تفاصيل المهمة وتعديلها هنا.',
@@ -387,18 +368,10 @@ class StintWords {
   String get fieldwork =>
       _w('Fieldwork', 'عمل ميداني', 'フィールドワーク', 'Feldarbeit');
   String get reminder => _w('Reminder', 'تذكير', 'リマインダー', 'Erinnerung');
-  String get reminderTime => _w(
-    'Reminder time',
-    'وقت التذكير',
-    'リマインダーの時刻',
-    'Erinnerungszeit',
-  );
-  String get save => _w(
-    'Save changes',
-    'حفظ التغييرات',
-    '変更を保存',
-    'Änderungen speichern',
-  );
+  String get reminderTime =>
+      _w('Reminder time', 'وقت التذكير', 'リマインダーの時刻', 'Erinnerungszeit');
+  String get save =>
+      _w('Save changes', 'حفظ التغييرات', '変更を保存', 'Änderungen speichern');
   String get saved => _w(
     'Changes saved',
     'حُفظت التغييرات',
@@ -458,8 +431,7 @@ class StintWords {
       _w('Week total', 'إجمالي الأسبوع', '週の合計', 'Wochensumme');
   String get logged =>
       _w('Hours logged', 'الساعات المسجّلة', '記録した時間', 'Erfasste Stunden');
-  String get entries =>
-      _w('Time entries', 'سجل الوقت', '作業記録', 'Zeiteinträge');
+  String get entries => _w('Time entries', 'سجل الوقت', '作業記録', 'Zeiteinträge');
   String get addEntry =>
       _w('Add entry', 'إضافة تسجيل', '記録を追加', 'Eintrag hinzufügen');
   String get date => _w('Date', 'التاريخ', '日付', 'Datum');
@@ -484,12 +456,8 @@ class StintWords {
     '記録した作業の内容を入力してください。',
     'Beschreibe die erfasste Arbeit.',
   );
-  String get entrySaved => _w(
-    'Entry added',
-    'أُضيف التسجيل',
-    '記録を追加しました',
-    'Eintrag hinzugefügt',
-  );
+  String get entrySaved =>
+      _w('Entry added', 'أُضيف التسجيل', '記録を追加しました', 'Eintrag hinzugefügt');
   String get noEntries => _w(
     'No time logged this week',
     'لا توجد ساعات مسجّلة هذا الأسبوع',
@@ -500,13 +468,11 @@ class StintWords {
       _w('Previous week', 'الأسبوع السابق', '前の週', 'Vorherige Woche');
   String get nextWeek =>
       _w('Next week', 'الأسبوع التالي', '次の週', 'Nächste Woche');
-  String get appearance =>
-      _w('Theme', 'المظهر', 'テーマ', 'Erscheinungsbild');
+  String get appearance => _w('Theme', 'المظهر', 'テーマ', 'Erscheinungsbild');
   String get system => _w('System', 'النظام', 'システム', 'System');
   String get day => _w('Day', 'نهاري', 'ライト', 'Hell');
   String get night => _w('Night', 'ليلي', 'ダーク', 'Dunkel');
-  String get textSize =>
-      _w('Text size', 'حجم النص', '文字サイズ', 'Textgröße');
+  String get textSize => _w('Text size', 'حجم النص', '文字サイズ', 'Textgröße');
 
   /// A text size as a percentage, in the language's digits and sign.
   String percent(double scale) {
@@ -516,20 +482,17 @@ class StintWords {
 
   /// The language setting's label. [language] is the language itself.
   String get languageLabel => _w('Language', 'اللغة', '言語', 'Sprache');
-  String get density =>
-      _w('Density', 'الكثافة', '表示密度', 'Anzeigedichte');
+  String get density => _w('Density', 'الكثافة', '表示密度', 'Anzeigedichte');
   String get standard => _w('Standard', 'قياسية', '標準', 'Standard');
   String get compact => _w('Compact', 'مدمجة', 'コンパクト', 'Kompakt');
-  String get about =>
-      _w('About Stint', 'حول ستنت', 'Stintについて', 'Über Stint');
+  String get about => _w('About Stint', 'حول ستنت', 'Stintについて', 'Über Stint');
   String get aboutDetail => _w(
     'A shared task list and timesheet for Fieldwork Studio.',
     'قائمة مهام وسجل وقت مشترك لفريق استوديو فيلدورك.',
     'フィールドワーク・スタジオのチームで共有するタスクリストとタイムシート。',
     'Gemeinsame Aufgabenliste und Stundenzettel für das Fieldwork Studio.',
   );
-  String get signOut =>
-      _w('Sign out', 'تسجيل الخروج', 'ログアウト', 'Abmelden');
+  String get signOut => _w('Sign out', 'تسجيل الخروج', 'ログアウト', 'Abmelden');
   String get signOutMessage => _w(
     'Sign out of Fieldwork Studio?',
     'هل تريد تسجيل الخروج من استوديو فيلدورك؟',
@@ -561,14 +524,9 @@ class StintWords {
   String get minutes => _w('minutes', 'دقيقة', '分', 'Minuten');
   String get clear => _w('Clear', 'مسح', 'クリア', 'Leeren');
   String get account => _w('Account', 'الحساب', 'アカウント', 'Konto');
-  String get workWeek =>
-      _w('Work week', 'أسبوع العمل', '稼働日', 'Arbeitswoche');
-  String get selectPerson => _w(
-    'Find a teammate',
-    'ابحث عن زميل',
-    'メンバーを検索',
-    'Teammitglied suchen',
-  );
+  String get workWeek => _w('Work week', 'أسبوع العمل', '稼働日', 'Arbeitswoche');
+  String get selectPerson =>
+      _w('Find a teammate', 'ابحث عن زميل', 'メンバーを検索', 'Teammitglied suchen');
   String get noPeople => _w(
     'No matching teammates',
     'لا يوجد زملاء مطابقون',
@@ -577,12 +535,8 @@ class StintWords {
   );
   String get workspace =>
       _w('Workspace', 'مساحة العمل', 'ワークスペース', 'Arbeitsbereich');
-  String get preferences => _w(
-    'Preferences',
-    'التفضيلات',
-    '個人設定',
-    'Persönliche Einstellungen',
-  );
+  String get preferences =>
+      _w('Preferences', 'التفضيلات', '個人設定', 'Persönliche Einstellungen');
 
   String place(Place value) => [today, tasks, time, settings][value.index];
   String priorityName(Priority p) => [low, normal, high][p.index];
@@ -614,9 +568,7 @@ class StintWords {
     final normalized = input.replaceAllMapped(RegExp('[٠-٩０-９]'), (match) {
       final c = match[0]!;
       final arabicDigit = _arabicDigits.indexOf(c);
-      return arabicDigit >= 0
-          ? '$arabicDigit'
-          : '${c.codeUnitAt(0) - 0xff10}';
+      return arabicDigit >= 0 ? '$arabicDigit' : '${c.codeUnitAt(0) - 0xff10}';
     });
     return int.tryParse(normalized);
   }
@@ -644,6 +596,7 @@ class StintWords {
       ].join(' '),
     };
   }
+
   /// [duration] with each part on a line of its own, for a narrow column:
   /// "2h", "30m".
   String durationLines(int minutes) =>
@@ -654,8 +607,6 @@ class StintWords {
   /// fit shows these, its caption naming what they count ([logged]).
   String hours(int minutes) =>
       '${number(minutes ~/ 60)}:${number(minutes % 60).padLeft(2, number(0))}';
-
-
 
   String clock(int minutes) {
     final zero = number(0);
@@ -832,8 +783,7 @@ class StintWords {
   }
 
   /// A third density some looks offer between standard and compact.
-  String get comfortable =>
-      _w('Comfortable', 'مريحة', 'ゆったり', 'Komfortabel');
+  String get comfortable => _w('Comfortable', 'مريحة', 'ゆったり', 'Komfortabel');
 
   /// The signed-in teammate's initials, as an avatar shows them.
   String get mayaInitials => _w('MR', 'مر', 'マ', 'MR');
@@ -853,8 +803,12 @@ class StintWords {
   );
 
   /// The heading of a form's error summary.
-  String get thereIsAProblem =>
-      _w('There is a problem', 'توجد مشكلة', '入力内容に問題があります', 'Es gibt ein Problem');
+  String get thereIsAProblem => _w(
+    'There is a problem',
+    'توجد مشكلة',
+    '入力内容に問題があります',
+    'Es gibt ein Problem',
+  );
 
   /// A search field's hint that finds a task by its title or ID.
   String get titleOrId =>
@@ -876,12 +830,8 @@ class StintWords {
     n == 1 ? '1 Zeile' : '$n Zeilen',
   );
 
-  String selected(int n) => _w(
-    '$n selected',
-    'عدد المحدد: ${number(n)}',
-    '$n件選択中',
-    '$n ausgewählt',
-  );
+  String selected(int n) =>
+      _w('$n selected', 'عدد المحدد: ${number(n)}', '$n件選択中', '$n ausgewählt');
   String totalTasks(int n) => _w(
     n == 1 ? '1 task' : '$n tasks',
     'عدد المهام: ${number(n)}',

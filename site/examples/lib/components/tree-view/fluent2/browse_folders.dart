@@ -8,7 +8,7 @@ class BrowseFolders extends StatelessWidget {
     constraints: const BoxConstraints(maxWidth: 440),
     child: SingleChildScrollView(
       child: const Fluent2Tree<String>(
-        label: 'Folders',
+        semanticLabel: 'Folders',
         items: [
           Fluent2TreeItem(
             'files',

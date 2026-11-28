@@ -149,7 +149,12 @@ void main() {
       for (final width in [390.0, 768.0, 1024.0, 1280.0, 1440.0]) {
         window(tester, width, 4000);
         await tester.pumpWidget(
-          edition(StintRepository(), launch: StintLaunch(language: ar ? StintLanguage.ar : StintLanguage.en)),
+          edition(
+            StintRepository(),
+            launch: StintLaunch(
+              language: ar ? StintLanguage.ar : StintLanguage.en,
+            ),
+          ),
         );
         await tester.pumpAndSettle();
         checkGrid(tester, width: width, rtl: ar);
@@ -187,7 +192,13 @@ void main() {
     window(tester, 390, 8000);
     for (final ar in [false, true]) {
       await tester.pumpWidget(
-        edition(StintRepository(), launch: StintLaunch(language: ar ? StintLanguage.ar : StintLanguage.en, scale: 2)),
+        edition(
+          StintRepository(),
+          launch: StintLaunch(
+            language: ar ? StintLanguage.ar : StintLanguage.en,
+            scale: 2,
+          ),
+        ),
       );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);

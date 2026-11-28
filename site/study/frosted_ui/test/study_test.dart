@@ -90,7 +90,8 @@ void main() {
           ),
         );
         Finder button(String label) => find.byWidgetPredicate(
-          (widget) => widget is FrostedIconButton && widget.label == label,
+          (widget) =>
+              widget is FrostedIconButton && widget.semanticLabel == label,
         );
         final previous = button(words.previousWeek),
             next = button(words.nextWeek);
@@ -262,8 +263,9 @@ void main() {
 
   Finder selectField(String label) =>
       find.byWidgetPredicate((w) => w is FrostedSelect && w.labelText == label);
-  Finder menuKey(String label) =>
-      find.byWidgetPredicate((w) => w is FrostedIconButton && w.label == label);
+  Finder menuKey(String label) => find.byWidgetPredicate(
+    (w) => w is FrostedIconButton && w.semanticLabel == label,
+  );
 
   testWidgets('search, filter keys, dividers and row menus share their edges', (
     tester,

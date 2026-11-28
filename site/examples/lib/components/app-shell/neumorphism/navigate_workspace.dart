@@ -9,35 +9,25 @@ class NavigateWorkspace extends StatefulWidget {
 
 class _NavigateWorkspaceState extends State<NavigateWorkspace> {
   int selected = 0;
-  static const destinations = [
-    NeumorphicNavItem(
-      label: 'Home',
-      short: 'Home',
-      icon: NeumorphicGlyphs.house,
-    ),
-    NeumorphicNavItem(
-      label: 'Search',
-      short: 'Search',
-      icon: NeumorphicGlyphs.search,
-    ),
-  ];
 
   @override
-  Widget build(BuildContext context) => NeumorphicScaffold(
-    scroll: false,
-    rail: [
-      for (var i = 0; i < destinations.length; i++)
-        NeumorphicRailLink(
-          label: destinations[i].label,
-          selected: i == selected,
-          onPressed: () => setState(() => selected = i),
-        ),
+  Widget build(BuildContext context) => NeumorphicAppShell(
+    header: const NeumorphicBrandRow('Workspace'),
+    destinations: const [
+      RawNavigationDestination(label: 'Home', icon: NeumorphicGlyphs.house),
+      RawNavigationDestination(label: 'Search', icon: NeumorphicGlyphs.search),
     ],
-    footer: NeumorphicNavigationBar(
-      items: destinations,
-      selectedIndex: selected,
-      onDestinationSelected: (next) => setState(() => selected = next),
-    ),
-    body: Center(child: Text(selected == 0 ? 'Home page' : 'Search page')),
+    selectedIndex: selected,
+    onDestinationSelected: (next) => setState(() => selected = next),
+    branches: [
+      (context) => const NeumorphicScaffold(
+        topBar: NeumorphicAppBar(title: 'Home'),
+        body: Center(child: Text('Home page')),
+      ),
+      (context) => const NeumorphicScaffold(
+        topBar: NeumorphicAppBar(title: 'Search'),
+        body: Center(child: Text('Search page')),
+      ),
+    ],
   );
 }

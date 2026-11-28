@@ -1,7 +1,7 @@
 {
   "widget": "NeumorphicCarouselView",
   "parameters": {
-    "label": "The accessible name of the strip and its dots.",
+    "semanticLabel": "The accessible name of the strip and its dots.",
     "children": "The items, one to a page.",
     "height": "The items' height.",
     "initialPage": "Selects the page shown initially.",

@@ -7,7 +7,7 @@
     "vertical": "Lays tabs out in a column.",
     "appearance": "Selects the visual appearance of the tabs.",
     "size": "Selects the component’s size.",
-    "label": "Provides an accessible name for the tab list.",
+    "semanticLabel": "Provides an accessible name for the tab list.",
     "style": "Overrides the component’s themed appearance."
   }
 }

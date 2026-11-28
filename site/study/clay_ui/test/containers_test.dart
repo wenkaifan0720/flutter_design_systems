@@ -17,7 +17,9 @@ void main() => checkContainers(
       AnimatedClaySurface(:final face) => face,
       _ => null,
     };
-    return face != null && face.elevation > 0 && face.radius == ClayRadius.large
+    return face != null &&
+            face.elevation > 0 &&
+            face.radius == ClayThemeData.defaultShapeScheme.corners.large
         ? 'slab'
         : null;
   },

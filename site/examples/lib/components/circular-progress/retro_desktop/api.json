@@ -1,7 +1,7 @@
 {
   "widget": "RetroDesktopCircularProgressIndicator",
   "parameters": {
-    "label": "Names the operation while it is running.",
+    "semanticLabel": "Names the operation while it is running.",
     "size": "Sets the spinner size.",
     "value": "Sets determinate progress when a fraction is known."
   }

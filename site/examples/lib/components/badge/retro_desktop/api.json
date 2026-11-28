@@ -2,7 +2,7 @@
   "widget": "RetroDesktopBadge",
   "parameters": {
     "count": "The count displayed by this part.",
-    "label": "The visible or accessible name of this part.",
+    "semanticLabel": "The visible or accessible name of this part.",
     "child": "The widget displayed inside this part.",
     "style": "Overrides the component’s themed appearance for this instance."
   }

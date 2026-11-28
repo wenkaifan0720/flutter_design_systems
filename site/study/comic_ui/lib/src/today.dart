@@ -79,7 +79,7 @@ extension _Today on _WorkspaceState {
                         title: w.text(e.note),
                         subtitle: c.projectName(e.project),
                         trailing: Text(w.timeRange(e), style: t.type.data),
-                        label:
+                        semanticLabel:
                             '${w.text(e.note)}, ${c.projectName(e.project)}, ${w.timeRange(e)}',
                         isFirst: i == 0,
                         leading: _lead(
@@ -108,7 +108,7 @@ extension _Today on _WorkspaceState {
                         title: w.text(task.title),
                         subtitle: c.projectName(task.project),
                         trailing: Text(w.weekday(task.due), style: t.type.data),
-                        label:
+                        semanticLabel:
                             '${w.text(task.title)}, ${c.projectName(task.project)}, ${w.weekday(task.due)}',
                         isFirst: i == 0,
                         leading: _lead(
@@ -682,7 +682,7 @@ class _PlanRow extends StatelessWidget {
           child: ExcludeSemantics(
             child: ComicCheckbox(
               key: mark == null ? lead : null,
-              label: title,
+              semanticLabel: title,
               value: done,
               onChanged: (_) {},
             ),
@@ -760,12 +760,12 @@ class _PlanRow extends StatelessWidget {
           ? ComicPressable(
               button: false,
               checked: done,
-              label: [title, ?subtitle, ?running].join(', '),
+              semanticLabel: [title, ?subtitle, ?running].join(', '),
               onPressed: onChanged == null ? null : () => onChanged!(!done),
               child: face,
             )
           : ComicPressable(
-              label: title,
+              semanticLabel: title,
               value: subtitle,
               onPressed: onPressed,
               child: face,

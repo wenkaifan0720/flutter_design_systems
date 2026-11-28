@@ -20,7 +20,7 @@ class _SortFilesState extends State<SortFiles> {
           onPressed: () async {
             final sort = await Fluent2Menu.show<String>(
               anchor,
-              label: 'Sort files',
+              semanticLabel: 'Sort files',
               items: const [
                 Fluent2MenuItem('Name', 'Name'),
                 Fluent2MenuItem('Date', 'Date'),

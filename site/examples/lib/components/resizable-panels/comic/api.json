@@ -8,7 +8,7 @@
     "initialFraction": "first's share to begin with, when the widget holds it.",
     "onChanged": "Told the new share as the rule moves.",
     "minSecond": "The minimum extent of the second pane.",
-    "label": "What a screen reader calls the rule.",
+    "semanticLabel": "What a screen reader calls the rule.",
     "focusNode": "Supplies a focus node owned and disposed by the caller.",
     "autofocus": "Requests focus when the control first appears.",
     "minFirst": "The minimum extent of the first pane."

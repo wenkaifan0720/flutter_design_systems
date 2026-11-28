@@ -5,6 +5,7 @@
     "max": "Highest volume the thumb can reach.",
     "steps": "Number of intermediate stops between the endpoints.",
     "semanticLabel": "Names the volume control.",
+    "valueLabel": "The value as the indicator and a screen reader show it; no indicator when null.",
     "onChanged": "Receives the new volume."
   }
 }

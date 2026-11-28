@@ -323,7 +323,10 @@ extension _Today on _WorkspaceState {
                 field,
                 Flexible(
                   child: ClaySurface(
-                    face: ClayFace.well(colors, radius: ClayRadius.control),
+                    face: ClayFace.well(
+                      colors,
+                      radius: context.clayTheme.shapeScheme.corners.medium,
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(ClaySpacing.tight),
                       child: results,
@@ -370,7 +373,10 @@ extension _Today on _WorkspaceState {
     // and a coral bead lights while it runs.
     final readout = ClaySurface(
       key: const ValueKey('today-timer-well'),
-      face: ClayFace.raised(colors, radius: ClayRadius.large),
+      face: ClayFace.raised(
+        colors,
+        radius: context.clayTheme.shapeScheme.corners.large,
+      ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
           ClaySpacing.roomy,
@@ -520,7 +526,7 @@ extension _Today on _WorkspaceState {
           face: ClayFace.raised(
             colors,
             color: colors.tint(tint),
-            radius: ClayRadius.large,
+            radius: context.clayTheme.shapeScheme.corners.large,
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -676,7 +682,10 @@ class _Section extends StatelessWidget {
         : ClaySpacing.roomy;
     return ClaySurface(
       key: key,
-      face: ClayFace.raised(theme.colors, radius: ClayRadius.large),
+      face: ClayFace.raised(
+        theme.colors,
+        radius: context.clayTheme.shapeScheme.corners.large,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -719,7 +728,10 @@ class _ClayWeek extends StatelessWidget {
     final scale = ((maximum + 479) ~/ 480) * 480;
     return ClaySurface(
       key: const ValueKey('today-chart'),
-      face: ClayFace.raised(colors, radius: ClayRadius.large),
+      face: ClayFace.raised(
+        colors,
+        radius: context.clayTheme.shapeScheme.corners.large,
+      ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
           ClaySpacing.regular,
@@ -849,7 +861,7 @@ class _ChooserRow extends StatelessWidget {
     final face = ClayFace.flat(
       colors,
       color: active || pressed ? clayChosenFill(colors) : colors.well,
-      radius: ClayRadius.control - ClaySpacing.tight,
+      radius: context.clayTheme.shapeScheme.corners.medium - ClaySpacing.tight,
     ).copyWith(elevation: active ? 0.25 : 0, shadowOpacity: 0);
     return AnimatedClaySurface(
       face: face,

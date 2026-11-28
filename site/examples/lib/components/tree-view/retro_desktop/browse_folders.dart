@@ -24,7 +24,7 @@ class _BrowseFoldersState extends State<BrowseFolders> {
     constraints: const BoxConstraints(maxWidth: 440),
     child: SingleChildScrollView(
       child: RetroDesktopTreeView<String>(
-        label: 'Folders',
+        semanticLabel: 'Folders',
         controller: folders,
         labelOf: (folder) => folder,
       ),

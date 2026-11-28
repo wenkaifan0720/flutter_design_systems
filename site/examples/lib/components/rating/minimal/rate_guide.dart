@@ -15,7 +15,7 @@ class _RateGuideState extends State<RateGuide> {
     mainAxisSize: MainAxisSize.min,
     children: [
       MinimalRating(
-        label: 'Rate the guide',
+        semanticLabel: 'Rate the guide',
         value: score.toDouble(),
         onChanged: (next) => setState(() => score = next),
       ),

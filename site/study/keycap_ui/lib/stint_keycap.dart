@@ -84,7 +84,7 @@ class _StintKeycapState extends State<StintKeycap> {
             ),
             child: AnimatedKeycapTheme(
               data: KeycapThemeData.preset(
-                settings.presetOf(KeycapThemeData.presets),
+                settings.presetOf(_paletteIds),
                 brightness,
                 density: settings.compact
                     ? RawDensity.compact
@@ -130,9 +130,13 @@ class _Workspace extends StatefulWidget {
 
 /// Keycap's six colourways, the look's own first, for a host's palette menu.
 final _palettes = [
-  for (final id in KeycapThemeData.presets)
+  for (final palette in KeycapThemeData.palettes)
     StintPalette(
-      id,
-      KeycapThemeData.preset(id, Brightness.light).colors.accent.top,
+      palette.id,
+      KeycapThemeData.preset(palette.id, Brightness.light).colors.accent.top,
+      label: palette.label,
     ),
 ];
+
+/// The palettes' ids, the theme's preset for each.
+final _paletteIds = [for (final palette in _palettes) palette.id];

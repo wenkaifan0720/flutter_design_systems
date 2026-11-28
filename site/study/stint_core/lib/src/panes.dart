@@ -26,9 +26,12 @@ class PaneNotices {
   }
 
   /// [child], the detail pane, in a toaster of its own when [sideBySide].
-  Widget detail({required bool sideBySide, required Widget child}) =>
-      sideBySide
-      ? toaster(_DetailPane(child: KeyedSubtree(key: _detail, child: child)))
+  Widget detail({required bool sideBySide, required Widget child}) => sideBySide
+      ? toaster(
+          _DetailPane(
+            child: KeyedSubtree(key: _detail, child: child),
+          ),
+        )
       : child;
 
   /// Where a notice about the list shows from: inside the list's toaster

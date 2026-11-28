@@ -401,27 +401,46 @@ void renderComponent(String slug, String root, String relativeFile) {
       entry.value,
     );
   }
-  final fragment = fill(componentTemplate, {
-    'root': root,
-    'title': escape(component.title),
-    'group': escape(component.group),
-    'lead': html(lead),
-    'lookPicker': lookPicker('look'),
-    'firstLook': defaultLook,
-    'firstLookName': escape(looks[defaultLook]!['name']),
-    'firstLookPackage': looks[defaultLook]!['package'],
-    'body': bodies[defaultLook]!,
-    'behaviour': html(prose['Shared behaviour']!),
-  });
-  pageFile(
-    relativeFile,
-    root: root,
-    slug: slug,
-    title: component.title,
-    description: plainText(lead),
-    content: fragment,
-    script: 'site.js',
-  );
+  // The page itself carries the first look; `<slug>/<look>/` carries each
+  // look in full, so a reader without JavaScript (or a fetch of the page)
+  // reaches every look's code and parameters.
+  void page(String id, String root, String file, {required bool own}) {
+    final lookLinks = [
+      for (final MapEntry(key: other, value: look) in looks.entries)
+        '<a href="$root$slug/$other/"${other == id ? ' aria-current="page"' : ''}>${escape(look['name'])}</a>',
+    ].join(', ');
+    final fragment = fill(componentTemplate, {
+      'root': root,
+      'slug': slug,
+      'title': escape(component.title),
+      'group': escape(component.group),
+      'lead': html(lead),
+      'lookPicker': lookPicker('look', selected: own ? id : null),
+      'firstLook': id,
+      'firstLookName': escape(looks[id]!['name']),
+      'firstLookPackage': looks[id]!['package'],
+      'own': own ? ' data-own' : '',
+      'lookLinks': lookLinks,
+      'body': bodies[id]!,
+      'behaviour': html(prose['Shared behaviour']!),
+    });
+    pageFile(
+      file,
+      root: root,
+      slug: slug,
+      title: own
+          ? '${component.title} in ${looks[id]!['name']}'
+          : component.title,
+      description: plainText(lead),
+      content: fragment,
+      script: 'site.js',
+    );
+  }
+
+  page(defaultLook, root, relativeFile, own: false);
+  for (final id in looks.keys) {
+    page(id, '$root../', '$slug/$id/index.html', own: true);
+  }
 }
 
 void main(List<String> args) {

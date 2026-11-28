@@ -18,7 +18,7 @@ class _SetReminderState extends State<SetReminder> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Fluent2TimePicker(
-            label: 'Reminder',
+            semanticLabel: 'Reminder',
             value: reminder,
             onChanged: (next) => setState(() => reminder = next),
           ),

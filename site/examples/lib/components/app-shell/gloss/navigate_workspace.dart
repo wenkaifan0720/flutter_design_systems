@@ -10,16 +10,25 @@ class NavigateWorkspace extends StatefulWidget {
 
 class _NavigateWorkspaceState extends State<NavigateWorkspace> {
   int selected = 0;
-  static const destinations = [
-    GlossDestination(icon: Icons.home_outlined, label: 'Home'),
-    GlossDestination(icon: Icons.search, label: 'Search'),
-  ];
 
   @override
-  Widget build(BuildContext context) => GlossScaffold(
-    destinations: destinations,
+  Widget build(BuildContext context) => GlossAppShell(
+    header: const GlossBrand('Workspace'),
+    destinations: const [
+      RawNavigationDestination(label: 'Home', icon: Icons.home_outlined),
+      RawNavigationDestination(label: 'Search', icon: Icons.search),
+    ],
     selectedIndex: selected,
     onDestinationSelected: (next) => setState(() => selected = next),
-    body: Center(child: Text(selected == 0 ? 'Home page' : 'Search page')),
+    branches: [
+      (context) => const GlossScreen(
+        topBar: GlossTopBar(title: 'Home'),
+        body: Center(child: Text('Home page')),
+      ),
+      (context) => const GlossScreen(
+        topBar: GlossTopBar(title: 'Search'),
+        body: Center(child: Text('Search page')),
+      ),
+    ],
   );
 }

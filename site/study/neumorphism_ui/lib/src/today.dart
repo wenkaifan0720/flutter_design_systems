@@ -732,7 +732,7 @@ class _Line extends StatelessWidget {
       onPressed: onPressed,
       checked: checked,
       button: checked == null,
-      label: [title, ?note, ?trailing, ?live].join(', '),
+      semanticLabel: [title, ?note, ?trailing, ?live].join(', '),
       shape: t.shapes.corner(NeumorphicRadii.control),
       faceOutset: const EdgeInsets.symmetric(horizontal: 12),
       child: row,

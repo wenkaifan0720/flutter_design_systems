@@ -3,6 +3,6 @@
   "parameters": {
     "builder": "Builds the trigger with the overlay controller.",
     "content": "The note displayed in the popover.",
-    "label": "Names the panel."
+    "semanticLabel": "Names the panel."
   }
 }

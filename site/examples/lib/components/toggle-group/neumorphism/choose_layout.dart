@@ -16,7 +16,7 @@ class _ChooseLayoutState extends State<ChooseLayout> {
     mainAxisSize: MainAxisSize.min,
     children: [
       NeumorphicToggleGroup<String>(
-        label: 'Layout',
+        semanticLabel: 'Layout',
         items: const [
           NeumorphicButtonSegment('List', 'List'),
           NeumorphicButtonSegment('Grid', 'Grid'),

@@ -2,7 +2,7 @@
   "widget": "FrostedMenu",
   "parameters": {
     "items": "Commands and their return values.",
-    "label": "Accessible name for the menu.",
+    "semanticLabel": "Accessible name for the menu.",
     "title": "Optional heading above the commands."
   }
 }

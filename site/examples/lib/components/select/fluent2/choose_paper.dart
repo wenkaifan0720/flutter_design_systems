@@ -18,7 +18,7 @@ class _ChoosePaperState extends State<ChoosePaper> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Fluent2Select<String>(
-          label: 'Paper size',
+          semanticLabel: 'Paper size',
           value: paper,
           options: const [
             Fluent2Option('A4', 'A4'),

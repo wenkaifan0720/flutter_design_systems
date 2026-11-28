@@ -166,6 +166,8 @@ dt { color: #3c6245; overflow-wrap: anywhere; }
 .mast-nav a { text-decoration: none; }
 .mast-nav a:hover { text-decoration: underline; }
 .look-details { margin-inline-start: auto; }
+.nojs-note { margin: 0 0 10px; }
+.look-pages { font-size: 13px; color: var(--muted); margin: 0 0 24px; }
 .home-actions { margin-block: 24px; }
 .primary-link { display: inline-block; background: var(--accent); color: white; padding: 9px 15px; border-radius: 6px; text-decoration: none; }
 .primary-link:hover { background: #284330; }
@@ -271,3 +273,8 @@ dt { color: #3c6245; overflow-wrap: anywhere; }
   .look-chips button { white-space: nowrap; }
   .look-chips button { min-height: 40px; padding-inline: 10px; }
 }
+.look-facts { margin: 32px 0; }
+.look-facts h3 { font-size: 15px; margin: 22px 0 6px; }
+.look-facts pre { margin-top: 12px; }
+.palette-names { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 10px 0 0; }
+.palette-names li { border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; font-size: 13px; }

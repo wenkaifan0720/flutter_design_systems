@@ -190,7 +190,12 @@ void checkTodayAlignment({
         final repo = StintRepository(clock: () => studyMorning);
         final fixture = StintController(repo)..data = repo.snapshot;
         addTearDown(fixture.dispose);
-        await tester.pumpWidget(app(StintLaunch(language: rtl ? StintLanguage.ar : StintLanguage.en), repo));
+        await tester.pumpWidget(
+          app(
+            StintLaunch(language: rtl ? StintLanguage.ar : StintLanguage.en),
+            repo,
+          ),
+        );
         await tester.pumpAndSettle();
         final probe = _PaintProbe();
         Future<Rect> painted(Finder finder) async {
@@ -474,7 +479,12 @@ void _checkRunningMark({
         final repo = StintRepository(clock: () => studyMorning);
         final fixture = StintController(repo)..data = repo.snapshot;
         addTearDown(fixture.dispose);
-        await tester.pumpWidget(app(StintLaunch(language: rtl ? StintLanguage.ar : StintLanguage.en), repo));
+        await tester.pumpWidget(
+          app(
+            StintLaunch(language: rtl ? StintLanguage.ar : StintLanguage.en),
+            repo,
+          ),
+        );
         await tester.pumpAndSettle();
         final probe = _PaintProbe();
         final words = StintWords(rtl ? StintLanguage.ar : StintLanguage.en);

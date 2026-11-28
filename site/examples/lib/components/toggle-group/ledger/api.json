@@ -1,7 +1,7 @@
 {
   "widget": "LedgerToggleGroup",
   "parameters": {
-    "label": "Names the group.",
+    "semanticLabel": "Names the group.",
     "options": "List and Grid, in reading order.",
     "selected": "Current layout.",
     "onSelectionChanged": "Receives the new selection."

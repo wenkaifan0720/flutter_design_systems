@@ -18,7 +18,7 @@ class _SwitchReviewerState extends State<SwitchReviewer> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          LedgerAvatar(initials: ana ? 'AL' : 'JR', label: name),
+          LedgerAvatar(initials: ana ? 'AL' : 'JR', semanticLabel: name),
           const SizedBox(height: 12),
           Text(name),
           const SizedBox(height: 12),

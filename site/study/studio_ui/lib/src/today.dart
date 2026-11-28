@@ -619,7 +619,10 @@ extension _Today on _WorkspaceState {
       builder: (_, states, _) {
         final down = task.done || states.contains(WidgetState.pressed);
         final face = colors.keyFace
-            .copyWith(radius: StudioRadii.small, travel: down ? 1 : 0)
+            .copyWith(
+              radius: StudioTheme.of(context).radiusSmall,
+              travel: down ? 1 : 0,
+            )
             .backlitIf(colors, task.done);
         final light = states.contains(WidgetState.focused);
         return StudioListTile(

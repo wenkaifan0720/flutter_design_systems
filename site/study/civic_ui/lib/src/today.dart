@@ -380,33 +380,49 @@ extension _TodayService on _ServiceState {
     );
     // The wording and the native checkbox activate the same option. The
     // checkbox owns keyboard focus and the whole row has one checked state.
-    return MergeSemantics(
-      key: ValueKey('plan-${task.id}'),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: toggle,
-        excludeFromSemantics: true,
-        child: CivicListRow(
-          leading: SizedBox(
-            width: CivicMetrics.box,
-            child: CivicCheckbox(
-              key: ValueKey('today-plan-lead-${task.id}'),
-              value: task.done,
-              onChanged: (_) => toggle(),
+    // The row says that state, the checkbox's focus and takes the tap itself:
+    // a CivicListRow keeps its leading out of the row's semantics, the
+    // checkbox with it.
+    return Focus(
+      canRequestFocus: false,
+      skipTraversal: true,
+      includeSemantics: false,
+      child: Builder(
+        builder: (context) => MergeSemantics(
+          key: ValueKey('plan-${task.id}'),
+          child: Semantics(
+            checked: task.done,
+            focusable: true,
+            focused: Focus.of(context).hasFocus,
+            onTap: toggle,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: toggle,
+              excludeFromSemantics: true,
+              child: CivicListRow(
+                leading: SizedBox(
+                  width: CivicMetrics.box,
+                  child: CivicCheckbox(
+                    key: ValueKey('today-plan-lead-${task.id}'),
+                    value: task.done,
+                    onChanged: (_) => toggle(),
+                  ),
+                ),
+                title: title,
+                subtitle: Text(c.projectName(task.project)),
+                // The task the timer runs on says so in words, as Civic says a
+                // status: a tag at the row's end, as a task list marks the step
+                // in progress.
+                trailing: c.data.timer?.taskId == task.id
+                    ? CivicTag(
+                        key: const ValueKey('today-plan-running'),
+                        label: w.runningTimer,
+                        tone: CivicTone.info,
+                      )
+                    : null,
+              ),
             ),
           ),
-          title: title,
-          subtitle: Text(c.projectName(task.project)),
-          // The task the timer runs on says so in words, as Civic says a
-          // status: a tag at the row's end, as a task list marks the step
-          // in progress.
-          trailing: c.data.timer?.taskId == task.id
-              ? CivicTag(
-                  key: const ValueKey('today-plan-running'),
-                  label: w.runningTimer,
-                  tone: CivicTone.info,
-                )
-              : null,
         ),
       ),
     );

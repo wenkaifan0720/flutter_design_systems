@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:material_ui/material_ui.dart' show Icons;
 import 'package:minimal_ui/minimal_ui.dart';
 
 class ArchiveNote extends StatefulWidget {
@@ -25,6 +26,13 @@ class _ArchiveNoteState extends State<ArchiveNote> {
             trailing: [
               MinimalSwipeAction(
                 'Archive',
+                onPressed: () => setState(() => archived = true),
+              ),
+              // A delete marks itself destructive: the danger tone and a bin.
+              MinimalSwipeAction(
+                'Delete',
+                icon: Icons.delete_outline,
+                destructive: true,
                 onPressed: () => setState(() => archived = true),
               ),
             ],

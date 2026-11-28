@@ -18,7 +18,7 @@ class _TagDraftState extends State<TagDraft> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Fluent2MultiSelect<String>(
-          label: 'Labels',
+          semanticLabel: 'Labels',
           options: const [
             Fluent2Option('Work', 'Work'),
             Fluent2Option('Home', 'Home'),

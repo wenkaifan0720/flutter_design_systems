@@ -108,7 +108,7 @@ class _AppState extends State<StintMinimal> {
             child: MinimalTheme(
               data:
                   MinimalThemeData.preset(
-                    prefs.presetOf(MinimalThemeData.presets),
+                    prefs.presetOf(_paletteIds),
                     brightness,
                   ).copyWith(
                     density: prefs.compact
@@ -131,8 +131,15 @@ class _Workspace extends StatefulWidget {
   State<_Workspace> createState() => _WorkspaceState();
 }
 
-/// Minimal's six presets, the look's own first, for a host's palette menu.
+/// Minimal's six palettes, the look's own first, for a host's palette menu.
 final _palettes = [
-  for (final id in MinimalThemeData.presets)
-    StintPalette(id, MinimalThemeData.preset(id, Brightness.light).primary),
+  for (final palette in MinimalThemeData.palettes)
+    StintPalette(
+      palette.id,
+      MinimalThemeData.preset(palette.id, Brightness.light).primary,
+      label: palette.label,
+    ),
 ];
+
+/// The palettes' ids, the theme's preset for each.
+final _paletteIds = [for (final palette in _palettes) palette.id];

@@ -5,6 +5,6 @@
     "cellBuilder": "Builds a cell from its row and column.",
     "selectable": "Allows readers to select rows.",
     "onActivate": "Runs when the reader opens a row or node.",
-    "label": "The label exposed to a screen reader."
+    "semanticLabel": "The label exposed to a screen reader."
   }
 }

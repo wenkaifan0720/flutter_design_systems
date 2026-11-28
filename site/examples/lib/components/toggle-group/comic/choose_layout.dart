@@ -16,7 +16,7 @@ class _ChooseLayoutState extends State<ChooseLayout> {
     mainAxisSize: MainAxisSize.min,
     children: [
       ComicToggleGroup<String>(
-        label: 'Layout',
+        semanticLabel: 'Layout',
         values: const ['List', 'Grid'],
         labelOf: (layout) => layout,
         selected: layout,

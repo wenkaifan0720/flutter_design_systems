@@ -4,7 +4,8 @@
     "value": "Current volume on the track.",
     "max": "Highest volume the thumb can reach.",
     "divisions": "Number of equal intervals on the track.",
-    "label": "Names the volume control.",
+    "semanticLabel": "Names the volume control.",
+    "semanticFormatterCallback": "The words for a value as a screen reader reads it; null says the share of the way, as Flutter's Slider does.",
     "onChanged": "Receives the new volume."
   }
 }

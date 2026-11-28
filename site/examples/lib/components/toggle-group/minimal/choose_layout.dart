@@ -16,7 +16,7 @@ class _ChooseLayoutState extends State<ChooseLayout> {
     mainAxisSize: MainAxisSize.min,
     children: [
       MinimalToggleGroup<String>(
-        label: 'Layout',
+        semanticLabel: 'Layout',
         items: const [
           MinimalToggleItem('List', label: 'List'),
           MinimalToggleItem('Grid', label: 'Grid'),

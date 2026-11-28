@@ -7,7 +7,7 @@ class BrowseRooms extends StatelessWidget {
   Widget build(BuildContext context) => ConstrainedBox(
     constraints: const BoxConstraints(maxWidth: 440),
     child: const Fluent2CarouselView(
-      label: 'Rooms',
+      semanticLabel: 'Rooms',
       aspect: 3.4,
       children: [
         Center(child: Text('Hall')),

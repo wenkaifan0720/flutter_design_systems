@@ -10,16 +10,19 @@ class NavigateWorkspace extends StatefulWidget {
 
 class _NavigateWorkspaceState extends State<NavigateWorkspace> {
   int selected = 0;
-  static const destinations = [
-    KeycapDestination(icon: Icons.home_outlined, label: 'Home'),
-    KeycapDestination(icon: Icons.search, label: 'Search'),
-  ];
 
   @override
-  Widget build(BuildContext context) => KeycapScaffold(
-    destinations: destinations,
+  Widget build(BuildContext context) => KeycapScaffold.branches(
+    header: const Text('Workspace'),
+    destinations: const [
+      KeycapDestination(icon: Icons.home_outlined, label: 'Home'),
+      KeycapDestination(icon: Icons.search, label: 'Search'),
+    ],
     selectedIndex: selected,
     onDestinationSelected: (next) => setState(() => selected = next),
-    body: Center(child: Text(selected == 0 ? 'Home page' : 'Search page')),
+    branches: [
+      (context) => const KeycapScreen(body: Center(child: Text('Home page'))),
+      (context) => const KeycapScreen(body: Center(child: Text('Search page'))),
+    ],
   );
 }

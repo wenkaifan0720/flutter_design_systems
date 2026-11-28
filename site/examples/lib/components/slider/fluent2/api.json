@@ -4,7 +4,8 @@
     "value": "Current volume on the track.",
     "max": "Highest volume the thumb can reach.",
     "step": "Distance between adjacent values.",
-    "label": "Names the volume control.",
+    "semanticLabel": "Names the volume control.",
+    "valueLabel": "The spoken value; null says the number.",
     "onChanged": "Receives the new volume."
   }
 }

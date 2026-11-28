@@ -16,7 +16,7 @@ class _SyncFolderState extends State<SyncFolder> {
     spacing: 12,
     children: [
       if (running)
-        const NeumorphicCircularProgressIndicator(label: 'Syncing folder'),
+        const NeumorphicCircularProgressIndicator(semanticLabel: 'Syncing folder'),
       Text(running ? 'Syncing folder' : 'Folder ready'),
       NeumorphicButton(
         running ? 'Finish sync' : 'Start sync',

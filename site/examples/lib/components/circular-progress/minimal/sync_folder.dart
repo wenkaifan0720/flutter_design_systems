@@ -16,7 +16,7 @@ class _SyncFolderState extends State<SyncFolder> {
     spacing: 12,
     children: [
       if (running)
-        const MinimalCircularProgressIndicator(label: 'Syncing folder'),
+        const MinimalCircularProgressIndicator(semanticLabel: 'Syncing folder'),
       Text(running ? 'Syncing folder' : 'Folder ready'),
       MinimalButton(
         running ? 'Finish sync' : 'Start sync',

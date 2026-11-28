@@ -27,7 +27,7 @@ class _CompareBalancesState extends State<CompareBalances> {
           NeumorphicLineChart(
             labels: const ['1', '2', '3', '4'],
             series: [NeumorphicChartSeries('Balance', balances)],
-            label: '$period daily balance',
+            semanticLabel: '$period daily balance',
           ),
           const SizedBox(height: 12),
           NeumorphicButton(

@@ -3,6 +3,6 @@
   "parameters": {
     "width": "Width of one placeholder line.",
     "height": "Thickness of that line.",
-    "label": "Supplies a description of the loading state."
+    "semanticLabel": "Supplies a description of the loading state."
   }
 }

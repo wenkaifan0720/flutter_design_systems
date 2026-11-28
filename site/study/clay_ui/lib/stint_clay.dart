@@ -82,7 +82,7 @@ class _StintClayState extends State<StintClay> {
             ),
             child: AnimatedClayTheme(
               data: ClayThemeData.preset(
-                settings.presetOf(ClayThemeData.presets),
+                settings.presetOf(_paletteIds),
                 brightness,
                 density: settings.compact
                     ? ClayDensity.compact
@@ -128,6 +128,13 @@ class _Workspace extends StatefulWidget {
 
 /// Clay's six palettes, the look's own first, for a host's palette menu.
 final _palettes = [
-  for (final id in ClayThemeData.presets)
-    StintPalette(id, ClayThemeData.preset(id, Brightness.light).colors.accent),
+  for (final palette in ClayThemeData.palettes)
+    StintPalette(
+      palette.id,
+      ClayThemeData.preset(palette.id, Brightness.light).colors.accent,
+      label: palette.label,
+    ),
 ];
+
+/// The palettes' ids, the theme's preset for each.
+final _paletteIds = [for (final palette in _palettes) palette.id];

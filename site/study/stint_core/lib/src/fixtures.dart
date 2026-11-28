@@ -112,12 +112,7 @@ const _titles = <TeamText>[
     '夜間照明を確認',
     'Abendbeleuchtung prüfen',
   ),
-  (
-    'Write the introduction',
-    'كتابة المقدمة',
-    '序文を書く',
-    'Einleitung schreiben',
-  ),
+  ('Write the introduction', 'كتابة المقدمة', '序文を書く', 'Einleitung schreiben'),
   (
     'Set the workshop dates',
     'تحديد مواعيد الورش',

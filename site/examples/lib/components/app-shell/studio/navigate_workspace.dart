@@ -10,16 +10,25 @@ class NavigateWorkspace extends StatefulWidget {
 
 class _NavigateWorkspaceState extends State<NavigateWorkspace> {
   int selected = 0;
-  static const destinations = [
-    StudioDestination(icon: Icon(Icons.home_outlined), label: 'Home'),
-    StudioDestination(icon: Icon(Icons.search), label: 'Search'),
-  ];
 
   @override
-  Widget build(BuildContext context) => StudioScaffold(
-    destinations: destinations,
+  Widget build(BuildContext context) => StudioAppShell.branches(
+    brand: 'Workspace',
+    tabs: const [
+      StudioTab(Icons.home_outlined, 'Home'),
+      StudioTab(Icons.search, 'Search'),
+    ],
     selectedIndex: selected,
-    onDestinationSelected: (next) => setState(() => selected = next),
-    body: Center(child: Text(selected == 0 ? 'Home page' : 'Search page')),
+    onSelected: (next) => setState(() => selected = next),
+    branches: [
+      (context) => const StudioScreen(
+        topBar: StudioAppBar(title: 'Home'),
+        body: Center(child: Text('Home page')),
+      ),
+      (context) => const StudioScreen(
+        topBar: StudioAppBar(title: 'Search'),
+        body: Center(child: Text('Search page')),
+      ),
+    ],
   );
 }

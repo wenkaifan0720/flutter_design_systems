@@ -31,7 +31,7 @@ class _ArchiveNoteState extends State<ArchiveNote> {
             child: ComicListTile(
               title: 'Route note',
               subtitle: read ? 'Read' : 'Unread',
-              label: read ? 'Route note, read' : 'Route note, unread',
+              semanticLabel: read ? 'Route note, read' : 'Route note, unread',
               onPressed: () => setState(() => read = !read),
             ),
           ),

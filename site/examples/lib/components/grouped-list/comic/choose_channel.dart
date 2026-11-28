@@ -24,7 +24,7 @@ class _ChooseChannelState extends State<ChooseChannel> {
               const ComicSectionHeader('Delivery'),
               const SizedBox(height: 12),
               ComicListSection(
-                label: 'Delivery',
+                semanticLabel: 'Delivery',
                 children: [
                   ComicListTile(
                     title: 'Email',

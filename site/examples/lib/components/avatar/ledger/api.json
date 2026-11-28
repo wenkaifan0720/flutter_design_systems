@@ -2,7 +2,7 @@
   "widget": "LedgerAvatar",
   "parameters": {
     "initials": "One or two letters.",
-    "label": "Supplies the accessible name for the avatar or its action.",
+    "semanticLabel": "Supplies the accessible name for the avatar or its action.",
     "onTap": "Runs when the reader activates the component. Leave it unset for a read-only item.",
     "focusNode": "Supplies a focus node owned and disposed by the caller.",
     "autofocus": "Requests focus when the control first appears.",

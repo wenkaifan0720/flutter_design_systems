@@ -28,7 +28,7 @@ class _OrderStopsState extends State<OrderStops> {
         itemBuilder: (context, stop) => RetroDesktopListTile(
           title: stop,
           subtitle: 'Make first',
-          label: '$stop, make first',
+          semanticLabel: '$stop, make first',
           onPressed: () => move(stops.indexOf(stop), 0),
         ),
       ),

@@ -16,7 +16,7 @@ class _AdjustZoomState extends State<AdjustZoom> {
     mainAxisSize: MainAxisSize.min,
     children: [
       ComicButtonGroup(
-        label: 'Zoom',
+        semanticLabel: 'Zoom',
         items: [
           ComicButtonGroupItem(
             'Out',

@@ -77,8 +77,10 @@ class _WorkspaceState extends State<_Workspace> {
     }
   }
 
-  Widget icon(IconData glyph, String label, VoidCallback press) =>
-      _tip(label, ComicIconButton(glyph, label: label, onPressed: press));
+  Widget icon(IconData glyph, String label, VoidCallback press) => _tip(
+    label,
+    ComicIconButton(glyph, semanticLabel: label, onPressed: press),
+  );
   Widget get commands =>
       icon(ComicGlyphs.search, '${w.commands}  ${modifier}K', palette);
   void palette() {
@@ -419,7 +421,7 @@ class _InkRow extends StatelessWidget {
     subtitle: subtitle,
     leading: leading,
     isFirst: first,
-    label: '$title, $subtitle',
+    semanticLabel: '$title, $subtitle',
     selected: checked ?? chosen,
     onPressed: onPressed,
   );

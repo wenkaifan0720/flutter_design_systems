@@ -16,7 +16,7 @@ class _AdjustZoomState extends State<AdjustZoom> {
     mainAxisSize: MainAxisSize.min,
     children: [
       NeumorphicButtonGroup(
-        label: 'Zoom',
+        semanticLabel: 'Zoom',
         items: [
           NeumorphicButtonGroupItem(
             'Out',

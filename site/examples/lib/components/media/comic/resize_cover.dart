@@ -23,7 +23,7 @@ class _ResizeCoverState extends State<ResizeCover> {
               width: 156,
               child: ComicMedia(
                 slotId: 'route-guide',
-                label: 'Route guide cover',
+                semanticLabel: 'Route guide cover',
                 aspect: aspect,
               ),
             ),

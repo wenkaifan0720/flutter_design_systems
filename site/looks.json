@@ -3,98 +3,274 @@
     "name": "Appliance",
     "package": "appliance_ui",
     "swatch": "#df6428",
-    "fontLoader": "applianceLoadFonts"
+    "fontLoader": "applianceLoadFonts",
+    "theme": "ApplianceThemeData",
+    "palettes": [
+      "Warm",
+      "Mint",
+      "Butter",
+      "Powder",
+      "Blush",
+      "Slate"
+    ],
+    "corners": "The corners are the theme's `shapeScheme`, Appliance's moulded radii by default, held to bands that still read as moulded plastic (a key from 6 to 14, round only). A part takes its own corners from its style's `corners`, a step per corner, start and end as it reads.",
+    "sheetOnBar": true
   },
   "brutal": {
     "name": "Brutal",
     "package": "brutal_ui",
     "swatch": "#dc5145",
-    "fontLoader": "brutalLoadFonts"
+    "fontLoader": "brutalLoadFonts",
+    "theme": "BrutalThemeData",
+    "palettes": [
+      "Raw",
+      "Poster",
+      "Zine",
+      "Riso",
+      "Blueprint",
+      "Acid"
+    ],
+    "corners": "Every box is square: no part reads a style's `shape` or `corners`.",
+    "sheetOnBar": true
   },
   "civic": {
     "name": "Civic",
     "package": "civic_ui",
     "swatch": "#24784b",
     "fontLoader": "civicLoadFonts",
-    "stintDensity": false
+    "stintDensity": false,
+    "theme": "CivicThemeData",
+    "palettes": [
+      "Civic",
+      "Harbour",
+      "Indigo",
+      "Heather",
+      "Plum",
+      "Slate"
+    ],
+    "corners": "Civic's corner steps are 2, 4, 8, 12 and 16, round, each held to a band where Civic still reads as plain and public (`CivicThemeData.shapeLimits`); a field, a select, a row, a table's cell and a notice stay square. A part takes its own corners from its style's `corners`.",
+    "sheetOnBar": true
   },
   "clay": {
     "name": "Clay",
     "package": "clay_ui",
     "swatch": "#ff7a5c",
-    "fontLoader": "clayLoadFonts"
+    "fontLoader": "clayLoadFonts",
+    "theme": "ClayThemeData",
+    "palettes": [
+      "Clay",
+      "Mint",
+      "Sky",
+      "Butter",
+      "Peach",
+      "Lavender"
+    ],
+    "corners": "`shapeScheme` is the one source of Clay's corners and relief: steps of 6, 9, 16, 24 and 32, each held to Clay's band, and a `depth` that scales how far a part stands. A part takes one step on every corner from its style's `corners`; balls, pills and the dock's places stay round.",
+    "sheetOnBar": true
   },
   "comic": {
     "name": "Comic",
     "package": "comic_ui",
     "swatch": "#ce3d56",
-    "fontLoader": "comicLoadFonts"
+    "fontLoader": "comicLoadFonts",
+    "theme": "ComicThemeData",
+    "palettes": [
+      "Offset",
+      "Reprint",
+      "Newsstand",
+      "Pulp",
+      "Sunday",
+      "Cosmic"
+    ],
+    "corners": "Comic is square unless an app rounds it: `shapeScheme` sets the corners, the ink's weight and the print's depth, each held to Comic's band. Start from `comicShapeScheme`, Comic's own. A part takes its own corners from its style's `corners`, none to large at each.",
+    "sheetOnBar": true
   },
   "fluent2": {
     "name": "Fluent 2",
     "package": "fluent2_design_ui",
     "swatch": "#2468ad",
-    "fontLoader": "fluent2LoadFonts"
+    "fontLoader": "fluent2LoadFonts",
+    "theme": "Fluent2ThemeData",
+    "palettes": [
+      "Lapis",
+      "Iris",
+      "Juniper",
+      "Pumpkin",
+      "Berry",
+      "Flint"
+    ],
+    "corners": "`shapeScheme` holds Fluent's radius tokens, 2, 4, 6, 8 and 12, which the parts take as a Fluent theme's components do; `Fluent2ThemeData.shapeLimits` holds each to a band where it still reads as Fluent.",
+    "sheetOnBar": true
   },
   "frosted": {
     "name": "Frosted",
     "package": "frosted_ui",
     "swatch": "#2a2935",
-    "fontLoader": "frostedLoadFonts"
+    "fontLoader": "frostedLoadFonts",
+    "theme": "FrostedThemeData",
+    "palettes": [
+      "Opal",
+      "Quartz",
+      "Garnet",
+      "Glacier",
+      "Jade",
+      "Copper"
+    ],
+    "corners": "`shapeScheme` is the corner scale, held to Frosted's bands. A round corner is drawn at its radius; a superellipse, a bevel or any other is cut to its outline, fill, edge, glass and focus alike.",
+    "sheetOnBar": true
   },
   "gloss": {
     "name": "Gloss",
     "package": "gloss_ui",
     "swatch": "#0e7652",
-    "fontLoader": "glossLoadFonts"
+    "fontLoader": "glossLoadFonts",
+    "theme": "GlossThemeData",
+    "palettes": [
+      "Jade",
+      "Sapphire",
+      "Amethyst",
+      "Amber",
+      "Rose",
+      "Teal"
+    ],
+    "corners": "`shapeScheme` holds Gloss's five corner steps, round fillets of 7, 12, 16, 18 and 24, which the parts take by size. A change of corners eases across with the theme.",
+    "sheetOnBar": true
   },
   "keycap": {
     "name": "Keycap",
     "package": "keycap_ui",
     "swatch": "#2f59cf",
-    "fontLoader": "keycapLoadFonts"
+    "fontLoader": "keycapLoadFonts",
+    "theme": "KeycapThemeData",
+    "palettes": [
+      "Classic",
+      "Retro",
+      "Sage",
+      "Rose",
+      "Lilac",
+      "Ocean"
+    ],
+    "corners": "A part's corners are fixed (ui_core's `cornerFreedom: fixed`): a keycap's profile is the look, so a style's `corners` leaves them as they are.",
+    "sheetOnBar": true
   },
   "ledger": {
     "name": "Ledger",
     "package": "ledger_ui",
     "swatch": "#945942",
-    "fontLoader": "ledgerLoadFonts"
+    "fontLoader": "ledgerLoadFonts",
+    "theme": "LedgerThemeData",
+    "palettes": [
+      "Quire",
+      "Terracotta",
+      "Indigo",
+      "Verdigris",
+      "Carbon",
+      "Prussian"
+    ],
+    "corners": "Ledger's corner steps are 3, 6, 6, 6 and 12, and what the hand holds (a button, a chip, a field, a search) is round at any height. Each step moves within a band where Ledger still reads as paper (`LedgerThemeData.shapeLimits`).",
+    "sheetOnBar": true
   },
   "material_expressive": {
     "name": "Material Expressive",
     "package": "material_expressive_ui",
     "swatch": "#728044",
-    "fontLoader": "expressiveLoadFonts"
+    "fontLoader": "expressiveLoadFonts",
+    "theme": "ExpressiveThemeData",
+    "palettes": [
+      "Baseline",
+      "Slate",
+      "Bloom",
+      "Grove",
+      "Ember",
+      "Tide"
+    ],
+    "corners": "The theme's corners are M3's five steps, 4, 8, 12, 16 and 28, in `shapeScheme`; an app's own steps are each held to Expressive's band (`ExpressiveThemeData.shapeLimits`), so the scale keeps its order and extra large stays well above large. A part takes its own corners from its style's `corners`, start and end as the text reads, and a press still morphs it on its spring.",
+    "sheetOnBar": false
   },
   "minimal": {
     "name": "Minimal",
     "package": "minimal_ui",
     "swatch": "#4f5c57",
-    "fontLoader": "minimalLoadFonts"
+    "fontLoader": "minimalLoadFonts",
+    "theme": "MinimalThemeData",
+    "palettes": [
+      "Standard",
+      "Graphite",
+      "Ember",
+      "Iris",
+      "Lagoon",
+      "Berry"
+    ],
+    "corners": "`shapeScheme` holds the corners every part reads (4, 8, 10, 14 and 18 by default), each step held to Minimal's band. `MinimalShapes(radius: r).scheme` sets every step from one radius.",
+    "sheetOnBar": true
   },
   "neumorphism": {
     "name": "Neumorphism",
     "package": "neumorphism_ui",
     "swatch": "#2e46d0",
-    "fontLoader": "neumorphicLoadFonts"
+    "fontLoader": "neumorphicLoadFonts",
+    "theme": "NeumorphicThemeData",
+    "palettes": [
+      "Porcelain",
+      "Pompeii",
+      "Verona",
+      "Siena",
+      "Tyrian",
+      "Capri"
+    ],
+    "corners": "`shapeScheme` sets the corners and the depth. No corner is sharp: the smallest is 6, and a face inside another follows the outer corner.",
+    "sheetOnBar": true
   },
   "retro_desktop": {
     "name": "Retro Desktop",
     "package": "retro_desktop_ui",
     "swatch": "#4b3fd6",
-    "fontLoader": "retroDesktopLoadFonts"
+    "fontLoader": "retroDesktopLoadFonts",
+    "theme": "RetroDesktopThemeData",
+    "palettes": [
+      "Classic",
+      "Lagoon",
+      "Berry",
+      "Marmalade",
+      "Slate",
+      "Lime"
+    ],
+    "corners": "Corners, line widths and shadows belong to the appearance and are not settings: Retro Desktop opens none of ui_core's `RawShapeScheme`. One appearance rounds push buttons, popups and tabs by 4; the other is square everywhere.",
+    "sheetOnBar": true
   },
   "studio": {
     "name": "Studio",
     "package": "studio_ui",
     "swatch": "#aa650e",
-    "fontLoader": "studioLoadFonts"
+    "fontLoader": "studioLoadFonts",
+    "theme": "StudioThemeData",
+    "palettes": [
+      "Anodised",
+      "Cobalt",
+      "Teal",
+      "Moss",
+      "Violet",
+      "Graphite"
+    ],
+    "corners": "The corners are the theme's `shapeScheme`, Studio's milled radii by default, held to bands that still read as milled hardware (a key from 4 to 10, round only). A part takes its own corners from its style's `corners`, a step per corner.",
+    "sheetOnBar": true
   },
   "terminal": {
     "name": "Terminal",
     "package": "terminal_ui",
     "swatch": "#0b6870",
-    "fontLoader": "termLoadFonts"
+    "fontLoader": "termLoadFonts",
+    "theme": "TermThemeData",
+    "palettes": [
+      "standard",
+      "harbor",
+      "dusk",
+      "mono",
+      "phosphor",
+      "amber"
+    ],
+    "corners": "A part's corners are fixed (ui_core's `cornerFreedom: fixed`): a frame's corners are box-drawing cells, `┌ ┐ └ ┘`, so there is no radius to set.",
+    "sheetOnBar": true
   },
   "material": {
     "name": "Material (Flutter)",

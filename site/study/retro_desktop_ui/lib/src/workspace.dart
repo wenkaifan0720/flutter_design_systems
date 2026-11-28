@@ -163,7 +163,7 @@ class _WorkspaceState extends State<_Workspace> {
     DataState.ready => ready(),
     DataState.loading => Semantics(
       liveRegion: true,
-      child: RetroDesktopSkeleton(label: w.loading, lines: 5),
+      child: RetroDesktopSkeleton(semanticLabel: w.loading, lines: 5),
     ),
     DataState.error => RetroDesktopErrorState(
       title: w.loadError,
@@ -173,7 +173,7 @@ class _WorkspaceState extends State<_Workspace> {
   };
 
   Widget get menuBar => RetroDesktopMenuBar(
-    label: w.workspace,
+    semanticLabel: w.workspace,
     leading: const ExcludeSemantics(child: RetroDesktopSystemMark()),
     menus: [
       RawMenuEntry(
@@ -209,7 +209,7 @@ class _WorkspaceState extends State<_Workspace> {
       message: '${w.commands}${w.dot}${keys(LogicalKeyboardKey.keyK)}',
       child: RetroDesktopIconButton(
         RetroDesktopGlyphs.search,
-        label: w.commands,
+        semanticLabel: w.commands,
         onPressed: palette,
       ),
     ),
@@ -413,7 +413,11 @@ class _ToolButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => RetroDesktopTooltip(
     message: label,
-    child: RetroDesktopIconButton(icon, label: label, onPressed: onPressed),
+    child: RetroDesktopIconButton(
+      icon,
+      semanticLabel: label,
+      onPressed: onPressed,
+    ),
   );
 }
 

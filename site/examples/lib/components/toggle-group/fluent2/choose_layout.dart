@@ -16,7 +16,7 @@ class _ChooseLayoutState extends State<ChooseLayout> {
     mainAxisSize: MainAxisSize.min,
     children: [
       Fluent2ToolbarToggleGroup<String>(
-        label: 'Layout',
+        semanticLabel: 'Layout',
         toggles: const [
           Fluent2ToolbarToggle('List', icon: Fluent2Icons.list, label: 'List'),
           Fluent2ToolbarToggle('Grid', icon: Fluent2Icons.grid, label: 'Grid'),

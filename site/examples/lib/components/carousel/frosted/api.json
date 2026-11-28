@@ -6,6 +6,6 @@
     "viewportFraction": "Sets the share of the viewport used by one slide.",
     "loop": "Allows the sequence to wrap around.",
     "onPageChanged": "Receives the index of the new slide.",
-    "label": "The label exposed to a screen reader."
+    "semanticLabel": "The label exposed to a screen reader."
   }
 }

@@ -162,7 +162,7 @@ extension _TimeAndSettings on _WorkspaceState {
         alignment: AlignmentDirectional.topStart,
         child: ConstrainedBox(
           constraints: const BoxConstraints(
-            maxWidth: 2 * ExpressiveSelect.wideMaxWidth + 16,
+            maxWidth: 2 * _settingsColumn + 16,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -179,7 +179,7 @@ extension _TimeAndSettings on _WorkspaceState {
               ),
               _Heading(w.preferences),
               _Columns(
-                breakpoint: 2 * ExpressiveSelect.wideMaxWidth + 16,
+                breakpoint: 2 * _settingsColumn + 16,
                 first: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   spacing: 12,
@@ -373,3 +373,6 @@ class _EntryState extends State<_Entry> {
     },
   );
 }
+
+// A settings column: two of them, 16 apart, stand side by side.
+const double _settingsColumn = 320;

@@ -32,7 +32,7 @@ class _CompareQuartersState extends State<CompareQuarters> {
               for (var i = 0; i < orders.length; i++)
                 Fluent2Bar(months[i], orders[i]),
             ],
-            label: '$period monthly orders',
+            semanticLabel: '$period monthly orders',
           ),
           const SizedBox(height: 12),
           Fluent2Button(

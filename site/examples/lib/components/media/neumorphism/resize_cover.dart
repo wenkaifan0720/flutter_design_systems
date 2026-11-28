@@ -23,7 +23,7 @@ class _ResizeCoverState extends State<ResizeCover> {
               width: 156,
               child: NeumorphicMedia(
                 aspect: aspect,
-                label: 'Route guide cover',
+                semanticLabel: 'Route guide cover',
                 glyph: NeumorphicGlyphs.bookOpen,
               ),
             ),

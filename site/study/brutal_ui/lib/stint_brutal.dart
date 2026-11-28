@@ -94,12 +94,12 @@ class _AppState extends State<StintBrutal> {
                 Appearance.night => Brightness.dark,
               },
               theme: BrutalThemeData.preset(
-                p.presetOf(BrutalThemeData.presets),
+                p.presetOf(_paletteIds),
                 Brightness.light,
                 density: density,
               ),
               darkTheme: BrutalThemeData.preset(
-                p.presetOf(BrutalThemeData.presets),
+                p.presetOf(_paletteIds),
                 Brightness.dark,
                 density: density,
               ),
@@ -154,9 +154,13 @@ class _StintControls extends BrutalLocalizations {
 
 /// Brutal's six palettes, the look's own first, for a host's palette menu.
 final _palettes = [
-  for (final id in BrutalThemeData.presets)
+  for (final palette in BrutalThemeData.palettes)
     StintPalette(
-      id,
-      BrutalThemeData.preset(id, Brightness.light).colors.signal,
+      palette.id,
+      BrutalThemeData.preset(palette.id, Brightness.light).colors.signal,
+      label: palette.label,
     ),
 ];
+
+/// The palettes' ids, the theme's preset for each.
+final _paletteIds = [for (final palette in _palettes) palette.id];

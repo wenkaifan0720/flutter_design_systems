@@ -34,7 +34,7 @@ class _SortStockState extends State<SortStock> {
     child: SingleChildScrollView(
       child: NeumorphicDataTable<(String, int)>(
         controller: stock,
-        label: 'Stock',
+        semanticLabel: 'Stock',
         cell: (item, column) => column.id == 'item' ? item.$1 : '${item.$2}',
       ),
     ),

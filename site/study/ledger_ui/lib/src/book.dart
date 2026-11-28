@@ -123,7 +123,7 @@ class _BookState extends State<_Book> {
     return LedgerPressable(
       onTap: () => go(Place.today),
       role: LedgerPressRole.link,
-      label: 'Stint, ${w.today}',
+      semanticLabel: 'Stint, ${w.today}',
       excludeChild: true,
       child: TapTargetPadding(child: mark),
     );
@@ -248,7 +248,7 @@ class _BookState extends State<_Book> {
         );
       }
       final width = MediaQuery.sizeOf(ctx).width;
-      final mode = width < LedgerNavigationFrame.railFrom
+      final mode = width < LedgerAppShell.railFrom
           ? RawNavigationMode.bar
           : width < LedgerLayout.wide
           ? RawNavigationMode.rail

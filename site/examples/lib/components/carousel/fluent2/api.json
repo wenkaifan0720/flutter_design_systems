@@ -4,7 +4,7 @@
     "focusNode": "Supplies a focus node owned and disposed by the caller.",
     "autofocus": "Requests focus when the control first appears.",
     "children": "The slides.",
-    "label": "What a screen reader calls it.",
+    "semanticLabel": "What a screen reader calls it.",
     "initialItem": "The first slide shown.",
     "looping": "Whether it runs past its ends.",
     "autoplay": "How long each slide stays, when it turns by itself.",

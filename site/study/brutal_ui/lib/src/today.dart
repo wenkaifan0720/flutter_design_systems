@@ -271,7 +271,7 @@ extension _Today on _StudioState {
         task = c.currentTask('maya');
     final active = timer != null && task != null;
     final ink = active ? theme.colors.onBlock : theme.colors.ink;
-    final wellColor = active ? theme.colors.lime : theme.colors.surface;
+    final wellColor = active ? theme.colors.lead : theme.colors.surface;
     final lastEntry = c.data.activity.firstOrNull;
     final saved =
         !active &&
@@ -343,7 +343,7 @@ extension _Today on _StudioState {
                 },
                 style: highlighted
                     ? BrutalStyle(
-                        fill: WidgetStatePropertyAll(theme.colors.lime),
+                        fill: WidgetStatePropertyAll(theme.colors.lead),
                       )
                     : null,
               );

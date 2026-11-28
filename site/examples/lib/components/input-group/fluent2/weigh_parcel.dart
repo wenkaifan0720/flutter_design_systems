@@ -18,7 +18,7 @@ class _WeighParcelState extends State<WeighParcel> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Fluent2InputGroup(
-          label: 'Parcel weight in kilograms',
+          semanticLabel: 'Parcel weight in kilograms',
           suffix: 'kg',
           onChanged: (value) => setState(() => weight = value.trim()),
         ),

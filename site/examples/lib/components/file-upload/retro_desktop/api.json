@@ -1,7 +1,7 @@
 {
   "widget": "RetroDesktopFileUpload",
   "parameters": {
-    "label": "Identifies the attachment field.",
+    "semanticLabel": "Identifies the attachment field.",
     "onChoose": "Opens the browser’s file chooser.",
     "files": "Files already selected.",
     "onRemove": "Removes the chosen file from this example."

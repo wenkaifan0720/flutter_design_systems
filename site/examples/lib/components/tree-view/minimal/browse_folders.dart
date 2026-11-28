@@ -8,7 +8,7 @@ class BrowseFolders extends StatelessWidget {
     constraints: const BoxConstraints(maxWidth: 440),
     child: SingleChildScrollView(
       child: MinimalTreeView<String>(
-        label: 'Folders',
+        semanticLabel: 'Folders',
         roots: const ['Files'],
         childrenOf: (folder) =>
             folder == 'Files' ? const ['Notes', 'Maps'] : const [],

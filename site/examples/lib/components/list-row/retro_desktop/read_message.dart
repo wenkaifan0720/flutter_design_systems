@@ -14,7 +14,7 @@ class _ReadMessageState extends State<ReadMessage> {
     constraints: const BoxConstraints(maxWidth: 440),
     child: RetroDesktopListTile(
       title: 'Route change',
-      label: read ? 'Route change, read' : 'Route change, unread',
+      semanticLabel: read ? 'Route change, read' : 'Route change, unread',
       subtitle: read ? 'Read' : 'Unread',
       onPressed: () => setState(() => read = !read),
     ),

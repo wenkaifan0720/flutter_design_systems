@@ -528,7 +528,10 @@ class _SlabBand extends StatelessWidget {
             top: first ? 0 : -_reach,
             bottom: last ? 0 : -_reach,
             child: ClaySurface(
-              face: ClayFace.raised(colors, radius: ClayRadius.large),
+              face: ClayFace.raised(
+                colors,
+                radius: context.clayTheme.shapeScheme.corners.large,
+              ),
             ),
           ),
           IconTheme.merge(

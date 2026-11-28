@@ -113,7 +113,7 @@ class _WorkspaceState extends State<_Workspace> {
       message: phone ? w.commands : '${modifier}K',
       child: NeumorphicIconButton(
         phone ? LucideIcons.search : LucideIcons.command,
-        label: w.commands,
+        semanticLabel: w.commands,
         onPressed: palette,
       ),
     );

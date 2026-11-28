@@ -41,7 +41,10 @@ void main() {
           RepaintBoundary(
             key: page,
             child: StintCupertino(
-              launch: StintLaunch(language: rtl ? StintLanguage.ar : StintLanguage.en, appearance: Appearance.day),
+              launch: StintLaunch(
+                language: rtl ? StintLanguage.ar : StintLanguage.en,
+                appearance: Appearance.day,
+              ),
               repository: StintRepository(clock: () => studyMorning),
             ),
           ),

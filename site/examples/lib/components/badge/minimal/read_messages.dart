@@ -21,7 +21,7 @@ class _ReadMessagesState extends State<ReadMessages> {
         const SizedBox(height: 12),
         MinimalBadge(
           count: unread,
-          label: '$unread unread messages',
+          semanticLabel: '$unread unread messages',
           child: const Icon(Icons.mail_outline),
         ),
         const SizedBox(height: 12),

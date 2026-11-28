@@ -2,8 +2,11 @@
   "widget": "MinimalSlider",
   "parameters": {
     "value": "Current volume on the track.",
+    "min": "The least value the thumb reaches (0 by default).",
     "max": "Highest volume the thumb can reach.",
     "divisions": "Number of equal intervals on the track.",
+    "format": "How each figure prints ((v) => '${(v * 100).round()}%'), on the line and to a screen reader. Figures and symbols only.",
+    "unit": "The word after the figure (\"pages\", \"min\"), announced with every value.",
     "label": "Names the volume control.",
     "onChanged": "Receives the new volume."
   }

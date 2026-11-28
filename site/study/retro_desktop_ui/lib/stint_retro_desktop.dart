@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/rendering.dart' show RenderProxyBox;
 import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:retro_desktop_ui/retro_desktop_host.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:material_ui/material_ui.dart';
@@ -103,7 +102,7 @@ class _StintRetroDesktopState extends State<StintRetroDesktop> {
               : RetroDesktopDensity.standard;
           RetroDesktopThemeData desk(Brightness brightness) =>
               RetroDesktopThemeData.preset(
-                settings.presetOf(RetroDesktopThemeData.presets),
+                settings.presetOf(_paletteIds),
                 brightness,
               ).copyWith(density: density);
           return MediaQuery(
@@ -161,9 +160,16 @@ class _Workspace extends StatefulWidget {
 
 /// Retro Desktop's six palettes, the look's own first, for a host's palette menu.
 final _palettes = [
-  for (final id in RetroDesktopThemeData.presets)
+  for (final palette in RetroDesktopThemeData.palettes)
     StintPalette(
-      id,
-      RetroDesktopThemeData.preset(id, Brightness.light).colors.highlight,
+      palette.id,
+      RetroDesktopThemeData.preset(
+        palette.id,
+        Brightness.light,
+      ).colors.highlight,
+      label: palette.label,
     ),
 ];
+
+/// The palettes' ids, the theme's preset for each.
+final _paletteIds = [for (final palette in _palettes) palette.id];

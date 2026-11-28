@@ -4,7 +4,7 @@
     "style": "Frame styling before the shared card component theme.",
     "columns": "The column descriptions, in display order.",
     "rows": "The table records, in display order.",
-    "label": "The text identifying this item or control.",
+    "semanticLabel": "The text identifying this item or control.",
     "stackBelow": "The width below which rows become labelled vertical records."
   }
 }

@@ -336,11 +336,11 @@ extension _Today on _WorkspaceState {
         final face = down
             ? ApplianceFace.keyDown(
                 colors,
-                radius: ApplianceMetrics.smallKeyRadius,
+                radius: ApplianceTheme.of(context).radiusSmallKey,
               )
             : ApplianceFace.key(
                 colors,
-                radius: ApplianceMetrics.smallKeyRadius,
+                radius: ApplianceTheme.of(context).radiusSmallKey,
               );
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),

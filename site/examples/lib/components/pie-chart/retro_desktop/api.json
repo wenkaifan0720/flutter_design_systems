@@ -1,7 +1,7 @@
 {
   "widget": "RetroDesktopPieChart",
   "parameters": {
-    "label": "Names the budget and plan.",
+    "semanticLabel": "Names the budget and plan.",
     "labels": "Category names in the same order as the amounts.",
     "series": "The budget amounts used to size the slices.",
     "height": "Sets the plot height."

@@ -16,7 +16,7 @@ class _AdjustZoomState extends State<AdjustZoom> {
     mainAxisSize: MainAxisSize.min,
     children: [
       RetroDesktopButtonGroup(
-        label: 'Zoom',
+        semanticLabel: 'Zoom',
         items: [
           RetroDesktopButtonGroupItem(
             label: 'Out',

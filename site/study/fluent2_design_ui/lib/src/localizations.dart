@@ -159,7 +159,8 @@ class _Fluent2Arabic extends Fluent2LocalizationsEn {
   String fullDate(DateTime date) =>
       "${const StintWords(StintLanguage.ar).weekday(date)}، ${shortDate(date)}";
   @override
-  String shortDate(DateTime date) => const StintWords(StintLanguage.ar).shortDate(date);
+  String shortDate(DateTime date) =>
+      const StintWords(StintLanguage.ar).shortDate(date);
   @override
   String monthYear(DateTime date) =>
       "${months[date.month - 1]} ${const StintWords(StintLanguage.ar).number(date.year)}";
@@ -189,7 +190,8 @@ class _Fluent2Japanese extends Fluent2LocalizationsEn {
   @override
   List<String> get weekdaysShort => words.weekdayNames;
   @override
-  String fullDate(DateTime date) => '${words.dueDate(date)}（${words.weekday(date)}）';
+  String fullDate(DateTime date) =>
+      '${words.dueDate(date)}（${words.weekday(date)}）';
   @override
   String shortDate(DateTime date) => words.shortDate(date);
   @override
@@ -314,7 +316,8 @@ class _Fluent2German extends Fluent2LocalizationsEn {
   @override
   String pageOf(int page, int count) => 'Seite $page von $count';
   @override
-  String notificationsUnread(int count) => 'Benachrichtigungen, $count ungelesen';
+  String notificationsUnread(int count) =>
+      'Benachrichtigungen, $count ungelesen';
   @override
   List<String> get months => words.monthNames;
   @override
@@ -322,7 +325,8 @@ class _Fluent2German extends Fluent2LocalizationsEn {
   @override
   List<String> get weekdaysShort => words.weekdayNames;
   @override
-  String fullDate(DateTime date) => '${words.weekday(date)}., ${words.dueDate(date)}';
+  String fullDate(DateTime date) =>
+      '${words.weekday(date)}., ${words.dueDate(date)}';
   @override
   String shortDate(DateTime date) => words.shortDate(date);
   @override

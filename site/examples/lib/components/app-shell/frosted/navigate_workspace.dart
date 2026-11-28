@@ -9,19 +9,25 @@ class NavigateWorkspace extends StatefulWidget {
 
 class _NavigateWorkspaceState extends State<NavigateWorkspace> {
   int selected = 0;
-  static const destinations = [
-    FrostedNavItem(FrostedGlyphs.house, 'Home'),
-    FrostedNavItem(FrostedGlyphs.search, 'Search'),
-  ];
 
   @override
-  Widget build(BuildContext context) => FrostedScaffold(
-    scroll: false,
-    footer: FrostedNavigationBar(
-      items: destinations,
-      selectedIndex: selected,
-      onDestinationSelected: (next) => setState(() => selected = next),
-    ),
-    body: Center(child: Text(selected == 0 ? 'Home page' : 'Search page')),
+  Widget build(BuildContext context) => FrostedAppShell(
+    header: const FrostedWordmark('Workspace'),
+    destinations: const [
+      RawNavigationDestination(label: 'Home', icon: FrostedGlyphs.house),
+      RawNavigationDestination(label: 'Search', icon: FrostedGlyphs.search),
+    ],
+    selectedIndex: selected,
+    onDestinationSelected: (next) => setState(() => selected = next),
+    branches: [
+      (context) => const FrostedScaffold(
+        topBar: FrostedAppBar(title: 'Home'),
+        body: Center(child: Text('Home page')),
+      ),
+      (context) => const FrostedScaffold(
+        topBar: FrostedAppBar(title: 'Search'),
+        body: Center(child: Text('Search page')),
+      ),
+    ],
   );
 }

@@ -5,6 +5,6 @@
     "labelOf": "A row's words.",
     "onActivate": "Called by Enter or a press on a row.",
     "iconOf": "A row's glyph.",
-    "label": "What a screen reader calls the tree."
+    "semanticLabel": "What a screen reader calls the tree."
   }
 }

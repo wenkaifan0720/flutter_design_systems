@@ -188,7 +188,7 @@ extension _TaskPages on _WorkspaceState {
                       .every((t) => t.done);
               final item = await FrostedMenu.show<_TaskAction>(
                 anchor,
-                label: name,
+                semanticLabel: name,
                 items: [
                   FrostedMenuItem(
                     _TaskAction.done,

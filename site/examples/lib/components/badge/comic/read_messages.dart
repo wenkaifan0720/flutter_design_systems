@@ -18,7 +18,7 @@ class _ReadMessagesState extends State<ReadMessages> {
       children: [
         const Text('Inbox'),
         const SizedBox(height: 12),
-        ComicBadge(unread, label: '$unread unread messages'),
+        ComicBadge(unread, semanticLabel: '$unread unread messages'),
         const SizedBox(height: 12),
         ComicButton(
           unread == 0 ? 'Reset inbox' : 'Mark one read',

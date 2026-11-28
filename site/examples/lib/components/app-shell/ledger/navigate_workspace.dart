@@ -10,16 +10,25 @@ class NavigateWorkspace extends StatefulWidget {
 
 class _NavigateWorkspaceState extends State<NavigateWorkspace> {
   int selected = 0;
-  static const destinations = [
-    LedgerNavItem(Icons.home_outlined, 'Home'),
-    LedgerNavItem(Icons.search, 'Search'),
-  ];
 
   @override
-  Widget build(BuildContext context) => LedgerNavigationFrame(
-    destinations: destinations,
+  Widget build(BuildContext context) => LedgerAppShell.branches(
+    brand: 'Workspace',
+    destinations: const [
+      LedgerNavItem(Icons.home_outlined, 'Home'),
+      LedgerNavItem(Icons.search, 'Search'),
+    ],
     selectedIndex: selected,
     onDestinationSelected: (next) => setState(() => selected = next),
-    body: Center(child: Text(selected == 0 ? 'Home page' : 'Search page')),
+    branches: [
+      (context) => const LedgerScreen(
+        topBar: LedgerTopBar(title: 'Home'),
+        body: Center(child: Text('Home page')),
+      ),
+      (context) => const LedgerScreen(
+        topBar: LedgerTopBar(title: 'Search'),
+        body: Center(child: Text('Search page')),
+      ),
+    ],
   );
 }

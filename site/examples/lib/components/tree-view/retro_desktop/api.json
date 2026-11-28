@@ -5,6 +5,6 @@
     "labelOf": "A node's words.",
     "iconOf": "A node's glyph, if any.",
     "onActivate": "Called when a node is opened (Enter, or a double press).",
-    "label": "The tree's name for a screen reader."
+    "semanticLabel": "The tree's name for a screen reader."
   }
 }

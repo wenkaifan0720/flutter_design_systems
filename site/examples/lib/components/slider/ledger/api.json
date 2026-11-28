@@ -5,6 +5,8 @@
     "max": "Highest volume the thumb can reach.",
     "divisions": "Number of equal intervals on the track.",
     "label": "Names the volume control.",
+    "format": "How a value's figure prints, in the line and to a screen reader.",
+    "unit": "The word after the figure (\"pages\"), spoken with every value.",
     "onChanged": "Receives the new volume."
   }
 }

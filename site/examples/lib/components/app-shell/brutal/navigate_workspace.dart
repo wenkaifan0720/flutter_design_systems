@@ -10,16 +10,19 @@ class NavigateWorkspace extends StatefulWidget {
 
 class _NavigateWorkspaceState extends State<NavigateWorkspace> {
   int selected = 0;
-  static const destinations = [
-    BrutalDestination(icon: Icons.home_outlined, label: 'Home'),
-    BrutalDestination(icon: Icons.search, label: 'Search'),
-  ];
 
   @override
-  Widget build(BuildContext context) => BrutalScaffold(
-    destinations: destinations,
+  Widget build(BuildContext context) => BrutalAppShell.branches(
+    brand: 'Workspace',
+    tabs: const [
+      BrutalTab(Icons.home_outlined, 'Home'),
+      BrutalTab(Icons.search, 'Search'),
+    ],
     selectedIndex: selected,
     onDestinationSelected: (next) => setState(() => selected = next),
-    body: Center(child: Text(selected == 0 ? 'Home page' : 'Search page')),
+    branches: [
+      (context) => const BrutalScreen(body: Center(child: Text('Home page'))),
+      (context) => const BrutalScreen(body: Center(child: Text('Search page'))),
+    ],
   );
 }

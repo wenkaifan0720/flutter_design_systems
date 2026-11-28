@@ -18,7 +18,7 @@ class _CountCopiesState extends State<CountCopies> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Fluent2SpinButton(
-          label: 'Copies',
+          semanticLabel: 'Copies',
           min: 1,
           max: 9,
           value: copies,

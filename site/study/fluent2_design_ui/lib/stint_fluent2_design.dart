@@ -96,7 +96,7 @@ class _AppState extends State<StintFluent2Design> {
             child: Fluent2Theme(
               data:
                   Fluent2ThemeData.preset(
-                    prefs.presetOf(Fluent2ThemeData.presets),
+                    prefs.presetOf(_paletteIds),
                     brightness,
                   ).copyWith(
                     solidAcrylic: true,
@@ -140,6 +140,13 @@ class _Workspace extends StatefulWidget {
 
 /// Fluent 2's six brand palettes, the look's own first, for a host's palette menu.
 final _palettes = [
-  for (final id in Fluent2ThemeData.presets)
-    StintPalette(id, Fluent2ThemeData.preset(id, Brightness.light).accent),
+  for (final palette in Fluent2ThemeData.palettes)
+    StintPalette(
+      palette.id,
+      Fluent2ThemeData.preset(palette.id, Brightness.light).accent,
+      label: palette.label,
+    ),
 ];
+
+/// The palettes' ids, the theme's preset for each.
+final _paletteIds = [for (final palette in _palettes) palette.id];

@@ -5,6 +5,7 @@
     "max": "Highest volume the thumb can reach.",
     "divisions": "Number of equal intervals on the track.",
     "label": "Names the volume control.",
+    "valueLabel": "Formats a value; null: percent of the range.",
     "onChanged": "Receives the new volume."
   }
 }

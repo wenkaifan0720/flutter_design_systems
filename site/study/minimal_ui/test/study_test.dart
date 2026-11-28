@@ -123,7 +123,8 @@ void main() {
         find.byWidgetPredicate(
           (widget) =>
               widget is MinimalMenu &&
-              widget.label == '${words.actions}${words.dot}${firstTask.id}',
+              widget.semanticLabel ==
+                  '${words.actions}${words.dot}${firstTask.id}',
         ),
       );
       expect(

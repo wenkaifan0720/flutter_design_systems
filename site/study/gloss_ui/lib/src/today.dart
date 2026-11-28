@@ -262,9 +262,14 @@ extension _Today on _WorkspaceState {
   }) {
     Widget floor(GlossWell well) => GlossSurface(
       key: well.key,
-      face: GlossFace.well(theme.colors, radius: GlossMetrics.wellRadius),
+      face: GlossFace.well(
+        theme.colors,
+        radius: GlossTheme.of(context).shapeScheme.corners.medium,
+      ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(GlossMetrics.wellRadius),
+        borderRadius: BorderRadius.circular(
+          GlossTheme.of(context).shapeScheme.corners.medium,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -446,7 +451,10 @@ extension _Today on _WorkspaceState {
 
     final readout = GlossSurface(
       key: const ValueKey('today-timer-well'),
-      face: GlossFace.well(colors, radius: GlossMetrics.wellRadius),
+      face: GlossFace.well(
+        colors,
+        radius: GlossTheme.of(context).shapeScheme.corners.medium,
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Column(
@@ -765,7 +773,10 @@ class _JadeWeek extends StatelessWidget {
     final scale = ((maximum + 479) ~/ 480) * 480;
     return GlossSurface(
       key: const ValueKey('today-chart'),
-      face: GlossFace.well(colors, radius: GlossMetrics.wellRadius),
+      face: GlossFace.well(
+        colors,
+        radius: GlossTheme.of(context).shapeScheme.corners.medium,
+      ),
       child: Padding(
         // The day labels' ink sits as far above the floor as the scale's
         // ink sits below the rim, and the scale starts on the stat wells'

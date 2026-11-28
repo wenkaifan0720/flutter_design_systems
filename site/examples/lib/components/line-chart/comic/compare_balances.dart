@@ -27,7 +27,7 @@ class _CompareBalancesState extends State<CompareBalances> {
           ComicLineChart(
             labels: const ['1', '2', '3', '4'],
             series: [ComicChartSeries('Balance', balances)],
-            label: '$period daily balance',
+            semanticLabel: '$period daily balance',
           ),
           const SizedBox(height: 12),
           ComicButton(

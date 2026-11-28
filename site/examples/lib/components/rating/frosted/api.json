@@ -2,7 +2,7 @@
   "widget": "FrostedRating",
   "parameters": {
     "value": "Score currently shown by the marks.",
-    "label": "Names what the reader is rating.",
+    "semanticLabel": "Names what the reader is rating.",
     "onChanged": "Receives the new score."
   }
 }

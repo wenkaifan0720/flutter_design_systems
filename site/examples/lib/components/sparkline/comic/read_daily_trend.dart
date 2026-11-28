@@ -30,7 +30,7 @@ class _ReadDailyTrendState extends State<ReadDailyTrend> {
             width: 106,
             child: ComicSparkline(
               values: requests,
-              label: '$period daily requests',
+              semanticLabel: '$period daily requests',
             ),
           ),
           const SizedBox(height: 12),

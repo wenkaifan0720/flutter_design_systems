@@ -2,6 +2,6 @@
   "widget": "Fluent2ToolbarGroup",
   "parameters": {
     "items": "Zoom commands in reading order.",
-    "label": "Names the group for assistive technology."
+    "semanticLabel": "Names the group for assistive technology."
   }
 }

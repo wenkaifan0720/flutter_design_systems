@@ -20,7 +20,7 @@ class _ChoosePriceRangeState extends State<ChoosePriceRange> {
           values: prices,
           max: 100,
           divisions: 20,
-          label: 'Price',
+          semanticLabel: 'Price',
           onChanged: (next) => setState(() => prices = next),
           valueLabel: (price) => '\$${price.round()}',
         ),

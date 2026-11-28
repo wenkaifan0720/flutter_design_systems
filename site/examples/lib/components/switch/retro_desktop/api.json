@@ -1,7 +1,7 @@
 {
   "widget": "RetroDesktopSwitch",
   "parameters": {
-    "label": "Names the setting in both states.",
+    "semanticLabel": "Names the setting in both states.",
     "value": "Whether reminders are on.",
     "onChanged": "Applies the new setting immediately."
   }

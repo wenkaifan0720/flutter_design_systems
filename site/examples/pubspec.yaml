@@ -15,24 +15,24 @@ dependencies:
   material_ui: ^1.11.1
   cupertino_ui: ^1.1.7
   cupertino_icons: ^1.0.8
-  ui_core: ^0.7.2
+  ui_core: ^0.8.7
   web: ^1.1.0
-  appliance_ui: ^0.5.0
-  brutal_ui: ^0.6.0
-  civic_ui: ^0.7.0
-  clay_ui: ^0.5.0
-  comic_ui: ^0.7.0
-  fluent2_design_ui: ^0.7.0
-  frosted_ui: ^0.7.0
-  gloss_ui: ^0.5.0
-  keycap_ui: ^0.5.0
-  ledger_ui: ^0.7.0
-  material_expressive_ui: ^0.7.0
-  minimal_ui: ^0.7.0
-  neumorphism_ui: ^0.7.0
-  retro_desktop_ui: ^0.7.0
-  studio_ui: ^0.5.0
-  terminal_ui: ^0.6.0
+  appliance_ui: ^0.7.0
+  brutal_ui: ^0.7.1
+  civic_ui: ^0.9.0
+  clay_ui: ^0.6.2
+  comic_ui: ^0.8.1
+  fluent2_design_ui: ^0.9.0
+  frosted_ui: ^0.8.2
+  gloss_ui: ^0.6.1
+  keycap_ui: ^0.6.2
+  ledger_ui: ^0.9.0
+  material_expressive_ui: ^0.9.0
+  minimal_ui: ^0.9.0
+  neumorphism_ui: ^0.9.1
+  retro_desktop_ui: ^0.8.1
+  studio_ui: ^0.7.0
+  terminal_ui: ^0.7.2
   stint_material:
     path: ../study/material_ui
   stint_cupertino:

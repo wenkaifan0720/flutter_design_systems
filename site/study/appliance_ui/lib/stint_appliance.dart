@@ -1,5 +1,4 @@
 import 'package:flutter/services.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:appliance_ui/appliance_ui.dart';
 import 'package:stint_core/stint_core.dart';
@@ -102,7 +101,7 @@ class _AppState extends State<StintAppliance> {
             child: ApplianceTheme(
               data:
                   ApplianceThemeData.preset(
-                    prefs.presetOf(ApplianceThemeData.presets),
+                    prefs.presetOf(_paletteIds),
                     brightness,
                   ).copyWith(
                     density: prefs.compact
@@ -135,9 +134,13 @@ class _Workspace extends StatefulWidget {
 
 /// Appliance's six finishes, the look's own first, for a host's palette menu.
 final _palettes = [
-  for (final id in ApplianceThemeData.presets)
+  for (final palette in ApplianceThemeData.palettes)
     StintPalette(
-      id,
-      ApplianceThemeData.preset(id, Brightness.light).colors.signal,
+      palette.id,
+      ApplianceThemeData.preset(palette.id, Brightness.light).colors.signal,
+      label: palette.label,
     ),
 ];
+
+/// The palettes' ids, the theme's preset for each.
+final _paletteIds = [for (final palette in _palettes) palette.id];

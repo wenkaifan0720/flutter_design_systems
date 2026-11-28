@@ -1,7 +1,7 @@
 {
   "widget": "ComicCarouselView",
   "parameters": {
-    "label": "The carousel's accessible name.",
+    "semanticLabel": "The carousel's accessible name.",
     "children": "The items, in order.",
     "height": "The items' height.",
     "itemWidth": "Sets the width of a carousel item.",

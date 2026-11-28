@@ -1,7 +1,7 @@
 {
   "widget": "Fluent2SpinButton",
   "parameters": {
-    "label": "Identifies the quantity being adjusted.",
+    "semanticLabel": "Identifies the quantity being adjusted.",
     "min": "Smallest quantity allowed.",
     "max": "Largest quantity allowed.",
     "value": "Current number of copies.",

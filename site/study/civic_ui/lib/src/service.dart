@@ -195,7 +195,7 @@ class _ServiceState extends State<_Service> {
                           MediaQuery.sizeOf(ctx).width,
                         ),
                 ),
-                child: CivicShellFrame(
+                child: CivicAppShell(
                   destinations: [
                     for (final p in Place.values)
                       CivicNavItem(places[p.index], w.place(p)),

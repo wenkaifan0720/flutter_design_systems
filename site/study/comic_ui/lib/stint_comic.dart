@@ -77,22 +77,25 @@ class _AppState extends State<StintComic> {
             Appearance.day => Brightness.light,
             Appearance.night => Brightness.dark,
           };
+          ComicThemeData themeFor(Brightness b) =>
+              ComicThemeData.preset(prefs.presetOf(_paletteIds), b).copyWith(
+                density: prefs.compact
+                    ? ComicDensity.compact
+                    : ComicDensity.standard,
+              );
           return MediaQuery(
             data: media.copyWith(
               textScaler: prefs.scale == null
                   ? media.textScaler
                   : TextScaler.linear(prefs.scale!),
             ),
-            child: ComicTheme(
-              data:
-                  ComicThemeData.preset(
-                    prefs.presetOf(ComicThemeData.presets),
-                    brightness,
-                  ).copyWith(
-                    density: prefs.compact
-                        ? ComicDensity.compact
-                        : ComicDensity.standard,
-                  ),
+            // Comic's host is the app's one mount above the navigator: its
+            // theme and its toaster, which the shell's tab bar keeps clear of,
+            // so a sheet stands on the bar rather than over it.
+            child: ComicHost(
+              brightness: brightness,
+              light: themeFor(Brightness.light),
+              dark: themeFor(Brightness.dark),
               child: CallbackShortcuts(
                 bindings: {
                   for (final meta in [false, true]) ...{
@@ -129,6 +132,13 @@ class _Workspace extends StatefulWidget {
 
 /// Comic's six print runs, the look's own first, for a host's palette menu.
 final _palettes = [
-  for (final id in ComicThemeData.presets)
-    StintPalette(id, ComicThemeData.preset(id, Brightness.light).colors.primary),
+  for (final palette in ComicThemeData.palettes)
+    StintPalette(
+      palette.id,
+      ComicThemeData.preset(palette.id, Brightness.light).colors.primary,
+      label: palette.label,
+    ),
 ];
+
+/// The palettes' ids, the theme's preset for each.
+final _paletteIds = [for (final palette in _palettes) palette.id];

@@ -7,7 +7,7 @@
     "most": "The maximum number of individual faces displayed.",
     "total": "The complete count when only some portraits have been loaded.",
     "size": "The diameter of each face in logical pixels.",
-    "label": "The text identifying this item or control.",
+    "semanticLabel": "The text identifying this item or control.",
     "onPressed": "Opens the people behind the group. Null shows the group without a press.",
     "style": "Overrides the component’s themed appearance for this instance."
   }

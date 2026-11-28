@@ -266,10 +266,7 @@ extension _Timesheet on _WorkspaceState {
             value: widget.density,
             options: [
               FrostedSelectOption(FrostedDensity.standard, w.standard),
-              FrostedSelectOption(
-                FrostedDensity.comfortable,
-                w.comfortable,
-              ),
+              FrostedSelectOption(FrostedDensity.comfortable, w.comfortable),
               FrostedSelectOption(FrostedDensity.compact, w.compact),
             ],
             onChanged: widget.chooseDensity,
@@ -285,10 +282,7 @@ extension _Timesheet on _WorkspaceState {
         children: [
           FrostedCardHeader(w.account),
           FrostedListTile(
-            leading: FrostedAvatar(
-              w.mayaInitials,
-              name: c.personName('maya'),
-            ),
+            leading: FrostedAvatar(w.mayaInitials, name: c.personName('maya')),
             title: c.personName('maya'),
             meta: w.teamName,
           ),

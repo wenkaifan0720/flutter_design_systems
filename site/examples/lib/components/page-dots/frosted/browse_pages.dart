@@ -20,7 +20,7 @@ class _BrowsePagesState extends State<BrowsePages> {
       FrostedPageDots(
         pageCount: titles.length,
         selectedIndex: page,
-        label: 'Guide pages',
+        semanticLabel: 'Guide pages',
         onChanged: (next) => setState(() => page = next),
       ),
     ],

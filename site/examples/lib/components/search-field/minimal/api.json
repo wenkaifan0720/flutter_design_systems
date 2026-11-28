@@ -1,7 +1,7 @@
 {
   "widget": "MinimalSearchField",
   "parameters": {
-    "hint": "Prompt shown before a query is entered.",
+    "hintText": "Prompt shown before a query is entered.",
     "onChanged": "Filters the titles as the query changes.",
     "clearable": "Includes the action that clears a nonempty query."
   }

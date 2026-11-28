@@ -128,7 +128,7 @@ class _EditorState extends State<_Editor> {
                                 ? null
                                 : Fluent2ValidationState.error,
                             child: Fluent2DatePicker(
-                              label: w.due,
+                              semanticLabel: w.due,
                               value: t.due,
                               firstDate: DateTime(2020),
                               lastDate: DateTime(2040, 12, 31),
@@ -157,7 +157,7 @@ class _EditorState extends State<_Editor> {
                             child: Align(
                               alignment: AlignmentDirectional.centerStart,
                               child: Fluent2SegmentedButton(
-                                label: w.priority,
+                                semanticLabel: w.priority,
                                 value: t.priority,
                                 segments: [
                                   for (final p in Priority.values)
@@ -171,7 +171,7 @@ class _EditorState extends State<_Editor> {
                           Fluent2FormField(
                             labelText: w.labels,
                             child: Fluent2TagGroup<Label>(
-                              label: w.labels,
+                              semanticLabel: w.labels,
                               multiple: true,
                               selected: t.labels,
                               items: [

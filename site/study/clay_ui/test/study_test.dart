@@ -50,11 +50,12 @@ void main() {
                 StintWords(ar ? StintLanguage.ar : StintLanguage.en).greeting,
               );
               expect(tester.getCenter(greeting).dy, lessThan(450));
-              // Clay's dock names a place by its label alone.
+              // Clay's dock names a place by its label, then its place among
+              // the tabs ("Today", "Tab 1 of 4").
+              final today = StintWords(ar ? StintLanguage.ar : StintLanguage.en)
+                  .today;
               final nav = find
-                  .bySemanticsLabel(
-                    StintWords(ar ? StintLanguage.ar : StintLanguage.en).today,
-                  )
+                  .bySemanticsLabel(RegExp('^${RegExp.escape(today)}\n'))
                   .last;
               expect(tester.getCenter(nav).dy, greaterThan(700));
             }

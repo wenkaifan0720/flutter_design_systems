@@ -102,7 +102,7 @@ String componentDirectory(String root, {String? look}) {
     final links = entry.value
         .map(
           (c) =>
-              '<li><a data-component="${c.slug}" href="$root${c.slug}/${look == null ? '' : '?look=$look'}">${escape(c.title)}</a></li>',
+              '<li><a data-component="${c.slug}" href="$root${c.slug}/${look == null ? '' : '$look/'}">${escape(c.title)}</a></li>',
         )
         .join();
     return '<section><h3>${escape(entry.key)}</h3><ul>$links</ul></section>';
@@ -207,9 +207,54 @@ void renderDirectories() {
       <p class="lead">$lead</p>
       <div class="look-bar">${lookPicker('look-directory', selected: id)}</div>
       ${actions(['<a class="primary-link" data-follow-look href="../../stint/?look=$id">${studyPackages.containsKey(id) ? 'Try Stint' : 'Explore Stint editions'} <span aria-hidden="true">→</span></a>', external('https://pub.dev/packages/$package', 'Package on pub.dev'), if (reference == null) external('$repository/tree/main/packages/$package', 'Source on GitHub')])}
+      ${lookFacts(id, e.value)}
       <section class="directory-section"><h2>Components in $name</h2>${componentDirectory('../../', look: id)}</section>''',
     );
   }
+}
+
+/// A look's palettes, corners and sheets, as its README gives them: the six
+/// palette names and the corner sentence from looks.json (a test holds the
+/// names to the package's), the README's first Dart block that sets a
+/// `shapeScheme`, and a line where the look's bottom sheet stands on the
+/// shell's bar. Empty for the reference libraries.
+String lookFacts(String id, Json look) {
+  final palettes = (look['palettes'] as List?)?.cast<String>();
+  if (palettes == null) return '';
+  final name = escape(look['name']);
+  final theme = look['theme'] as String;
+  final code = shapeBlock(look['package'] as String);
+  final sheet = look['sheetOnBar'] == true
+      ? '<h3>Sheets on the bar</h3><p>On ui_core 0.8.7 or later, a bottom sheet opened over the app shell’s places stands on the shell’s bar: the bar stays in view under the barrier, and a tap on it closes the sheet. A full-screen sheet and a dialog still cover the whole screen. <a href="../../bottom-sheet/$id/">Bottom sheet in $name</a></p>'
+      : '';
+  return '''
+<section class="look-facts" id="theme"><h2>Theme</h2>
+  <h3>Palettes</h3>
+  <p>Six palettes, each by day and by night: <code>$theme.palettes</code>, each a <code>RawNamedPalette</code> with an id to store and a label to show. <code>$theme.preset(id, brightness)</code> builds a stored id’s theme again.</p>
+  <ul class="palette-names">${palettes.map((p) => '<li>${escape(p)}</li>').join()}</ul>
+  <h3>Corners</h3>
+  ${html(look['corners'] as String)}${code == null ? '' : '<pre tabindex="0" aria-label="$name corners"><code>${highlight.parse(code, language: 'dart').toHtml()}</code></pre>'}
+  $sheet
+</section>''';
+}
+
+/// The README's first Dart block that sets a `shapeScheme`, at most 20 lines.
+String? shapeBlock(String package) {
+  final root = packageRoots[package];
+  if (root == null) return null;
+  final readme = File.fromUri(root.resolve('README.md'));
+  if (!readme.existsSync()) return null;
+  for (final match in RegExp(
+    r'^```dart\n(.*?)^```',
+    multiLine: true,
+    dotAll: true,
+  ).allMatches(readme.readAsStringSync())) {
+    final block = match.group(1)!.trimRight();
+    if (block.contains('shapeScheme:') && block.split('\n').length <= 20) {
+      return block;
+    }
+  }
+  return null;
 }
 
 void renderStint() {

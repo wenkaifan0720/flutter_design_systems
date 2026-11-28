@@ -18,7 +18,7 @@ class _RequestReceiptState extends State<RequestReceipt> {
       mainAxisSize: MainAxisSize.min,
       children: [
         NeumorphicCheckbox(
-          label: 'Email receipt',
+          semanticLabel: 'Email receipt',
           value: receipt,
           onChanged: (next) => setState(() => receipt = next ?? false),
         ),

@@ -10,6 +10,6 @@
     "onSelectionChanged": "Receives the updated row selection.",
     "size": "Selects the size of the component.",
     "selectionAppearance": "The fill a selected row wears.",
-    "label": "What a screen reader calls the table."
+    "semanticLabel": "What a screen reader calls the table."
   }
 }

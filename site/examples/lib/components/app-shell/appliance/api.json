@@ -1,9 +1,10 @@
 {
   "widget": "ApplianceScaffold",
   "parameters": {
-    "destinations": "Main pages available in this shell.",
-    "selectedIndex": "Index of the current page.",
-    "onSelected": "Selects another destination.",
-    "body": "Content for the selected page."
+    "header": "Names the app beside its navigation on wider windows.",
+    "destinations": "The places, each an icon and a label, in reading order.",
+    "selectedIndex": "The place on screen.",
+    "onSelected": "Receives the place the reader chooses.",
+    "branches": "Builds each place’s first page; each place keeps its own pages, and choosing it again returns to its first."
   }
 }

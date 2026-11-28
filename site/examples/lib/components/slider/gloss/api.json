@@ -5,6 +5,7 @@
     "max": "Highest volume the thumb can reach.",
     "divisions": "Number of equal intervals on the track.",
     "semanticLabel": "Names the volume control.",
+    "semanticFormatterCallback": "How a screen reader says the value ((v) => '${v.round()} km'); null reads a percentage, as Flutter's Slider does.",
     "onChanged": "Receives the new volume."
   }
 }

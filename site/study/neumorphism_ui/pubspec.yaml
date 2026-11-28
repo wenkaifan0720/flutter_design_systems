@@ -9,11 +9,11 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  neumorphism_ui: ^0.7.0
+  neumorphism_ui: ^0.9.1
   stint_core:
     path: ../stint_core
   lucide_icons_flutter: '>=3.1.25 <5.0.0'
-  material_ui: ^1.9.0
+  material_ui: ^1.11.1
   intl: '>=0.19.0 <0.22.0'
 dev_dependencies:
   flutter_test:

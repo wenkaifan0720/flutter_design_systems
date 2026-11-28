@@ -18,7 +18,7 @@ class _SetRemindersState extends State<SetReminders> {
       mainAxisSize: MainAxisSize.min,
       children: [
         NeumorphicSwitch(
-          label: 'Reminders',
+          semanticLabel: 'Reminders',
           value: reminders,
           onChanged: (next) => setState(() => reminders = next),
         ),

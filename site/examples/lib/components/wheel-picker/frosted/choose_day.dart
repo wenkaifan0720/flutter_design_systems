@@ -18,7 +18,7 @@ class _ChooseDayState extends State<ChooseDay> {
         mainAxisSize: MainAxisSize.min,
         children: [
           FrostedWheelPicker<int>(
-            label: 'Day in November',
+            semanticLabel: 'Day in November',
             options: const [
               FrostedSelectOption(10, '10'),
               FrostedSelectOption(11, '11'),

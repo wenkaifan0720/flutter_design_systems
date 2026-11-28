@@ -4,7 +4,7 @@
     "values": "Lower and upper prices on the track.",
     "max": "Largest allowed price.",
     "valueLabel": "Formats the selected price in dollars.",
-    "label": "Names the price range.",
+    "semanticLabel": "Names the price range.",
     "onChanged": "Receives the updated bounds."
   }
 }

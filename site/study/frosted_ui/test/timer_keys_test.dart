@@ -36,7 +36,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       final rows = <String, bool>{};
-      for (final accent in FrostedThemeData.presets) {
+      for (final accent in FrostedThemeData.palettes.map((p) => p.id)) {
         await tester.pumpWidget(
           StintFrosted(
             key: UniqueKey(),

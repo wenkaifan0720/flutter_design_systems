@@ -1,7 +1,7 @@
 {
   "widget": "Fluent2TextField",
   "parameters": {
-    "label": "Optional spoken name. The surrounding Fluent2FormField supplies the visible and spoken label here.",
+    "semanticLabel": "Optional spoken name. The surrounding Fluent2FormField supplies the visible and spoken label here.",
     "onChanged": "Updates the confirmation when the entry becomes empty or nonempty.",
     "password": "Conceals the value and adds a keyboard-accessible reveal button."
   },

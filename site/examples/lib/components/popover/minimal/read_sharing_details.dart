@@ -6,7 +6,7 @@ class ReadSharingDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MinimalPopover(
-    label: 'Sharing details',
+    semanticLabel: 'Sharing details',
     anchor: (_, toggle, open) =>
         MinimalButton('Sharing details', onPressed: toggle),
     content: (_, close) =>

@@ -3,7 +3,7 @@
   "parameters": {
     "icon": "Glyph on the built-in menu button.",
     "text": "Shows the current sort order on the button.",
-    "label": "Accessible name for the sort action.",
+    "semanticLabel": "Accessible name for the sort action.",
     "items": "Commands in display order."
   },
   "keyboardNote": "The button shows the current order and carries the accessible name Sort files."

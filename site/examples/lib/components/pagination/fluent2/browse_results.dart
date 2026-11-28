@@ -21,7 +21,7 @@ class _BrowseResultsState extends State<BrowseResults> {
           pages: titles.length,
           page: page,
           onChanged: (next) => setState(() => page = next),
-          label: 'Result pages',
+          semanticLabel: 'Result pages',
         ),
         const SizedBox(height: 12),
         Text('Page $page · ${titles[page - 1]}'),

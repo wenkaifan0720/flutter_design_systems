@@ -6,7 +6,7 @@ class ReadSharingDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => FrostedPopover(
-    label: 'Sharing details',
+    semanticLabel: 'Sharing details',
     builder: (_, controller, child) => FrostedButton.glass(
       'Sharing details',
       onPressed: () =>

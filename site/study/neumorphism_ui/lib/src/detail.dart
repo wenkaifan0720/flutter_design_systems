@@ -157,7 +157,7 @@ class _TaskEditorState extends State<_TaskEditor> {
                   _FieldGroup(
                     label: w.priority,
                     child: NeumorphicSegmentedButton<Priority>(
-                      label: w.priority,
+                      semanticLabel: w.priority,
                       segments: [
                         for (final p in Priority.values)
                           NeumorphicButtonSegment(p, w.priorityName(p)),

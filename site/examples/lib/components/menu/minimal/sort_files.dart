@@ -18,7 +18,7 @@ class _SortFilesState extends State<SortFiles> {
       MinimalMenu.button(
         Icons.sort,
         text: order,
-        label: 'Sort files',
+        semanticLabel: 'Sort files',
         items: [
           for (final sort in ['Name', 'Date'])
             MinimalMenuItem(

@@ -57,7 +57,7 @@ extension _Today on _WorkspaceState {
               title: w.text(e.note),
               subtitle: c.projectName(e.project),
               trailing: Text(w.timeRange(e), style: desk.textTheme.meta),
-              label:
+              semanticLabel:
                   '${w.text(e.note)}, ${c.projectName(e.project)}, ${w.timeRange(e)}',
               isFirst: i == 0,
               leading: Icon(
@@ -80,7 +80,7 @@ extension _Today on _WorkspaceState {
               title: w.text(task.title),
               subtitle: c.projectName(task.project),
               trailing: Text(w.weekday(task.due), style: desk.textTheme.meta),
-              label:
+              semanticLabel:
                   '${w.text(task.title)}, ${c.projectName(task.project)}, ${w.weekday(task.due)}',
               leading: Icon(
                 RetroDesktopGlyphs.fileText,
@@ -750,7 +750,7 @@ extension _Today on _WorkspaceState {
           key: ValueKey('plan-${task.id}'),
           title: title,
           subtitle: c.projectName(task.project),
-          label: [
+          semanticLabel: [
             title,
             c.projectName(task.project),
             if (running) w.runningTimer,
@@ -782,7 +782,7 @@ extension _Today on _WorkspaceState {
                 child: RetroDesktopCheckbox(
                   key: ValueKey('today-plan-lead-${task.id}'),
                   value: done,
-                  label: title,
+                  semanticLabel: title,
                   onChanged: (_) {},
                 ),
               ),

@@ -1,7 +1,7 @@
 {
   "widget": "Fluent2Combobox",
   "parameters": {
-    "label": "Names the field.",
+    "semanticLabel": "Names the field.",
     "options": "The three city suggestions.",
     "onChanged": "Commits the chosen city to the destination."
   }

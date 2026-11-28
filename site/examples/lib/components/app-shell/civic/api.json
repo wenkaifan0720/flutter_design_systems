@@ -1,8 +1,10 @@
 {
-  "widget": "CivicScaffold",
+  "widget": "CivicAppShell",
   "parameters": {
-    "navigationBar": "Destinations presented on smaller screens.",
-    "sideNavigation": "Side navigation used at wide widths.",
-    "body": "Content of the chosen page."
+    "brand": "Names the app beside its navigation on wider windows.",
+    "destinations": "The places, each an icon and a label, in reading order.",
+    "selectedIndex": "The place on screen.",
+    "onDestinationSelected": "Receives the place the reader chooses.",
+    "branches": "Builds each place’s first page; each place keeps its own pages, and choosing it again returns to its first."
   }
 }

@@ -54,7 +54,9 @@ void main() {
             expect(tester.takeException(), isNull, reason: page);
             expect(find.byType(Directionality), findsWidgets);
             if (page == 'today' && width == 390) {
-              final greeting = find.text(StintWords(ar ? StintLanguage.ar : StintLanguage.en).greeting);
+              final greeting = find.text(
+                StintWords(ar ? StintLanguage.ar : StintLanguage.en).greeting,
+              );
               expect(tester.getCenter(greeting).dy, lessThan(450));
               final nav = find
                   .bySemanticsLabel(
@@ -237,7 +239,11 @@ void main() {
         }
         await launch(
           tester,
-          StintLaunch(place: Place.time, language: rtl ? StintLanguage.ar : StintLanguage.en, scale: 2),
+          StintLaunch(
+            place: Place.time,
+            language: rtl ? StintLanguage.ar : StintLanguage.en,
+            scale: 2,
+          ),
           repo: repo,
         );
         final words = StintWords(rtl ? StintLanguage.ar : StintLanguage.en);
@@ -291,7 +297,7 @@ void main() {
       expect(find.text('2 selected'), findsOneWidget);
       await tap(
         find.byWidgetPredicate(
-          (v) => v is Fluent2IconButton && v.label == w.actions,
+          (v) => v is Fluent2IconButton && v.semanticLabel == w.actions,
         ),
       );
       await tap(find.text(w.delete));

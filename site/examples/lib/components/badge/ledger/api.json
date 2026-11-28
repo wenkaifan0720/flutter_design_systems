@@ -4,7 +4,7 @@
     "child": "The control marked.",
     "count": "Sets the count displayed by the badge.",
     "urgent": "Whether the mark is the vermilion.",
-    "label": "What the count counts, spoken after it (\"3 unread\").",
+    "semanticLabel": "What the count counts, spoken after it (\"3 unread\").",
     "style": "Overrides the component’s themed appearance for this instance."
   }
 }

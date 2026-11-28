@@ -24,7 +24,7 @@ class _AttachFileState extends State<AttachFile> {
     constraints: const BoxConstraints(maxWidth: 400),
     child: SingleChildScrollView(
       child: RetroDesktopFileUpload(
-        label: 'Attachment',
+        semanticLabel: 'Attachment',
         onChoose: chooseFile,
         files: [if (attachment case final file?) file.name],
         onRemove: (_) => setState(() => attachment = null),

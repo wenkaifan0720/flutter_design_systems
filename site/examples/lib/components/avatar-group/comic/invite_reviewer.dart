@@ -25,7 +25,7 @@ class _InviteReviewerState extends State<InviteReviewer> {
               if (invited) const ComicFace('KY', name: 'Kim Yu'),
             ],
             max: 2,
-            label: 'Reviewers',
+            semanticLabel: 'Reviewers',
           ),
           const SizedBox(height: 12),
           Text(names.join(', ')),

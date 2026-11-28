@@ -15,7 +15,7 @@ class _RateGuideState extends State<RateGuide> {
     mainAxisSize: MainAxisSize.min,
     children: [
       Fluent2Rating(
-        label: 'Rate the guide',
+        semanticLabel: 'Rate the guide',
         value: score,
         onChanged: (next) => setState(() => score = next),
       ),

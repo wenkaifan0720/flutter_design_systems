@@ -30,7 +30,7 @@ class _CompareBudgetsState extends State<CompareBudgets> {
               Fluent2PieSlice('Travel', amounts[1]),
               Fluent2PieSlice('Fees', amounts[2]),
             ],
-            label: '$period budget by category',
+            semanticLabel: '$period budget by category',
           ),
           const SizedBox(height: 12),
           Fluent2Button(

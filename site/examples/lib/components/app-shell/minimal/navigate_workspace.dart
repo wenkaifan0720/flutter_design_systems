@@ -10,19 +10,25 @@ class NavigateWorkspace extends StatefulWidget {
 
 class _NavigateWorkspaceState extends State<NavigateWorkspace> {
   int selected = 0;
-  static const destinations = [
-    MinimalNavItem(Icons.home_outlined, 'Home'),
-    MinimalNavItem(Icons.search, 'Search'),
-  ];
 
   @override
-  Widget build(BuildContext context) => MinimalScaffold(
-    scroll: false,
-    footer: MinimalNavigationBar(
-      items: destinations,
-      selectedIndex: selected,
-      onDestinationSelected: (next) => setState(() => selected = next),
-    ),
-    body: Center(child: Text(selected == 0 ? 'Home page' : 'Search page')),
+  Widget build(BuildContext context) => MinimalAppShell.branches(
+    header: const Text('Workspace'),
+    destinations: const [
+      MinimalNavItem(Icons.home_outlined, 'Home'),
+      MinimalNavItem(Icons.search, 'Search'),
+    ],
+    selectedIndex: selected,
+    onDestinationSelected: (next) => setState(() => selected = next),
+    branches: [
+      (context) => const MinimalScaffold(
+        topBar: MinimalAppBar(title: 'Home'),
+        body: Center(child: Text('Home page')),
+      ),
+      (context) => const MinimalScaffold(
+        topBar: MinimalAppBar(title: 'Search'),
+        body: Center(child: Text('Search page')),
+      ),
+    ],
   );
 }

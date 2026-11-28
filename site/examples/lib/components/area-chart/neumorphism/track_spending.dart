@@ -27,7 +27,7 @@ class _TrackSpendingState extends State<TrackSpending> {
           NeumorphicAreaChart(
             labels: const ['1', '2', '3', '4'],
             series: [NeumorphicChartSeries('Spent', totals)],
-            label: '$period cumulative spending',
+            semanticLabel: '$period cumulative spending',
           ),
           const SizedBox(height: 12),
           NeumorphicButton(

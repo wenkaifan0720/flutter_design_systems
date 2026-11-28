@@ -18,7 +18,7 @@ class _ChooseDayState extends State<ChooseDay> {
         mainAxisSize: MainAxisSize.min,
         children: [
           NeumorphicWheelPicker<int>(
-            label: 'Day in November',
+            semanticLabel: 'Day in November',
             items: const [10, 11, 12, 13, 14],
             value: day,
             onChanged: (next) => setState(() => day = next),

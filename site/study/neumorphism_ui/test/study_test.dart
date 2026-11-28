@@ -93,7 +93,8 @@ void main() {
           ),
         );
         Finder button(String label) => find.byWidgetPredicate(
-          (widget) => widget is NeumorphicIconButton && widget.label == label,
+          (widget) =>
+              widget is NeumorphicIconButton && widget.semanticLabel == label,
         );
         final previous = button(words.previousWeek),
             next = button(words.nextWeek);
@@ -246,7 +247,7 @@ void main() {
     (w) => w is NeumorphicSelect && w.labelText == label,
   );
   Finder menuKey(String label) => find.byWidgetPredicate(
-    (w) => w is NeumorphicIconButton && w.label == label,
+    (w) => w is NeumorphicIconButton && w.semanticLabel == label,
   );
 
   testWidgets('search, filter keys, dividers and row menus share their edges', (

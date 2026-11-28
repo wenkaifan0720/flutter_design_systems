@@ -16,7 +16,7 @@ class _SyncFolderState extends State<SyncFolder> {
     spacing: 12,
     children: [
       if (running)
-        const RetroDesktopCircularProgressIndicator(label: 'Syncing folder'),
+        const RetroDesktopCircularProgressIndicator(semanticLabel: 'Syncing folder'),
       Text(running ? 'Syncing folder' : 'Folder ready'),
       RetroDesktopButton(
         running ? 'Finish sync' : 'Start sync',

@@ -16,7 +16,7 @@ class _AdjustZoomState extends State<AdjustZoom> {
     mainAxisSize: MainAxisSize.min,
     children: [
       FrostedButtonGroup(
-        label: 'Zoom',
+        semanticLabel: 'Zoom',
         items: [
           FrostedButtonGroupItem(
             label: 'Out',

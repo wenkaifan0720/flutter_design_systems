@@ -122,7 +122,7 @@ class _TaskFormState extends State<_TaskForm> {
                         final width = phone
                             ? box.maxWidth
                             : (columns ? (box.maxWidth - 16) / 2 : box.maxWidth)
-                                  .clamp(0.0, CivicSelect.maxWidth);
+                                  .clamp(0.0, 320.0);
                         return Wrap(
                           spacing: 16,
                           runSpacing: 16,

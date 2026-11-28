@@ -318,7 +318,7 @@ extension _TasksService on _ServiceState {
         builder: (ctx, set) => Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(
-              maxWidth: CivicSelect.maxWidth + 4 * CivicSpacing.s32,
+              maxWidth: 320 + 4 * CivicSpacing.s32,
             ),
             child: CivicDialog(
               title: w.filters,

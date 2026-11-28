@@ -99,7 +99,7 @@ class _StintNeumorphismState extends State<StintNeumorphism> {
             child: NeumorphicTheme(
               data:
                   NeumorphicThemeData.preset(
-                    settings.presetOf(NeumorphicThemeData.presets),
+                    settings.presetOf(_paletteIds),
                     brightness,
                   ).copyWith(
                     density: settings.compact
@@ -146,9 +146,13 @@ class _Workspace extends StatefulWidget {
 
 /// Neumorphism's six palettes, the look's own first, for a host's palette menu.
 final _palettes = [
-  for (final id in NeumorphicThemeData.presets)
+  for (final palette in NeumorphicThemeData.palettes)
     StintPalette(
-      id,
-      NeumorphicThemeData.preset(id, Brightness.light).colors.accent,
+      palette.id,
+      NeumorphicThemeData.preset(palette.id, Brightness.light).colors.accent,
+      label: palette.label,
     ),
 ];
+
+/// The palettes' ids, the theme's preset for each.
+final _paletteIds = [for (final palette in _palettes) palette.id];

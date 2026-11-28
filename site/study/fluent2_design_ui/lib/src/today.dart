@@ -849,7 +849,11 @@ class _WorkRow extends StatelessWidget {
     if (onTap == null) return face;
     return Fluent2Pressable(
       onPressed: onTap,
-      label: [title, ?(spokenDetail ?? detail), ?runningLabel].join(', '),
+      semanticLabel: [
+        title,
+        ?(spokenDetail ?? detail),
+        ?runningLabel,
+      ].join(', '),
       checked: checked,
       padded: false,
       builder: (ctx, states) => AnimatedContainer(

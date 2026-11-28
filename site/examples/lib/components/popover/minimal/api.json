@@ -3,7 +3,7 @@
   "parameters": {
     "anchor": "Builds the control that opens the popover.",
     "content": "Supplies the note inside the open panel.",
-    "label": "Names the panel for assistive technology.",
+    "semanticLabel": "Names the panel for assistive technology.",
     "width": "Sets the preferred width of the open panel.",
     "side": "Chooses the preferred side of the anchor."
   }

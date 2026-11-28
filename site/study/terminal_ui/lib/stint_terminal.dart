@@ -79,7 +79,7 @@ class _StintTerminalState extends State<StintTerminal> {
             ),
             child: TermTheme(
               data: TermThemeData.preset(
-                prefs.presetOf(TermThemeData.presets),
+                prefs.presetOf(_paletteIds),
                 dark ? Brightness.dark : Brightness.light,
                 grid: grid,
               ),
@@ -162,6 +162,13 @@ class _Panel extends StatelessWidget {
 
 /// Terminal's six palettes, the look's own first, for a host's palette menu.
 final _palettes = [
-  for (final id in TermThemeData.presets)
-    StintPalette(id, TermThemeData.preset(id, Brightness.light).accent),
+  for (final palette in TermThemeData.palettes)
+    StintPalette(
+      palette.id,
+      TermThemeData.preset(palette.id, Brightness.light).accent,
+      label: palette.label,
+    ),
 ];
+
+/// The palettes' ids, the theme's preset for each.
+final _paletteIds = [for (final palette in _palettes) palette.id];

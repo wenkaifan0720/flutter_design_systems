@@ -5,6 +5,7 @@
     "max": "The groove's end.",
     "divisions": "How many steps it snaps to; null: any value.",
     "semanticLabel": "What a screen reader calls it.",
+    "semanticFormatterCallback": "How a screen reader says the value ((v) => '${v.round()} km'); null reads a percentage, as Flutter's Slider does.",
     "onChanged": "The new value as the ball moves; null turns the slider off."
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:studio_ui/studio_ui.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:stint_core/stint_core.dart';
 
@@ -108,7 +107,7 @@ class _StintStudioState extends State<StintStudio> {
               brightness: brightness,
               theme:
                   StudioThemeData.preset(
-                    settings.presetOf(StudioThemeData.presets),
+                    settings.presetOf(_paletteIds),
                     Brightness.light,
                   ).copyWith(
                     density: settings.compact
@@ -119,7 +118,7 @@ class _StintStudioState extends State<StintStudio> {
                   ),
               darkTheme:
                   StudioThemeData.preset(
-                    settings.presetOf(StudioThemeData.presets),
+                    settings.presetOf(_paletteIds),
                     Brightness.dark,
                   ).copyWith(
                     density: settings.compact
@@ -192,11 +191,15 @@ class _StintStudioWords extends DefaultStudioLocalizations {
   String rowCount(int n) => words.totalTasks(n);
 }
 
-/// Studio's six presets, the look's own first, for a host's palette menu.
+/// Studio's six palettes, the look's own first, for a host's palette menu.
 final _palettes = [
-  for (final id in StudioThemeData.presets)
+  for (final palette in StudioThemeData.palettes)
     StintPalette(
-      id,
-      StudioThemeData.preset(id, Brightness.light).colors.indicator,
+      palette.id,
+      StudioThemeData.preset(palette.id, Brightness.light).colors.indicator,
+      label: palette.label,
     ),
 ];
+
+/// The palettes' ids, the theme's preset for each.
+final _paletteIds = [for (final palette in _palettes) palette.id];

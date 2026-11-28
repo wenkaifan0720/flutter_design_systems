@@ -2,7 +2,7 @@
   "widget": "Fluent2BarChart",
   "parameters": {
     "bars": "Pairs a month name with its order count.",
-    "label": "Names the chart and period.",
+    "semanticLabel": "Names the chart and period.",
     "height": "Sets the plot height."
   }
 }

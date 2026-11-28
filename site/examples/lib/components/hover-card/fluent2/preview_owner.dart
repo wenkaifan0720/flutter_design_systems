@@ -15,7 +15,7 @@ class _PreviewOwnerState extends State<PreviewOwner> {
     mainAxisSize: MainAxisSize.min,
     children: [
       Fluent2Popover(
-        label: 'Mara Chen',
+        semanticLabel: 'Mara Chen',
         openOnHover: true,
         trigger: (_, toggle) => Fluent2Link(
           'Mara Chen',

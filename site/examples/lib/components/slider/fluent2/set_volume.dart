@@ -20,7 +20,7 @@ class _SetVolumeState extends State<SetVolume> {
           value: volume,
           max: 100,
           step: 5,
-          label: 'Volume',
+          semanticLabel: 'Volume',
           onChanged: (next) => setState(() => volume = next),
         ),
         const SizedBox(height: 12),

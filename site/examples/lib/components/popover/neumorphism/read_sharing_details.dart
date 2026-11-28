@@ -6,7 +6,7 @@ class ReadSharingDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => NeumorphicPopover(
-    label: 'Sharing details',
+    semanticLabel: 'Sharing details',
     trigger: (_, toggle) =>
         NeumorphicButton('Sharing details', onPressed: toggle),
     content: const Text('Only invited people can read this file.'),

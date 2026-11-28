@@ -9,27 +9,33 @@ class NavigateWorkspace extends StatefulWidget {
 
 class _NavigateWorkspaceState extends State<NavigateWorkspace> {
   int selected = 0;
-  static const destinations = [
-    RetroDesktopNavItem(
-      label: 'Home',
-      short: 'Home',
-      icon: RetroDesktopGlyphs.folder,
-    ),
-    RetroDesktopNavItem(
-      label: 'Search',
-      short: 'Search',
-      icon: RetroDesktopGlyphs.search,
-    ),
-  ];
 
   @override
-  Widget build(BuildContext context) => RetroDesktopScaffold(
-    scroll: false,
-    footer: RetroDesktopNavigationBar(
-      items: destinations,
-      selectedIndex: selected,
-      onDestinationSelected: (next) => setState(() => selected = next),
-    ),
-    body: Center(child: Text(selected == 0 ? 'Home page' : 'Search page')),
+  Widget build(BuildContext context) => RetroDesktopAppShell.branches(
+    brand: 'Workspace',
+    destinations: const [
+      RetroDesktopNavItem(
+        label: 'Home',
+        short: 'Home',
+        icon: RetroDesktopGlyphs.folder,
+      ),
+      RetroDesktopNavItem(
+        label: 'Search',
+        short: 'Search',
+        icon: RetroDesktopGlyphs.search,
+      ),
+    ],
+    selectedIndex: selected,
+    onDestinationSelected: (next) => setState(() => selected = next),
+    branches: [
+      (context) => const RetroDesktopScaffold(
+        appBar: RetroDesktopAppBar(title: 'Home'),
+        body: Center(child: Text('Home page')),
+      ),
+      (context) => const RetroDesktopScaffold(
+        appBar: RetroDesktopAppBar(title: 'Search'),
+        body: Center(child: Text('Search page')),
+      ),
+    ],
   );
 }

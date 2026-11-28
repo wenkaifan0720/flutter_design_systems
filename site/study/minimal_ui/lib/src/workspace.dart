@@ -119,7 +119,7 @@ class _WorkspaceState extends State<_Workspace> {
   MinimalIconButton icon(IconData glyph, String label, VoidCallback? action) =>
       MinimalIconButton(
         glyph,
-        label: label,
+        semanticLabel: label,
         onPressed: action,
         variant: MinimalIconButtonVariant.ghost,
       );

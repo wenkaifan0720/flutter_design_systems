@@ -18,7 +18,7 @@ class _FindCityState extends State<FindCity> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Fluent2Combobox<String>(
-          label: 'Destination',
+          semanticLabel: 'Destination',
           options: const [
             Fluent2Option('Lima', 'Lima'),
             Fluent2Option('Lisbon', 'Lisbon'),

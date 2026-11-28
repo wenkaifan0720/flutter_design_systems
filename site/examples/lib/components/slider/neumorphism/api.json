@@ -4,7 +4,8 @@
     "value": "Current volume on the track.",
     "max": "Highest volume the thumb can reach.",
     "divisions": "Number of equal intervals on the track.",
-    "label": "Names the volume control.",
+    "semanticLabel": "Names the volume control.",
+    "valueLabel": "Formats the value a screen reader hears, and the values a step either side.",
     "onChanged": "Receives the new volume."
   }
 }

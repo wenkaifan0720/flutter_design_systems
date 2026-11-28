@@ -13,7 +13,7 @@ extension _Timesheet on _WorkspaceState {
         final short =
             room.maxWidth / MediaQuery.textScalerOf(ctx).scale(1) < 290;
         return RetroDesktopBarChart(
-          label: w.logged,
+          semanticLabel: w.logged,
           summary: spoken,
           height: 144,
           series: [

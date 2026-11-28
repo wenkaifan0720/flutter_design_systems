@@ -66,7 +66,7 @@ extension _Tasks on _WorkspaceState {
         children: [
           Fluent2SearchBox(
             hintText: w.search,
-            label: w.search,
+            semanticLabel: w.search,
             controller: search,
             onChanged: (q) => c.filter((f) => f.search = q),
             onClear: () => c.filter((f) => f.search = ''),
@@ -153,7 +153,7 @@ extension _Tasks on _WorkspaceState {
       final act = await showFluent2Menu<String>(
         context,
         anchor: anchor,
-        label: name,
+        semanticLabel: name,
         items: [
           Fluent2MenuItem(
             'done',
