@@ -105,7 +105,7 @@ class ClaySelect<T> extends StatelessWidget {
       onPressed: toggle,
       focusNode: focusNode,
       expanded: enabled ? open : null,
-      semanticLabel: labelText,
+      // The field names it (its label, once); the key says the choice.
       semanticValue: chosen?.label,
       builder: (context, states, _) {
         final layered = RawStyleOf(

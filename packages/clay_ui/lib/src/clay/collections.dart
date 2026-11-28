@@ -927,8 +927,10 @@ class ClaySwipeAction {
 }
 
 /// A row with actions under it: a swipe slides the row aside and shows
-/// them as clay slabs (coral, or the danger red); a long swipe takes the
-/// last; a scroll of the list closes it.
+/// them as plates of clay level with the row (coral, or the danger red); a
+/// long swipe takes the last; a scroll of the list closes it. Its rows go in
+/// a [ClayGroup] as any row does: the group's slab clips them at its round
+/// outline, and the plates keep concentric with its corners.
 ///
 /// ```dart
 /// ClaySwipeRow(endActions: [ClaySwipeAction(label: 'Delete', onPressed: () {}, isDestructiveAction: true)], child: const Text('Drink water'))
@@ -983,6 +985,10 @@ class ClaySwipeRow extends StatelessWidget {
           final ink = a.isDestructiveAction
               ? c.onColor(fill)
               : layered.foreground ?? c.onColor(fill);
+          // A plate of clay level with the row, so it casts nothing for the
+          // row's edges to cut; a press dents it. On a group's slab its
+          // corners keep concentric with the slab's, as a row's plate does.
+          final slab = ClaySlabCorner.of(context);
           return Padding(
             padding: const EdgeInsets.all(ClaySpacing.tight),
             child: AnimatedClaySurface(
@@ -990,9 +996,11 @@ class ClaySwipeRow extends StatelessWidget {
                   ClayFace.raised(
                     c,
                     color: fill,
-                    radius: theme.shapeScheme.corners.medium,
+                    radius: slab == null
+                        ? theme.shapeScheme.corners.medium
+                        : math.max(0.0, slab - ClaySpacing.tight),
                   ).copyWith(
-                    elevation: details.armed ? 1 : 0.6,
+                    elevation: 0,
                     press: pressed ? 1 : 0,
                     focus: details.states.contains(WidgetState.focused) ? 1 : 0,
                     focusColor: ink,

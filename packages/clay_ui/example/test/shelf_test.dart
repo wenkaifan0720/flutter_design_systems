@@ -92,4 +92,17 @@ void main() {
       ClayThemeData.preset('mint', Brightness.light).colors.accent,
     );
   });
+  testWidgets("the reading goal's slider says a count of books", (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    final shelf = await _open(tester, 390);
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.getSemantics(find.bySemanticsLabel('Books to finish this year')),
+      isSemantics(isSlider: true, value: '${shelf.goal} books'),
+    );
+    handle.dispose();
+  });
 }

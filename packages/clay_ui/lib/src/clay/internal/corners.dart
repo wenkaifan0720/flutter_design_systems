@@ -1,6 +1,8 @@
-/// A radius between Clay's corner steps, and the radius a part draws.
+/// A radius between Clay's corner steps, the radius a part draws, and the
+/// corner of the slab a row stands on.
 library;
 
+import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../surface.dart';
@@ -36,4 +38,22 @@ double clayCornerRadius(
     look: 'Clay',
   );
   return held == whole ? mine : scale.radius(held.topStart ?? base);
+}
+
+/// The corner radius of the slab a row stands on (a [ClayGroup]'s), so what
+/// a row draws inside it (its plate, an open swipe row's actions) keeps
+/// concentric with it whatever corners the group's style gives it.
+class ClaySlabCorner extends InheritedWidget {
+  /// Gives [child] the slab's corner [radius].
+  const ClaySlabCorner({super.key, required this.radius, required super.child});
+
+  /// The slab's corner radius.
+  final double radius;
+
+  /// The corner of the slab round [context], or null off a slab.
+  static double? of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<ClaySlabCorner>()?.radius;
+
+  @override
+  bool updateShouldNotify(ClaySlabCorner old) => old.radius != radius;
 }

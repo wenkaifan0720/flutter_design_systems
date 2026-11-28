@@ -588,21 +588,25 @@ class _PickerField extends StatelessWidget {
                     ),
                     child: RawCapCenter(
                       capHeightFactor: clayCapHeightFactor,
-                      child: Text(
-                        text ?? hint ?? '',
-                        // A long date at a large text size takes a second
-                        // line rather than losing its month.
-                        maxLines:
-                            MediaQuery.textScalerOf(context).scale(10) >= 15
-                            ? 2
-                            : 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.body.copyWith(
-                          color: !enabled
-                              ? c.inkDisabled
-                              : text == null
-                              ? c.inkSecondary
-                              : layered.foreground ?? c.ink,
+                      // A shown value is said once, as the key's value.
+                      child: ExcludeSemantics(
+                        excluding: text != null,
+                        child: Text(
+                          text ?? hint ?? '',
+                          // A long date at a large text size takes a second
+                          // line rather than losing its month.
+                          maxLines:
+                              MediaQuery.textScalerOf(context).scale(10) >= 15
+                              ? 2
+                              : 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.body.copyWith(
+                            color: !enabled
+                                ? c.inkDisabled
+                                : text == null
+                                ? c.inkSecondary
+                                : layered.foreground ?? c.ink,
+                          ),
                         ),
                       ),
                     ),
@@ -743,14 +747,16 @@ class ClayDatePicker extends StatelessWidget {
         stiffness: ClayMotion.panelStiffness,
         anchorBuilder: (context, anchor) => _PickerField(
           anchor: anchor,
-          // The day as every date shows ("2 Oct 2026"), said in full.
+          // The day as the app's locale writes it ("Oct 2, 2026" in English),
+          // said in full.
           text: value == null ? null : words.formatMediumDate(value!),
           spoken: value == null ? null : words.formatFullDate(value!),
           hint: hintText,
           icon: LucideIcons.calendar,
           enabled: enabled,
           error: errorText != null,
-          semanticLabel: labelText ?? hintText,
+          // The field names it by its label; with none, its hint names it.
+          semanticLabel: labelText == null ? hintText : null,
           styles: [style, theme.datePickerStyle],
         ),
         overlayBuilder: (context, info) => ClayMenuReveal(
@@ -870,7 +876,8 @@ class ClayDateRangePicker extends StatelessWidget {
           icon: LucideIcons.calendarRange,
           enabled: enabled,
           error: errorText != null,
-          semanticLabel: labelText ?? hintText,
+          // The field names it by its label; with none, its hint names it.
+          semanticLabel: labelText == null ? hintText : null,
           styles: [style, theme.dateRangePickerStyle],
         ),
         overlayBuilder: (context, info) => ClayMenuReveal(

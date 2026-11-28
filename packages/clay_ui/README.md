@@ -134,16 +134,18 @@ class _ShelfShellState extends State<ShelfShell> {
 
 A `ClayGroup` of `ClayListTile`s on one slab of clay, each pushing its own page. A pushed page's top bar takes its
 way back from `ClayTopBar.autoLeading`: a back ball on a page, a close ball on a sheet. A tile's `trailing` holds a
-tag, or a control of its own that keeps its own tap.
+tag, or a control of its own that keeps its own tap. For swipe actions, put a `ClaySwipeRow` round the tile in the
+same group, as in the snippet: the slab clips the open row at its round outline.
 
 ```dart
 import 'package:clay_ui/clay_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
 class BooksPage extends StatelessWidget {
-  const BooksPage({super.key, required this.titles});
+  const BooksPage({super.key, required this.titles, required this.onDelete});
 
   final List<String> titles;
+  final ValueChanged<String> onDelete;
 
   @override
   Widget build(BuildContext context) => ClayScreen(
@@ -152,15 +154,20 @@ class BooksPage extends StatelessWidget {
       header: '${titles.length} books',
       children: [
         for (final title in titles)
-          ClayListTile(
-            title: title,
-            subtitle: 'George Eliot',
-            trailing: const ClayTag('Reading', tone: ClayTagTone.accent),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (context) => ClayScreen(
-                  topBar: ClayTopBar(title: title, leading: ClayTopBar.autoLeading(context)),
-                  body: ClayDescriptionList(entries: [ClayDescription('Title', title)]),
+          ClaySwipeRow(
+            endActions: [
+              ClaySwipeAction(label: 'Delete', isDestructiveAction: true, onPressed: () => onDelete(title)),
+            ],
+            child: ClayListTile(
+              title: title,
+              subtitle: 'George Eliot',
+              trailing: const ClayTag('Reading', tone: ClayTagTone.accent),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) => ClayScreen(
+                    topBar: ClayTopBar(title: title, leading: ClayTopBar.autoLeading(context)),
+                    body: ClayDescriptionList(entries: [ClayDescription('Title', title)]),
+                  ),
                 ),
               ),
             ),
@@ -175,10 +182,13 @@ class BooksPage extends StatelessWidget {
 
 Stand the fields in a `Column` with `ClaySpacing.large` between them, in a column of a readable width (the example
 holds its pages to 640 from the start edge). Every field takes the column's width. A control that is not a field (a
-segmented button, a slider) takes its label and help from `ClayFormField`, so its words start where a field's do.
+segmented button, a slider) takes its label and help from `ClayFormField`, so its words start where a field's do. A
+slider says its value as a percentage of its range, as Material's does; give it `semanticFormatterCallback` to say
+a count instead: `semanticFormatterCallback: (goal) => '${goal.round()} books'`.
 Check the answers when the reader saves: give each problem to its field's `errorText`, in words, and move the focus
-to the first one. A `ClayDatePicker` with a null `value` is an optional date; a chosen day prints as 2 Oct 2026. The
-page's one coral key stands in `ClayScreen`'s `footer` on a phone, in the thumb's reach.
+to the first one. A `ClayDatePicker` with a null `value` is an optional date; a chosen day prints in the app's locale,
+as Material's dates do: Oct 2, 2026 in English, 2 Oct 2026 in British English (`Locale('en', 'GB')` in
+`supportedLocales`). The page's one coral key stands in `ClayScreen`'s `footer` on a phone, in the thumb's reach.
 
 ```dart
 import 'package:clay_ui/clay_ui.dart';

@@ -157,7 +157,9 @@ class ClaySlider extends StatefulWidget {
   /// What a screen reader calls it.
   final String? semanticLabel;
 
-  /// How a screen reader says the value.
+  /// How a screen reader says the value (and the values a step up and down
+  /// reach): `(goal) => '${goal.round()} books'`. By default a whole
+  /// percentage of the range, as Material's `Slider` says it.
   final String Function(double value)? semanticFormatterCallback;
 
   /// {@macro design.focusNode}
@@ -365,7 +367,9 @@ class ClayRangeSlider extends StatelessWidget {
   /// A drag ended.
   final ValueChanged<ClayRangeValues>? onChangeEnd;
 
-  /// How a screen reader says each end.
+  /// How a screen reader says each end: `(price) => '\$${price.round()}'`.
+  /// By default a whole percentage of the range, as Material's
+  /// `RangeSlider` says it.
   final String Function(double value)? semanticFormatterCallback;
 
   /// What a screen reader calls the lower ball; null: the words' own.

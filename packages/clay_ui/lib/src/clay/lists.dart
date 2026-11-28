@@ -112,7 +112,9 @@ class ClayGroup extends StatelessWidget {
 
   /// This group's own style, over [ClayThemeData.groupStyle]: `fill` the
   /// slab, `corners` its corners (its rows' plates keep concentric with
-  /// them).
+  /// them). The rows stand to the slab's edge and are clipped at its round
+  /// outline, so a row with a fill of its own, or an open [ClaySwipeRow],
+  /// keeps to its corners.
   final ClayStyle? style;
 
   @override
@@ -138,20 +140,28 @@ class ClayGroup extends StatelessWidget {
             ClaySectionHeader(header!, trailing: headerTrailing),
           ClaySurface(
             face: ClayFace.raised(c, color: layered.fill, radius: radius),
-            child: _SlabCorner(
+            // The rows stand to the slab's edge and are clipped at its round
+            // outline: an open swipe row's words and actions stay on it.
+            child: ClaySlabCorner(
               radius: radius,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (final (i, row) in children.indexed) ...[
-                    // Inset at both ends, so no groove runs into the slab's
-                    // rounded edge.
-                    if (i > 0)
-                      ClayGroove(indent: indent, endIndent: ClayListTile.inset),
-                    row,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(radius),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final (i, row) in children.indexed) ...[
+                      // Inset at both ends, so no groove runs into the slab's
+                      // rounded edge.
+                      if (i > 0)
+                        ClayGroove(
+                          indent: indent,
+                          endIndent: ClayListTile.inset,
+                        ),
+                      row,
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),
@@ -177,20 +187,6 @@ class ClayGroup extends StatelessWidget {
       ..add(StringProperty('footer', footer, defaultValue: null))
       ..add(IntProperty('rows', children.length));
   }
-}
-
-// The corner of the slab a row stands on, so a row's plate keeps concentric
-// with it whatever corners the group's style gives it.
-class _SlabCorner extends InheritedWidget {
-  const _SlabCorner({required this.radius, required super.child});
-
-  final double radius;
-
-  static double? of(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<_SlabCorner>()?.radius;
-
-  @override
-  bool updateShouldNotify(_SlabCorner old) => old.radius != radius;
 }
 
 /// The faint groove between two rows on a slab: a 1 px line of the well's
@@ -390,7 +386,7 @@ class ClayListTile extends StatelessWidget {
           : theme.rowHeight + 12;
       final largeText = MediaQuery.textScalerOf(context).scale(10) >= 15;
       final plateRadius =
-          (_SlabCorner.of(context) ?? theme.shapeScheme.corners.large) -
+          (ClaySlabCorner.of(context) ?? theme.shapeScheme.corners.large) -
           plateInset;
       final well = ClayFace.well(c, radius: plateRadius);
       final ClayFace plate;

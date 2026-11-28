@@ -1,3 +1,12 @@
+## 0.6.2
+
+- Needs ui_core 0.8.7.
+- A date field writes a chosen day in the app's locale, as Material's does (ui_core 0.8.6): English writes the month first, Oct 2, 2026, where it wrote 2 Oct 2026. British English and the other English regions Material speaks keep their own order when the app lists them in `supportedLocales`. The README says so.
+- A `ClaySwipeRow` in a `ClayGroup` stays on the group's slab. The slab clips its rows at its round outline, so an open row's words and actions no longer stand past its corners. An action is a plate of clay level with the row, which a press dents. It had cast a shadow that the row's box cut square: a tinted rectangle round the Delete plate, over the groove. On a slab, the plates keep concentric with its corners, as a row's plate does.
+- `ClaySelect`, `ClayDatePicker` and `ClayDateRangePicker` say their label once. They said it twice ("Date started, Date started"). A date field says a chosen day once, in full, as its value; it also said the short form in its name.
+- A slider says its value as a whole percentage of its range by default, as Material's does. `ClaySlider.semanticFormatterCallback` and `ClayRangeSlider.semanticFormatterCallback` say so, and the README's Forms section shows how to say a count instead. The example's reading goal says "12 books" (it said "17%").
+- The README's list section puts a `ClaySwipeRow` round each tile in the group.
+
 ## 0.6.1
 
 - Needs ui_core 0.8.5.

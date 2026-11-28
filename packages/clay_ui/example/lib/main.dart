@@ -516,6 +516,8 @@ class SettingsPage extends StatelessWidget {
               min: 4,
               max: 52,
               divisions: 48,
+              // Said as a count, where a slider says a percentage by default.
+              semanticFormatterCallback: (goal) => '${goal.round()} books',
               onChanged: (goal) => shelf.goal = goal.round(),
             ),
           ),
