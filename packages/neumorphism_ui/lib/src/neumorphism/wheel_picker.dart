@@ -71,7 +71,7 @@ class NeumorphicWheelPicker<T> extends StatelessWidget {
     final enabled = onChanged != null && n > 0;
     final scaler = MediaQuery.textScalerOf(context);
     final extent = scaler.scale(t.textTheme.body.fontSize ?? 16) * 1.25 + 20;
-    final well = t.shapes.corner(NeumorphicRadii.well);
+    final well = t.shapes.corner(t.shapes.well);
     const inset = 6.0;
     final lens = NeumorphicShapes.inset(
       well,

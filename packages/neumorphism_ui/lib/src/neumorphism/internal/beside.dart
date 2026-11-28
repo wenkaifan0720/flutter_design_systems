@@ -17,6 +17,8 @@ class BesideOrUnder extends MultiChildRenderObjectWidget {
     this.mark = 48,
     this.topFrom = double.infinity,
     this.firstLine = 0,
+    this.leastWords,
+    this.reach = 0,
     required super.children,
   });
 
@@ -37,6 +39,16 @@ class BesideOrUnder extends MultiChildRenderObjectWidget {
   /// The height of the words' first line, for [topFrom].
   final double firstLine;
 
+  /// For a list's rows: the least room the words keep beside the figure at its largest [share]. The place then comes
+  /// from the width and the text size alone, never from a row's words or figure, so every row of a list stands its
+  /// figure alike (beside, or under the words); a mark still stands beside. Null decides by [need], row by row.
+  final double? leastWords;
+
+  /// How far a figure standing on the first line of words [topFrom] tall may stand above this box, into the row's
+  /// padding, as the row's mark does there: the words then keep the box's top, so their first line stands level with
+  /// the mark beside them, and go lower only by what the figure needs beyond [reach].
+  final double reach;
+
   /// The most of the width the figure takes beside the words.
   static const share = .4;
 
@@ -48,6 +60,8 @@ class BesideOrUnder extends MultiChildRenderObjectWidget {
     mark,
     topFrom,
     firstLine,
+    leastWords,
+    reach,
   );
 
   @override
@@ -60,7 +74,9 @@ class BesideOrUnder extends MultiChildRenderObjectWidget {
     ..direction = Directionality.of(context)
     ..mark = mark
     ..topFrom = topFrom
-    ..firstLine = firstLine;
+    ..firstLine = firstLine
+    ..leastWords = leastWords
+    ..reach = reach;
 }
 
 class _BesideData extends ContainerBoxParentData<RenderBox> {}
@@ -80,6 +96,8 @@ class RenderBesideOrUnder extends RenderBox
     this._mark, [
     this._topFrom = double.infinity,
     this._firstLine = 0,
+    this._leastWords,
+    this._reach = 0,
   ]);
 
   static const _gap = 12.0, _under = 6.0;
@@ -119,9 +137,25 @@ class RenderBesideOrUnder extends RenderBox
     markNeedsLayout();
   }
 
-  // Beside words this tall, a centred figure stands on their first line; the words stand lower by what it needs above.
+  double? _leastWords;
+  set leastWords(double? value) {
+    if (value == _leastWords) return;
+    _leastWords = value;
+    markNeedsLayout();
+  }
+
+  double _reach;
+  set reach(double value) {
+    if (value == _reach) return;
+    _reach = value;
+    markNeedsLayout();
+  }
+
+  // Beside words this tall, a centred figure stands on their first line, reaching above the box by up to [_reach]; the
+  // words stand lower only by what it needs above beyond that.
   bool _atTop(_Plan p) => p.beside && _centre && p.words.height >= _topFrom;
-  double _lift(_Plan p) => math.max(0, (p.side.height - _firstLine) / 2);
+  double _drop(_Plan p) =>
+      math.max(0, (p.side.height - _firstLine) / 2 - _reach);
 
   @override
   void setupParentData(RenderBox child) {
@@ -145,6 +179,34 @@ class RenderBesideOrUnder extends RenderBox
     // being laid out in the share: one that draws from its width (a tag's shape) would flip between two shapes on
     // every layout, and an animated one would never come to rest.
     final w = c.maxWidth, most = w * BesideOrUnder.share;
+    final least = _leastWords;
+    if (least != null) {
+      // A list's row: beside while the words keep their room beside the figure's largest share, at any figure; a
+      // compact one (an icon key) beside at every width. The figure is laid out once, at the width it keeps, so one
+      // that draws from its width (a tag's shape) settles.
+      if (w - most - _gap >= least) {
+        final s = measure(side, BoxConstraints(maxWidth: most));
+        return (
+          beside: true,
+          words: measure(
+            words,
+            BoxConstraints.tightFor(width: w - s.width - _gap),
+          ),
+          side: s,
+        );
+      }
+      final alone = measure(side, BoxConstraints(maxWidth: w));
+      return (
+        beside: alone.width <= _mark,
+        words: measure(
+          words,
+          BoxConstraints.tightFor(
+            width: alone.width <= _mark ? w - alone.width - _gap : w,
+          ),
+        ),
+        side: alone,
+      );
+    }
     final alone = measure(side, BoxConstraints(maxWidth: w));
     if (alone.width > most) {
       return (
@@ -185,7 +247,7 @@ class RenderBesideOrUnder extends RenderBox
     Size(
       c.hasBoundedWidth ? c.maxWidth : p.words.width + _gap + p.side.width,
       _atTop(p)
-          ? _lift(p) +
+          ? _drop(p) +
                 math.max(p.words.height, (_firstLine + p.side.height) / 2)
           : p.beside
           ? math.max(p.words.height, p.side.height)
@@ -210,11 +272,11 @@ class RenderBesideOrUnder extends RenderBox
     final sideAt = side.parentData! as _BesideData;
     double startOf(double width) => rtl ? size.width - width : 0;
     if (_atTop(p)) {
-      final lift = _lift(p);
-      wordsAt.offset = Offset(startOf(p.words.width), lift);
+      final drop = _drop(p);
+      wordsAt.offset = Offset(startOf(p.words.width), drop);
       sideAt.offset = Offset(
         rtl ? 0 : size.width - p.side.width,
-        lift + (_firstLine - p.side.height) / 2,
+        drop + (_firstLine - p.side.height) / 2,
       );
     } else if (p.beside) {
       double y(double height) => _centre ? (size.height - height) / 2 : 0;
@@ -263,7 +325,7 @@ class RenderBesideOrUnder extends RenderBox
       final w = words.getMinIntrinsicHeight(room);
       final s = side.getMinIntrinsicHeight(sideWidth);
       if (_centre && w >= _topFrom) {
-        return math.max(0, (s - _firstLine) / 2) +
+        return math.max(0, (s - _firstLine) / 2 - _reach) +
             math.max(w, (_firstLine + s) / 2);
       }
       return math.max(w, s);
@@ -288,6 +350,16 @@ class RenderBesideOrUnder extends RenderBox
 
   @override
   double computeMaxIntrinsicHeight(double width) => _heightAt(width);
+
+  // A figure on the first line may stand above this box, in the row's padding; it takes its taps there too.
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    if (hitTestChildren(result, position: position)) {
+      result.add(BoxHitTestEntry(this, position));
+      return true;
+    }
+    return false;
+  }
 
   @override
   bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>

@@ -6,7 +6,7 @@ import 'package:flutter/widgets.dart';
 
 import '../frames.dart';
 import '../shapes.dart';
-import '../theme.dart' show NeumorphicRadii;
+import '../theme.dart' show NeumorphicTheme;
 
 /// Where a grouped list's row stands in its card: whether it is the first thing in the card and whether it is the last,
 /// and how far below it the next row starts.
@@ -73,7 +73,7 @@ class NeumorphicGroupRowScope extends InheritedWidget {
         frame: inset,
         // Where a row meets its neighbour it rounds as a control does: at the least round a chosen band across a card
         // read as a square bar laid over it.
-        joins: NeumorphicRadii.control,
+        joins: NeumorphicTheme.of(context).shapes.control,
       ),
       outset: EdgeInsets.fromLTRB(
         out(p.left),

@@ -8,7 +8,6 @@ import 'package:flutter/widgets.dart';
 import 'controls.dart';
 import 'frames.dart';
 import 'internal/geometry.dart';
-import 'knobs.dart';
 import 'layout.dart';
 import 'localizations.dart';
 import 'ornaments.dart';
@@ -16,6 +15,7 @@ import 'rows.dart';
 import 'tell.dart';
 import 'chrome.dart';
 import 'theme.dart';
+import 'internal/relief.dart';
 
 /// One stop of a [NeumorphicTimeline]: when, what, a line more, and whether it is behind, current or ahead.
 ///
@@ -411,7 +411,7 @@ class NeumorphicMeter extends StatelessWidget {
               child: CustomPaint(
                 painter: _MeterPainter(
                   colors: c,
-                  elevation: t.elevation,
+                  elevation: t.relief,
                   border: t.shapes.capsule,
                   value: at(value),
                   marks: [
@@ -457,7 +457,7 @@ class _MeterPainter extends CustomPainter {
     required this.rtl,
   });
   final NeumorphicColors colors;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   final OutlinedBorder border;
   final double value;
   final List<double> marks;

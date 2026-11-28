@@ -459,6 +459,9 @@ class NeumorphicWhoRow extends StatelessWidget {
   }
 }
 
+// The ems of a list tile's title its words keep beside a figure below 520 wide.
+const double _wordsBesideFigure = 7;
+
 /// The list row: a mark, a title and its meta, a state beside them, an action. A compact action (an icon key, no wider
 /// than a touch target) stands at the row's end beside the words at every width; a wider one sits at the end from 520
 /// wide and goes under the words below that, so the title keeps its line. A hand-written `Row` of words and a button
@@ -505,7 +508,9 @@ class NeumorphicListTile extends StatelessWidget {
   /// A monogram, an icon well, a `NeumorphicMedia(width: 56)`: its own width stays.
   final Widget? leading;
 
-  /// A figure or a `NeumorphicStatus` beside the title, held to a share of the row.
+  /// A figure or a `NeumorphicStatus` beside the title, held to a share of the row. Below 520 wide it stands at the
+  /// row's end while the words keep 7 ems of the title beside its largest share, else under the words: chosen from the
+  /// width and the text size, never from a row's words, so every row of a list stands it alike.
   final Widget? trailing;
 
   /// A row's menu key (a `NeumorphicIconButton`), a `NeumorphicButton` of one or two words, or a control the row's
@@ -627,6 +632,17 @@ class NeumorphicListTile extends StatelessWidget {
               centre: !top,
               topFrom: threeTall,
               firstLine: lineOf(titleStyle),
+              // On the title's first line it reaches into the row's padding as the mark does, so the two stand level.
+              reach: _tilePadding,
+              // From the width and the text size, so a list's rows stand their figures alike.
+              leastWords:
+                  _wordsBesideFigure *
+                  MediaQuery.textScalerOf(context).scale(
+                    DefaultTextStyle.of(context).style
+                            .merge(titleStyle)
+                            .fontSize ??
+                        14,
+                  ),
               children: [told, passive(trailing!)],
             );
       if (action == null) {
@@ -712,7 +728,7 @@ class NeumorphicListTile extends StatelessWidget {
         selected: selected,
         // The chosen band is already in; a press on another row shows it going in.
         pressRelief: !selected,
-        shape: cell?.border ?? t.shapes.corner(NeumorphicRadii.control),
+        shape: cell?.border ?? t.shapes.corner(t.shapes.control),
         faceOutset: cell?.outset ?? const EdgeInsets.symmetric(horizontal: 12),
         focusReach: cell == null ? 1 : .5,
         child: split ? const SizedBox.expand() : row,
@@ -730,7 +746,7 @@ class NeumorphicListTile extends StatelessWidget {
     }
     row = NeumorphicChosenBand(
       chosen: selected,
-      border: cell?.border ?? t.shapes.corner(NeumorphicRadii.control),
+      border: cell?.border ?? t.shapes.corner(t.shapes.control),
       outset: cell?.outset ?? const EdgeInsets.symmetric(horizontal: 12),
       child: row,
     );

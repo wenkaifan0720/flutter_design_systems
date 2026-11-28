@@ -6,6 +6,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import 'internal/corners.dart';
 import 'internal/geometry.dart';
 import 'localizations.dart';
 import 'controls.dart';
@@ -164,17 +165,21 @@ class NeumorphicTextContextMenu extends StatelessWidget {
     final c = t.colors;
     final touch = neumorphicTouchEditing(defaultTargetPlatform);
     final look = neumorphicStyleOf([style, t.menuTheme], const {});
-    final shape = look.shape;
-    final border = (shape ?? t.shapes.corner(NeumorphicRadii.control)).copyWith(
-      side:
-          look.side ??
-          (look.edge != null || t.highContrast
-              ? BorderSide(
-                  color: look.edge ?? c.edge,
-                  width: neumorphicEdgeWidth,
-                )
-              : BorderSide.none),
-    );
+    final border =
+        neumorphicCut(
+          context,
+          look,
+          t.shapes.corner(t.shapes.control),
+        ).copyWith(
+          side:
+              look.side ??
+              (look.edge != null || t.highContrast
+                  ? BorderSide(
+                      color: look.edge ?? c.edge,
+                      width: neumorphicEdgeWidth,
+                    )
+                  : BorderSide.none),
+        );
     Widget frame(Widget child) => DecoratedBox(
       decoration: ShapeDecoration(
         color: look.fill ?? c.ground,
@@ -200,7 +205,7 @@ class NeumorphicTextContextMenu extends StatelessWidget {
         child: Padding(
           padding:
               (look.padding(Directionality.of(context)) ?? EdgeInsets.zero) +
-              (shape?.dimensions.resolve(Directionality.of(context)) ??
+              (look.shape?.dimensions.resolve(Directionality.of(context)) ??
                   EdgeInsets.zero),
           child: child,
         ),

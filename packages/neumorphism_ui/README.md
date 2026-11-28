@@ -187,7 +187,8 @@ A description list keeps each value beside its term up to 480 wide, however wide
 ### Forms
 
 Neumorphism's form fields are Flutter `FormField`s: put them in a `Form`, and `validate()` shows each one's error
-under it, marked as an error. In a column every field takes the column's width.
+under it, marked as an error: its words and the warning glyph in the danger ink (`NeumorphicColors.danger`, a red at
+4.5:1 or more on every face), the glyph once, at the field's end or else on the line. In a column every field takes the column's width.
 
 ```dart
 import 'package:material_ui/material_ui.dart';
@@ -422,7 +423,7 @@ import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 final theme = NeumorphicThemeData.porcelain().copyWith(
   density: NeumorphicDensity.compact,
-  elevation: const NeumorphicElevation(depth: .5),
+  shapeScheme: NeumorphicThemeData.defaultShapeScheme.copyWith(depth: .5),
 );
 
 final custom = NeumorphicThemeData.from(
@@ -432,7 +433,23 @@ final custom = NeumorphicThemeData.from(
 );
 ```
 
-The settings are the ones a product team turns: a palette or your own colours, light and dark, the `typeface` (its `fallback` faces reach every text style, as `ThemeData.fontFamilyFallback` does, for a script Manrope lacks), `density` (the platform's by default: compact with a pointer, standard on touch), `elevation` (the depth) and `highContrast`. A theme's depth stays between `NeumorphicElevation.leastDepth` and `mostDepth` and its strength at `leastStrength` or more: shallower reads as flat print and deeper as a skeuomorphic object, so the theme clamps a value outside that band to its nearer end. The corners are the look's: radios, avatars, stepper keys and moving thumbs are circles, chips, badges, switches and segmented tracks capsules, fields, cards and raised panels their own frame steps, and nested faces subtract their inset from the enclosing radius, never going under the smallest corner (6). A component theme's or a style's `shape` changes one part within the look's family: a `NeumorphicRoundedBorder` at least 6 round, a `NeumorphicStadiumBorder` or a `NeumorphicCircleBorder`. A sharper corner or another `OutlinedBorder` fails an assert in debug builds, naming the rule: the surface is moulded, with no sharp corner, and its relief is drawn round its own borders only.
+The settings are the ones a product team turns: a palette or your own colours, light and dark, the `typeface` (its `fallback` faces reach every text style, as `ThemeData.fontFamilyFallback` does, for a script Manrope lacks), `density` (the platform's by default: compact with a pointer, standard on touch), `shapeScheme` (the corners and the depth) and `highContrast`. The shape scheme opens within the look's bands, `NeumorphicThemeData.shapeLimits`, and the theme clamps a value outside one to its nearer end: the least corner is 6, small 6 to 10, medium 8 to 16, large and extra large 14 to 28, a capsule's end 24, and the depth 0.5 to 1.5, since shallower reads as flat print and deeper as a skeuomorphic object. There is no stroke: depth alone draws every edge. Every radius moves with its step, nested faces with it. The corners are the look's: radios, avatars, stepper keys and moving thumbs are circles, chips, badges, switches and segmented tracks capsules, fields, cards and raised panels their own frame steps, and nested faces subtract their inset from the enclosing radius, never going under the smallest corner (6). A component theme's or a style's `shape` changes one part within the look's family: a `NeumorphicRoundedBorder` at least 6 round, a `NeumorphicStadiumBorder` or a `NeumorphicCircleBorder`. A sharper corner or another `OutlinedBorder` fails an assert in debug builds, naming the rule: the surface is moulded, with no sharp corner, and its relief is drawn round its own borders only.
+
+A style's `corners` takes one part's corners by step, the start and end ones following the reading direction: two diagonal corners of a card, say, or a button's top start one alone. Each is held to the look's bands (a square corner to the least, 6, since the relief wraps every fillet) and drawn at the theme's scale; the others keep the part's own. A circle stays a circle, a switch's slot and a slider's track keep their capsule, and a segmented button's strip takes the corners at its ends. A style's `shape` wins over its `corners`.
+
+```dart
+import 'package:material_ui/material_ui.dart';
+import 'package:neumorphism_ui/neumorphism_ui.dart';
+
+const card = NeumorphicCard(
+  title: 'On pace',
+  style: NeumorphicStyle(
+    corners: WidgetStatePropertyAll(
+      RawCorners(topStart: RawCorner.extraSmall, bottomEnd: RawCorner.extraSmall),
+    ),
+  ),
+);
+```
 
 Nothing draws a dark outline: the relief alone finds every edge, an empty checkbox, an unselected radio, a switch that is off and an empty field included. High contrast follows the device (`MediaQuery.highContrastOf`) and prints a fine outline on every part; `theme.copyWith(highContrast: true)` forces it on. Selection uses depth and the accent colour. `style.side` and `style.edge` print a rim, which is off the look's rule: relief is the only edge, and the fine outline is what high contrast draws. They take precedence in either mode, so keep them for a high-contrast rim of your own; on an ordinary part a printed rim reads as flat outlined UI, not a moulded surface.
 
@@ -453,7 +470,7 @@ final save = NeumorphicButton.filled(
 );
 ```
 
-Style slots are `fill`, `foreground`, `edge`, `overlay`, `side`, `shape`, `padding`, `minimumSize`, `textStyle` and `iconSize`, each a `WidgetStateProperty`. Fields take the same `style:` API; their editable words use its `textStyle` slot. Slabs and wells pass content styles to plain child text and icons, while explicit child styles take precedence. Data-driven dials and charts retain their geometric vocabulary.
+Style slots are `fill`, `foreground`, `edge`, `overlay`, `side`, `shape`, `corners`, `padding`, `minimumSize`, `textStyle` and `iconSize`, each a `WidgetStateProperty`. Fields take the same `style:` API; their editable words use its `textStyle` slot. Slabs and wells pass content styles to plain child text and icons, while explicit child styles take precedence. Data-driven dials and charts retain their geometric vocabulary.
 
 ## Interaction and localization
 
@@ -468,7 +485,7 @@ import 'package:neumorphism_ui/neumorphism_ui.dart';
 /// [panel], cast shallower than the page round it.
 Widget quieter(BuildContext context, Widget panel) => NeumorphicTheme(
   data: NeumorphicTheme.of(context).copyWith(
-    elevation: const NeumorphicElevation(depth: .75),
+    shapeScheme: NeumorphicTheme.of(context).shapeScheme.copyWith(depth: .75),
   ),
   child: panel,
 );
@@ -482,7 +499,7 @@ The parts' built-in words come from `RawWidgetsLocalizations`, the words every l
 - **Large text.** Controls get taller as the reader increases the text size. Navigation destinations can span multiple rows, and dialogs and sheets scroll. On a thermostat, the setting stays in the centre if it fits and longer descriptions move below it. Calendar day numbers and the numbers printed between dial ticks scale up to 1.3×. Their complete labels are also available to screen readers.
 - **Screen readers and keyboard.** Each part reports its role, label, value and state (checked, selected, expanded, disabled), and decorative paint is excluded from semantics. Everything works from the keyboard, and focus follows reading order. Targets are at least 40 px. Text meets 4.5:1 contrast in every preset, by day and by night. With reduced motion, parts change state at once, and dialogs and sheets dissolve in place.
 - **Edges and states.** A part's edge is soft light and shadow, faint by night, and nothing depends on it alone.
-  Every state (on, chosen, checked, a slider's value) and every part without words reaches 3:1 through its colour, words or mark, by day and by night; high contrast adds a fine outline. Keyboard focus is said in the material, a raised part rising and a well deepening softly, so it is quieter than a printed ring.
+  Every on or checked mark, a slider's value and every part without words reach 3:1 through their colour or mark, by day and by night; high contrast adds a fine outline. A chosen segment is told as iOS tells one, by its depth and its words together: it sits pressed in (its well 1.2:1 from its neighbours), its words bold in the full ink, the others' regular in the tertiary ink (2.0 to 2.3:1 apart, each 4.5:1 or more on its face); no one of these reaches 3:1 alone. Keyboard focus is said in the material, a raised part rising and a well deepening softly, so it is quieter than a printed ring.
 - **Other scripts.** The bundled Manrope covers Latin. Other scripts fall back to the platform's fonts; on the web, Flutter fetches them. To name your own, give `NeumorphicTypeface(fallback: [...])`: every text style takes the list.
 
 Known limits:

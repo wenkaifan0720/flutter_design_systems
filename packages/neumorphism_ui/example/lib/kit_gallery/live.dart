@@ -504,6 +504,49 @@ class _LiveExampleState extends State<LiveExample> {
             ),
         ],
       );
+      // A part's own corners: a style's corners take two diagonal corners of a card and of the button on it to the
+      // least, the others keeping their own (mirrored right to left); the filled act beside it keeps its round.
+      const cut = NeumorphicStyle(
+        corners: WidgetStatePropertyAll(
+          RawCorners(
+            topStart: RawCorner.extraSmall,
+            bottomEnd: RawCorner.extraSmall,
+          ),
+        ),
+      );
+      final corners = Align(
+        alignment: AlignmentDirectional.topStart,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: NeumorphicCard(
+            key: const Key('overview-corners'),
+            title: 'Corners of its own',
+            style: cut,
+            children: [
+              Text(
+                "A style's corners take two of this card's corners and two of its button's to the least; the others "
+                'keep their own. The filled act keeps its round.',
+                style: t.textTheme.body.copyWith(color: t.colors.inkSecondary),
+              ),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  NeumorphicButton(
+                    'Share',
+                    style: cut,
+                    onPressed: () => _say('Shared'),
+                  ),
+                  NeumorphicButton.filled(
+                    'Save',
+                    onPressed: () => _say('Saved'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
       final third = (pages.length / 3).ceil();
       final index = _part('Every page', [
         if (wide)
@@ -523,7 +566,9 @@ class _LiveExampleState extends State<LiveExample> {
           pageList(pages),
       ]);
       if (!wide) {
-        return NeumorphicSections(children: [words, dial, app, holds, index]);
+        return NeumorphicSections(
+          children: [words, dial, app, holds, corners, index],
+        );
       }
       return NeumorphicSections(
         gap: 48,
@@ -544,6 +589,7 @@ class _LiveExampleState extends State<LiveExample> {
             ),
           ),
           NeumorphicRow(spans: const [7, 5], children: [app, holds]),
+          corners,
           index,
         ],
       );

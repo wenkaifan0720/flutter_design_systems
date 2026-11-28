@@ -35,13 +35,13 @@ import 'internal/field_list.dart' show NeumorphicFieldListOwner;
 import 'internal/panel.dart';
 import 'internal/reach.dart';
 import 'internal/text_entry.dart';
-import 'knobs.dart';
 import 'localizations.dart';
 import 'shapes.dart';
 import 'tell.dart' show NeumorphicCircularProgressIndicator;
 import 'theme.dart';
 import 'internal/out_of_use.dart';
 import 'internal/moulded.dart';
+import 'internal/relief.dart';
 
 /// A field's label above it: the words a text field draws, silent because the input speaks them itself.
 class _Label extends StatelessWidget {
@@ -469,7 +469,7 @@ class _NeumorphicInputGroupState extends State<NeumorphicInputGroup> {
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
     final flat = NeumorphicFlatScope.of(context);
-    final shape = t.shapes.corner(NeumorphicRadii.control);
+    final shape = t.shapes.corner(t.shapes.control);
     // An add-on gives up width before the editor does: its words are cut rather than run past the groove.
     Widget addOn(String words, double most) => ExcludeSemantics(
       child: ConstrainedBox(
@@ -1013,7 +1013,7 @@ class _NeumorphicMultiSelectState<T extends Object>
     final local = NeumorphicLocalizations.of(context);
     final words =
         widget.displayStringForOption ?? (T value) => value.toString();
-    final shape = t.shapes.corner(NeumorphicRadii.well);
+    final shape = t.shapes.corner(t.shapes.well);
     final off = widget.onChanged == null;
     Widget chip(T value, VoidCallback? onDeleted) => NeumorphicChip(
       words(value),
@@ -1425,7 +1425,9 @@ class _Handle extends StatelessWidget {
           // faded the pigment out short of the handle.
           child: NeumorphicTheme(
             data: t.copyWith(
-              elevation: t.elevation.copyWith(depth: t.elevation.depth * .5),
+              shapeScheme: t.shapeScheme.copyWith(
+                depth: (t.shapeScheme.depth ?? 1) * .5,
+              ),
             ),
             child: NeumorphicSurface(
               cast: NeumorphicSurfaceLevel.part,
@@ -1549,7 +1551,7 @@ class NeumorphicRangeSlider extends StatelessWidget {
                 child: CustomPaint(
                   painter: _RangeTrack(
                     colors: t.colors,
-                    elevation: t.elevation,
+                    elevation: t.relief,
                     border: t.shapes.capsule,
                     start: track.start,
                     end: track.end,
@@ -1609,7 +1611,7 @@ class _RangeTrack extends CustomPainter {
     required this.direction,
   });
   final NeumorphicColors colors;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   final OutlinedBorder border;
   final double start, end;
   final bool flat;
@@ -1796,7 +1798,7 @@ class _NeumorphicColorPickerState extends State<NeumorphicColorPicker> {
     final label = widget.label;
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
-    final area = t.shapes.corner(NeumorphicRadii.well);
+    final area = t.shapes.corner(t.shapes.well);
     final strip = t.shapes.capsule;
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -1925,12 +1927,12 @@ class _NeumorphicColorPickerState extends State<NeumorphicColorPicker> {
                       dimension: 32,
                       child: NeumorphicSurface(
                         cast: NeumorphicSurfaceLevel.groove,
-                        shape: t.shapes.corner(NeumorphicRadii.cap),
+                        shape: t.shapes.corner(t.shapes.cap),
                         padding: const EdgeInsets.all(3),
                         child: DecoratedBox(
                           decoration: ShapeDecoration(
                             color: controller.color,
-                            shape: t.shapes.corner(NeumorphicRadii.cap - 3),
+                            shape: t.shapes.corner(t.shapes.cap - 3),
                           ),
                         ),
                       ),

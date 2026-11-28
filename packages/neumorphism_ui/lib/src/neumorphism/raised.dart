@@ -11,9 +11,9 @@ import 'package:ui_core/ui_core.dart';
 
 import 'controls.dart';
 import 'frames.dart';
+import 'internal/corners.dart';
 import 'internal/beside.dart';
 import 'internal/veil.dart';
-import 'knobs.dart';
 import 'component_themes.dart';
 import 'styled.dart';
 import 'shapes.dart';
@@ -32,6 +32,7 @@ import 'internal/cell_bank.dart'
     show NeumorphicChosenBand, neumorphicWideControlMax;
 import 'internal/moulded.dart';
 import 'internal/page_motion.dart' show neumorphicRouteStiffness;
+import 'internal/relief.dart';
 
 class _WordsDelegate extends LocalizationsDelegate<NeumorphicLocalizations> {
   const _WordsDelegate(this.words);
@@ -1106,7 +1107,7 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     final menuLook = neumorphicStyleOf([widget.style, t.menuTheme], const {});
-    final outer = menuLook.shape ?? t.shapes.corner(NeumorphicRadii.slab);
+    final own = t.shapes.corner(t.shapes.slab);
     // A field's list whose options carry no glyph starts their words on the field's value.
     final field =
         widget.fieldWords == null ||
@@ -1122,8 +1123,16 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
           );
     final inset = field?.panel ?? neumorphicMenuInset;
     _inset = inset;
-    final rowBorder = NeumorphicShapes.inset(
-      outer,
+    // A row's outline, concentric with the menu's: the first row takes the corners an app gives the menu's top, the
+    // last its bottom ones; every other corner is the menu's own, moved in.
+    OutlinedBorder rowBorderOf(int i) => NeumorphicShapes.inset(
+      neumorphicCut(
+        context,
+        menuLook,
+        own,
+        top: i == 0,
+        bottom: i == widget.items.length - 1,
+      ),
       inset +
           (menuLook.shape?.dimensions
                   .resolve(Directionality.of(context))
@@ -1148,7 +1157,7 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
           cast: NeumorphicSurfaceLevel.part,
           style: widget.style,
           themeStyle: t.menuTheme,
-          radius: NeumorphicRadii.slab,
+          radius: t.shapes.slab,
           outlined: true,
           child: _MenuWidth(
             width: widget.width ?? 280,
@@ -1189,7 +1198,7 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
                         },
                         child: NeumorphicTap(
                           semanticLabel: widget.items[i].label,
-                          shape: rowBorder,
+                          shape: rowBorderOf(i),
                           selected: widget.items[i].selected,
                           onPressed:
                               !widget.items[i].enabled ||
@@ -1234,23 +1243,23 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
                                 painter: held || (chosen && look.fill != null)
                                     ? _MenuRowRelief(
                                         t.colors,
-                                        t.elevation,
+                                        t.relief,
                                         look.fill ?? t.colors.ground,
-                                        rowBorder,
+                                        rowBorderOf(i),
                                       )
                                     : over || (keys && !chosen)
                                     ? NeumorphicPanelRowRaise(
                                         t.colors,
-                                        t.elevation,
-                                        rowBorder,
+                                        t.relief,
+                                        rowBorderOf(i),
                                         focus: keys,
                                       )
                                     : null,
                                 foregroundPainter: keys && chosen
                                     ? NeumorphicPanelRowRaise(
                                         t.colors,
-                                        t.elevation,
-                                        rowBorder,
+                                        t.relief,
+                                        rowBorderOf(i),
                                         rim: true,
                                       )
                                     : null,
@@ -1359,7 +1368,7 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
                               );
                               return NeumorphicChosenBand(
                                 chosen: chosen && look.fill == null,
-                                border: rowBorder,
+                                border: rowBorderOf(i),
                                 child: row,
                               );
                             },
@@ -1384,7 +1393,7 @@ class _MenuRowRelief extends CustomPainter {
   const _MenuRowRelief(this.colors, this.elevation, this.fill, this.border);
   final OutlinedBorder border;
   final NeumorphicColors colors;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   final Color? fill;
 
   @override
@@ -1695,7 +1704,7 @@ class NeumorphicTooltipFace extends StatelessWidget {
       cast: NeumorphicSurfaceLevel.part,
       style: style,
       themeStyle: NeumorphicTheme.of(context).tooltipTheme,
-      radius: NeumorphicRadii.chip,
+      radius: NeumorphicTheme.of(context).shapes.chip,
       outlined: true,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: _Balanced(
@@ -2094,7 +2103,7 @@ class NeumorphicSnackBar extends StatelessWidget {
           cast: NeumorphicSurfaceLevel.slab,
           style: style,
           themeStyle: t.snackBarTheme,
-          radius: NeumorphicRadii.well,
+          radius: t.shapes.well,
           outlined: true,
           padding: const EdgeInsets.all(16),
           child: Column(

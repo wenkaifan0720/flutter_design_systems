@@ -9,7 +9,6 @@ import 'package:flutter/widgets.dart';
 import 'chrome_metrics.dart';
 import 'controls.dart';
 import 'frames.dart';
-import 'knobs.dart';
 import 'internal/text_entry.dart' show neumorphicLineHeight;
 import 'component_themes.dart';
 import 'styled.dart';
@@ -19,8 +18,10 @@ import 'layout.dart';
 import 'localizations.dart';
 import 'theme.dart';
 import 'internal/reach.dart' show neumorphicAtEnd;
+import 'internal/corners.dart';
 import 'internal/moulded.dart';
 import 'internal/error_mark.dart' show NeumorphicBeadPainter;
+import 'internal/relief.dart';
 
 /// A message on a soft well, with its tone's own mark and optional next action.
 ///
@@ -111,7 +112,7 @@ class NeumorphicBanner extends StatelessWidget {
               t.colors,
               null,
               tone == NeumorphicTone.danger ? 1 : 0,
-              t.elevation,
+              t.relief,
               NeumorphicFlatScope.of(context),
             ),
             child: SizedBox.square(
@@ -328,7 +329,7 @@ class NeumorphicCircularProgressIndicator extends StatelessWidget {
                 phase,
                 NeumorphicFlatScope.of(context),
                 t.highContrast,
-                t.elevation,
+                t.relief,
               ),
             ),
           ),
@@ -363,7 +364,7 @@ class _CircleProgressPainter extends CustomPainter {
   final double? value;
   final double phase;
   final bool flat, highContrast;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   @override
   void paint(Canvas canvas, Size size) {
     final rect = (Offset.zero & size).deflate(2);
@@ -466,7 +467,7 @@ class NeumorphicLinearProgressIndicator extends StatelessWidget {
             Directionality.of(context),
             NeumorphicFlatScope.of(context),
             t.highContrast,
-            t.elevation,
+            t.relief,
             t.shapes.capsule,
           ),
         ),
@@ -534,7 +535,7 @@ class _LineProgressPainter extends CustomPainter {
   final double phase;
   final TextDirection direction;
   final bool flat, highContrast;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   @override
   void paint(Canvas canvas, Size size) {
     final shape = border.getOuterPath((Offset.zero & size).deflate(.75));
@@ -697,7 +698,7 @@ class NeumorphicSkeleton extends StatelessWidget {
                     lines,
                     row,
                     t.shapes,
-                    t.elevation,
+                    t.relief,
                     NeumorphicFlatScope.of(context),
                     Directionality.of(context) == TextDirection.rtl,
                   ),
@@ -741,7 +742,7 @@ class _SkeletonPainter extends CustomPainter {
   /// The shape of the content mirrors as the content would (its avatar at the start, a short last line ending
   /// early), and so does the light, from the top start.
   final bool rtl;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   @override
   void paint(Canvas canvas, Size size) {
     // One breath per turn: the wells deepen and ease back, never quite flat.
@@ -771,7 +772,7 @@ class _SkeletonPainter extends CustomPainter {
       elevation: elevation,
     );
     if (lines == 0) {
-      bone(Offset.zero & size, NeumorphicRadii.control);
+      bone(Offset.zero & size, shapes.control);
       return;
     }
     final offset = row ? math.min(62.0, size.width / 3) : 0.0;
@@ -927,7 +928,7 @@ class NeumorphicBadge extends StatelessWidget {
         ? '${words.formatNumber(max)}+'
         : words.formatNumber(count);
     final look = neumorphicStyleOf([style, t.badgeTheme], const {});
-    var shape = look.shape ?? t.shapes.capsule;
+    var shape = neumorphicCut(context, look, t.shapes.capsule);
     final text = t.textTheme.micro
         .copyWith(color: t.colors.ink, fontWeight: FontWeight.w700)
         .merge(look.textStyle)
@@ -1030,7 +1031,7 @@ class NeumorphicBadge extends StatelessWidget {
                   t.colors,
                   look.fill,
                   fresh,
-                  t.elevation,
+                  t.relief,
                   NeumorphicFlatScope.of(context),
                 ),
                 child: DecoratedBox(

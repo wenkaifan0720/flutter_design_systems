@@ -340,7 +340,7 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
               widget.style,
               t.datePickerTheme,
             ], const {});
-            final inset = (look.shape ?? t.shapes.corner(NeumorphicRadii.cap))
+            final inset = (look.shape ?? t.shapes.corner(t.shapes.cap))
                 .dimensions
                 .resolve(Directionality.of(context));
             final pad =
@@ -428,13 +428,13 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
                                   child: NeumorphicTap(
                                     style: widget.style,
                                     themeStyle: t.datePickerTheme,
-                                    shape: t.shapes.corner(NeumorphicRadii.cap),
+                                    shape: t.shapes.corner(t.shapes.cap),
                                     focusNode: node,
                                     autofocus:
                                         widget.autofocus &&
                                         _sameDay(date, _focused),
                                     focusInset: 2,
-                                    radius: NeumorphicRadii.cap,
+                                    radius: t.shapes.cap,
                                     onKeyEvent: (_, event) => _key(date, event),
                                     selected: selected,
                                     semanticLabel:
@@ -469,7 +469,7 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
                                               style: widget.style,
                                               themeStyle: t.datePickerTheme,
                                               shape: t.shapes.corner(
-                                                NeumorphicRadii.cap,
+                                                t.shapes.cap,
                                               ),
                                               states: states,
                                               hovered: states.contains(

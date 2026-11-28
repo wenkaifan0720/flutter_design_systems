@@ -162,7 +162,7 @@ void main() {
       density: NeumorphicDensity.compact,
       highContrast: true,
       typeface: const NeumorphicTypeface.app(display: 'Display', text: 'Text'),
-      elevation: const NeumorphicElevation(depth: .5, strength: .75),
+      shapeScheme: NeumorphicThemeData.defaultShapeScheme.copyWith(depth: .5),
       buttonTheme: style,
       textFieldTheme: style,
       cardTheme: style,
@@ -184,7 +184,7 @@ void main() {
     expect(NeumorphicThemeData.lerp(a, b, 0), a);
     expect(NeumorphicThemeData.lerp(a, b, 1), b);
     final mid = NeumorphicThemeData.lerp(a, b, .5);
-    expect(mid.elevation.depth, .75);
+    expect(mid.shapeScheme.depth, .75);
     expect(mid.density.horizontal, -1);
     expect(a.toDiagnosticsNode().toStringDeep(), contains('textFieldTheme'));
   });

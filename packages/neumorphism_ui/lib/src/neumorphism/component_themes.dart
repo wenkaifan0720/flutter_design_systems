@@ -2,6 +2,17 @@
 import 'package:ui_core/ui_core.dart';
 
 export 'package:ui_core/ui_core.dart' show RawStyle, RawStyleOf;
+// The shape vocabulary a theme's shapeScheme and a style's corners take, so a page needs only the look's import.
+export 'package:ui_core/ui_core.dart'
+    show
+        RawBand,
+        RawCorner,
+        RawCornerFreedom,
+        RawCornerScale,
+        RawCornerStyle,
+        RawCorners,
+        RawShapeLimits,
+        RawShapeScheme;
 
 /// How one part looks, as Material's `ButtonStyle` is: every slot resolves for the part's states
 /// ([WidgetState.disabled], [WidgetState.hovered], [WidgetState.focused], [WidgetState.pressed],

@@ -406,7 +406,7 @@ class NeumorphicIconWell extends StatelessWidget {
         states: {if (live) WidgetState.selected},
         cast: NeumorphicSurfaceLevel.groove,
         round: !square,
-        radius: square ? NeumorphicRadii.control : null,
+        radius: square ? t.shapes.control : null,
         live: live,
         child: Center(
           child: Icon(

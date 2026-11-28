@@ -1,15 +1,15 @@
-// The look's error mark: the warning glyph raised on a bead warmed by the pigment, as an error notice carries it. A
-// field that fails carries it at its end and on the line under it, so the field itself reads as failed with no colour
-// of its own (the look's one pigment is for what is live; warmed, it says "this needs you").
+// The look's error mark: the warning glyph in the danger ink, raised on a bead of the material. A field that fails
+// carries it at its end, and the line under it in its place where the field has none, so the field itself reads as
+// failed with no colour of its own: the danger ink is the glyph's and the words', never the material's.
 import 'package:flutter/widgets.dart';
 
 import '../frames.dart';
 import '../glyphs.dart';
-import '../knobs.dart';
 import '../theme.dart';
 import 'geometry.dart' show neumorphicFillPaint;
+import 'relief.dart';
 
-/// The warning glyph on its warmed bead, [size] across.
+/// The warning glyph in the danger ink on a bead of the material, [size] across.
 class NeumorphicErrorMark extends StatelessWidget {
   /// An error mark [size] across, its glyph [glyphSize].
   const NeumorphicErrorMark({super.key, this.size = 24, this.glyphSize = 14});
@@ -34,8 +34,8 @@ class NeumorphicErrorMark extends StatelessWidget {
             const CircleBorder(),
             t.colors,
             null,
-            1,
-            t.elevation,
+            0,
+            t.relief,
             NeumorphicFlatScope.of(context),
           ),
           child: SizedBox.square(
@@ -44,7 +44,7 @@ class NeumorphicErrorMark extends StatelessWidget {
               child: Icon(
                 NeumorphicGlyphs.triangleAlert,
                 size: glyphSize,
-                color: t.colors.ink,
+                color: t.colors.danger,
               ),
             ),
           ),
@@ -80,7 +80,7 @@ class NeumorphicBeadPainter extends CustomPainter {
   final double fresh;
 
   /// The theme's depth.
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
 
   /// Whether casts are off (high contrast, a flat scope).
   final bool flat;

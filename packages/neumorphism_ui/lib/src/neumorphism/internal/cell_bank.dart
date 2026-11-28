@@ -11,9 +11,10 @@ import '../chrome_metrics.dart';
 import '../frames.dart';
 import 'geometry.dart' show neumorphicStrokePaint;
 import 'reach.dart';
-import '../knobs.dart';
 import '../shapes.dart';
 import '../theme.dart';
+import 'corners.dart';
+import 'relief.dart';
 
 /// What a cell of a bank knows about itself: its outline and whether it is the chosen one.
 class NeumorphicCellScope extends InheritedWidget {
@@ -100,7 +101,12 @@ class NeumorphicCellBank extends StatelessWidget {
     this.group,
     this.count,
     this.strip,
+    this.corners,
   }) : assert(strip == null || (scroll && count != null));
+
+  /// The steps an app gives the bank's corners, from a style (`NeumorphicStyle.corners`): the bank's outer corners
+  /// take them, and the cells on its ends with them, concentric; the seams between cells stay.
+  final RawCorners? corners;
 
   /// The cells, in reading order; not read with [strip].
   final List<Widget> children;
@@ -202,9 +208,13 @@ class NeumorphicCellBank extends StatelessWidget {
         // A capsule holds one line in one row. When a label wraps or the bank breaks into rows, the bank takes the
         // theme's rounded frame instead, as every pill does (inlineRoleShape).
         final wraps = rows > 1 || content > contentHeight(double.infinity) + .5;
-        final bankShape = wraps && t.shapes.capsule is NeumorphicStadiumBorder
-            ? const NeumorphicRoundedBorder()
-            : t.shapes.capsule;
+        final bankShape = neumorphicCornered(
+          context,
+          wraps && t.shapes.capsule is NeumorphicStadiumBorder
+              ? t.shapes.corner(t.shapes.control)
+              : t.shapes.capsule,
+          corners,
+        );
         // The rim the bank prints inside its outline: the cells' faces start inside it.
         final rim =
             side?.width ??
@@ -245,7 +255,7 @@ class NeumorphicCellBank extends StatelessWidget {
               ),
               // A chosen cell rounds as a control where it meets its neighbour: at the least round
               // its inner end read as a square cut (Day | Night, Card | Bank | Later).
-              joins: NeumorphicRadii.control,
+              joins: t.shapes.control,
             ),
             chosen: i == selected,
             child: face,
@@ -317,7 +327,7 @@ class NeumorphicCellBank extends StatelessWidget {
             t.colors,
             draw,
             bankShape,
-            t.elevation,
+            t.relief,
             NeumorphicFlatScope.of(context),
           ),
           foregroundPainter: rimSide == null
@@ -355,7 +365,7 @@ class _BankFace extends CustomPainter {
   final NeumorphicColors c;
   final NeumorphicDraw draw;
   final OutlinedBorder shape;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   final bool flat;
 
   @override
@@ -529,7 +539,7 @@ class NeumorphicCellFace extends StatelessWidget {
             ? null
             : _ChosenCell(
                 t.colors,
-                t.elevation,
+                t.relief,
                 cell.border,
                 depth,
                 NeumorphicFlatScope.of(context),
@@ -578,7 +588,7 @@ class NeumorphicChosenBand extends StatelessWidget {
             ? null
             : _ChosenCell(
                 t.colors,
-                t.elevation,
+                t.relief,
                 border,
                 depth,
                 NeumorphicFlatScope.of(context),
@@ -600,7 +610,7 @@ class _ChosenCell extends CustomPainter {
     this.outset,
   );
   final NeumorphicColors c;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   final ShapeBorder border;
   final double depth;
   final bool flat;

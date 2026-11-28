@@ -12,7 +12,6 @@ import 'component_themes.dart';
 import 'controls.dart';
 import 'frames.dart';
 import 'glyphs.dart';
-import 'knobs.dart';
 import 'internal/cell_bank.dart' show neumorphicControlWidth;
 import 'internal/panel.dart';
 import 'localizations.dart';
@@ -24,6 +23,7 @@ import 'internal/reach.dart' show neumorphicAtEnd;
 import 'internal/day_face.dart';
 import 'internal/out_of_use.dart';
 import 'internal/moulded.dart';
+import 'internal/relief.dart';
 
 bool _sameMonth(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month;
@@ -106,7 +106,7 @@ Widget _day(
     [style, t.datePickerTheme],
     {...states, if (end) WidgetState.selected},
   );
-  final cell = t.shapes.corner(NeumorphicRadii.cap);
+  final cell = t.shapes.corner(t.shapes.cap);
   final enabled = day.enabled;
   final run = _runOf(day, controller, firstWeekday);
   // A day is a key in a row: it stands at the medium line (NeumorphicChromeMetrics.lineOf), as a button beside it would,
@@ -131,8 +131,9 @@ Widget _day(
           ? null
           : _Channel(
               c,
-              t.elevation,
+              t.relief,
               run,
+              cap: t.shapes.cap,
               flat: NeumorphicFlatScope.of(context),
               rtl: Directionality.of(context) == TextDirection.rtl,
               preview: !day.inRange && day.inPreview,
@@ -204,14 +205,18 @@ class _Channel extends CustomPainter {
     this.c,
     this.elevation,
     this.run, {
+    required this.cap,
     required this.flat,
     required this.rtl,
     required this.preview,
   });
 
   final NeumorphicColors c;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   final ({int index, int count, bool deepFirst, bool deepLast}) run;
+
+  /// A lone chosen day's corner: the theme's cap.
+  final double cap;
   final bool flat, rtl, preview;
 
   @override
@@ -233,9 +238,7 @@ class _Channel extends CustomPainter {
         ? (Path()..addRRect(
             RRect.fromRectAndRadius(
               own,
-              Radius.circular(
-                math.min(NeumorphicRadii.cap, own.shortestSide / 2),
-              ),
+              Radius.circular(math.min(cap, own.shortestSide / 2)),
             ),
           ))
         : (Path()..addRRect(
@@ -275,6 +278,7 @@ class _Channel extends CustomPainter {
   bool shouldRepaint(_Channel old) =>
       old.c != c ||
       old.elevation != elevation ||
+      old.cap != cap ||
       old.run != run ||
       old.flat != flat ||
       old.rtl != rtl ||

@@ -12,6 +12,7 @@ import 'controls.dart';
 import 'component_themes.dart';
 import 'styled.dart';
 import 'shapes.dart';
+import 'internal/corners.dart';
 import 'internal/cell_bank.dart';
 import 'internal/eased_lines.dart';
 import 'internal/reach.dart' show NeumorphicFacePlace, NeumorphicOwnRoot;
@@ -27,10 +28,10 @@ import 'ornaments.dart';
 import 'raised.dart';
 import 'theme.dart';
 import 'internal/cap_label.dart';
-import 'knobs.dart' show NeumorphicElevation;
 import 'internal/out_of_use.dart';
 import 'internal/moulded.dart';
 import 'internal/group_rows.dart' show NeumorphicGroupRowScope;
+import 'internal/relief.dart';
 
 /// A search groove with its own clear action, keeping focus when cleared.
 ///
@@ -1266,7 +1267,7 @@ class _CheckMark extends StatelessWidget {
       28.0,
       math.max(look.minimumSize?.width ?? 0, look.minimumSize?.height ?? 0),
     );
-    var shape = look.shape ?? t.shapes.corner(6);
+    var shape = neumorphicCut(context, look, t.shapes.corner(t.shapes.least));
     if (shape is NeumorphicBorder) shape = shape.fit(Size.square(diameter));
     // Selection shows by fill, as the switch's does: a checked well takes the pigment and its tick the pigment's ink,
     // unless the widget's style or the checkbox theme sets a fill of its own (those win, in that order). A box in error
@@ -1970,11 +1971,28 @@ class NeumorphicSegmentedButton<T> extends StatelessWidget {
         t.density.padding(
           const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         );
-    // One weight in both states: a chosen label never reflows or moves.
+    // The chosen words stand in the full ink and bold, the others in the tertiary ink and regular, beside the chosen
+    // well's depth: the choice never rests on the well alone. Every cell is measured at the chosen weight, so a choice
+    // never reflows the bank.
     TextStyle words(bool selected) => t.textTheme.body
-        .copyWith(fontWeight: FontWeight.w600)
+        .copyWith(
+          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          color: selected ? t.colors.ink : t.colors.inkTertiary,
+        )
         .merge(bankLook.textStyle);
     final scaler = MediaQuery.textScalerOf(context);
+    double boldWidth(String label) {
+      final painter = TextPainter(
+        text: TextSpan(text: label, style: words(true)),
+        textDirection: dir,
+        textScaler: scaler,
+        maxLines: 1,
+      )..layout();
+      final w = painter.width;
+      painter.dispose();
+      return w;
+    }
+
     // A cell is no narrower than the medium line ([NeumorphicChromeMetrics.lineOf]): square at its least.
     var least = NeumorphicChromeMetrics.lineOf(context);
     for (final o in segments) {
@@ -2002,6 +2020,7 @@ class NeumorphicSegmentedButton<T> extends StatelessWidget {
             minCellWidth: least,
             side: bankLook.side,
             edge: bankLook.edge,
+            corners: bankLook.corners,
             // In a row with no bound the bank takes the kit's 104 a choice, its total whatever the labels; cells
             // whose widest word won't fit that wrap to a second row rather than squeeze it.
             naturalWidth: segments.length * 104.0,
@@ -2080,37 +2099,46 @@ class NeumorphicSegmentedButton<T> extends StatelessWidget {
                                           look.foreground ??
                                           (selected
                                               ? t.colors.pigmentInkLit
-                                              : t.colors.ink),
+                                              : t.colors.inkTertiary),
                                     ),
                                     const SizedBox(width: 8),
                                   ],
                                   Flexible(
                                     child: neumorphicLabel(
-                                      Text(
-                                        o.label,
-                                        textAlign: TextAlign.center,
-                                        style: words(selected)
-                                            .merge(look.textStyle)
-                                            .copyWith(
-                                              color: look.foreground,
-                                              // A grey pigment (a grey on a grey) underlines the chosen words in
-                                              // whichever of the two inks stands at 3:1 on the wall, so the
-                                              // choice never rests on the well alone.
-                                              decoration:
-                                                  selected &&
-                                                      _greyChoice(t.colors)
-                                                  ? TextDecoration.underline
-                                                  : null,
-                                              decorationColor:
-                                                  _ratio(
-                                                        t.colors.pigmentInkLit,
-                                                        t.colors.ground,
-                                                      ) >=
-                                                      3
-                                                  ? t.colors.pigmentInkLit
-                                                  : t.colors.ink,
-                                              decorationThickness: 2,
-                                            ),
+                                      // As wide as its chosen (bold) words, centred in it: the words keep their place as the
+                                      // choice moves.
+                                      ConstrainedBox(
+                                        constraints: BoxConstraints(
+                                          minWidth: boldWidth(o.label),
+                                        ),
+                                        child: Text(
+                                          o.label,
+                                          textAlign: TextAlign.center,
+                                          style: words(selected)
+                                              .merge(look.textStyle)
+                                              .copyWith(
+                                                color: look.foreground,
+                                                // A grey pigment (a grey on a grey) underlines the chosen words in
+                                                // whichever of the two inks stands at 3:1 on the wall, so the
+                                                // choice never rests on the well alone.
+                                                decoration:
+                                                    selected &&
+                                                        _greyChoice(t.colors)
+                                                    ? TextDecoration.underline
+                                                    : null,
+                                                decorationColor:
+                                                    _ratio(
+                                                          t
+                                                              .colors
+                                                              .pigmentInkLit,
+                                                          t.colors.ground,
+                                                        ) >=
+                                                        3
+                                                    ? t.colors.pigmentInkLit
+                                                    : t.colors.ink,
+                                                decorationThickness: 2,
+                                              ),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -2325,7 +2353,7 @@ class NeumorphicRating extends StatelessWidget {
           fill,
           t.colors,
           neumorphicRuleWidth,
-          t.elevation,
+          t.relief,
           NeumorphicFlatScope.of(context),
           rtl: Directionality.of(context) == TextDirection.rtl,
         ),
@@ -2515,7 +2543,7 @@ class _RatingRiseState extends State<_RatingRise> {
       foregroundPainter: _RatingRisePainter(
         _lit,
         t.colors,
-        t.elevation,
+        t.relief,
         t.shapes.capsule,
         widget.count,
         widget.target,
@@ -2540,7 +2568,7 @@ class _RatingRisePainter extends CustomPainter {
   ) : super(repaint: lit);
   final ValueNotifier<bool> lit;
   final NeumorphicColors c;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
 
   /// The row's outline, the look's capsule.
   final OutlinedBorder border;
@@ -2596,7 +2624,7 @@ class _StarPainter extends CustomPainter {
   final bool rtl;
   final double fill, rule;
   final NeumorphicColors colors;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   final bool flat;
   @override
   void paint(Canvas canvas, Size size) {
@@ -2756,7 +2784,7 @@ class NeumorphicFileUpload extends StatelessWidget {
             cast: active
                 ? NeumorphicSurfaceLevel.part
                 : NeumorphicSurfaceLevel.groove,
-            radius: NeumorphicRadii.well,
+            radius: t.shapes.well,
             outlined: active,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             child: Column(

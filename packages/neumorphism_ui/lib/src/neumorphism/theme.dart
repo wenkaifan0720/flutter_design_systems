@@ -69,9 +69,11 @@ enum NeumorphicWindow {
       : large;
 }
 
-/// The look's radii, all of them. A box holding words or controls stays on this scale, however soft the look wants to be:
-/// softness here is the shadow's job. Only objects keep their own shape: a dial, a knob, a switch's slot, a round push
-/// button, a monogram, a check, an LED, an arched window with nothing written in it.
+/// The look's own radii, those of [NeumorphicThemeData.defaultShapeScheme]. A box holding words or controls stays on
+/// this scale, however soft the look wants to be: softness here is the shadow's job. Only objects keep their own shape:
+/// a dial, a knob, a switch's slot, a round push button, a monogram, a check, an LED, an arched window with nothing
+/// written in it. A theme's [NeumorphicThemeData.shapeScheme] moves them within the look's bands; a part reads its
+/// theme's through [NeumorphicThemeData.shapes].
 abstract final class NeumorphicRadii {
   /// A slab: a card on the wall, a tab bar's shoulders. 20, the largest radius on the scale.
   static const double slab = 20;
@@ -167,6 +169,7 @@ class NeumorphicColors {
     required this.inkTertiary,
     required this.quiet,
     required this.edge,
+    required this.danger,
     required this.barStart,
     required this.barEnd,
     required this.domeLight,
@@ -217,6 +220,10 @@ class NeumorphicColors {
   /// Ordinary controls use relief; this ink is reserved for explicit boundaries.
   final Color edge;
 
+  /// A failure's words and its glyph: a red that reads at 4.5:1 on the wall and on every face and well, by day and
+  /// by night. Never on the material: a failure is said in words and a glyph, so it never rests on colour alone.
+  final Color danger;
+
   /// A chart's data bars, top to foot.
   final Color barStart, barEnd;
 
@@ -264,6 +271,7 @@ class NeumorphicColors {
           inkTertiary: inkTertiary,
           quiet: quiet,
           edge: edge,
+          danger: danger,
           barStart: barStart,
           barEnd: barEnd,
           domeLight: domeLight,
@@ -308,6 +316,7 @@ class NeumorphicColors {
     Color? inkTertiary,
     Color? quiet,
     Color? edge,
+    Color? danger,
     Color? barStart,
     Color? barEnd,
     Color? domeLight,
@@ -345,6 +354,7 @@ class NeumorphicColors {
     inkTertiary: inkTertiary ?? this.inkTertiary,
     quiet: quiet ?? this.quiet,
     edge: edge ?? this.edge,
+    danger: danger ?? this.danger,
     barStart: barStart ?? this.barStart,
     barEnd: barEnd ?? this.barEnd,
     domeLight: domeLight ?? this.domeLight,
@@ -392,6 +402,7 @@ class NeumorphicColors {
       inkTertiary: Color.lerp(a.inkTertiary, b.inkTertiary, t)!,
       quiet: Color.lerp(a.quiet, b.quiet, t)!,
       edge: Color.lerp(a.edge, b.edge, t)!,
+      danger: Color.lerp(a.danger, b.danger, t)!,
       barStart: Color.lerp(a.barStart, b.barStart, t)!,
       barEnd: Color.lerp(a.barEnd, b.barEnd, t)!,
       domeLight: Color.lerp(a.domeLight, b.domeLight, t)!,
@@ -436,6 +447,7 @@ class NeumorphicColors {
           other.inkTertiary == inkTertiary &&
           other.quiet == quiet &&
           other.edge == edge &&
+          other.danger == danger &&
           other.barStart == barStart &&
           other.barEnd == barEnd &&
           other.domeLight == domeLight &&
@@ -476,6 +488,7 @@ class NeumorphicColors {
     inkTertiary,
     quiet,
     edge,
+    danger,
     barStart,
     barEnd,
     domeLight,
@@ -649,6 +662,12 @@ class _Seed {
     inkTertiary: inkTertiary,
     quiet: quiet,
     edge: Color.lerp(quiet, inkTertiary, .45)!,
+    // Material's error red, at the tone of its own hue that reads on the wall and on every face and well.
+    danger: RawPalette.readableTone(
+      const Color(0xFFB3261E),
+      on: [ground, faceStart, faceEnd, wellStart, wellEnd],
+      ratio: 4.6,
+    ),
     barStart: barStart,
     barEnd: barEnd,
     domeLight: domeLight,
@@ -1423,7 +1442,7 @@ class NeumorphicThemeData with Diagnosticable {
     this._density,
     this.typeface = NeumorphicTypeface.look,
     this.motion = const NeumorphicMotion(),
-    NeumorphicElevation elevation = const NeumorphicElevation(),
+    RawShapeScheme shapeScheme = defaultShapeScheme,
     this.buttonTheme = const NeumorphicStyle(),
     this.filledButtonTheme = const NeumorphicStyle(),
     this.textButtonTheme = const NeumorphicStyle(),
@@ -1447,7 +1466,7 @@ class NeumorphicThemeData with Diagnosticable {
     this.stepperTheme = const NeumorphicStyle(),
     this.datePickerTheme = const NeumorphicStyle(),
     this.timePickerTheme = const NeumorphicStyle(),
-  }) : elevation = elevation.clamped,
+  }) : shapeScheme = shapeLimits.clamp(shapeScheme, look: 'Neumorphism'),
        textTheme = NeumorphicTextTheme._(
          colors,
          width >= neumorphicDesktopBreakpoint,
@@ -1476,8 +1495,70 @@ class NeumorphicThemeData with Diagnosticable {
   /// [NeumorphicMotion.of] gives it with the platform's reduced motion applied; [copyWith] sets another.
   final NeumorphicMotion motion;
 
-  /// The look's corners.
-  NeumorphicShapes get shapes => const NeumorphicShapes();
+  /// The look's corners in this theme's [shapeScheme]: what every part is cut from.
+  NeumorphicShapes get shapes => NeumorphicShapes(shapeScheme.corners);
+
+  /// The corners and the relief an app can change, held to [shapeLimits]. Each of Neumorphism's radii follows its
+  /// step: the least corner (6) [RawCorner.extraSmall]; a latch's cap and a small mark holding a figure (8)
+  /// [RawCorner.small]; a control you press or type in (12) [RawCorner.medium], a chip (2 less) and a well (2 more)
+  /// moving with it, so a control stays concentric in its well; a slab, a card on the wall, the menu and a sheet (20)
+  /// [RawCorner.large]. A one-line capsule (a chip, a switch's track, a badge) stays a capsule, its end capped at 24 for
+  /// enlarged text, and a radio's, a dome's and a dial's round is the part's geometry. [RawShapeScheme.depth] is the
+  /// relief's: how far the light and the shadow stand off every cast and pressed surface and how wide they blur, 1 as
+  /// the look was designed. Neumorphism draws no stroke: its edge is the relief.
+  ///
+  /// ```dart
+  /// NeumorphicThemeData.porcelain().copyWith(shapeScheme: NeumorphicThemeData.defaultShapeScheme.copyWith(corners: NeumorphicThemeData.defaultShapeScheme.corners.copyWith(medium: 16), depth: .75))
+  /// ```
+  final RawShapeScheme shapeScheme;
+
+  /// Neumorphism's own corners and relief: round, of 6, 8, 12 and 20 ([NeumorphicRadii]; extra large as large), a
+  /// capsule's end capped at 24, the relief at depth 1.
+  static const RawShapeScheme defaultShapeScheme = RawShapeScheme(
+    corners: RawCornerScale(
+      extraSmall: NeumorphicRadii.least,
+      small: NeumorphicRadii.cap,
+      medium: NeumorphicRadii.control,
+      large: NeumorphicRadii.slab,
+      extraLarge: NeumorphicRadii.slab,
+      fullMaxRadius: 24,
+    ),
+    depth: 1,
+  );
+
+  /// The bands Neumorphism holds a [shapeScheme] to, so that every surface still reads as moulded: round corners
+  /// alone (a soft extrusion needs a smooth tangent; a bevel or a notch casts a hard facet in the light); the least
+  /// corner fixed at 6, the floor every concentric inset stops at, since a moulded surface never comes to a point; a
+  /// cap from 6 to 10 (a small keycap stays soft); a control from 8 to 16 (the light's rule holds across it, and past
+  /// 16 a field turns pill-like); a slab from 14 to 28 (slabs stay the softest; under 14 the extrusion's shading reads
+  /// as a bevel), and [RawCorner.extraLarge] with it (no part of the look's stands there; an app's corner may); the
+  /// capsule's end fixed at 24 (larger, enlarged text turns a capsule into an ellipse). The relief's depth runs from
+  /// 0.5 (shallower reads as flat print) to 1.5 (deeper reads as a skeuomorphic object). No stroke: depth alone draws
+  /// every edge.
+  ///
+  /// A part's corners each take their own step (cornerFreedom perCorner) through a style's `corners`: a card's two
+  /// diagonal corners, or a button's top start one alone. Every corner stays round: a square corner
+  /// ([RawCorner.none]) is held to the least corner, since the relief's light and shadow wrap each fillet and a point
+  /// would cast a hard facet. A circle stays a circle (a radio, a round key, an avatar, a dial), a switch's slot and a
+  /// slider's track keep their capsule, and a bank's cell follows its bank. A style's `shape` wins.
+  static const RawShapeLimits shapeLimits = RawShapeLimits(
+    extraSmall: RawBand.fixed(NeumorphicRadii.least),
+    small: RawBand(6, 10),
+    medium: RawBand(8, 16),
+    large: RawBand(14, 28),
+    extraLarge: RawBand(14, 28),
+    fullMaxRadius: RawBand.fixed(24),
+    depth: RawBand(.5, 1.5),
+    cornerFreedom: RawCornerFreedom.perCorner,
+    cornerSteps: {
+      RawCorner.extraSmall,
+      RawCorner.small,
+      RawCorner.medium,
+      RawCorner.large,
+      RawCorner.extraLarge,
+      RawCorner.full,
+    },
+  );
 
   /// How compact the controls stand: the app's density when it gives one, otherwise [NeumorphicDensity.adaptivePlatformDensity]:
   /// compact where a pointer drives the app, standard on touch. The touch target never shrinks.
@@ -1487,9 +1568,6 @@ class NeumorphicThemeData with Diagnosticable {
 
   /// The theme-wide typeface settings.
   final NeumorphicTypeface typeface;
-
-  /// The theme-wide elevation settings, held to the look's band ([NeumorphicElevation.clamped]).
-  final NeumorphicElevation elevation;
 
   /// State-resolved styling for every button, and the ordinary [NeumorphicButton]'s own.
   final NeumorphicStyle buttonTheme;
@@ -1708,7 +1786,7 @@ class NeumorphicThemeData with Diagnosticable {
     bool? highContrast,
     NeumorphicDensity? density,
     NeumorphicTypeface? typeface,
-    NeumorphicElevation? elevation,
+    RawShapeScheme? shapeScheme,
     NeumorphicMotion? motion,
     NeumorphicStyle? buttonTheme,
     NeumorphicStyle? filledButtonTheme,
@@ -1739,7 +1817,7 @@ class NeumorphicThemeData with Diagnosticable {
     highContrast: highContrast,
     density: density,
     typeface: typeface,
-    elevation: elevation,
+    shapeScheme: shapeScheme,
     motion: motion,
     buttonTheme: buttonTheme,
     filledButtonTheme: filledButtonTheme,
@@ -1772,7 +1850,7 @@ class NeumorphicThemeData with Diagnosticable {
     bool? highContrast,
     NeumorphicDensity? density,
     NeumorphicTypeface? typeface,
-    NeumorphicElevation? elevation,
+    RawShapeScheme? shapeScheme,
     NeumorphicMotion? motion,
     NeumorphicStyle? buttonTheme,
     NeumorphicStyle? filledButtonTheme,
@@ -1807,7 +1885,7 @@ class NeumorphicThemeData with Diagnosticable {
     platformHighContrast: platformHighContrast ?? _platformHighContrast,
     density: density ?? _density,
     typeface: typeface ?? this.typeface,
-    elevation: elevation ?? this.elevation,
+    shapeScheme: shapeScheme ?? this.shapeScheme,
     motion: motion ?? this.motion,
     buttonTheme: buttonTheme ?? this.buttonTheme,
     filledButtonTheme: filledButtonTheme ?? this.filledButtonTheme,
@@ -1854,7 +1932,7 @@ class NeumorphicThemeData with Diagnosticable {
           ? null
           : NeumorphicDensity.lerp(a.density, b.density, t),
       typeface: NeumorphicTypeface.lerp(a.typeface, b.typeface, t),
-      elevation: NeumorphicElevation.lerp(a.elevation, b.elevation, t),
+      shapeScheme: RawShapeScheme.lerp(a.shapeScheme, b.shapeScheme, t),
       motion: t < .5 ? a.motion : b.motion,
       buttonTheme: NeumorphicStyle.lerp(a.buttonTheme, b.buttonTheme, t)!,
       filledButtonTheme: NeumorphicStyle.lerp(
@@ -1975,7 +2053,7 @@ class NeumorphicThemeData with Diagnosticable {
           other._platformHighContrast == _platformHighContrast &&
           other._density == _density &&
           other.typeface == typeface &&
-          other.elevation == elevation &&
+          other.shapeScheme == shapeScheme &&
           other.motion == motion &&
           other.buttonTheme == buttonTheme &&
           other.filledButtonTheme == filledButtonTheme &&
@@ -2010,7 +2088,7 @@ class NeumorphicThemeData with Diagnosticable {
     _platformHighContrast,
     _density,
     typeface,
-    elevation,
+    shapeScheme,
     motion,
     buttonTheme,
     filledButtonTheme,
@@ -2061,7 +2139,13 @@ class NeumorphicThemeData with Diagnosticable {
         ),
       )
       ..add(DiagnosticsProperty<NeumorphicTypeface>('typeface', typeface))
-      ..add(DiagnosticsProperty<NeumorphicElevation>('elevation', elevation))
+      ..add(
+        DiagnosticsProperty<RawShapeScheme>(
+          'shapeScheme',
+          shapeScheme,
+          defaultValue: defaultShapeScheme,
+        ),
+      )
       ..add(
         DiagnosticsProperty<NeumorphicMotion>(
           'motion',

@@ -15,15 +15,15 @@ import 'internal/cell_bank.dart' show neumorphicFadedScroll;
 import 'internal/cap_label.dart';
 import 'internal/geometry.dart' show cssLinear, NeumorphicOneAxisClipper;
 import 'internal/panel.dart';
-import 'knobs.dart' show NeumorphicElevation;
 import 'localizations.dart';
 import 'moves.dart';
 import 'ornaments.dart';
 import 'chrome_metrics.dart';
 import 'theme.dart';
+import 'internal/relief.dart';
 
 OutlinedBorder _rowShape(NeumorphicThemeData t) =>
-    t.shapes.corner(NeumorphicRadii.control);
+    t.shapes.corner(t.shapes.control);
 
 /// A row between engraved rules: pressed in when [sunk], lifted when the keyboard is on it. The 4 px around it leave the
 /// lift room clear of the rules and of the list's edge.
@@ -45,7 +45,7 @@ Widget _row(
         padding: const EdgeInsets.all(4),
         child: CustomPaint(
           painter: sunk
-              ? NeumorphicPanelRowRelief(t.colors, t.elevation, null, shape)
+              ? NeumorphicPanelRowRelief(t.colors, t.relief, null, shape)
               : null,
           foregroundPainter: states.contains(WidgetState.focused)
               ? neumorphicFocusLift(t, shape)
@@ -151,7 +151,7 @@ class NeumorphicDataTable<R> extends StatelessWidget {
                   final shape = _rowShape(t);
                   return CustomPaint(
                     painter: states.contains(WidgetState.pressed)
-                        ? NeumorphicPanelRowRelief(c, t.elevation, null, shape)
+                        ? NeumorphicPanelRowRelief(c, t.relief, null, shape)
                         : null,
                     foregroundPainter: states.contains(WidgetState.focused)
                         ? neumorphicFocusLift(t, shape)
@@ -447,7 +447,7 @@ class _NeumorphicScrollAreaState extends State<NeumorphicScrollArea> {
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
-    final region = t.shapes.corner(NeumorphicRadii.well);
+    final region = t.shapes.corner(t.shapes.well);
     final controller = _controller;
     final handed = widget.controller != null;
     return RawScrollArea(
@@ -796,7 +796,7 @@ class NeumorphicSwipeActions extends StatelessWidget {
           final words = action.destructive ? c.ink : c.onPigment;
           // Each action is a face of a control's corners, a little in from its neighbours and the row: the strip the
           // row uncovers is square at its ends while it slides, and a face held inside it never shows that.
-          final face = t.shapes.corner(NeumorphicRadii.control);
+          final face = t.shapes.corner(t.shapes.control);
           // The face at the row's edge keeps the row's own inset there, so it ends where the row's words end (the
           // strip's start is the row's edge). The innermost face stands as far in from the edge the row uncovers: at
           // half a gap its shadow would run 2 pt under the row and be cut there.
@@ -823,7 +823,7 @@ class NeumorphicSwipeActions extends StatelessWidget {
                           fill ?? c.ground,
                         )
                       : fill,
-                  t.elevation,
+                  t.relief,
                   NeumorphicFlatScope.of(context),
                 ),
                 // The word on the face's middle by its capitals, as a key's: centred by its line box it would stand
@@ -980,7 +980,7 @@ class _ActionFace extends CustomPainter {
 
   /// The face's colour; null is the wall's own face.
   final Color? fill;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   final bool flat;
 
   @override
@@ -1071,7 +1071,7 @@ class NeumorphicTreeView<T extends Object> extends StatelessWidget {
           padding: const EdgeInsets.all(3),
           child: CustomPaint(
             painter: sunk
-                ? NeumorphicPanelRowRelief(c, t.elevation, null, shape)
+                ? NeumorphicPanelRowRelief(c, t.relief, null, shape)
                 : null,
             foregroundPainter: item.states.contains(WidgetState.focused)
                 ? neumorphicFocusLift(t, shape)
@@ -1105,7 +1105,7 @@ class NeumorphicTreeView<T extends Object> extends StatelessWidget {
                                   painter: states.contains(WidgetState.pressed)
                                       ? NeumorphicPanelRowRelief(
                                           c,
-                                          t.elevation,
+                                          t.relief,
                                           null,
                                           t.shapes.circle(36),
                                         )

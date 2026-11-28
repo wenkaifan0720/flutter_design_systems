@@ -16,9 +16,9 @@ import 'frames.dart';
 import 'component_themes.dart';
 import 'styled.dart';
 import 'shapes.dart';
-import 'knobs.dart';
 import 'editing.dart';
 import 'localizations.dart';
+import 'internal/corners.dart';
 import 'internal/cell_bank.dart';
 import 'internal/eased_lines.dart';
 import 'internal/error_line.dart';
@@ -38,6 +38,7 @@ import 'internal/field_list.dart' show NeumorphicFieldListOpen;
 import 'internal/moulded.dart';
 import 'internal/group_rows.dart' show NeumorphicGroupRowScope;
 import 'internal/actions.dart' show neumorphicInActionBar;
+import 'internal/relief.dart';
 
 /// Makes a face a control: the design kit's pressable under it, so Tab reaches it, Enter and Space press it, and one
 /// semantics node names it. Keyboard focus lifts the face off the wall and warms its lit side with the pigment; a
@@ -73,7 +74,7 @@ class NeumorphicTap extends StatefulWidget {
     this.inMutuallyExclusiveGroup = false,
     this.onDown,
     this.onStatesChanged,
-    this.radius = NeumorphicRadii.control,
+    this.radius,
     this.round = false,
     this.focusInset = 0,
     this.focusSize,
@@ -155,8 +156,9 @@ class NeumorphicTap extends StatefulWidget {
   /// Reports the full pressable state set when an interaction changes it.
   final ValueChanged<Set<WidgetState>>? onStatesChanged;
 
-  /// The corner the focus lift and the press follow.
-  final double radius;
+  /// The corner the focus lift and the press follow; null, the theme's control corner
+  /// (`NeumorphicThemeData.shapes`).
+  final double? radius;
 
   /// A circle: the lift and the press are round.
   final bool round;
@@ -256,9 +258,7 @@ class NeumorphicTap extends StatefulWidget {
           onStatesChanged,
         ),
       )
-      ..add(
-        DoubleProperty('radius', radius, defaultValue: NeumorphicRadii.control),
-      )
+      ..add(DoubleProperty('radius', radius, defaultValue: null))
       ..add(DiagnosticsProperty<bool>('round', round, defaultValue: false))
       ..add(DoubleProperty('focusInset', focusInset, defaultValue: 0))
       ..add(
@@ -498,7 +498,7 @@ class NeumorphicTapFace extends StatelessWidget {
     this.style,
     this.themeStyle,
     this.shape,
-    this.radius = NeumorphicRadii.control,
+    this.radius,
     this.round = false,
     this.focusInset = 0,
     this.focusSize,
@@ -526,7 +526,7 @@ class NeumorphicTapFace extends StatelessWidget {
   final OutlinedBorder? shape;
 
   /// See [NeumorphicTap.radius].
-  final double radius;
+  final double? radius;
 
   /// See [NeumorphicTap.round].
   final bool round;
@@ -562,13 +562,15 @@ class NeumorphicTapFace extends StatelessWidget {
     final faceOutset = this.faceOutset.resolve(Directionality.of(context));
     final place = faceAlignment.resolve(Directionality.of(context));
     final theme = NeumorphicTheme.of(context);
+    final radius = this.radius ?? theme.shapes.control;
     final motion = NeumorphicMotion.of(context);
     final look = neumorphicStyleOf([style, themeStyle], states);
     return AnimatedNeumorphicShape(
-      shape:
-          look.shape ??
-          shape ??
-          (round ? theme.shapes.circle() : theme.shapes.corner(radius)),
+      shape: neumorphicCut(
+        context,
+        look,
+        shape ?? (round ? theme.shapes.circle() : theme.shapes.corner(radius)),
+      ),
       builder: (context, border) {
         final faceSize = focusSize == null
             ? null
@@ -604,7 +606,7 @@ class NeumorphicTapFace extends StatelessWidget {
                 ? null
                 : _FocusLift(
                     theme.colors,
-                    theme.elevation,
+                    theme.relief,
                     lift,
                     focusReach,
                     radius,
@@ -651,7 +653,7 @@ class NeumorphicTapFace extends StatelessWidget {
                 ? null
                 : _PressRelief(
                     theme.colors,
-                    theme.elevation,
+                    theme.relief,
                     look.fill,
                     depth,
                     radius,
@@ -702,9 +704,7 @@ class NeumorphicTapFace extends StatelessWidget {
       ..add(
         DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
       )
-      ..add(
-        DoubleProperty('radius', radius, defaultValue: NeumorphicRadii.control),
-      )
+      ..add(DoubleProperty('radius', radius, defaultValue: null))
       ..add(DiagnosticsProperty<bool>('round', round, defaultValue: false))
       ..add(DoubleProperty('focusInset', focusInset, defaultValue: 0))
       ..add(
@@ -761,7 +761,7 @@ class _FocusLift extends CustomPainter {
     this.place = Alignment.center,
   });
   final NeumorphicColors c;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   final Alignment place;
   final double amount, reach;
   final Size? faceSize;
@@ -896,7 +896,7 @@ class _PressRelief extends CustomPainter {
     this.place = Alignment.center,
   });
   final NeumorphicColors c;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   final Color? fill;
   final Alignment place;
   final double depth, radius, inset;
@@ -965,7 +965,7 @@ class _Moulded extends StatefulWidget {
     this.showBusy = true,
     this.focusNode,
     this.autofocus = false,
-    this.radius = NeumorphicRadii.control,
+    this.radius,
     this.padding = EdgeInsets.zero,
   });
   final Widget Function(BuildContext, NeumorphicStyleOf) builder;
@@ -976,7 +976,7 @@ class _Moulded extends StatefulWidget {
   final bool? selected;
   final bool busy, showBusy;
   final FocusNode? focusNode;
-  final double radius;
+  final double? radius;
   final EdgeInsets padding;
 
   /// Whether the control takes focus when it first appears.
@@ -1056,12 +1056,12 @@ class _ActPainter extends CustomPainter {
     this.border,
     this.fill,
     this.side,
-    this.elevation = const NeumorphicElevation(),
+    this.elevation = const NeumorphicReliefDepth(),
   });
   final OutlinedBorder? border;
   final Color? fill;
   final BorderSide? side;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   final NeumorphicColors c;
   final bool flat;
   final double radius;
@@ -1382,6 +1382,9 @@ class _ActButtonState extends State<_ActButton> {
                 !widget.wide
             ? t.shapes.capsule
             : null);
+    // The outline the act's face is drawn to, and the one it is laid out by: its own, so an app's corners redraw it
+    // and never move its words.
+    OutlinedBorder? drawn, laid;
     if (!widget.round && look.shape == null) {
       shape = neumorphicInlineRoleShape(
         context,
@@ -1392,11 +1395,24 @@ class _ActButtonState extends State<_ActButton> {
         padding: act.sides,
         beside: widget.leading != null || widget.icon != null ? glyph + 8 : 0,
       );
+      laid = shape;
+      // An app's corners over the act's own (its pill, or the control's corner).
+      if (look.corners != null) {
+        shape = neumorphicCornered(
+          context,
+          shape ?? t.shapes.corner(t.shapes.control),
+          look.corners,
+        );
+      }
+      // Its face is drawn to an outline even with no corners given, so corners given in one state alone (hovered,
+      // say) ease from its own and back; the act's layout keeps to the shape above.
+      drawn = shape ?? t.shapes.corner(t.shapes.control);
     }
     final diameter = act.diameter;
     if (widget.round && shape is NeumorphicBorder) {
       shape = shape.fit(Size.square(diameter));
     }
+    final layout = drawn == null ? shape : laid;
     final onPressed = widget.busy ? null : widget.onPressed;
     final place = NeumorphicFacePlace.of(context);
     Widget tap(Widget face, {bool round = false}) => NeumorphicTap(
@@ -1423,7 +1439,7 @@ class _ActButtonState extends State<_ActButton> {
     // a raised pigment face's highlight and shadow into its edges.
     Widget paint(Widget child, {required EdgeInsets padding}) =>
         AnimatedNeumorphicShape(
-          shape: shape,
+          shape: drawn ?? shape,
           builder: (context, border) => RawKeylineFace(
             child: TweenAnimationBuilder<double>(
               // Held in while busy, as a moulded key is.
@@ -1440,7 +1456,7 @@ class _ActButtonState extends State<_ActButton> {
                 painter: _ActPainter(
                   c,
                   NeumorphicFlatScope.of(context),
-                  widget.round ? diameter / 2 : NeumorphicRadii.control,
+                  widget.round ? diameter / 2 : t.shapes.control,
                   down,
                   border: border,
                   fill: look.fill,
@@ -1453,15 +1469,19 @@ class _ActButtonState extends State<_ActButton> {
                               width: neumorphicEdgeWidth,
                             )
                           : null),
-                  elevation: t.elevation,
+                  elevation: t.relief,
                 ),
                 child: child,
               ),
               child: Padding(
                 padding:
                     padding +
-                    (border?.dimensions.resolve(Directionality.of(context)) ??
-                        EdgeInsets.zero),
+                    (layout == null
+                        ? EdgeInsets.zero
+                        : border?.dimensions.resolve(
+                                Directionality.of(context),
+                              ) ??
+                              EdgeInsets.zero),
                 child: child,
               ),
             ),
@@ -1534,7 +1554,7 @@ class _ActButtonState extends State<_ActButton> {
     );
     // A pill's cut-in counts towards the face's height, not on top of it.
     final cut =
-        shape?.dimensions.resolve(Directionality.of(context)) ??
+        layout?.dimensions.resolve(Directionality.of(context)) ??
         EdgeInsets.zero;
     final button = tap(
       paint(
@@ -2282,18 +2302,20 @@ class NeumorphicLink extends StatelessWidget {
                 .copyWith(color: ink);
             final padding =
                 look.padding(Directionality.of(context)) ?? EdgeInsets.zero;
-            final border =
-                look.shape ??
-                neumorphicInlineRoleShape(
-                  context,
-                  shape: null,
-                  text: label,
-                  textStyle: words,
-                  width: box.maxWidth,
-                  padding: padding,
-                  beside: leading == null ? 0 : (look.iconSize ?? 18) + 6,
-                ) ??
-                const NeumorphicRoundedBorder(radius: NeumorphicRadii.control);
+            final border = neumorphicCut(
+              context,
+              look,
+              neumorphicInlineRoleShape(
+                    context,
+                    shape: null,
+                    text: label,
+                    textStyle: words,
+                    width: box.maxWidth,
+                    padding: padding,
+                    beside: leading == null ? 0 : (look.iconSize ?? 18) + 6,
+                  ) ??
+                  NeumorphicRoundedBorder(radius: t.shapes.control),
+            );
             final hasFace =
                 look.fill != null ||
                 look.side != null ||
@@ -2652,7 +2674,7 @@ class NeumorphicRoundButton extends StatelessWidget {
                             under: true,
                             t.shapes.capsule,
                             c,
-                            t.elevation,
+                            t.relief,
                             NeumorphicFlatScope.of(context),
                           ),
                           child: ConstrainedBox(
@@ -2700,7 +2722,7 @@ class NeumorphicRoundButton extends StatelessWidget {
                             under: false,
                             t.shapes.capsule,
                             c,
-                            t.elevation,
+                            t.relief,
                             NeumorphicFlatScope.of(context),
                           ),
                           child: ConstrainedBox(
@@ -2823,7 +2845,7 @@ class _KeyBeadPainter extends CustomPainter {
   final bool under;
   final ShapeBorder border;
   final NeumorphicColors c;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   final bool flat;
 
   @override
@@ -3194,7 +3216,7 @@ class NeumorphicChip extends StatelessWidget {
           shape: shape,
           states: states,
           outlined: true,
-          radius: NeumorphicRadii.chip,
+          radius: t.shapes.chip,
           child: ConstrainedBox(
             constraints: BoxConstraints(maxHeight: band),
             child: Row(
@@ -3220,7 +3242,7 @@ class NeumorphicChip extends StatelessWidget {
                           shape: shape,
                           semanticLabel: label,
                           selected: selected,
-                          radius: NeumorphicRadii.chip,
+                          radius: t.shapes.chip,
                           child: Padding(
                             padding: padding,
                             child: Builder(builder: inner),
@@ -3243,7 +3265,7 @@ class NeumorphicChip extends StatelessWidget {
                     style: style,
                     themeStyle: t.chipTheme,
                     shape: shape,
-                    radius: NeumorphicRadii.chip,
+                    radius: t.shapes.chip,
                     child: SizedBox(
                       width: NeumorphicChromeMetrics.targetOf(context).width,
                       height: band,
@@ -3270,7 +3292,7 @@ class NeumorphicChip extends StatelessWidget {
         style: style,
         themeStyle: t.chipTheme,
         shape: shape,
-        radius: NeumorphicRadii.chip,
+        radius: t.shapes.chip,
         padding: padding,
         builder: (context, look) =>
             content(context, look.at({...look.states, ...states})),
@@ -3480,6 +3502,7 @@ class NeumorphicLatchGroup extends StatelessWidget {
       minCellWidth: need,
       side: bank.side,
       edge: bank.edge,
+      corners: bank.corners,
       naturalWidth: 390,
       // The tallest label at the cell's width: a label that wraps makes its row taller.
       contentHeight: (cellWidth) {
@@ -4178,6 +4201,8 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
                       // The decorator's error line is the field's announcement; a form's own is the form's.
                       NeumorphicErrorLine(
                         live: !own && failureLine == null,
+                        // The field carries the mark at its end unless a key stands there.
+                        mark: end != null,
                         child: parts.error ?? Text(error),
                       ),
                     ),
@@ -4306,7 +4331,7 @@ class NeumorphicSendButton extends StatelessWidget {
                                       color: look.edge!,
                                       width: neumorphicEdgeWidth,
                                     )),
-                          elevation: t.elevation,
+                          elevation: t.relief,
                         ),
                         child: child,
                       ),
@@ -4587,7 +4612,7 @@ class NeumorphicChoiceBox extends StatelessWidget {
                   ? NeumorphicSurfaceLevel.groove
                   : NeumorphicSurfaceLevel.part,
               outlined: true,
-              radius: NeumorphicRadii.control,
+              radius: t.shapes.control,
               padding: padding,
               child: child,
             ),
@@ -4606,8 +4631,8 @@ class NeumorphicChoiceBox extends StatelessWidget {
                           : AlignmentDirectional.topEnd,
                       child: Padding(
                         padding: EdgeInsetsDirectional.only(
-                          top: oneLine ? 0 : NeumorphicRadii.control - 4,
-                          end: NeumorphicRadii.control - 4,
+                          top: oneLine ? 0 : t.shapes.control - 4,
+                          end: t.shapes.control - 4,
                         ),
                         child: const NeumorphicLed(),
                       ),
@@ -5187,7 +5212,7 @@ class _SwitchPainter extends CustomPainter {
     this.fill,
     this.foreground,
     this.side,
-    this.elevation = const NeumorphicElevation(),
+    this.elevation = const NeumorphicReliefDepth(),
     this.rule = 1,
     this.focus = 0,
     this.rtl = false,
@@ -5205,7 +5230,7 @@ class _SwitchPainter extends CustomPainter {
   final OutlinedBorder? border, knobBorder;
   final Color? fill, foreground;
   final BorderSide? side;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   @override
   void paint(Canvas canvas, Size s) {
     final slot = Rect.fromCenter(
@@ -5417,7 +5442,7 @@ class NeumorphicSwitch extends StatelessWidget {
         toggled: value,
         focusNode: focusNode,
         button: false,
-        style: style,
+        style: NeumorphicStyle.layered([neumorphicOwnCorners, style]),
         themeStyle: t.switchTheme,
         shape: t.shapes.capsule,
         onPressed: onChanged == null ? null : () => onChanged!(!value),
@@ -5478,7 +5503,7 @@ class NeumorphicSwitch extends StatelessWidget {
                                           width: neumorphicEdgeWidth,
                                         )
                                       : BorderSide.none),
-                              elevation: t.elevation,
+                              elevation: t.relief,
                               rule: neumorphicRuleWidth,
                               rtl: rtl,
                             ),
@@ -5701,12 +5726,12 @@ class _SliderPainter extends CustomPainter {
     this.fill,
     this.foreground,
     this.side,
-    this.elevation = const NeumorphicElevation(),
+    this.elevation = const NeumorphicReliefDepth(),
   });
   final OutlinedBorder? border, knobBorder;
   final Color? fill, foreground;
   final BorderSide? side;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   final double at, h, thumb;
   final NeumorphicColors c;
   final bool flat, rtl;
@@ -5824,7 +5849,7 @@ class _ThumbLift extends CustomPainter {
     this.trackBorder,
   });
   final NeumorphicColors c;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   final OutlinedBorder border;
   final OutlinedBorder? trackBorder;
   final double at, thumb, track;
@@ -6050,7 +6075,10 @@ class _NeumorphicSliderState extends State<NeumorphicSlider> {
               child: NeumorphicTap(
                 focusNode: widget.focusNode,
                 autofocus: widget.autofocus,
-                style: widget.style,
+                style: NeumorphicStyle.layered([
+                  neumorphicOwnCorners,
+                  widget.style,
+                ]),
                 themeStyle: t.sliderTheme,
                 // Its focus is the thumb's, lifted by the face below; the thumb drags, so the pointer is grab, and
                 // grabbing while held.
@@ -6144,13 +6172,13 @@ class _NeumorphicSliderState extends State<NeumorphicSlider> {
                                 fill: look.fill,
                                 foreground: look.foreground,
                                 side: neumorphicRim(t, look, c.edge, 1.5),
-                                elevation: t.elevation,
+                                elevation: t.relief,
                               ),
                               foregroundPainter:
                                   states.contains(WidgetState.focused)
                                   ? _ThumbLift(
                                       c,
-                                      t.elevation,
+                                      t.relief,
                                       t.shapes.circle(26),
                                       at,
                                       26,
@@ -6222,7 +6250,7 @@ class NeumorphicProgress extends StatelessWidget {
             rtl,
             border: t.shapes.capsule,
             knobBorder: t.shapes.circle(26),
-            elevation: t.elevation,
+            elevation: t.relief,
           ),
           child: const SizedBox(height: 8, width: double.infinity),
         ),
@@ -6335,7 +6363,7 @@ class NeumorphicRoundCheckbox extends StatelessWidget {
                             look.foreground,
                             look.edge,
                             look.side,
-                            t.elevation,
+                            t.relief,
                           ),
                           (canvas, s) {
                             final shape = shapeBorder.getOuterPath(
@@ -6350,7 +6378,7 @@ class NeumorphicRoundCheckbox extends StatelessWidget {
                                 light: (const Offset(-2, -2), 5),
                                 dark: (const Offset(2, 2), 5),
                                 flat: flat,
-                                elevation: t.elevation,
+                                elevation: t.relief,
                                 tone: neumorphicIsColourFace(look.fill, c)
                                     ? look.fill
                                     : null,
@@ -6369,7 +6397,7 @@ class NeumorphicRoundCheckbox extends StatelessWidget {
                                 light: (const Offset(-2, -2), 5),
                                 dark: (const Offset(3, 3), 6),
                                 flat: flat,
-                                elevation: t.elevation,
+                                elevation: t.relief,
                                 face: look.fill == null
                                     ? null
                                     : cssLinear(Offset.zero & s, 145, [

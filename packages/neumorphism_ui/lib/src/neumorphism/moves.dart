@@ -16,7 +16,6 @@ import 'internal/cell_bank.dart';
 import 'chrome_metrics.dart';
 import 'frames.dart';
 import 'glyphs.dart';
-import 'knobs.dart' show NeumorphicElevation;
 import 'layout.dart' show neumorphicOwnSize;
 import 'localizations.dart';
 import 'shapes.dart';
@@ -26,6 +25,7 @@ import 'internal/reach.dart' show neumorphicAtEnd, NeumorphicTargetOutside;
 import 'internal/panel.dart';
 import 'internal/out_of_use.dart';
 import 'internal/moulded.dart';
+import 'internal/relief.dart';
 
 /// View tabs with one Tab stop, logical arrow navigation and a pressed selection.
 ///
@@ -371,7 +371,7 @@ class _Dot extends StatelessWidget {
       height: 8,
       alignment: AlignmentDirectional.center,
       child: CustomPaint(
-        painter: _DotWell(near, t.colors, t.elevation, flat, t.highContrast),
+        painter: _DotWell(near, t.colors, t.relief, flat, t.highContrast),
       ),
     );
     if (follow case final follow?) {
@@ -393,7 +393,7 @@ class _DotWell extends CustomPainter {
   const _DotWell(this.near, this.c, this.elevation, this.flat, this.edge);
   final double near;
   final NeumorphicColors c;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   final bool flat, edge;
 
   @override
@@ -798,7 +798,7 @@ class NeumorphicPagination extends StatelessWidget {
     final face =
         t.density.height(40) +
         t.shapes
-            .corner(NeumorphicRadii.control)
+            .corner(t.shapes.control)
             .dimensions
             .resolve(Directionality.of(context))
             .horizontal;
@@ -970,7 +970,7 @@ class _PageKeyState extends State<_PageKey> {
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     final motion = NeumorphicMotion.of(context);
-    final shape = t.shapes.corner(NeumorphicRadii.control);
+    final shape = t.shapes.corner(t.shapes.control);
     return NeumorphicTap(
       shape: shape,
       onPressed: widget.onPressed,
@@ -1003,7 +1003,7 @@ class _PageKeyState extends State<_PageKey> {
                     : NeumorphicSurfaceLevel.part,
                 // The corner by its radius, not as a shape: the face is already its whole size, and a shape would
                 // pad it by the corner's inset again, past the lift that keyboard focus draws round it.
-                radius: NeumorphicRadii.control,
+                radius: t.shapes.control,
                 states: {if (widget.selected) WidgetState.selected},
                 // A press that chooses the page goes on from there into the well: the surface sinks from the deeper
                 // of the two, so the face never pops up between.
@@ -1213,7 +1213,7 @@ class _NeumorphicCarouselState extends State<NeumorphicCarouselView> {
     final t = NeumorphicTheme.of(context);
     final words = NeumorphicLocalizations.of(context);
     final count = widget.children.length;
-    final region = t.shapes.corner(NeumorphicRadii.slab);
+    final region = t.shapes.corner(t.shapes.slab);
     return RawCarousel(
       itemCount: count,
       // One slide in view at rest, its whole cast inside the frame. Slides beside it showing a share of themselves

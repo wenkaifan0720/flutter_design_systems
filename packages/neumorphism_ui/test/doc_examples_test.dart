@@ -845,11 +845,19 @@ void main() {
         topBar: NeumorphicAppBar(title: 'Components'),
         body: NeumorphicInventoryGallery(),
       ),
-      'NeumorphicElevation': (context) {
-        final theme = NeumorphicThemeData.porcelain().copyWith(
-          elevation: const NeumorphicElevation(depth: .75),
-        );
-        return theme;
+      'NeumorphicThemeData.shapeScheme': (context) =>
+          NeumorphicThemeData.porcelain().copyWith(
+            shapeScheme: NeumorphicThemeData.defaultShapeScheme.copyWith(
+              corners: NeumorphicThemeData.defaultShapeScheme.corners.copyWith(
+                medium: 16,
+              ),
+              depth: .75,
+            ),
+          ),
+      'NeumorphicShapes': (context) {
+        final well = NeumorphicTheme.of(context).shapes
+            .corner(NeumorphicTheme.of(context).shapes.well);
+        return well;
       },
       'NeumorphicDensity': (context) {
         final theme = NeumorphicThemeData.porcelain().copyWith(

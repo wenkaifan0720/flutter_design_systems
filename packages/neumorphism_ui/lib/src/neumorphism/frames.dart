@@ -15,10 +15,12 @@ import 'package:ui_core/ui_core.dart';
 import 'internal/geometry.dart';
 import 'theme.dart';
 import 'component_themes.dart';
-import 'knobs.dart';
 import 'styled.dart';
 import 'internal/moulded.dart';
 import 'internal/risen_focus.dart';
+import 'internal/corners.dart';
+import 'internal/relief.dart';
+import 'shapes.dart' show NeumorphicShapes;
 
 /// The levels of the material, named for what they are.
 enum NeumorphicSurfaceLevel {
@@ -143,7 +145,7 @@ void neumorphicPaintRaised(
   double faceDeg = 145,
   bool flat = false,
   bool rim = false,
-  NeumorphicElevation elevation = const NeumorphicElevation(),
+  NeumorphicReliefDepth elevation = const NeumorphicReliefDepth(),
 }) {
   final box = shape.getBounds();
   if (!flat && elevation.depth > 0) {
@@ -205,7 +207,7 @@ void neumorphicPaintPressed(
   Shader? face,
   double faceDeg = 145,
   bool flat = false,
-  NeumorphicElevation elevation = const NeumorphicElevation(),
+  NeumorphicReliefDepth elevation = const NeumorphicReliefDepth(),
 }) {
   final box = shape.getBounds();
   canvas.drawPath(shape, _facePaint(c.ground, face));
@@ -278,7 +280,7 @@ void neumorphicPaintCast(
   bool flat = false,
   Shader? face,
   Color? tone,
-  NeumorphicElevation elevation = const NeumorphicElevation(),
+  NeumorphicReliefDepth elevation = const NeumorphicReliefDepth(),
 }) {
   switch (draw) {
     case NeumorphicDraw.part:
@@ -381,7 +383,7 @@ void neumorphicPaintFocusLift(
   NeumorphicColors c, {
   double amount = 1,
   double reach = 1,
-  NeumorphicElevation elevation = const NeumorphicElevation(),
+  NeumorphicReliefDepth elevation = const NeumorphicReliefDepth(),
 }) {
   if (amount <= 0) return;
   // Focus shows on a look with its relief turned low too: the lift keeps a floor of its own.
@@ -497,7 +499,7 @@ class _CastPainter extends CustomPainter {
     this.border,
     this.fill,
     this.side,
-    this.elevation = const NeumorphicElevation(),
+    this.elevation = const NeumorphicReliefDepth(),
     this.focus = 0,
   });
   final NeumorphicDraw draw;
@@ -512,7 +514,7 @@ class _CastPainter extends CustomPainter {
   final OutlinedBorder? border;
   final Color? fill;
   final BorderSide? side;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
 
   /// How far a focused groove or well has deepened, 0 to 1.
   final double focus;
@@ -846,12 +848,13 @@ class NeumorphicSurface extends StatelessWidget {
     }
   }
 
-  static double _defaultRadius(NeumorphicSurfaceLevel cast) => switch (cast) {
-    NeumorphicSurfaceLevel.slab ||
-    NeumorphicSurfaceLevel.casting => NeumorphicRadii.slab,
-    NeumorphicSurfaceLevel.well => NeumorphicRadii.well,
-    NeumorphicSurfaceLevel.part ||
-    NeumorphicSurfaceLevel.groove => NeumorphicRadii.control,
+  static double _defaultRadius(
+    NeumorphicShapes s,
+    NeumorphicSurfaceLevel cast,
+  ) => switch (cast) {
+    NeumorphicSurfaceLevel.slab || NeumorphicSurfaceLevel.casting => s.slab,
+    NeumorphicSurfaceLevel.well => s.well,
+    NeumorphicSurfaceLevel.part || NeumorphicSurfaceLevel.groove => s.control,
   };
 
   /// What this context's next surface stands on: null on the wall.
@@ -873,14 +876,14 @@ class NeumorphicSurface extends StatelessWidget {
     final customShape = look.shape ?? shape;
     final familyShape = round
         ? theme.shapes.circle()
-        : theme.shapes.corner(radius ?? _defaultRadius(cast));
+        : theme.shapes.corner(radius ?? _defaultRadius(theme.shapes, cast));
     final edge =
         look.side ??
         (outlined && theme.highContrast || look.edge != null
             ? BorderSide(color: look.edge ?? c.edge, width: neumorphicEdgeWidth)
             : null);
     return AnimatedNeumorphicShape(
-      shape: customShape ?? familyShape,
+      shape: neumorphicCut(context, look, shape ?? familyShape),
       builder: (context, border) {
         final safePadding =
             ownPadding +
@@ -924,10 +927,10 @@ class NeumorphicSurface extends StatelessWidget {
         // A flat scope's relief share eases the light and shadow rather than dropping them at once.
         final relief = NeumorphicFlatScope.reliefOf(context);
         final elevation = relief >= 1
-            ? theme.elevation
-            : theme.elevation.copyWith(
-                depth: theme.elevation.depth * relief,
-                strength: theme.elevation.strength * relief,
+            ? theme.relief
+            : theme.relief.copyWith(
+                depth: theme.relief.depth * relief,
+                strength: theme.relief.strength * relief,
               );
         // A part chosen or let go (raised to pressed in, and back) moves through one depth, flush at the middle, and
         // its wash comes and goes with it; nothing switches at once.
@@ -952,7 +955,7 @@ class NeumorphicSurface extends StatelessWidget {
             return CustomPaint(
               painter: _CastPainter(
                 moving ? raisedDraw : draw,
-                radius ?? _defaultRadius(cast),
+                radius ?? _defaultRadius(theme.shapes, cast),
                 round,
                 c,
                 NeumorphicFlatScope.of(context),
@@ -1134,7 +1137,9 @@ class NeumorphicWell extends StatelessWidget {
     cast: NeumorphicSurfaceLevel.well,
     style: style,
     themeStyle: NeumorphicTheme.of(context).cardTheme,
-    radius: small ? NeumorphicRadii.control : NeumorphicRadii.well,
+    radius: small
+        ? NeumorphicTheme.of(context).shapes.control
+        : NeumorphicTheme.of(context).shapes.well,
     padding: padding,
     child: child,
   );

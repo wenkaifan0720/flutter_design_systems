@@ -11,17 +11,17 @@ import 'package:ui_core/ui_core.dart';
 import '../component_themes.dart';
 import '../frames.dart';
 import '../glyphs.dart';
-import '../knobs.dart';
 import '../shapes.dart';
 import '../chrome_metrics.dart';
 import '../theme.dart';
 import 'cap_label.dart';
 import 'cell_bank.dart' show NeumorphicChosenBand;
 import 'moulded.dart';
+import 'relief.dart';
 
 /// The panel's outline: the menu's (the theme's medium shape).
 OutlinedBorder _panelShape(NeumorphicThemeData t) =>
-    t.shapes.corner(NeumorphicRadii.slab);
+    t.shapes.corner(t.shapes.slab);
 
 /// A row's outline inside the panel: the panel's moved in by its 12 px padding, so a highlighted row is concentric
 /// with the panel.
@@ -70,12 +70,12 @@ CustomPainter neumorphicFocusLift(
   NeumorphicThemeData t,
   OutlinedBorder border, {
   double reach = 1,
-}) => _Lift(t.colors, t.elevation, border, reach);
+}) => _Lift(t.colors, t.relief, border, reach);
 
 class _Lift extends CustomPainter {
   const _Lift(this.c, this.elevation, this.border, this.reach);
   final NeumorphicColors c;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   final OutlinedBorder border;
   final double reach;
 
@@ -151,7 +151,7 @@ class NeumorphicPanel extends StatelessWidget {
       style: style,
       themeStyle: t.menuTheme,
       shape: _panelShape(t),
-      radius: NeumorphicRadii.slab,
+      radius: t.shapes.slab,
       outlined: true,
       padding: padding,
       child: ConstrainedBox(
@@ -304,23 +304,12 @@ class NeumorphicPanelRow extends StatelessWidget {
     final glyph = icon ?? (danger ? NeumorphicGlyphs.triangleAlert : null);
     final row = CustomPaint(
       painter: held
-          ? NeumorphicPanelRowRelief(
-              c,
-              t.elevation,
-              look.fill ?? c.ground,
-              border,
-            )
+          ? NeumorphicPanelRowRelief(c, t.relief, look.fill ?? c.ground, border)
           : raised || (keys && !chosen)
-          ? NeumorphicPanelRowRaise(c, t.elevation, border, focus: keys)
+          ? NeumorphicPanelRowRaise(c, t.relief, border, focus: keys)
           : null,
       foregroundPainter: keys && chosen
-          ? NeumorphicPanelRowRaise(
-              c,
-              t.elevation,
-              border,
-              focus: true,
-              rim: true,
-            )
+          ? NeumorphicPanelRowRaise(c, t.relief, border, focus: true, rim: true)
           : null,
       child: Container(
         constraints: BoxConstraints(
@@ -411,12 +400,7 @@ class NeumorphicPanelRow extends StatelessWidget {
     // An app's own fill for the row's states keeps its say over the chosen row's face.
     final face = chosen && look.fill != null
         ? CustomPaint(
-            painter: NeumorphicPanelRowRelief(
-              c,
-              t.elevation,
-              look.fill,
-              border,
-            ),
+            painter: NeumorphicPanelRowRelief(c, t.relief, look.fill, border),
             child: row,
           )
         : NeumorphicChosenBand(chosen: chosen, border: border, child: row);
@@ -512,7 +496,7 @@ class NeumorphicPanelRowRaise extends CustomPainter {
   final NeumorphicColors colors;
 
   /// The theme's relief.
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
 
   /// The row's outline.
   final OutlinedBorder border;
@@ -571,7 +555,7 @@ class NeumorphicPanelRowRelief extends CustomPainter {
   final NeumorphicColors colors;
 
   /// The theme's relief.
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
 
   /// A style's own fill for the row.
   final Color? fill;

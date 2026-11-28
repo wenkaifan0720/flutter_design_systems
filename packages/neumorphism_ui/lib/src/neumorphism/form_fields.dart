@@ -404,7 +404,12 @@ class _NeumorphicDateFieldState extends State<NeumorphicDateField> {
           // The help or the failure eases in under the face.
           NeumorphicHintSlot(
             child: error != null
-                ? NeumorphicErrorLine(live: false, child: parts.error!)
+                // The field carries the mark at its end, in the calendar's place.
+                ? NeumorphicErrorLine(
+                    live: false,
+                    mark: false,
+                    child: parts.error!,
+                  )
                 : helper != null
                 ? DefaultTextStyle.merge(
                     style: t.textTheme.caption,

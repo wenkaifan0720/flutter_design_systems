@@ -1,3 +1,37 @@
+## 0.9.0
+
+- Requires ui_core 0.8.6.
+- A theme's corners and relief open within the look's bands. `NeumorphicThemeData.shapeScheme`, ui_core's
+  `RawShapeScheme`, is the corner scale (extra small to extra large, and a capsule's end) and the relief's depth, held
+  by `NeumorphicThemeData.shapeLimits`: the least corner fixed at 6, small 6 to 10, medium 8 to 16, large and extra
+  large 14 to 28, a capsule's end at 24, the depth from 0.5 to 1.5. No stroke: depth alone draws every edge. Every
+  radius moves with its step: a control's, a chip's (2 under it, never under 6), a well's (2 over it), a card's and a
+  slab's, and every face nested in one. `NeumorphicTheme.of(context).shapes` reads them; `NeumorphicShapes` takes
+  the scale.
+- `NeumorphicElevation` and `NeumorphicThemeData.elevation` are removed: the depth is the shape scheme's. Write
+  `shapeScheme: NeumorphicThemeData.defaultShapeScheme.copyWith(depth: d)` (or a theme's own
+  `shapeScheme.copyWith(depth: d)`) for `elevation: NeumorphicElevation(depth: d)`. Its `strength` goes with it:
+  the relief's strength is the look's. `dart fix` can't move an argument into another, so the change is by hand.
+- A part's own corners: a style's `corners` (ui_core's `RawCorners`) takes a part's corners by step, the start and
+  end ones following the reading direction, each held to the look's bands and drawn at the theme's scale; the corners
+  left out keep the part's own. A square corner is held to the least, 6: the relief wraps every fillet. A style's
+  `shape` wins. A circle stays a circle (a radio, a round key, an avatar, a dial), a switch's slot and a slider's
+  track keep their capsule, a segmented button's strip takes the corners at its ends and keeps its seams, and a menu's
+  first and last rows follow its corners, inset. A change of corners, in one state or with the theme, eases corner by
+  corner. `NeumorphicRoundedBorder.borderRadius` draws corners of their own.
+- `NeumorphicTap.radius` and `NeumorphicTapFace.radius` are nullable: null follows the theme's control corner.
+- A chosen segment is told by its depth and its words together: its words bold in the full ink, the others' regular
+  in the tertiary ink.
+- Below 520 wide a list tile's figure stands at the row's end while the words keep 7 ems of the title beside it, else
+  under the words: chosen from the width and the text size, never from a row's words, so a list's rows stand their
+  figures alike.
+- A list row whose words run to three lines stands its mark level with its figure, both on the title's first line: the
+  figure reaches into the row's padding as the mark does, where the words went lower by what it needed and the mark
+  stood 7 above the figure's middle. Such a row is 7 shorter.
+- New `NeumorphicColors.danger`, a red at 4.5:1 or more on the wall in every palette, by day and by night. A
+  failure's words and its warning glyph are in it, and the mark shows once: at a field's end, or else on the line
+  (`NeumorphicErrorLine.mark`). It never fills a face, and the glyph keeps an error from resting on colour alone.
+
 ## 0.8.0
 
 - Requires ui_core 0.8.2.

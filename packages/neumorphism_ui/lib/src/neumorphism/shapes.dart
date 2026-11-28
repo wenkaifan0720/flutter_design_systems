@@ -4,6 +4,8 @@ import 'dart:ui' show lerpDouble;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
+import 'package:ui_core/ui_core.dart' show RawCornerScale;
+
 import 'theme.dart' show NeumorphicRadii;
 
 /// Neumorphism's rounded family. A border also describes the inset needed to
@@ -58,8 +60,13 @@ abstract class NeumorphicBorder extends OutlinedBorder {
     if (t == 1) return b;
     final side = BorderSide.lerp(a.side, b.side, t);
     if (a is NeumorphicRoundedBorder && b is NeumorphicRoundedBorder) {
+      // Corner by corner when either gives its corners their own radii, so a part whose corners change never snaps.
+      final corners = a.borderRadius == null && b.borderRadius == null
+          ? null
+          : BorderRadius.lerp(a._corners, b._corners, t);
       return NeumorphicRoundedBorder(
         radius: lerpDouble(a.radius, b.radius, t)!,
+        borderRadius: corners,
         side: side,
       );
     }
@@ -87,44 +94,86 @@ double _cut(double radius) => radius * (1 - math.sqrt(.5));
 /// const NeumorphicRoundedBorder(radius: 20)
 /// ```
 class NeumorphicRoundedBorder extends NeumorphicBorder {
-  /// Rounds each corner by [radius], capped at half the shortest side.
-  const NeumorphicRoundedBorder({super.side, this.radius = 12})
-    : assert(radius >= 0);
+  /// Rounds each corner by [radius] (or by its own in [borderRadius]), capped at half the shortest side.
+  const NeumorphicRoundedBorder({
+    super.side,
+    this.radius = 12,
+    this.borderRadius,
+  }) : assert(radius >= 0);
 
-  /// The maximum corner radius in logical pixels.
+  /// The maximum corner radius in logical pixels: the part's own corner.
   final double radius;
+
+  /// Each corner's own radius, left and right as drawn, where an app's style gives a part's corners steps of their
+  /// own (`NeumorphicStyle.corners`); null rounds all four by [radius]. Each is capped at half the shortest side.
+  final BorderRadius? borderRadius;
+
+  BorderRadius get _corners =>
+      borderRadius ?? BorderRadius.all(Radius.circular(radius));
+
+  // The roundest corner, which the content's safe inset keeps clear of.
+  double get _most {
+    final r = borderRadius;
+    if (r == null) return radius;
+    return [
+      r.topLeft.x,
+      r.topRight.x,
+      r.bottomLeft.x,
+      r.bottomRight.x,
+    ].reduce(math.max);
+  }
 
   @override
   EdgeInsetsGeometry get dimensions =>
-      EdgeInsets.all(_cut(radius) + side.strokeInset);
+      EdgeInsets.all(_cut(_most) + side.strokeInset);
 
   @override
-  RRect _outline(Rect rect) => RRect.fromRectAndRadius(
-    rect,
-    Radius.circular(math.min(radius, rect.shortestSide / 2)),
-  );
-
-  @override
-  NeumorphicRoundedBorder copyWith({BorderSide? side, double? radius}) =>
-      NeumorphicRoundedBorder(
-        side: side ?? this.side,
-        radius: radius ?? this.radius,
+  RRect _outline(Rect rect) {
+    final cap = rect.shortestSide / 2;
+    final r = borderRadius;
+    if (r == null) {
+      return RRect.fromRectAndRadius(
+        rect,
+        Radius.circular(math.min(radius, cap)),
       );
+    }
+    Radius held(Radius x) => Radius.circular(math.min(x.x, cap));
+    return RRect.fromRectAndCorners(
+      rect,
+      topLeft: held(r.topLeft),
+      topRight: held(r.topRight),
+      bottomLeft: held(r.bottomLeft),
+      bottomRight: held(r.bottomRight),
+    );
+  }
+
+  @override
+  NeumorphicRoundedBorder copyWith({
+    BorderSide? side,
+    double? radius,
+    BorderRadius? borderRadius,
+  }) => NeumorphicRoundedBorder(
+    side: side ?? this.side,
+    radius: radius ?? this.radius,
+    borderRadius: borderRadius ?? this.borderRadius,
+  );
 
   @override
   NeumorphicRoundedBorder scale(double t) => NeumorphicRoundedBorder(
     side: side.scale(t),
     radius: radius * math.max(0, t),
+    borderRadius: borderRadius == null ? null : borderRadius! * math.max(0, t),
   );
 
   @override
   bool operator ==(Object other) =>
       other is NeumorphicRoundedBorder &&
       other.side == side &&
-      other.radius == radius;
+      other.radius == radius &&
+      other.borderRadius == borderRadius;
 
   @override
-  int get hashCode => Object.hash(side, radius);
+  int get hashCode => Object.hash(side, radius, borderRadius);
 }
 
 /// A stadium for one-line content. Its radius stops growing at [maxRadius], so
@@ -417,19 +466,57 @@ class NeumorphicCellBorder extends OutlinedBorder {
   int get hashCode => Object.hash(side, bank, reach, frame, joins);
 }
 
-/// The look's moulded corners, what every part is cut from. Not a setting: a component theme sets one part's shape, and
-/// the corners themselves are the look.
+/// The look's moulded corners in a theme's [corners] (`NeumorphicThemeData.shapeScheme`), what every part is cut from.
+/// Each of the look's radii ([NeumorphicRadii]) follows its step as the theme moves it; a style sets one part's shape or
+/// its corners' steps.
+///
+/// ```dart
+/// final well = NeumorphicTheme.of(context).shapes.corner(NeumorphicTheme.of(context).shapes.well);
+/// ```
 @immutable
 class NeumorphicShapes {
-  /// The look's corners.
-  const NeumorphicShapes();
+  /// The look's corners at [corners]' steps.
+  const NeumorphicShapes(this.corners);
+
+  /// The theme's corner steps.
+  final RawCornerScale corners;
+
+  /// The least corner ([NeumorphicRadii.least]), the extra small step: fixed, the floor every concentric inset stops at.
+  double get least => corners.extraSmall;
+
+  /// A latch's cap inside its bank, a small mark holding a figure ([NeumorphicRadii.cap]): the small step.
+  double get cap => corners.small;
+
+  /// A control you press or type in, a stat's well, a picture ([NeumorphicRadii.control]): the medium step.
+  double get control => corners.medium;
+
+  /// A chip, an event's tile ([NeumorphicRadii.chip]): as far under [control] as the look's own, never under [least].
+  double get chip => math.max(
+    least,
+    control - (NeumorphicRadii.control - NeumorphicRadii.chip),
+  );
+
+  /// A well holding words or a chart, a bank of buttons ([NeumorphicRadii.well]): as far over [control] as the look's
+  /// own, so a control stays concentric in it.
+  double get well => control + (NeumorphicRadii.well - NeumorphicRadii.control);
+
+  /// A slab: a card on the wall, a tab bar's shoulders, the menu and a sheet ([NeumorphicRadii.slab]): the large step.
+  double get slab => corners.large;
 
   /// A frame at [step].
   NeumorphicRoundedBorder corner(double step) =>
       NeumorphicRoundedBorder(radius: step);
 
   /// A one-line track, chip or badge, capped for enlarged text.
-  OutlinedBorder get capsule => const NeumorphicStadiumBorder(maxRadius: 24);
+  OutlinedBorder get capsule =>
+      NeumorphicStadiumBorder(maxRadius: corners.fullMaxRadius ?? 24);
+
+  @override
+  bool operator ==(Object other) =>
+      other is NeumorphicShapes && other.corners == corners;
+
+  @override
+  int get hashCode => corners.hashCode;
 
   /// A semantic circle: radio, avatar, round key or moving thumb.
   NeumorphicCircleBorder circle([double diameter = 48]) =>
@@ -446,6 +533,21 @@ class NeumorphicShapes {
   static OutlinedBorder inset(OutlinedBorder border, double inset) {
     if (border is NeumorphicCellBorder) return border.inset(inset);
     if (border is NeumorphicRoundedBorder) {
+      final corners = border.borderRadius;
+      if (corners != null) {
+        // Corner by corner: each moves by [inset] around its own centre.
+        Radius move(Radius x) =>
+            x == Radius.zero ? x : Radius.circular(_least(x.x, inset));
+        return border.copyWith(
+          radius: border.radius == 0 ? 0 : _least(border.radius, inset),
+          borderRadius: BorderRadius.only(
+            topLeft: move(corners.topLeft),
+            topRight: move(corners.topRight),
+            bottomLeft: move(corners.bottomLeft),
+            bottomRight: move(corners.bottomRight),
+          ),
+        );
+      }
       return border.radius == 0
           ? border
           : border.copyWith(radius: _least(border.radius, inset));

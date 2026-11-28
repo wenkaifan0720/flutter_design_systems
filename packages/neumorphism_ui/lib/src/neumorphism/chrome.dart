@@ -385,7 +385,7 @@ class NeumorphicRailLink extends StatelessWidget {
       selected: selected,
       style: style,
       themeStyle: t.segmentedButtonTheme,
-      radius: NeumorphicRadii.chip,
+      radius: t.shapes.chip,
       child: Builder(
         builder: (context) {
           final look = neumorphicStyleOf(
@@ -460,7 +460,7 @@ class NeumorphicRailLink extends StatelessWidget {
                     style: style,
                     themeStyle: t.segmentedButtonTheme,
                     states: {if (selected) WidgetState.selected},
-                    radius: NeumorphicRadii.chip,
+                    radius: t.shapes.chip,
                     padding: pad,
                     child: row,
                   )
@@ -896,10 +896,7 @@ class NeumorphicNavigationBar extends StatelessWidget {
             }
             final tab = _Tab(
               style: style,
-              radius: math.max(
-                NeumorphicRadii.least,
-                NeumorphicRadii.slab - inset,
-              ),
+              radius: math.max(NeumorphicRadii.least, t.shapes.slab - inset),
               item: items[i],
               on: i == selectedIndex,
               onPressed: onDestinationSelected == null
@@ -936,7 +933,7 @@ class NeumorphicNavigationBar extends StatelessWidget {
         painter: _TabBarPainter(
           c,
           NeumorphicFlatScope.of(context),
-          t.shapes.corner(NeumorphicRadii.slab),
+          t.shapes.corner(t.shapes.slab),
         ),
         child: header == null
             ? tabs
@@ -1198,11 +1195,11 @@ class _Tab extends StatelessWidget {
     required this.on,
     this.onPressed,
     this.style,
-    this.radius = NeumorphicRadii.control,
+    this.radius,
   });
 
-  /// The plate's corner: a control's, or concentric with the bar it stands in.
-  final double radius;
+  /// The plate's corner: a control's (null, the theme's), or concentric with the bar it stands in.
+  final double? radius;
   final VoidCallback? onPressed;
   final NeumorphicNavItem item;
   final bool on;
@@ -1210,6 +1207,7 @@ class _Tab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
+    final radius = this.radius ?? t.shapes.control;
     return NeumorphicTap(
       radius: radius,
       semanticLabel: item.label,
@@ -1478,7 +1476,7 @@ class NeumorphicScaffold extends StatelessWidget {
               painter: _TabBarPainter(
                 t.colors,
                 NeumorphicFlatScope.of(context),
-                t.shapes.corner(NeumorphicRadii.slab),
+                t.shapes.corner(t.shapes.slab),
               ),
               child: SafeArea(
                 top: false,
@@ -2020,11 +2018,11 @@ class NeumorphicMedia extends StatelessWidget {
         aspectRatio: aspect,
         child: NeumorphicSurface(
           cast: NeumorphicSurfaceLevel.well,
-          radius: NeumorphicRadii.control,
+          radius: NeumorphicTheme.of(context).shapes.control,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(
               NeumorphicTheme.of(context).shapes
-                  .corner(NeumorphicRadii.control)
+                  .corner(NeumorphicTheme.of(context).shapes.control)
                   .radius,
             ),
             child:
@@ -2561,7 +2559,7 @@ class _ShellBar extends StatelessWidget {
       painter: _TabBarPainter(
         t.colors,
         NeumorphicFlatScope.of(context),
-        t.shapes.corner(NeumorphicRadii.slab),
+        t.shapes.corner(t.shapes.slab),
       ),
       child: Padding(
         padding: EdgeInsets.fromLTRB(inset, inset, inset, math.max(bottom, 26)),
@@ -2606,9 +2604,9 @@ class _ShellPlace extends StatelessWidget {
     final radius = bar
         ? math.max(
             NeumorphicRadii.least,
-            NeumorphicRadii.slab - NeumorphicNavigationBar._plateInset,
+            t.shapes.slab - NeumorphicNavigationBar._plateInset,
           )
-        : NeumorphicRadii.control;
+        : t.shapes.control;
     return NeumorphicStatesScope(
       states: states,
       child: NeumorphicTapFace(

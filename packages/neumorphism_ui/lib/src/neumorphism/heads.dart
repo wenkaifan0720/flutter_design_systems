@@ -577,7 +577,7 @@ class NeumorphicTag extends StatelessWidget {
         themeStyle: t.chipTheme,
         shape: shape,
         cast: NeumorphicSurfaceLevel.groove,
-        radius: NeumorphicRadii.cap,
+        radius: t.shapes.cap,
         padding: padding,
         child: neumorphicLabel(Text(text, style: words)),
       ),

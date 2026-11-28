@@ -137,7 +137,7 @@ class GalleryCustom {
     return base.copyWith(
       highContrast: highContrast ? true : null,
       density: density.density,
-      elevation: depth == 1 ? null : NeumorphicElevation(depth: depth),
+      shapeScheme: depth == 1 ? null : base.shapeScheme.copyWith(depth: depth),
     );
   }
 

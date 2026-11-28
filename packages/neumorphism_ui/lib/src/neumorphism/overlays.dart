@@ -22,6 +22,7 @@ import 'theme.dart';
 import 'internal/reach.dart' show neumorphicAtEnd;
 import 'internal/cap_label.dart';
 import 'internal/actions.dart' show NeumorphicActionBar;
+import 'internal/relief.dart';
 
 /// Words or a small form on a raised panel beside its trigger, opened and closed by a press on it. Escape, a press
 /// outside and Tab out close it, and focus goes back to the trigger.
@@ -249,7 +250,7 @@ class NeumorphicSheet extends StatelessWidget {
         cast: NeumorphicSurfaceLevel.slab,
         style: style,
         themeStyle: t.sheetTheme,
-        radius: NeumorphicRadii.slab,
+        radius: t.shapes.slab,
         child: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -521,7 +522,7 @@ class NeumorphicMenuBar extends StatelessWidget {
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
     final words = NeumorphicLocalizations.of(context);
-    final shape = t.shapes.corner(NeumorphicRadii.control);
+    final shape = t.shapes.corner(t.shapes.control);
     return RawMenuBar(
       menus: menus,
       semanticLabel: semanticLabel ?? words.menu,
@@ -547,7 +548,7 @@ class NeumorphicMenuBar extends StatelessWidget {
             widthFactor: 1,
             child: CustomPaint(
               painter: sunk
-                  ? NeumorphicPanelRowRelief(c, t.elevation, null, shape)
+                  ? NeumorphicPanelRowRelief(c, t.relief, null, shape)
                   : null,
               foregroundPainter: states.contains(WidgetState.focused)
                   ? neumorphicFocusLift(t, shape)

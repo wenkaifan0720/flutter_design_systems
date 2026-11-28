@@ -28,7 +28,15 @@ NeumorphicStyleOf neumorphicStyleOf(
 /// Whether [shape] is one the look moulds (null leaves the part's own).
 bool neumorphicMoulded(OutlinedBorder? shape) => switch (shape) {
   null || NeumorphicCellBorder() => true,
-  NeumorphicRoundedBorder(:final radius) => radius >= NeumorphicRadii.least,
+  NeumorphicRoundedBorder(:final radius, :final borderRadius) =>
+    radius >= NeumorphicRadii.least &&
+        (borderRadius == null ||
+            [
+              borderRadius.topLeft,
+              borderRadius.topRight,
+              borderRadius.bottomLeft,
+              borderRadius.bottomRight,
+            ].every((r) => r.x >= NeumorphicRadii.least)),
   NeumorphicBorder() => true,
   _ => false,
 };

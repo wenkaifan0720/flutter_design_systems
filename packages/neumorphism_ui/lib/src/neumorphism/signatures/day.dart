@@ -284,7 +284,7 @@ class _Tile extends StatelessWidget {
     }
     final tile = NeumorphicSurface(
       cast: NeumorphicSurfaceLevel.part,
-      radius: NeumorphicRadii.chip,
+      radius: NeumorphicTheme.of(context).shapes.chip,
       child: ClipRect(
         child: Stack(
           fit: StackFit.expand,
@@ -296,7 +296,7 @@ class _Tile extends StatelessWidget {
                   washTo!,
                   Directionality.of(context) == TextDirection.rtl,
                   NeumorphicTheme.of(context).shapes
-                      .corner(NeumorphicRadii.chip),
+                      .corner(NeumorphicTheme.of(context).shapes.chip),
                 ),
               ),
             short ? Center(child: body) : body,
@@ -487,7 +487,7 @@ class NeumorphicDayTray extends StatelessWidget {
                       // The first hour's rule, as far down the strip as the strip stands above the hours.
                       desk ? 10 : 6,
                       hours * 4,
-                      t.shapes.corner(NeumorphicRadii.well - 8),
+                      t.shapes.corner(t.shapes.well - 8),
                     ),
                   ),
                 ),
@@ -654,7 +654,7 @@ class _ReadableDayTray extends StatelessWidget {
       );
       final face = NeumorphicSurface(
         cast: NeumorphicSurfaceLevel.part,
-        radius: NeumorphicRadii.chip,
+        radius: t.shapes.chip,
         outlined: true,
         padding: const EdgeInsets.all(12),
         child: words,
@@ -834,7 +834,7 @@ class NeumorphicMonth extends StatelessWidget {
                   dimension: height,
                   child: NeumorphicChosenBand(
                     chosen: true,
-                    border: t.shapes.corner(NeumorphicRadii.cap),
+                    border: t.shapes.corner(t.shapes.cap),
                     child: Center(child: content),
                   ),
                 )
@@ -845,7 +845,7 @@ class NeumorphicMonth extends StatelessWidget {
           ? NeumorphicTap(
               onPressed: () => onDay!(d),
               semanticLabel: words.formatFullDate(date),
-              shape: t.shapes.corner(NeumorphicRadii.cap),
+              shape: t.shapes.corner(t.shapes.cap),
               focusSize: isToday ? Size.square(height) : null,
               child: box,
             )

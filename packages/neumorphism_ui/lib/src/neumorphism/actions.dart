@@ -16,7 +16,6 @@ import 'glyphs.dart';
 import 'internal/cell_bank.dart';
 import 'internal/geometry.dart';
 import 'internal/panel.dart';
-import 'knobs.dart';
 import 'styled.dart';
 import 'layout.dart';
 import 'localizations.dart';
@@ -25,6 +24,7 @@ import 'theme.dart';
 import 'internal/cap_label.dart';
 import 'internal/out_of_use.dart';
 import 'internal/moulded.dart';
+import 'internal/relief.dart';
 
 /// One button of a [NeumorphicButtonGroup].
 @immutable
@@ -91,6 +91,7 @@ class NeumorphicButtonGroup extends StatelessWidget {
           minCellWidth: metrics.least,
           side: metrics.look.side,
           edge: metrics.look.edge,
+          corners: metrics.look.corners,
           naturalWidth: items.length * 120.0,
           contentHeight: metrics.contentHeight,
           children: [
@@ -313,6 +314,7 @@ class NeumorphicToggleGroup<T> extends StatelessWidget {
           minCellWidth: metrics.least,
           side: metrics.look.side,
           edge: metrics.look.edge,
+          corners: metrics.look.corners,
           naturalWidth: items.length * 104.0,
           contentHeight: metrics.contentHeight,
           children: cells,
@@ -433,7 +435,7 @@ class NeumorphicSplitButton extends StatelessWidget {
     ]);
     final height = t.density.height(48);
     // One capsule (or the theme's small frame) cut in two: the main half keeps the start's corners, the key the end's.
-    final whole = t.shapes.corner(NeumorphicRadii.control);
+    final whole = t.shapes.corner(t.shapes.control);
     final hasIcons = actions.any((action) => action.icon != null);
     // The button keeps its own width in a stretching column: its menu takes the button's width as its least, and a
     // column-wide button opened a column-wide menu for two short acts.
@@ -460,7 +462,7 @@ class NeumorphicSplitButton extends StatelessWidget {
           painter: _SplitBody(
             c,
             whole,
-            t.elevation,
+            t.relief,
             NeumorphicFlatScope.of(context) ||
                 (onPressed == null &&
                     actions.every((a) => a.onPressed == null)),
@@ -548,7 +550,7 @@ class NeumorphicSplitButton extends StatelessWidget {
                 c,
                 shape,
                 look.fill,
-                t.elevation,
+                t.relief,
                 NeumorphicFlatScope.of(context),
                 isMain,
                 dir,
@@ -616,7 +618,7 @@ class _SplitBody extends CustomPainter {
   const _SplitBody(this.c, this.whole, this.elevation, this.flat);
   final NeumorphicColors c;
   final OutlinedBorder whole;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   final bool flat;
 
   @override
@@ -659,7 +661,7 @@ class _SplitHalf extends CustomPainter {
   final NeumorphicColors c;
   final OutlinedBorder shape;
   final Color? fill;
-  final NeumorphicElevation elevation;
+  final NeumorphicReliefDepth elevation;
   final bool flat, main;
   final TextDirection dir;
   final double down;

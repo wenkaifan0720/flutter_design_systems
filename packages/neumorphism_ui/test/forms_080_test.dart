@@ -1,7 +1,7 @@
 // Forms, as Material's are: in one column every field takes the column's width (a select, a combobox, a
 // multi-select, a picker's field, a date field); a text field takes part in its Form (validator, onSaved, reset); a date
-// field holds no day until one is chosen; a field that fails carries the look's error mark, raised on a bead warmed by
-// the pigment, as an error notice's is; a destructive act never takes the pigment of the page's one act; and every
+// field holds no day until one is chosen; a field that fails says so once, its mark at its end or else on the line
+// under it, the glyph and the words in the danger ink, on a bead of the material; a destructive act never takes the pigment of the page's one act; and every
 // field names itself in one label style.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart' show RenderParagraph;
@@ -204,7 +204,7 @@ void main() {
       )
       .any((p) => p.painter.runtimeType.toString().contains('Bead'));
 
-  testWidgets("a field that fails carries the look's error mark on a bead", (
+  testWidgets("a field that fails says so once, in the danger ink on a bead", (
     t,
   ) async {
     await _pump(
@@ -225,10 +225,22 @@ void main() {
       ),
     );
     final marks = find.byIcon(NeumorphicGlyphs.triangleAlert);
-    // The text field's own mark at its end, and each field's line under it.
-    expect(marks, findsNWidgets(3));
+    // The text field's own mark at its end (its line under it carries none), and the select's line's.
+    expect(marks, findsNWidgets(2));
+    final c = NeumorphicTheme.of(t.element(find.byType(Column).first)).colors;
     for (final mark in marks.evaluate()) {
       expect(beaded(t, find.byWidget(mark.widget)), isTrue);
+      expect((mark.widget as Icon).color, c.danger);
+    }
+    for (final words in ['Enter the title', 'Choose a size']) {
+      expect(
+        t
+            .renderObject<RenderParagraph>(find.text(words).first)
+            .text
+            .style!
+            .color,
+        c.danger,
+      );
     }
   });
 

@@ -8,13 +8,22 @@ import 'error_mark.dart';
 /// [child], usually a [Text], as an error message: every field, select and picker writes its failure with this.
 class NeumorphicErrorLine extends StatelessWidget {
   /// An error line reading [child]; [live] announces it when it appears.
-  const NeumorphicErrorLine({super.key, required this.child, this.live = true});
+  const NeumorphicErrorLine({
+    super.key,
+    required this.child,
+    this.live = true,
+    this.mark = true,
+  });
 
   /// The message.
   final Widget child;
 
   /// Whether a screen reader announces the line when it appears.
   final bool live;
+
+  /// Whether the line carries the error mark: false under a field that already carries it at its end, so the mark
+  /// shows once.
+  final bool mark;
 
   @override
   Widget build(BuildContext context) {
@@ -24,12 +33,18 @@ class NeumorphicErrorLine extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // The look's error mark, raised on its warmed bead: the line reads as a failure, not as a note.
-          const NeumorphicErrorMark(size: 20, glyphSize: 12),
-          const SizedBox(width: 8),
+          // The error mark in the danger ink and the words in it: the line reads as a failure, not as a note, and
+          // never by colour alone.
+          if (mark) ...[
+            const NeumorphicErrorMark(size: 20, glyphSize: 12),
+            const SizedBox(width: 8),
+          ],
           Expanded(
             child: DefaultTextStyle.merge(
-              style: t.textTheme.caption.copyWith(color: t.colors.ink),
+              style: t.textTheme.caption.copyWith(
+                color: t.colors.danger,
+                fontWeight: FontWeight.w600,
+              ),
               child: child,
             ),
           ),
