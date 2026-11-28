@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
+import '../../internal/corners.dart';
 import '../../internal/route_motion.dart';
 import '../../styled.dart';
 import '../../theme.dart';
@@ -153,7 +154,7 @@ class Fluent2Dialog extends StatelessWidget {
                           )
                         : BorderSide.none),
                 radius: BorderRadius.circular(t.radiusXLarge),
-                shape: look.shape,
+                shape: look.outline(t, RawCorner.large),
                 shadows: t.shadows.shadow64,
                 padding:
                     look.padding(Directionality.of(context)) ??

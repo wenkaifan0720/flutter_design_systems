@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/well.dart';
 import '../../styled.dart';
 import '../../theme.dart';
@@ -156,8 +157,14 @@ class Fluent2Card extends StatelessWidget {
     final preview = children.any((c) => c is Fluent2CardPreview);
     final on = selected ?? false;
     final layers = [style, t.cardTheme];
+    // The style's outline, else its corners held over the card's own step.
+    final step = switch (size) {
+      Fluent2CardSize.small => RawCorner.extraSmall,
+      Fluent2CardSize.medium => RawCorner.small,
+      Fluent2CardSize.large => RawCorner.medium,
+    };
     OutlinedBorder? outline(Set<WidgetState> states) =>
-        Fluent2Style.first(layers, (s) => s.shape, states);
+        Fluent2StyleOf(layers, states).outline(t, step);
 
     Widget face(Set<WidgetState> states) {
       final s = {

@@ -9,10 +9,12 @@ import 'package:ui_core/ui_core.dart';
 import '../chrome_metrics.dart';
 import '../internal/footer_band.dart';
 import '../internal/layer.dart';
+import '../internal/measure.dart';
 import '../internal/report_height.dart';
 import '../internal/side_inset.dart';
 import '../theme.dart';
 import 'acrylic.dart';
+import 'field/field.dart' show Fluent2FormSection;
 import 'sheet.dart';
 import 'top_bar.dart';
 
@@ -71,7 +73,17 @@ class Fluent2Scaffold extends StatefulWidget {
   final Widget? topBar;
 
   /// Pinned above the bottom edge: the page's acts. Gets the footer band
-  /// and the safe-area inset.
+  /// and the safe-area inset. A place's first page under a shell's tab bar
+  /// has none (the bar stands on that edge; a debug build asserts): put a
+  /// form's acts at the end of its column there, or open the form as a
+  /// pushed page or a sheet, where the footer is.
+  ///
+  /// On a desk the footer's acts stand in the page's column, not at the
+  /// window's far corner: under a form (a [body] that is a
+  /// [Fluent2FormSection], or a column of sections and gaps) on the form's
+  /// 560 measure, under any other page on the content column's 1120. The
+  /// band and its hairline still span the window. On a phone the acts keep
+  /// the screen's gutters.
   final Widget? footer;
 
   /// Wrap the page in a scroll view.
@@ -333,7 +345,11 @@ class _Fluent2ScreenState extends State<Fluent2Scaffold> {
                         ),
                       ),
                     ),
-                    child: Fluent2FooterBand(child: footer),
+                    child: Fluent2FooterBand(
+                      child: wide
+                          ? _deskActs(context, footer, side: side)
+                          : footer,
+                    ),
                   ),
                 ),
               ),
@@ -352,6 +368,50 @@ class _Fluent2ScreenState extends State<Fluent2Scaffold> {
     },
     child: body,
   );
+
+  /// Whether [body] is a form's column: a [Fluent2FormSection], or a
+  /// column of sections and the gaps between them.
+  static bool _isForm(Widget body) => switch (body) {
+    Fluent2FormSection() => true,
+    Flex(:final children) =>
+      children.any((child) => child is Fluent2FormSection) &&
+          children.every(
+            (child) =>
+                child is Fluent2FormSection ||
+                child is Fluent2Gap ||
+                child is SizedBox,
+          ),
+    _ => false,
+  };
+
+  /// [footer] on a desk: in the page's column from its start, as wide as a
+  /// form's measure under a form, else as the content column, which stops
+  /// at 1120 where the window leaves a gutter past it (as [build]'s
+  /// column does).
+  Widget _deskActs(
+    BuildContext context,
+    Widget footer, {
+    required double side,
+  }) {
+    final gutter = Fluent2Layout.gutter(context);
+    final form = _isForm(widget.body);
+    return LayoutBuilder(
+      builder: (context, box) {
+        // [box] is the band less its start (side and room) and end room;
+        // the column stops at 1120 from the side where the layer runs a
+        // gutter or more past it.
+        final room = box.maxWidth;
+        final pageMax = Fluent2ChromeMetrics.pageMaxWidth;
+        final column = room + side - pageMax >= gutter ? pageMax - side : room;
+        final width = form ? math.min(fluent2FormMeasure, column) : column;
+        return Align(
+          alignment: AlignmentDirectional.centerStart,
+          widthFactor: 1,
+          child: SizedBox(width: width, child: footer),
+        );
+      },
+    );
+  }
 
   Widget _onCard(BuildContext context, Widget? bar) {
     final wide = Fluent2Layout.isWide(context);

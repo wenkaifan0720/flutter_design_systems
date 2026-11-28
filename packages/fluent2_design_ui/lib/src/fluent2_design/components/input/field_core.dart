@@ -25,6 +25,7 @@ import '../../internal/cap_label.dart';
 import '../../internal/chosen.dart';
 import '../../internal/well.dart';
 import '../../icons.dart';
+import '../../internal/corners.dart';
 import '../../styled.dart';
 import '../../theme.dart';
 import '../pressable/pressable.dart';
@@ -873,6 +874,18 @@ class _Fluent2FieldFrameState extends State<Fluent2FieldFrame> {
         ? 0.0
         : widget.radius ??
               fluent2CornerOf(look.shape, double.infinity, t.radiusMedium);
+    // A style's corners, held over the control corner: Fluent's accessible
+    // bottom and underline follow them, each end as its own corner rounds.
+    final held = square || widget.radius != null
+        ? null
+        : look.heldCorners(t, RawCorner.small);
+    final corners = held == null
+        ? BorderRadius.circular(radius)
+        : fluent2HeldRadii(
+            t,
+            held,
+            double.infinity,
+          ).resolve(Directionality.of(context));
     final rim = look.side;
     final edge = rim?.color ?? look.edge;
     final fill = look.fill ?? face.fill;
@@ -923,13 +936,13 @@ class _Fluent2FieldFrameState extends State<Fluent2FieldFrame> {
               ? Fluent2Motion.decelerateMid
               : Fluent2Motion.accelerateMid,
           builder: (context, g, child) => CustomPaint(
-            painter: _FrameGround(fill, radius),
+            painter: _FrameGround(fill, corners),
             foregroundPainter: _FrameStrokes(
               side: sideInk,
               bottom: bottomInk,
               width: rim?.width ?? Fluent2ChromeMetrics.hairline,
               thick: Fluent2Stroke.thick,
-              radius: radius,
+              corners: corners,
               underlineOnly: square,
               grow: g,
               brand: widget.pressed
@@ -957,27 +970,36 @@ class _Fluent2FieldFrameState extends State<Fluent2FieldFrame> {
   }
 }
 
+// [corners] each no more than half [size]'s shorter side.
+BorderRadius _heldTo(BorderRadius corners, Size size) {
+  final most = size.shortestSide / 2;
+  Radius at(Radius r) => Radius.circular(math.min(r.x, most));
+  return BorderRadius.only(
+    topLeft: at(corners.topLeft),
+    topRight: at(corners.topRight),
+    bottomLeft: at(corners.bottomLeft),
+    bottomRight: at(corners.bottomRight),
+  );
+}
+
 class _FrameGround extends CustomPainter {
-  const _FrameGround(this.fill, this.radius);
+  const _FrameGround(this.fill, this.corners);
 
   final Color fill;
-  final double radius;
+  final BorderRadius corners;
 
   @override
   void paint(Canvas canvas, Size size) {
     if (fill.a == 0) return;
     canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Offset.zero & size,
-        Radius.circular(math.min(radius, size.shortestSide / 2)),
-      ),
+      _heldTo(corners, size).toRRect(Offset.zero & size),
       Paint()..color = fill,
     );
   }
 
   @override
   bool shouldRepaint(_FrameGround old) =>
-      old.fill != fill || old.radius != radius;
+      old.fill != fill || old.corners != corners;
 }
 
 class _FrameStrokes extends CustomPainter {
@@ -986,7 +1008,7 @@ class _FrameStrokes extends CustomPainter {
     required this.bottom,
     required this.width,
     required this.thick,
-    required this.radius,
+    required this.corners,
     required this.underlineOnly,
     required this.grow,
     required this.brand,
@@ -996,7 +1018,7 @@ class _FrameStrokes extends CustomPainter {
   final Color bottom;
   final double width;
   final double thick;
-  final double radius;
+  final BorderRadius corners;
   final bool underlineOnly;
   final double grow;
   final Color brand;
@@ -1004,7 +1026,11 @@ class _FrameStrokes extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final w = width;
-    final radius = math.min(this.radius, size.shortestSide / 2);
+    final c = _heldTo(corners, size);
+    // The bottom corners' depth: the accessible bottom and the underline
+    // round within it.
+    final low = math.max(c.bottomLeft.x, c.bottomRight.x);
+    Radius less(Radius r) => Radius.circular(math.max(0, r.x - w / 2));
     final stroke = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = w;
@@ -1014,9 +1040,12 @@ class _FrameStrokes extends CustomPainter {
         Paint()..color = bottom,
       );
     } else {
-      final edge = RRect.fromRectAndRadius(
+      final edge = RRect.fromRectAndCorners(
         (Offset.zero & size).deflate(w / 2),
-        Radius.circular(math.max(0, radius - w / 2)),
+        topLeft: less(c.topLeft),
+        topRight: less(c.topRight),
+        bottomLeft: less(c.bottomLeft),
+        bottomRight: less(c.bottomRight),
       );
       if (side.a > 0) canvas.drawRRect(edge, stroke..color = side);
       if (bottom != side && bottom.a > 0) {
@@ -1024,7 +1053,7 @@ class _FrameStrokes extends CustomPainter {
         canvas.clipRect(
           Rect.fromLTRB(
             0,
-            size.height - math.max(radius, w),
+            size.height - math.max(low, w),
             size.width,
             size.height,
           ),
@@ -1036,16 +1065,15 @@ class _FrameStrokes extends CustomPainter {
     if (grow <= 0) return;
     // The underline: 2 flat across, its ends rounded as the field's
     // bottom corners are, scaled from the middle.
-    final r = Radius.circular(radius);
     canvas.save();
     canvas.clipRRect(
       RRect.fromLTRBAndCorners(
         0,
-        size.height - math.max(thick, radius),
+        size.height - math.max(thick, low),
         size.width,
         size.height,
-        bottomLeft: r,
-        bottomRight: r,
+        bottomLeft: c.bottomLeft,
+        bottomRight: c.bottomRight,
       ),
     );
     final run = size.width * grow;
@@ -1062,7 +1090,7 @@ class _FrameStrokes extends CustomPainter {
       old.bottom != bottom ||
       old.width != width ||
       old.thick != thick ||
-      old.radius != radius ||
+      old.corners != corners ||
       old.underlineOnly != underlineOnly ||
       old.grow != grow ||
       old.brand != brand;
@@ -1552,7 +1580,7 @@ class Fluent2PopoverSurface extends StatelessWidget {
         t.isDark ? t.colors.neutralStroke2 : t.colors.transparentStroke,
       ),
       radius: BorderRadius.circular(t.radiusMedium),
-      shape: look.shape,
+      shape: look.outline(t, RawCorner.small),
       shadows: t.shadows.shadow16,
       padding: look.padding(Directionality.of(context)) ?? padding,
       clip: true,

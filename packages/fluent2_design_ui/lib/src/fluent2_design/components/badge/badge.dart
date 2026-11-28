@@ -4,6 +4,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
+import '../../internal/corners.dart';
 import '../../internal/well.dart';
 import '../../localizations.dart';
 import '../../styled.dart';
@@ -443,12 +444,23 @@ class Fluent2LabelBadge extends StatelessWidget {
             radiusOf(shape, size, size.side, t),
           ).clamp(0, size.side / 2).toDouble()
         : radiusOf(shape, size, size.side, t);
+    // A style's corners, each held over the badge's own step.
+    final held = look.heldCorners(t, switch (shape) {
+      Fluent2BadgeShape.circular => RawCorner.full,
+      Fluent2BadgeShape.rounded =>
+        size.index <= Fluent2BadgeSize.small.index
+            ? RawCorner.extraSmall
+            : RawCorner.small,
+      Fluent2BadgeShape.square => RawCorner.none,
+    });
     final badge = ConstrainedBox(
       constraints: BoxConstraints(minWidth: size.side, minHeight: size.side),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: face.fill,
-          borderRadius: BorderRadius.circular(corner),
+          borderRadius: held == null
+              ? BorderRadius.circular(corner)
+              : fluent2HeldRadii(t, held, size.side),
           border: Border.all(color: face.stroke),
         ),
         child: Padding(

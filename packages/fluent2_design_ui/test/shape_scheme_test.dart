@@ -97,6 +97,34 @@ void main() {
     expect(t.shapeScheme.depth, isNull);
   });
 
+  test('every way in holds the corners; a blend is not held again', () {
+    const wild = RawShapeScheme(
+      corners: RawCornerScale(
+        style: RawCornerStyle.bevel,
+        extraSmall: 20,
+        small: 40,
+        medium: 0,
+        large: 1,
+        extraLarge: 99,
+      ),
+      stroke: 3,
+    );
+    final made = Fluent2ThemeData.from(
+      brand: const Color(0xFF8A3FFC),
+      shapeScheme: wild,
+    );
+    final copied = Fluent2ThemeData.lapis().copyWith(shapeScheme: wild);
+    expect(made.shapeScheme, copied.shapeScheme);
+    expect(made.shapeScheme.corners.style, RawCornerStyle.round);
+    expect(made.radiusMedium, 8);
+    expect(made.shapeScheme.stroke, isNull);
+    // A spring may pass a band's end for a moment; the blend keeps it.
+    final a = Fluent2ThemeData.lapis();
+    final b = a.copyWith(shapeScheme: _rounder);
+    expect(a.lerp(b, 1.5).radiusMedium, 10);
+    expect(a.lerp(b, 1.5).copyWith().radiusMedium, 8);
+  });
+
   test("three times Fluent's corners end at Fluent's most", () {
     final t = Fluent2ThemeData.lapis().copyWith(
       shapeScheme: Fluent2ThemeData.defaultShapeScheme.copyWith(

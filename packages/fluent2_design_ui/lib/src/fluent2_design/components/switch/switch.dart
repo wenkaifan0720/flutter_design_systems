@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../internal/cap_label.dart';
+import '../../internal/corners.dart';
 import '../../internal/hit_slop.dart';
 import '../../internal/in_row.dart';
 import '../../internal/well.dart';
@@ -304,7 +305,7 @@ class _Track extends StatelessWidget {
     final rim =
         look.side ??
         BorderSide(color: look.edge ?? stroke, width: Fluent2Stroke.thin);
-    final styled = look.shape;
+    final styled = look.outline(t, RawCorner.full);
     final corner = height / 2;
     final knobFill = look.foreground ?? knob;
     return AnimatedContainer(

@@ -109,6 +109,8 @@ export 'package:ui_core/ui_core.dart'
     show
         RawBand,
         RawCorner,
+        RawCornerFreedom,
+        RawCorners,
         RawCornerScale,
         RawCornerStyle,
         RawShapeLimits,

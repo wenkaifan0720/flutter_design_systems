@@ -4,8 +4,10 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../internal/arrow.dart';
+import '../../internal/corners.dart';
 import '../../styled.dart';
 import '../../theme.dart';
+import '../button/button.dart' show Fluent2IconButton;
 import 'arrow_placement.dart';
 
 /// A tooltip's room round its words: Fluent's padding (4 11 6 11) inside
@@ -94,7 +96,7 @@ class Fluent2TooltipBubble extends StatelessWidget {
         fill: fill,
         side: fluent2Rim(t, look, t.colors.transparentStroke),
         radius: BorderRadius.circular(t.radiusMedium),
-        shape: look.shape,
+        shape: look.outline(t, RawCorner.small),
         shadows: t.shadows.shadow8,
         padding: look.padding(Directionality.of(context)) ?? _bubbleInsets,
         child: Text(message, style: t.caption1.merge(look.textStyle).c(ink)),
@@ -181,7 +183,11 @@ class _ArrowPainter extends CustomPainter {
 /// hidden 250 ms after the pointer leaves it and the bubble. The pointer may
 /// move onto the bubble, Escape hides it, and one shows at a time. [withArrow] adds the 6 arrow pointing at the
 /// control (Fluent draws none by default), aimed where the bubble landed. The
-/// message is the control's tooltip to a screen reader. It is Flutter's
+/// message is the control's tooltip to a screen reader, unless it repeats
+/// the name the control gives itself (a [Fluent2IconButton]'s
+/// `semanticLabel`), so a screen reader hears "Share" once, as Material's
+/// `IconButton` says it, not "Share, Share"; [excludeFromSemantics] keeps
+/// any message from it. It is Flutter's
 /// [RawTooltip] in Fluent's bubble, with ui_core's [RawTooltipFocusFix]
 /// (the keyboard's focus shows it) and [RawTooltipPlacement] (where it
 /// goes). Never put an act or the only copy of something needed inside one.
@@ -197,6 +203,7 @@ class Fluent2Tooltip extends StatelessWidget {
     this.appearance = Fluent2TooltipAppearance.normal,
     this.position = Fluent2TooltipPosition.above,
     this.withArrow = false,
+    this.excludeFromSemantics = false,
     this.style,
     super.key,
   });
@@ -210,6 +217,12 @@ class Fluent2Tooltip extends StatelessWidget {
 
   /// The control the tip names.
   final Widget child;
+
+  /// Whether a screen reader leaves [message] out, as Material's
+  /// `Tooltip.excludeFromSemantics` does: for words the control already
+  /// says. A message that repeats a [Fluent2IconButton]'s `semanticLabel`
+  /// is left out without it.
+  final bool excludeFromSemantics;
 
   /// Fluent's `appearance`: normal or inverted.
   final Fluent2TooltipAppearance appearance;
@@ -235,6 +248,12 @@ class Fluent2Tooltip extends StatelessWidget {
     matchAnchorWidth: false,
   );
 
+  // Whether [message] only repeats the name [child] gives itself.
+  bool get _repeatsName => switch (child) {
+    Fluent2IconButton(:final semanticLabel) => semanticLabel == message,
+    _ => false,
+  };
+
   @override
   Widget build(BuildContext context) {
     if (message.isEmpty) return child;
@@ -248,12 +267,14 @@ class Fluent2Tooltip extends StatelessWidget {
     final aim = withArrow && position != Fluent2TooltipPosition.after
         ? _Aim()
         : null;
-    // The message joins the child's node: one control, one node.
+    // The message joins the child's node: one control, one node. Words the
+    // child already says stay out of it, so they are heard once.
+    final said = excludeFromSemantics || _repeatsName;
     return MergeSemantics(
       child: RawTooltipPlacement(
         placement: _placement,
         builder: (context, positionDelegate) => RawTooltip(
-          semanticsTooltip: message,
+          semanticsTooltip: said ? null : message,
           hoverDelay: const Duration(milliseconds: 250),
           dismissDelay: const Duration(milliseconds: 250),
           animationStyle: AnimationStyle(
@@ -302,6 +323,13 @@ class Fluent2Tooltip extends StatelessWidget {
         DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
       )
       ..add(StringProperty('message', message))
+      ..add(
+        FlagProperty(
+          'excludeFromSemantics',
+          value: excludeFromSemantics,
+          ifTrue: 'excluded from semantics',
+        ),
+      )
       ..add(
         EnumProperty<Fluent2TooltipAppearance>(
           'appearance',

@@ -9,6 +9,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
 import '../icons.dart';
+import '../internal/corners.dart';
 import '../internal/footer_band.dart';
 import '../localizations.dart';
 import '../styled.dart';
@@ -355,7 +356,7 @@ class Fluent2Toast extends StatelessWidget {
           t.isDark ? t.colors.neutralStroke2 : t.colors.transparentStroke,
         ),
         radius: BorderRadius.circular(t.radiusMedium),
-        shape: look.shape,
+        shape: look.outline(t, RawCorner.small),
         shadows: t.shadows.shadow8,
         padding:
             look.padding(Directionality.of(context)) ??

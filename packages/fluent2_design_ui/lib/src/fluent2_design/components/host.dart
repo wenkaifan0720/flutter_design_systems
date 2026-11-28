@@ -12,7 +12,9 @@ import 'toast.dart';
 /// status bar's ink.
 ///
 /// It builds the theme of [palette] by day and by night (or takes [light]
-/// and [dark] as given), follows the platform's appearance unless
+/// and [dark] as given). It sets both at [density] when one is given. It
+/// changes both as [customize] says (the palette with the app's own
+/// corners or typeface). It follows the platform's appearance unless
 /// [brightness] pins one, and eases to a new appearance or palette over
 /// Fluent's durationNormal (at once with reduced motion). It puts the theme
 /// in scope with a [Fluent2Theme], paints the page's ground, hosts the
@@ -34,6 +36,8 @@ class Fluent2Host extends StatelessWidget {
     this.light,
     this.dark,
     this.brightness,
+    this.density,
+    this.customize,
     super.key,
   });
 
@@ -49,6 +53,25 @@ class Fluent2Host extends StatelessWidget {
 
   /// Pins the appearance; null follows the platform.
   final Brightness? brightness;
+
+  /// How compact the controls stand, by day and by night alike, whatever
+  /// the window's width; null keeps each theme's own (a palette's is
+  /// [Fluent2Density.standard]). [customize] sees the theme at this
+  /// density.
+  ///
+  /// ```dart
+  /// Fluent2Host(palette: Fluent2ThemeData.palettes[1], density: Fluent2Density.compact, child: child!)
+  /// ```
+  final Fluent2Density? density;
+
+  /// Changes both appearances' themes, as built from [palette] (or taken
+  /// from [light] and [dark]): their density, their corners, their
+  /// typeface. A change of palette or appearance still eases across.
+  ///
+  /// ```dart
+  /// Fluent2Host(palette: Fluent2ThemeData.palettes[1], customize: (theme) => theme.copyWith(density: Fluent2Density.compact), child: child!)
+  /// ```
+  final Fluent2ThemeData Function(Fluent2ThemeData theme)? customize;
 
   /// The app: its navigator, as `MaterialApp.builder` hands it.
   final Widget child;
@@ -94,10 +117,16 @@ class Fluent2Host extends StatelessWidget {
         PreviewFrame.maybeOf(context)?.brightness ??
         MediaQuery.platformBrightnessOf(context);
     final id = (palette ?? Fluent2ThemeData.palettes.first).id;
-    final darkTheme = dark ?? Fluent2ThemeData.preset(id, Brightness.dark);
+    final changes = customize ?? (Fluent2ThemeData t) => t;
+    final density = this.density;
+    Fluent2ThemeData shaped(Fluent2ThemeData theme) =>
+        changes(density == null ? theme : theme.copyWith(density: density));
+    final darkTheme = shaped(
+      dark ?? Fluent2ThemeData.preset(id, Brightness.dark),
+    );
     final t = wanted == Brightness.dark
         ? darkTheme
-        : light ?? Fluent2ThemeData.preset(id, Brightness.light);
+        : shaped(light ?? Fluent2ThemeData.preset(id, Brightness.light));
     return MediaQuery.withClampedTextScaling(
       maxScaleFactor: maxTextScale,
       // Day to night (and a new preset) eases over Fluent's durationNormal,
@@ -154,6 +183,19 @@ class Fluent2Host extends StatelessWidget {
       )
       ..add(
         EnumProperty<Brightness>('brightness', brightness, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<Fluent2Density>(
+          'density',
+          density,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<Fluent2ThemeData Function(Fluent2ThemeData)>.has(
+          'customize',
+          customize,
+        ),
       );
   }
 }

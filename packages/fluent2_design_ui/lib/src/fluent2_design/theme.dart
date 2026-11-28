@@ -698,8 +698,13 @@ final class Fluent2ThemeData with Diagnosticable {
     this.typeface = Fluent2Typeface.look,
     this.solidAcrylic = false,
     this.fontFamilyFallback = const [],
-    this.shapeScheme = defaultShapeScheme,
-  });
+    RawShapeScheme shapeScheme = defaultShapeScheme,
+    // A lerp between two held schemes is not held again (a spring may pass
+    // a band's end for a moment); every other way in is held.
+    bool hold = true,
+  }) : shapeScheme = hold
+           ? shapeLimits.clamp(shapeScheme, look: 'Fluent 2')
+           : shapeScheme;
 
   /// The `lapis` preset: Fluent's own web light and dark, the familiar web blue (#0F6CBD).
   factory Fluent2ThemeData.lapis([Brightness brightness = Brightness.light]) =>
@@ -835,12 +840,19 @@ final class Fluent2ThemeData with Diagnosticable {
   /// platform), a control from 2 to 8 (the web's 4 and Windows 11's 8 both
   /// read as Fluent; square controls read as Metro, pill controls as another
   /// system), each other step in proportion, and no stroke and no depth.
+  ///
+  /// A part's own corners go a step per corner
+  /// ([RawCornerFreedom.perCorner], through a style's `corners`): Fluent
+  /// sets its radius tokens corner by corner (a split button's halves, a
+  /// sheet's top edge, a tab's attached side), so one corner cut or squared
+  /// still reads as Fluent. Each step lies in its band.
   static const RawShapeLimits shapeLimits = RawShapeLimits(
     extraSmall: RawBand(0, 4),
     small: RawBand(2, 8),
     medium: RawBand(4, 10),
     large: RawBand(4, 12),
     extraLarge: RawBand(8, 16),
+    cornerFreedom: RawCornerFreedom.perCorner,
   );
 
   /// Fluent's `borderRadiusSmall` in this theme, 2 by default: a check box,
@@ -1648,9 +1660,7 @@ final class Fluent2ThemeData with Diagnosticable {
       density: density ?? this.density,
       typeface: typeface ?? this.typeface,
       fontFamilyFallback: fontFamilyFallback ?? this.fontFamilyFallback,
-      shapeScheme: shapeScheme == null
-          ? this.shapeScheme
-          : shapeLimits.clamp(shapeScheme, look: 'Fluent 2'),
+      shapeScheme: shapeScheme ?? this.shapeScheme,
     );
   }
 
@@ -1684,6 +1694,7 @@ final class Fluent2ThemeData with Diagnosticable {
       solidAcrylic: near.solidAcrylic,
       fontFamilyFallback: near.fontFamilyFallback,
       shapeScheme: RawShapeScheme.lerp(shapeScheme, other.shapeScheme, t),
+      hold: false,
     );
   }
 

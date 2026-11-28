@@ -6,6 +6,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
+import '../../internal/corners.dart';
 import '../../internal/in_row.dart';
 import '../../localizations.dart';
 import '../../styled.dart';
@@ -291,7 +292,9 @@ class Fluent2Avatar extends StatelessWidget {
     };
     // The avatar theme's outline, else a circle, draws a circular avatar; a square one keeps Fluent's corner for its size.
     final look = Fluent2StyleOf([style, t.avatarTheme], const {});
-    final outline = shape == Fluent2AvatarShape.circular ? look.shape : null;
+    final outline = shape == Fluent2AvatarShape.circular
+        ? look.outline(t, RawCorner.full)
+        : null;
     final radius = shape == Fluent2AvatarShape.circular
         ? BorderRadius.circular(size / 2)
         : BorderRadius.circular(squareRadius(size, t));

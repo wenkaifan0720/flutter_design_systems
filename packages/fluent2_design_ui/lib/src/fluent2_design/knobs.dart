@@ -53,7 +53,11 @@ class Fluent2Density with Diagnosticable {
         TargetPlatform.fuchsia => standard,
       };
 
-  /// One step in: 4 off a control's height.
+  /// One step in: 4 off a control's height. The name is Flutter's
+  /// (`VisualDensity.comfortable`), so it is tighter than [standard], not
+  /// roomier. A roomier density is a positive step:
+  /// `Fluent2Density(horizontal: 1, vertical: 1)` adds 4 to a control's
+  /// height and 2 to each side's padding.
   static const Fluent2Density comfortable = Fluent2Density(
     horizontal: -1,
     vertical: -1,

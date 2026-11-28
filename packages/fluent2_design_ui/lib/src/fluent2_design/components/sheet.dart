@@ -5,6 +5,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
 import '../icons.dart';
+import '../internal/corners.dart';
 import '../styled.dart';
 import '../internal/measure.dart';
 import '../internal/route_motion.dart';
@@ -287,11 +288,36 @@ class Fluent2SheetCard extends StatelessWidget {
     final r = Radius.circular(
       fluent2CornerOf(look.shape, 2 * t.radiusXLarge * 3, t.radiusXLarge),
     );
-    final radius = switch (at) {
-      _SheetPlace.bottom => BorderRadius.vertical(top: r),
-      _SheetPlace.dialog => BorderRadius.all(r),
-      _SheetPlace.side => BorderRadius.zero,
-    };
+    // A style's corners, on the free ones alone: a bottom sheet's top, a
+    // dialog's four, a side drawer's inner edge (its start).
+    final held = look.heldCorners(
+      t,
+      at == _SheetPlace.side ? RawCorner.none : RawCorner.large,
+    );
+    final pill = 2 * t.radiusXLarge * 3;
+    final BorderRadiusGeometry radius = held != null
+        ? switch (at) {
+            _SheetPlace.bottom => fluent2HeldRadii(
+              t,
+              held,
+              pill,
+              bottomStart: false,
+              bottomEnd: false,
+            ),
+            _SheetPlace.dialog => fluent2HeldRadii(t, held, pill),
+            _SheetPlace.side => fluent2HeldRadii(
+              t,
+              held,
+              pill,
+              topEnd: false,
+              bottomEnd: false,
+            ),
+          }
+        : switch (at) {
+            _SheetPlace.bottom => BorderRadius.vertical(top: r),
+            _SheetPlace.dialog => BorderRadius.all(r),
+            _SheetPlace.side => BorderRadius.zero,
+          };
     final rim = look.side?.color ?? look.edge;
     return Material(
       type: MaterialType.transparency,

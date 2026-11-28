@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../internal/cap_label.dart';
+import '../../internal/corners.dart';
 import '../../internal/hit_slop.dart';
 import '../../internal/keys_shown.dart';
 import '../../internal/well.dart';
@@ -167,7 +168,7 @@ class Fluent2Radio<T> extends StatelessWidget {
       final ring =
           look.side ??
           BorderSide(color: look.edge ?? stroke, width: Fluent2Stroke.thin);
-      final outline = look.shape;
+      final outline = look.outline(t, RawCorner.full);
       final side = look.minimumSize?.shortestSide ?? 16.0;
       final fill = look.fill;
       final mark = look.foreground ?? dot;

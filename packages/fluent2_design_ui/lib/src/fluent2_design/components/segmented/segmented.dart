@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show RawCorner;
 
 import '../../internal/cap_label.dart';
+import '../../internal/corners.dart';
 import '../../internal/measure.dart';
 import '../../internal/well.dart';
 import '../../styled.dart';
@@ -163,6 +165,26 @@ class Fluent2SegmentedButton<T> extends StatelessWidget {
       height,
       Fluent2Layout.padded(context) ? height / 2 : t.radiusMedium,
     ).clamp(0, height / 2).toDouble();
+    // A style's corners round the strip's outer corners: the segment (and
+    // the thumb) at either end takes that end's, every other corner the
+    // strip's own.
+    final held = Fluent2StyleOf(layers, const {}).heldCorners(
+      t,
+      Fluent2Layout.padded(context) ? RawCorner.full : RawCorner.small,
+    );
+    BorderRadiusGeometry cell(int i) {
+      if (held == null) return BorderRadius.circular(corner);
+      final own = Radius.circular(corner);
+      Radius at(RawCorner? step) => fluent2StepRadius(t, step, height);
+      final first = i == 0, last = i == segments.length - 1;
+      return BorderRadiusDirectional.only(
+        topStart: first ? at(held.topStart) : own,
+        bottomStart: first ? at(held.bottomStart) : own,
+        topEnd: last ? at(held.topEnd) : own,
+        bottomEnd: last ? at(held.bottomEnd) : own,
+      );
+    }
+
     final live = onChanged != null;
     final n = segments.length;
     final at = segments.indexWhere((s) => s.value == value);
@@ -181,6 +203,11 @@ class Fluent2SegmentedButton<T> extends StatelessWidget {
           semanticLabel: s.label,
           selected: chosen,
           radius: corner,
+          shape: held == null
+              ? null
+              : WidgetStatePropertyAll(
+                  RoundedRectangleBorder(borderRadius: cell(i)),
+                ),
           builder: (context, states) {
             final press = states.press;
             final look = Fluent2StyleOf(layers, states);
@@ -212,7 +239,7 @@ class Fluent2SegmentedButton<T> extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: side),
                 decoration: BoxDecoration(
                   color: wash == null ? fill : Color.alphaBlend(wash, fill),
-                  borderRadius: BorderRadius.circular(corner),
+                  borderRadius: cell(i),
                 ),
                 child: Align(
                   heightFactor: 1,
@@ -260,7 +287,9 @@ class Fluent2SegmentedButton<T> extends StatelessWidget {
               if (!live) WidgetState.disabled,
             }) ??
             (live ? fluent2Well(t) : fluent2WellDisabled(t)),
-        borderRadius: BorderRadius.circular(corner),
+        borderRadius: held == null
+            ? BorderRadius.circular(corner)
+            : fluent2HeldRadii(t, held, height),
       ),
       child: Stack(
         children: [
@@ -273,20 +302,27 @@ class Fluent2SegmentedButton<T> extends StatelessWidget {
                 child: FractionallySizedBox(
                   widthFactor: 1 / n,
                   heightFactor: 1,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color:
-                          Fluent2Style.first(layers, (s) => s.fill, {
-                            WidgetState.selected,
-                            if (!live) WidgetState.disabled,
-                          }) ??
-                          (live ? c.brandBackground : c.neutralBackground1),
-                      border: live
-                          ? null
-                          : Border.all(
-                              color: fluent2Step(t, c.neutralStrokeDisabled),
-                            ),
-                      borderRadius: BorderRadius.circular(corner),
+                  // The thumb's corners ease as it slides to an end and
+                  // takes that end's.
+                  child: TweenAnimationBuilder<BorderRadiusGeometry?>(
+                    tween: _RadiusTween(end: cell(at)),
+                    duration: duration,
+                    curve: Fluent2Motion.easyEase,
+                    builder: (context, radius, _) => DecoratedBox(
+                      decoration: BoxDecoration(
+                        color:
+                            Fluent2Style.first(layers, (s) => s.fill, {
+                              WidgetState.selected,
+                              if (!live) WidgetState.disabled,
+                            }) ??
+                            (live ? c.brandBackground : c.neutralBackground1),
+                        border: live
+                            ? null
+                            : Border.all(
+                                color: fluent2Step(t, c.neutralStrokeDisabled),
+                              ),
+                        borderRadius: radius ?? cell(at),
+                      ),
                     ),
                   ),
                 ),
@@ -349,4 +385,13 @@ class Fluent2SegmentedButton<T> extends StatelessWidget {
         DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
       );
   }
+}
+
+// A radius tween across directional and plain radii.
+class _RadiusTween extends Tween<BorderRadiusGeometry?> {
+  _RadiusTween({super.end});
+
+  @override
+  BorderRadiusGeometry? lerp(double t) =>
+      BorderRadiusGeometry.lerp(begin, end, t);
 }

@@ -6,6 +6,7 @@ import 'package:ui_core/ui_core.dart';
 import '../chrome_metrics.dart';
 import '../styled.dart';
 import '../theme.dart';
+import 'corners.dart';
 import 'menu_lead.dart';
 
 /// Fluent's menu panel round the rows a kit menu hands it (the menu bar's,
@@ -56,7 +57,7 @@ class Fluent2MenuSurface extends StatelessWidget {
               t.isDark ? t.colors.neutralStroke2 : t.colors.transparentStroke,
             ),
             radius: BorderRadius.circular(t.radiusMedium),
-            shape: look.shape,
+            shape: look.outline(t, RawCorner.small),
             shadows: t.shadows.shadow16,
             // Fluent's 4 round the rows, inside the 1 px stroke, as the
             // menu's own.

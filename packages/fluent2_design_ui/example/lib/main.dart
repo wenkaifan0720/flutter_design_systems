@@ -107,6 +107,15 @@ class ShelfApp extends StatelessWidget {
     builder: (context, _) => MaterialApp(
       title: 'Shelf',
       debugShowCheckedModeBanner: false,
+      // Every part's words: the shared labels in 30 languages, Fluent's
+      // own, and Material's, Cupertino's and the widgets' (material_ui
+      // carries these, so no flutter_localizations dependency).
+      localizationsDelegates: const [
+        RawWidgetsLocalizations.delegate,
+        Fluent2Localizations.delegate,
+        ...GlobalMaterialLocalizations.delegates,
+      ],
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
       // Fluent's push and pop for the pages the app pushes.
       theme: ThemeData(
         pageTransitionsTheme: const PageTransitionsTheme(

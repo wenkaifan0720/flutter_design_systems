@@ -71,7 +71,7 @@ class App extends StatelessWidget {
 }
 ```
 
-A `CupertinoApp` (from `cupertino_ui`) or a bare `WidgetsApp` takes the same `builder:`. `Fluent2Host(light:, dark:)` takes themes of your own instead of a palette. To theme one subtree, wrap it in `Fluent2Theme(data: …)`; `AnimatedFluent2Theme` eases between two. Read the theme with `context.fluent2Theme`.
+A `CupertinoApp` (from `cupertino_ui`) or a bare `WidgetsApp` takes the same `builder:`. `Fluent2Host(light:, dark:)` takes themes of your own instead of a palette. `Fluent2Host(density: Fluent2Density.compact)` sets the density of both appearances, at every window width. `Fluent2Host(customize:)` changes the palette's themes further (`(theme) => theme.copyWith(shapeScheme: corners)`), so a palette picker keeps the change. To theme one subtree, wrap it in `Fluent2Theme(data: …)`; `AnimatedFluent2Theme` eases between two. Read the theme with `context.fluent2Theme`.
 
 ## Build an app
 
@@ -191,7 +191,7 @@ class BookPage extends StatelessWidget {
 
 ### Forms
 
-`Fluent2Form` is the form: `Fluent2TextFormField`s in it validate, and `Fluent2Form.submit(context)` checks every field, shows each error under its field and moves focus to the first, or saves each field and calls `onSubmit`. A `Fluent2FormSection` is the form's column on a 560 measure, its fields 16 apart; in a form a select, a combobox and a date field take the column's width, as a text field does. Wrap a control that brings no label of its own in a `Fluent2FormField`.
+`Fluent2Form` is the form: `Fluent2TextFormField`s in it validate, and `Fluent2Form.submit(context)` checks every field, shows each error under its field and moves focus to the first, or saves each field and calls `onSubmit`. A `Fluent2FormSection` is the form's column on a 560 measure, its fields 16 apart; in a form a select, a combobox and a date field take the column's width, as a text field does. Wrap a control that brings no label of its own in a `Fluent2FormField`. `Fluent2Form.reset(context)` puts every field back to its first value. The acts go in the page's footer, as below, on a pushed page or a sheet; a place's first page under a phone's tab bar has no footer (the bar stands on that edge), so a form that is a place ends its column with its buttons.
 
 ```dart
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
@@ -269,6 +269,64 @@ class _NewBookPageState extends State<NewBookPage> {
 ```
 
 A date field with no value shows its hint; one with a day shows a medium date with its year ("Nov 9, 2026"), as `Fluent2Format.date(day, year: true)` writes it. A field in error draws Fluent's danger stroke and its message under it, read as the field's hint.
+
+A field checks itself when the form submits, and after a failed submit as it is edited; `autovalidateMode: AutovalidateMode.onUserInteraction` makes a field check itself from its first edit.
+
+To clear the form after a save, reset it and then clear the controllers: with a controller, a field's first value is the controller's text when the field was last built, so `reset()` alone puts that text back.
+
+```dart
+import 'package:fluent2_design_ui/fluent2_design_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+class QuickAdd extends StatefulWidget {
+  const QuickAdd({super.key, required this.onAdd});
+
+  final ValueChanged<String> onAdd;
+
+  @override
+  State<QuickAdd> createState() => _QuickAddState();
+}
+
+class _QuickAddState extends State<QuickAdd> {
+  final _title = TextEditingController();
+
+  @override
+  void dispose() {
+    _title.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Fluent2Form(
+    child: Builder(
+      builder: (context) => Fluent2FormSection(
+        children: [
+          Fluent2TextFormField(
+            controller: _title,
+            labelText: 'Title',
+            validator: (value) => (value ?? '').trim().isEmpty ? 'Enter the title' : null,
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Fluent2Button(
+              'Add',
+              appearance: Fluent2ButtonAppearance.primary,
+              onPressed: () {
+                if (!Fluent2Form.submit(context)) return;
+                widget.onAdd(_title.text.trim());
+                // Clear the form after a save: the errors and the values go
+                // back, then the controllers empty.
+                Fluent2Form.reset(context);
+                _title.clear();
+              },
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+```
 
 ### Dialogs and toasts
 
@@ -387,9 +445,9 @@ class _Swatches extends StatelessWidget {
 
 The palettes are `lapis` (the default), `iris`, `juniper`, `pumpkin`, `berry` and `flint`. To use your own brand colour, call `Fluent2ThemeData.from(brand: color, brightness: Brightness.light)`.
 
-Use `copyWith` to set density, select a typeface from your app's assets, or replace acrylic blur with an opaque surface using `solidAcrylic: true`. You can also override a component theme or pass a `Fluent2Style` to an individual widget. Style properties can resolve different values for hover, focus, selection and press.
+Use `copyWith` to set density (`compact` is two steps tighter than `standard`, `comfortable` one, as Flutter's `VisualDensity` names them; a positive step, `Fluent2Density(horizontal: 1, vertical: 1)`, is roomier), select a typeface from your app's assets, or replace acrylic blur with an opaque surface using `solidAcrylic: true`. You can also override a component theme or pass a `Fluent2Style` to an individual widget. Style properties can resolve different values for hover, focus, selection and press.
 
-**Corners**: `shapeScheme` holds Fluent's radius tokens, `borderRadiusSmall` to `borderRadius2XLarge` (2, 4, 6, 8 and 12), which the parts take as a Fluent theme's components do: a check box and a tag 2, buttons, fields, cards and menus 4, dialogs, toasts and flyouts 8. `Fluent2ThemeData.shapeLimits` holds each to a band where it still reads as Fluent (a control from 2 to 8, the web's 4 to Windows 11's 8), round only; pills and discs stay round, and the strokes and elevations stay Fluent's. A part of your own reads the theme's corner (`Fluent2Theme.of(context).radiusMedium`), so it follows. Give the host both appearances to change them with a palette picker, and a change eases across with the theme.
+**Corners**: `shapeScheme` holds Fluent's radius tokens, `borderRadiusSmall` to `borderRadius2XLarge` (2, 4, 6, 8 and 12), which the parts take as a Fluent theme's components do: a check box and a tag 2, buttons, fields, cards and menus 4, dialogs, toasts and flyouts 8. `Fluent2ThemeData.shapeLimits` holds each to a band where it still reads as Fluent (a control from 2 to 8, the web's 4 to Windows 11's 8), round only; pills and discs stay round, and the strokes and elevations stay Fluent's. A part of your own reads the theme's corner (`Fluent2Theme.of(context).radiusMedium`), so it follows. Change them in the host's `customize:` so a palette picker keeps them; a change eases across with the theme.
 
 ```dart
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
@@ -401,9 +459,30 @@ final corners = Fluent2ThemeData.defaultShapeScheme.copyWith(
 );
 
 Widget host(RawNamedPalette palette, Widget child) => Fluent2Host(
-  light: Fluent2ThemeData.preset(palette.id, Brightness.light).copyWith(shapeScheme: corners),
-  dark: Fluent2ThemeData.preset(palette.id, Brightness.dark).copyWith(shapeScheme: corners),
+  palette: palette,
+  customize: (theme) => theme.copyWith(shapeScheme: corners),
   child: child,
+);
+```
+
+**A part's own corners**: a part's `style` takes `corners`, a step per corner (ui_core's `RawCorners`, start and end as the part reads), for a card whose top corners are a step rounder over a square foot, or a capsule button (`RawCorners.all(RawCorner.full)`). Keep the shape the same side to side: the top pair one step, the bottom pair another. Fluent 2 sets its radius tokens corner by corner (a split button's halves, a sheet's top edge), so every corner is free; each step is drawn in the theme's radius and held to its band. A part made of pieces (a split button, an interaction tag, a segmented button) takes the corners on its outside and keeps the joins inside; the focus ring, the press and the clip follow the shape. A `style`'s `shape` wins over its `corners`.
+
+```dart
+import 'package:fluent2_design_ui/fluent2_design_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+final panel = Fluent2Card(
+  style: const Fluent2Style(
+    corners: WidgetStatePropertyAll(
+      RawCorners(
+        topStart: RawCorner.large,
+        topEnd: RawCorner.large,
+        bottomStart: RawCorner.none,
+        bottomEnd: RawCorner.none,
+      ),
+    ),
+  ),
+  children: const [Text('Rounder top, square foot')],
 );
 ```
 
@@ -431,7 +510,7 @@ A control's `label` is drawn: a button's words, a switch's or a checkbox's title
 - **Direction and text size.** Controls follow the reading direction. The gallery (`example/lib/gallery.dart`) opens any page right to left or at 200% text from its link (`/#/<page>?dir=rtl&text=200`); badges, tags and glyphs grow with the text. `Fluent2Host` caps larger scales at 200%. Selawik supplies Latin glyphs; other scripts use the platform's fallback fonts, or the families you name in `Fluent2ThemeData.fontFamilyFallback`.
 - **Keyboard and screen readers.** Tab moves between controls; the two-tone focus ring shows on light and dark grounds. Arrow keys move through tabs, menus, lists and grids. Enter activates the focused action. Escape dismisses menus, dialogs and sheets and returns focus to the opener. A row's trailing control is a stop of its own.
 - **Touch and motion.** The minimum hit area is ui_core's tap floor: 40 × 40 for touch and 24 × 24 for a pointer. Controls honour the platform's reduced-motion setting.
-- **Localization.** English is the default. Register `RawWidgetsLocalizations.delegate` for the shared labels (Cancel, Search, the calendars' month and day names, the time pickers' words) in 30 languages, and `Fluent2Localizations.delegate` for Fluent's own; extend `Fluent2LocalizationsEn` for another language. The standalone `Fluent2Format` helpers use US English.
+- **Localization.** English is the default. Register the three in the snippet below: `RawWidgetsLocalizations.delegate` for the shared labels (Cancel, Search, the calendars' month and day names, the time pickers' words) in 30 languages, `Fluent2Localizations.delegate` for Fluent's own (English in any locale; extend `Fluent2LocalizationsEn` for another language), and `GlobalMaterialLocalizations.delegates` for Material's, Cupertino's and the widgets' words. On material_ui an app needs no `flutter_localizations` dependency: material_ui exports `GlobalMaterialLocalizations` and depends on Flutter's localizations itself. The standalone `Fluent2Format` helpers use US English.
 
 ```dart
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
@@ -440,6 +519,7 @@ import 'package:material_ui/material_ui.dart';
 final app = MaterialApp(
   localizationsDelegates: const [
     RawWidgetsLocalizations.delegate,
+    Fluent2Localizations.delegate,
     ...GlobalMaterialLocalizations.delegates,
   ],
   supportedLocales: RawWidgetsLocalizations.supportedLocales,

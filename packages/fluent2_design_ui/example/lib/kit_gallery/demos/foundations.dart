@@ -23,6 +23,7 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
     kitSection('Tones', children: [const _Tones()]),
     kitSection('Type ramp', children: [const _Type()]),
     kitSection('Corners', children: [const _Corners()]),
+    kitSection("A part's own corners", children: [const _OwnCorners()]),
     kitSection('Spacing', children: [const _Spacing()]),
     kitSection('Elevation', children: [const _Elevation()]),
     kitSection('Icons', children: [const _Icons()]),
@@ -435,6 +436,58 @@ class _Corners extends StatelessWidget {
           ],
         ),
     ]);
+  }
+}
+
+/// A style's own corners on a card and a button, each held to Fluent's
+/// steps over the part's own.
+class _OwnCorners extends StatelessWidget {
+  const _OwnCorners();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.fluent2Theme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      spacing: Fluent2Spacing.m,
+      children: [
+        kitRow([
+          SizedBox(
+            width: 240,
+            child: Fluent2Card(
+              style: const Fluent2Style(
+                corners: WidgetStatePropertyAll(
+                  RawCorners(
+                    topStart: RawCorner.large,
+                    topEnd: RawCorner.large,
+                    bottomStart: RawCorner.none,
+                    bottomEnd: RawCorner.none,
+                  ),
+                ),
+              ),
+              children: [Text('Rounder top, square foot', style: t.body1)],
+            ),
+          ),
+          Fluent2Button(
+            'Next',
+            appearance: Fluent2ButtonAppearance.primary,
+            style: const Fluent2Style(
+              corners: WidgetStatePropertyAll(RawCorners.all(RawCorner.full)),
+            ),
+            onPressed: () {},
+          ),
+        ]),
+        Text(
+          "A style's corners name a step per corner, the top pair one step "
+          'and the bottom pair another: a card with its top corners rounder '
+          'and its foot square, a capsule button. Fluent 2 draws each step '
+          "in the theme's corners; a corner a style leaves keeps the part's "
+          'own.',
+          style: t.caption1.c(t.textSecondary),
+        ),
+      ],
+    );
   }
 }
 

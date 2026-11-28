@@ -6,6 +6,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
+import '../../internal/corners.dart';
 import '../../internal/well.dart';
 import '../../localizations.dart';
 import '../../styled.dart';
@@ -451,6 +452,10 @@ class Fluent2Tag extends StatelessWidget {
       size,
       Fluent2Style.first(layers, (s) => s.shape, const {}),
     );
+    final held = _tagHeld(t, shape, layers);
+    final corners = held == null
+        ? BorderRadius.circular(radius)
+        : fluent2HeldRadii(t, held, size.height);
     Widget face(Fluent2Press press) {
       final look = Fluent2StyleOf(layers, _statesOf(press));
       return Fluent2Eased<Fluent2TagFace>(
@@ -462,7 +467,7 @@ class Fluent2Tag extends StatelessWidget {
             constraints: BoxConstraints(minHeight: size.height),
             decoration: BoxDecoration(
               color: f.fill,
-              borderRadius: BorderRadius.circular(radius),
+              borderRadius: corners,
               border: Border.all(
                 color: f.stroke,
                 width: look.side?.width ?? Fluent2Stroke.thin,
@@ -521,6 +526,11 @@ class Fluent2Tag extends StatelessWidget {
         onPressed: enabled ? dismiss : null,
         semanticLabel: deleteLabel ?? '$label, remove',
         radius: radius,
+        shape: held == null
+            ? null
+            : WidgetStatePropertyAll(
+                RoundedRectangleBorder(borderRadius: corners),
+              ),
         builder: (context, states) => face(states.press),
       ),
     );
@@ -586,6 +596,18 @@ double _tagCorner(
         size.height,
         t.radiusMedium,
       ).clamp(0, size.height / 2).toDouble();
+
+// A style's corners held over a tag's own (a circular tag's capsule, a
+// rounded one's control corner); null when a styled outline wins or none
+// names corners.
+RawCorners? _tagHeld(
+  Fluent2ThemeData t,
+  Fluent2TagShape shape,
+  List<Fluent2Style?> layers,
+) => Fluent2StyleOf(layers, const {}).heldCorners(
+  t,
+  shape == Fluent2TagShape.circular ? RawCorner.full : RawCorner.small,
+);
 
 Set<WidgetState> _statesOf(Fluent2Press press, {bool selected = false}) => {
   if (press == Fluent2Press.disabled) WidgetState.disabled,
@@ -701,6 +723,9 @@ class Fluent2InteractionTag extends StatelessWidget {
       Fluent2Style.first(layers, (s) => s.shape, const {}),
     );
     final r = Radius.circular(radius);
+    // A style's corners: the tag's start corners on its words, its end ones
+    // on the dismiss part; where the parts meet stays square.
+    final held = _tagHeld(t, shape, layers);
     final rimWidth =
         Fluent2Style.first(layers, (s) => s.side, const {})?.width ??
         Fluent2Stroke.thin;
@@ -730,6 +755,19 @@ class Fluent2InteractionTag extends StatelessWidget {
       semanticLabel: label + (secondary == null ? '' : ', $secondary'),
       selected: selected,
       radius: radius,
+      shape: held == null
+          ? null
+          : WidgetStatePropertyAll(
+              RoundedRectangleBorder(
+                borderRadius: fluent2HeldRadii(
+                  t,
+                  held,
+                  faceHeight,
+                  topEnd: dismiss == null,
+                  bottomEnd: dismiss == null,
+                ),
+              ),
+            ),
       faceAlignment: dismiss == null
           ? AlignmentDirectional.center
           : AlignmentDirectional.centerEnd,
@@ -755,7 +793,15 @@ class Fluent2InteractionTag extends StatelessWidget {
                 color: f.fill,
                 // Square, a stroke on three sides takes no radius at all
                 // (Flutter refuses a zero one).
-                borderRadius: dismiss == null
+                borderRadius: held != null
+                    ? fluent2HeldRadii(
+                        t,
+                        held,
+                        faceHeight,
+                        topEnd: dismiss == null,
+                        bottomEnd: dismiss == null,
+                      ).resolve(Directionality.of(context))
+                    : dismiss == null
                     ? BorderRadius.all(r)
                     : r == Radius.zero
                     ? null
@@ -806,6 +852,19 @@ class Fluent2InteractionTag extends StatelessWidget {
       semanticLabel:
           deleteLabel ?? Fluent2Localizations.of(context).remove(label),
       radius: radius,
+      shape: held == null
+          ? null
+          : WidgetStatePropertyAll(
+              RoundedRectangleBorder(
+                borderRadius: fluent2HeldRadii(
+                  t,
+                  held,
+                  faceHeight,
+                  topStart: false,
+                  bottomStart: false,
+                ),
+              ),
+            ),
       faceAlignment: AlignmentDirectional.centerStart,
       builder: (context, states) {
         final press = states.press;
@@ -838,7 +897,15 @@ class Fluent2InteractionTag extends StatelessWidget {
               constraints: BoxConstraints.tightFor(height: faceHeight),
               decoration: BoxDecoration(
                 color: f.fill,
-                borderRadius: r == Radius.zero
+                borderRadius: held != null
+                    ? fluent2HeldRadii(
+                        t,
+                        held,
+                        faceHeight,
+                        topStart: false,
+                        bottomStart: false,
+                      ).resolve(Directionality.of(context))
+                    : r == Radius.zero
                     ? null
                     : BorderRadiusDirectional.horizontal(end: r)
                           .resolve(Directionality.of(context)),

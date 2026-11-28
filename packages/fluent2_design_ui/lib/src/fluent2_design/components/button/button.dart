@@ -7,6 +7,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
+import '../../internal/corners.dart';
 import '../../internal/icon_fill.dart';
 import '../../internal/measure.dart';
 import '../../internal/menu_lead.dart';
@@ -551,14 +552,33 @@ final class Fluent2ButtonLook {
   /// Every layer, first wins.
   List<Fluent2Style?> get layers => [style, ..._themes];
 
-  /// The styled outline in [states]: the style's, else (no [shape] given)
-  /// the themes'. Null draws Fluent's
+  /// The styled outline in [states]: the style's (its `shape`, else its
+  /// `corners`), else (no [shape] given) the themes'. Null draws Fluent's
   /// corner, [radius].
   OutlinedBorder? outline(Set<WidgetState> states) {
-    final own = Fluent2Style.first([style], (s) => s.shape, states);
+    final own = Fluent2StyleOf([style], states).outline(t, step);
     if (own != null || shape != null) return own;
-    return Fluent2Style.first(_themes, (s) => s.shape, states);
+    return Fluent2StyleOf(_themes, states).outline(t, step);
   }
+
+  /// The corners a style names in [states], held over the button's own
+  /// [step]: the style's, else (no [shape] given) the themes'. Null when a
+  /// styled shape wins or none names corners.
+  RawCorners? heldCorners(Set<WidgetState> states) {
+    final mine = Fluent2StyleOf([style], states);
+    if (mine.shape != null) return null;
+    final own = mine.heldCorners(t, step);
+    if (own != null || shape != null) return own;
+    return Fluent2StyleOf(_themes, states).heldCorners(t, step);
+  }
+
+  /// The step of the button's own corners: a rounded button's control
+  /// corner, a circular one's capsule, a square one's none.
+  RawCorner get step => switch (shape ?? Fluent2ButtonShape.rounded) {
+    Fluent2ButtonShape.rounded => RawCorner.small,
+    Fluent2ButtonShape.circular => RawCorner.full,
+    Fluent2ButtonShape.square => RawCorner.none,
+  };
 
   /// [outline] for any states, as the focus ring reads it.
   WidgetStateProperty<OutlinedBorder?> get outlines =>
@@ -1698,12 +1718,33 @@ class Fluent2SplitButton extends StatelessWidget {
     Radius corner(Set<WidgetState> states) => Radius.circular(
       fluent2CornerOf(look.outline(states), h, t.radiusMedium),
     );
+    // A style's corners: the act takes the start ones, the chevron the end
+    // ones; where the halves meet stays square.
+    BorderRadius half(Set<WidgetState> states, {required bool start}) {
+      final held = look.heldCorners(states);
+      final BorderRadiusDirectional radii = held == null
+          ? start
+                ? BorderRadiusDirectional.horizontal(start: corner(states))
+                : BorderRadiusDirectional.horizontal(end: corner(states))
+          : fluent2HeldRadii(
+              t,
+              held,
+              h,
+              topStart: start,
+              bottomStart: start,
+              topEnd: !start,
+              bottomEnd: !start,
+            );
+      return radii.resolve(direction);
+    }
+
     // The halves keep the button's own height. Under a finger each half is
     // its own target: it stands the floor (40) tall round its face, and each
     // face is at least 40 wide, so the halves still meet at the divider.
     final touch = Fluent2Layout.padded(context);
     final least = touch ? Fluent2Layout.hitTargetOf(context) : 0.0;
-    Widget ring(Widget face, Set<WidgetState> states) => !states.focused
+    Widget ring(Widget face, Set<WidgetState> states, {required bool start}) =>
+        !states.focused
         ? face
         : Stack(
             fit: StackFit.passthrough,
@@ -1712,7 +1753,13 @@ class Fluent2SplitButton extends StatelessWidget {
               face,
               Positioned.fill(
                 child: IgnorePointer(
-                  child: Fluent2FocusRing(radius: corner(states).x),
+                  child: look.heldCorners(states) == null
+                      ? Fluent2FocusRing(radius: corner(states).x)
+                      : Fluent2FocusRing(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: half(states, start: start),
+                          ),
+                        ),
                 ),
               ),
             ],
@@ -1728,8 +1775,7 @@ class Fluent2SplitButton extends StatelessWidget {
           return ring(
             Fluent2ButtonBox(
               face: face,
-              radius: BorderRadiusDirectional.horizontal(start: corner(states))
-                  .resolve(direction),
+              radius: half(states, start: true),
               height: h,
               minWidth: math.max(
                 least,
@@ -1768,6 +1814,7 @@ class Fluent2SplitButton extends StatelessWidget {
               ),
             ),
             states,
+            start: true,
           );
         },
       );
@@ -1788,8 +1835,7 @@ class Fluent2SplitButton extends StatelessWidget {
           return ring(
             Fluent2ButtonBox(
               face: face,
-              radius: BorderRadiusDirectional.horizontal(end: corner(held))
-                  .resolve(direction),
+              radius: half(held, start: false),
               height: h,
               width: math.max(
                 math.max(24, least),
@@ -1811,6 +1857,7 @@ class Fluent2SplitButton extends StatelessWidget {
               ),
             ),
             states,
+            start: false,
           );
         },
       );

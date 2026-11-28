@@ -6,6 +6,7 @@ import '../../chrome_metrics.dart';
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
 import '../../internal/chosen.dart';
+import '../../internal/corners.dart';
 import '../../internal/icon_fill.dart';
 import '../../internal/list_keys.dart';
 import '../../internal/menu_lead.dart';
@@ -250,7 +251,7 @@ class _Fluent2MenuState<T> extends State<Fluent2Menu<T>> {
                 t.isDark ? t.colors.neutralStroke2 : t.colors.transparentStroke,
               ),
               radius: BorderRadius.circular(t.radiusMedium),
-              shape: look.shape,
+              shape: look.outline(t, RawCorner.small),
               shadows: t.shadows.shadow16,
               // Fluent's 4 round the items, inside the 1 px stroke.
               padding:

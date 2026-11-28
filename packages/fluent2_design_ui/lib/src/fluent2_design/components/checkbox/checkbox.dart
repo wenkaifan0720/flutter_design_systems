@@ -4,6 +4,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
+import '../../internal/corners.dart';
 import '../../internal/hit_slop.dart';
 import '../../internal/well.dart';
 import '../../styled.dart';
@@ -113,7 +114,10 @@ class _Indicator extends StatelessWidget {
     return fluent2EasedInks([fill, stroke, ink], (context, inks) {
       final [fill, stroke, ink] = inks;
       final circular = shape == Fluent2CheckboxShape.circular;
-      final styled = look?.shape;
+      final styled = look?.outline(
+        t,
+        circular ? RawCorner.full : RawCorner.extraSmall,
+      );
       final boxFill = look?.fill ?? fill;
       final mine = look?.foreground ?? ink;
       final rim =

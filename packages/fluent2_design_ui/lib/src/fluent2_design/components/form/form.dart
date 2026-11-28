@@ -72,8 +72,11 @@ class Fluent2Form extends StatelessWidget {
 /// text back to its first value.
 ///
 /// The text is [controller]'s when given, else the field keeps its own,
-/// starting at [initialValue]. [labelText], [required] and [helperText] are
-/// the field's words; the rest is the text field's own.
+/// starting at [initialValue]. With a controller, the field's initial value
+/// is the controller's text when it was last built; reset() restores it. To
+/// empty a form, call reset() and then clear the controllers.
+/// [labelText], [required] and [helperText] are the field's words; the rest
+/// is the text field's own.
 ///
 /// ```dart
 /// Fluent2TextFormField(labelText: 'Title', required: true, validator: (value) => (value ?? '').trim().isEmpty ? 'Enter a title' : null, onSaved: (value) => title = value!)

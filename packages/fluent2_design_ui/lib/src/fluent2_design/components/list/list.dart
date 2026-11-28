@@ -4,6 +4,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
+import '../../internal/corners.dart';
 import '../../internal/in_row.dart';
 import '../../internal/well.dart';
 import '../../styled.dart';
@@ -543,7 +544,7 @@ class Fluent2ListGroup extends StatelessWidget {
                     ? BorderSide.none
                     : BorderSide(color: look.edge!, width: Fluent2Stroke.thin)),
             radius: BorderRadius.circular(t.radiusMedium),
-            shape: look.shape,
+            shape: look.outline(t, RawCorner.small),
             shadows: t.shadows.shadow4,
             clip: true,
             // The rows share the card's keylines (the keyline check).
