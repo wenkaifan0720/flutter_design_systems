@@ -67,7 +67,11 @@ void main() {
     testWidgets('text box, with InputDecoration, on standard density @$w', (
       tester,
     ) async {
-      await pump(tester, w, const RetroDesktopTextField(initial: 'Pepper'));
+      await pump(
+        tester,
+        w,
+        const RetroDesktopTextField(initialValue: 'Pepper'),
+      );
       centred(
         tester,
         find.byType(RetroDesktopTextField),

@@ -1663,3 +1663,61 @@ transforms:
     changes:
       - kind: 'rename'
         newName: 'semanticLabel'
+  # 0.8.1: a field's first words take Flutter's name, initialValue.
+  - title: "Use RetroDesktopTextField's new parameter name"
+    date: 2026-11-27
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'initial'
+        newName: 'initialValue'
+  - title: "Rename to 'initialValue'"
+    date: 2026-11-27
+    element:
+      uris: *uris
+      getter: 'initial'
+      inClass: 'RetroDesktopTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'initialValue'
+  - title: "Use RetroDesktopTextArea's new parameter name"
+    date: 2026-11-27
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'initial'
+        newName: 'initialValue'
+  - title: "Rename to 'initialValue'"
+    date: 2026-11-27
+    element:
+      uris: *uris
+      getter: 'initial'
+      inClass: 'RetroDesktopTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'initialValue'
+  - title: "Use RetroDesktopInput's new parameter name"
+    date: 2026-11-27
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'initial'
+        newName: 'initialValue'
+  - title: "Rename to 'initialValue'"
+    date: 2026-11-27
+    element:
+      uris: *uris
+      getter: 'initial'
+      inClass: 'RetroDesktopInput'
+    changes:
+      - kind: 'rename'
+        newName: 'initialValue'

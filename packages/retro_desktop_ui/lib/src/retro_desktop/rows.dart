@@ -1035,7 +1035,9 @@ class RetroDesktopDescriptionList extends StatelessWidget {
                   children: [
                     SizedBox(
                       width: col,
-                      // A fact's glyph stands before its label, both against the values.
+                      // A fact's glyph stands at the column's start, the glyphs in one column down the list; its label
+                      // stands against the values. A glyph beside each end-aligned label stepped in and out with the
+                      // labels' lengths.
                       child: f.icon == null
                           ? Text(
                               f.label,
@@ -1043,13 +1045,12 @@ class RetroDesktopDescriptionList extends StatelessWidget {
                               textAlign: TextAlign.end,
                             )
                           : Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
                               crossAxisAlignment: CrossAxisAlignment.baseline,
                               textBaseline: TextBaseline.alphabetic,
                               children: [
                                 Icon(f.icon, size: 14, color: c.textTertiary),
                                 const SizedBox(width: RetroDesktopSpacing.s6),
-                                Flexible(
+                                Expanded(
                                   child: Text(
                                     f.label,
                                     style: label,

@@ -40,7 +40,9 @@ class AccountPage extends StatelessWidget {
                         children: [
                           const RetroDesktopFormField(
                             labelText: 'Name',
-                            child: RetroDesktopTextField(initial: 'Your name'),
+                            child: RetroDesktopTextField(
+                              initialValue: 'Your name',
+                            ),
                           ),
                           const RetroDesktopFormField(
                             labelText: 'Email',

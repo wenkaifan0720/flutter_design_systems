@@ -510,12 +510,12 @@ class _KitDetailsFormState extends State<KitDetailsForm> {
         ),
         RetroDesktopTextField(
           labelText: say('Name'),
-          initial: say(widget.details.name),
+          initialValue: say(widget.details.name),
           onChanged: (name) => _change(name: name),
         ),
         RetroDesktopTextField(
           labelText: say('Email address'),
-          initial: widget.details.email,
+          initialValue: widget.details.email,
           keyboardType: TextInputType.emailAddress,
           onChanged: (email) => _change(email: email),
         ),
@@ -745,7 +745,7 @@ class _KitPrintOrderState extends State<KitPrintOrder> {
         // buttons, and side by side they left the window's keylines.
         RetroDesktopTextField(
           labelText: say('Deliver to'),
-          initial: say('Alex Lee, 12 Harbour Street, Leith'),
+          initialValue: say('Alex Lee, 12 Harbour Street, Leith'),
         ),
         RetroDesktopRadioGroup<String>(
           labelText: say('Postage'),

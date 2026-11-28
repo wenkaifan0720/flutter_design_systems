@@ -320,7 +320,7 @@ void main() {
           const Center(
             child: SizedBox(
               width: 300,
-              child: RetroDesktopTextField(initial: 'Drag this selection'),
+              child: RetroDesktopTextField(initialValue: 'Drag this selection'),
             ),
           ),
         ),

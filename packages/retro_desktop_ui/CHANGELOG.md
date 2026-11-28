@@ -1,3 +1,16 @@
+## 0.8.1
+
+- Requires ui_core 0.8.7.
+- On a phone a bottom sheet (`showRetroDesktopBottomSheet`) stands on `RetroDesktopAppShell`'s strip and on a page's foot, as the family's sheets do on ui_core's `RawBottomSheetRoute`, and a drag down closes it. It covered the strip, and with a home-indicator inset it stood above the inset with the strip's foot showing under it. On a desk it still opens as a window.
+- In English a date field's day and `RetroDesktopFormat.mediumDate` read month first, "Oct 2, 2026", as the docs said (ui_core 0.8.6 writes English dates so); British English and other languages keep their own order.
+- A description list's glyphs stand in one column at the start of the labels' column, the labels still against their values: each glyph stood just before its end-aligned label and stepped in and out with the labels' lengths.
+- On a desk a page's footer holds its buttons at the strip's end, on the desk's margin, as on a phone: they ended at the window's end, mid-strip on a wide desk.
+- Under `RetroDesktopAppShell` on a desk a page's own bar leaves its title to the window the page stands in, whose title bar says it: the title showed twice. A page's way back and its actions stay in its bar.
+- A text field's, a text area's and an input's first words are their `initialValue`, Flutter's name (`TextFormField.initialValue`); `initial` still gives them, deprecated, and `dart fix` moves it.
+- Fields keep to a line that reads: a text, password, date or select field, the combobox and an input group stand at most 520 wide (`RetroDesktopTextField.measure`), their label and note with them, at the start of a wider column. A form across a desk's window ran its fields 890 wide. A search field still stands as wide as the list it searches.
+- A segmented button's and a radio group's label is set as a list section's title is, as a group box's title headed its buttons: a settings page's headings match. One field's label stays in the reading face.
+- Docs: the host's section says how to offer the appearance (both themes built from the palette, `copyWith(appearance: ...)`); the form names `RawFormState.reset`, a text field's `initialValue` and `RetroDesktopFormat.mediumDate`; the places name `modeForWidth` for a sidebar; the shape table says a part's own corners are fixed (ui_core 0.8.5's corners: each appearance's pixel art).
+
 ## 0.8.0
 
 - Requires ui_core 0.8.4.

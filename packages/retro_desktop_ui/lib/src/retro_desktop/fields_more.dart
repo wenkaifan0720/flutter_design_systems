@@ -12,6 +12,7 @@ import 'package:ui_core/ui_core.dart';
 import 'controls.dart';
 import 'glyphs.dart';
 import 'internal/face.dart';
+import 'internal/field_hooks.dart' show retroDesktopMeasured;
 import 'internal/parts.dart';
 import 'layout.dart' show RetroDesktopReach;
 import 'pixels.dart';
@@ -31,7 +32,8 @@ class RetroDesktopTextArea extends StatelessWidget {
   const RetroDesktopTextArea({
     super.key,
     this.controller,
-    this.initial,
+    String? initialValue,
+    @Deprecated('Use initialValue.') String? initial,
     this.hintText,
     this.labelText,
     this.helperText,
@@ -41,13 +43,18 @@ class RetroDesktopTextArea extends StatelessWidget {
     this.focusNode,
     this.autofocus = false,
     this.onChanged,
-  }) : assert(lines > 1);
+  }) : initialValue = initialValue ?? initial,
+       assert(lines > 1);
 
   /// {@macro retro_desktop.controller}
   final TextEditingController? controller;
 
+  /// The first words when no controller supplies them (Flutter's `TextFormField.initialValue`).
+  final String? initialValue;
+
   /// The first words when no controller supplies them.
-  final String? initial;
+  @Deprecated('Use initialValue.')
+  String? get initial => initialValue;
 
   /// The words shown while the box is empty.
   final String? hintText;
@@ -73,7 +80,7 @@ class RetroDesktopTextArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) => RetroDesktopTextField(
     controller: controller,
-    initial: initial,
+    initialValue: initialValue,
     hintText: hintText,
     labelText: labelText,
     helperText: helperText,
@@ -98,7 +105,7 @@ class RetroDesktopTextArea extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('initial', initial, defaultValue: null))
+      ..add(StringProperty('initialValue', initialValue, defaultValue: null))
       ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(StringProperty('helperText', helperText, defaultValue: null))
@@ -406,7 +413,10 @@ class _InputGroupState extends State<RetroDesktopInputGroup> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  // At most a field's measure, at the start of a wider room.
+  Widget build(BuildContext context) => retroDesktopMeasured(_build(context));
+
+  Widget _build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
     final error = widget.errorText;
@@ -720,7 +730,10 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
   final bool autofocus;
 
   @override
-  Widget build(BuildContext context) {
+  // At most a field's measure, at the start of a wider room.
+  Widget build(BuildContext context) => retroDesktopMeasured(_build(context));
+
+  Widget _build(BuildContext context) {
     final words = displayString ?? (T option) => '$option';
     final box = RawCombobox<T>(
       options: options,

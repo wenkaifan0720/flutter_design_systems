@@ -44,7 +44,10 @@ frame, so nothing draws in a fallback face.
 by day and by night, the palette, the desk's colour under the pages, and the toaster, so a notice
 (`showRetroDesktopSnackBar`) stands over the app, above its bars. Its `brightness` is light, dark, or null for the
 platform's setting; its `palette` is one of `RetroDesktopThemeData.palettes` (`light` and `dark` take whole themes
-of your own instead). A new appearance or palette shows at once, as every change of state on the period's desktops
+of your own instead, and the palette then builds neither). The appearance, Platinum or Chisel, is part of a theme: an
+app that offers it gives the host both themes, built from the palette chosen,
+`light: RetroDesktopThemeData.preset(palette.id, Brightness.light).copyWith(appearance: appearance)` and the same with
+`Brightness.dark`. A new appearance or palette shows at once, as every change of state on the period's desktops
 did; an app that wants it to cross-fade gives the host a `duration` (at once under Reduce Motion all the same).
 Dialogs, sheets and menus need no mount of their own: each opens on the navigator's overlay in the theme it was raised
 in. Your navigator, routes and localizations stay yours.
@@ -194,8 +197,11 @@ Future<void> confirmRemove(BuildContext context, String title) async {
 **A form.** `RawForm` (ui_core's, exported with retro_desktop_ui) checks every field's `validator` on submit: each
 error shows under its field, with the field's heavier edge, the first wrong field takes the focus and a screen reader
 hears how many need attention; after that the errors follow the typing. Each field brings its label and its help or
-error, and takes the column's width. A `RetroDesktopDateField` raises the calendar; the page's `footer` holds the
-window's default button.
+error, and takes the column's width up to a line that reads (`RetroDesktopTextField.measure`, 520), at the column's
+start. A text field's starting words are its `initialValue`, as in Flutter. A `RetroDesktopDateField` raises
+the calendar, and `RetroDesktopFormat.mediumDate` sets a day elsewhere on the page as the field shows it. The page's
+`footer` holds the window's default button; `form.currentState!.reset()` takes every field back to its starting
+value and hides the errors, for the next entry.
 
 ```dart
 class AddBookPage extends StatefulWidget {
@@ -311,7 +317,9 @@ class Swatches extends StatelessWidget {
 **The places: `RetroDesktopAppShell`.** On a phone the places are the strip at the foot; on a desk (from 1024 wide)
 the menu bar across the top, with the app's `brand` at its start. `.branches` keeps a stack for each place: a pushed
 page keeps the menu bar on a desk while the phone's strip steps away, and back pops it. A screen reader hears the
-places as tabs.
+places as tabs. `modeForWidth` chooses the places' form at a width, as ui_core's `RawNavigationMode`: `(width) =>
+width < 1024 ? RawNavigationMode.bar : RawNavigationMode.sidebar` sets a desk's places in a sidebar at the start in
+place of the menu bar.
 
 ```dart
 class Shelf extends StatefulWidget {
@@ -356,7 +364,7 @@ class _ShelfState extends State<Shelf> {
 | Text entry | `RetroDesktopTextField`, `RetroDesktopTextArea`, `RetroDesktopPasswordField`, `RetroDesktopSearchField`, `RetroDesktopNumberField`, `RetroDesktopInputOtp`, `RetroDesktopInputGroup`, `RetroDesktopCombobox` |
 | Choices | `RetroDesktopSelect`, `RetroDesktopCheckbox`, `RetroDesktopCheckRow`, `RetroDesktopRadioGroup`, `RetroDesktopSwitch`, `RetroDesktopSwitchRow`, `RetroDesktopSegmentedButton`, `RetroDesktopChip` |
 | Amounts | `RetroDesktopSlider`, `RetroDesktopRangeSlider`, `RetroDesktopRating`, `RetroDesktopMeter` |
-| Dates and times | `RetroDesktopDateField`, `RetroDesktopCalendar`, `showRetroDesktopDatePicker`, `RetroDesktopDateRangePicker`, `showRetroDesktopTimePicker` |
+| Dates and times | `RetroDesktopDateField`, `RetroDesktopCalendar`, `showRetroDesktopDatePicker`, `RetroDesktopDateRangePicker`, `showRetroDesktopTimePicker`, `RetroDesktopFormat` (a day or a time in words, as the fields show it) |
 | A form | `RawForm`, `RetroDesktopFormField` |
 | Lists and tables | `RetroDesktopListSection`, `RetroDesktopListTile`, `RetroDesktopReorderableListView`, `RetroDesktopTable`, `RetroDesktopDataTable`, `RetroDesktopListTable`, `RetroDesktopDescriptionList`, `RetroDesktopTreeView` |
 | Surfaces | `RetroDesktopCard`, `RetroDesktopWell`, `RetroDesktopSections`, `RetroDesktopDisclosure`, `RetroDesktopDivider` |

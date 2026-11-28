@@ -1779,6 +1779,7 @@ class RetroDesktopThemeData with Diagnosticable {
   /// | full | a circle (the radio) | Exclusive choice is a circle in both appearances. |
   /// | stroke | 1 (2 for a default button's ring and Platinum's focus) | Whole pixels only: a 1.5 px rule anti-aliases into a grey the look never shows. |
   /// | depth | the appearance's 1 to 2 px bevels, a 2 px window shadow | The bevel is pixel art per appearance; a multiplier blurs it, and the two appearances are its whole-pixel choices. |
+  /// | A part's own corners | fixed: a style's `corners` are not taken | Corners are each appearance's pixel art (Platinum's stair, Chisel's square); a corner of one part's own would break the bevel's light. |
   RetroDesktopShapes get shapes => RetroDesktopShapes.forAppearance(appearance);
 
   /// The look's line widths, for a part drawn in its hand: whole pixels, fixed by the pixel law (see [shapes]).

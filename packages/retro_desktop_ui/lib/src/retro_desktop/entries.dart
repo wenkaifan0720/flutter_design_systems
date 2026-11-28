@@ -30,6 +30,7 @@ Widget _labelled(
   String? label,
   String? helper,
   String? error,
+  bool group = false,
 }) {
   if (label == null && helper == null && error == null) return child;
   final t = RetroDesktopTheme.of(context);
@@ -37,10 +38,17 @@ Widget _labelled(
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
+      // A group of choices is titled as a list section is, as a group box's title headed its buttons; one field's
+      // label is set in the reading face.
       if (label != null)
         Padding(
-          padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s6),
-          child: Text(label, style: t.textTheme.body),
+          padding: EdgeInsets.only(
+            bottom: group ? RetroDesktopSpacing.s8 : RetroDesktopSpacing.s6,
+          ),
+          child: Text(
+            label,
+            style: group ? t.textTheme.small : t.textTheme.body,
+          ),
         ),
       child,
       if (error != null || helper != null)
@@ -225,7 +233,10 @@ class _DateFieldState extends State<RetroDesktopDateField> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  // At most a field's measure, at the start of a wider room.
+  Widget build(BuildContext context) => retroDesktopMeasured(_build(context));
+
+  Widget _build(BuildContext context) {
     final validator = widget.validator;
     final changed = widget.onChanged;
     if (validator == null && widget.onSaved == null) {
@@ -548,6 +559,7 @@ class _SearchState extends State<RetroDesktopSearchField> {
   }
 
   @override
+  // No field's measure: a search stands as wide as the list or table it searches, on its keylines.
   Widget build(BuildContext context) {
     final hooks = RetroDesktopFieldHooks.maybeOf(context);
     return RetroDesktopFieldHooks(
@@ -1083,7 +1095,10 @@ class _SelectState<T> extends State<RetroDesktopSelect<T>> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  // At most a field's measure, at the start of a wider room.
+  Widget build(BuildContext context) => retroDesktopMeasured(_build(context));
+
+  Widget _build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final selected = widget.options
         .where((o) => o.value == widget.value)
@@ -1652,6 +1667,7 @@ class RetroDesktopRadioGroup<T> extends StatelessWidget {
       ),
       label: showLabel ? labelText : null,
       error: errorText,
+      group: true,
     );
   }
 
@@ -1750,6 +1766,7 @@ class RetroDesktopSegmentedButton<T> extends StatelessWidget {
       ),
     ),
     label: showLabel ? label : null,
+    group: true,
   );
 
   @override

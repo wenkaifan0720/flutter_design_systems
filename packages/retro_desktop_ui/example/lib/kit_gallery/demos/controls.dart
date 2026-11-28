@@ -115,7 +115,7 @@ Widget kitSpecimenTextBox() => const RetroDesktopColumn(
       leading: Icon(LucideIcons.search),
       trailing: RetroDesktopKbd('Ctrl K'),
     ),
-    RetroDesktopTextField(initial: 'What you wrote'),
+    RetroDesktopTextField(initialValue: 'What you wrote'),
     RetroDesktopTextField(hintText: 'A few lines', lines: 3),
   ],
 );

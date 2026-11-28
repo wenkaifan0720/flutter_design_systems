@@ -111,7 +111,7 @@ final Map<String, Widget? Function(String)> stateParts = {
           width: 240,
           child: RetroDesktopTextField(
             labelText: 'Name',
-            initial: 'Alex Lee',
+            initialValue: 'Alex Lee',
             enabled: s != 'disabled',
             errorText: s == 'error' ? 'Enter your name' : null,
           ),
@@ -283,7 +283,7 @@ final Map<String, Widget? Function(String)> stateParts = {
           width: 280,
           child: RetroDesktopTextArea(
             labelText: 'Notes',
-            initial: 'For the next reader',
+            initialValue: 'For the next reader',
             enabled: s != 'disabled',
             errorText: s == 'error' ? 'Too long' : null,
           ),

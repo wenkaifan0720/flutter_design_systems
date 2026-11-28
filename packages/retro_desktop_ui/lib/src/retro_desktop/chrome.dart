@@ -1315,7 +1315,8 @@ class RetroDesktopScaffold extends StatelessWidget {
           utility.isNotEmpty ||
           barSubtitle != null;
       final pageBar = RetroDesktopAppBar(
-        title: bar?.title,
+        // The window the scaffold draws carries the page's title in its title bar: the bar over it says it once.
+        title: drawsWindow ? null : bar?.title,
         subtitle: barSubtitle,
         leading: leading,
         style: bar?.style,
@@ -1438,7 +1439,7 @@ class RetroDesktopScaffold extends StatelessWidget {
                 ],
               ),
             ),
-            if (footer != null) _Foot(column: column, child: footer!),
+            if (footer != null) _Foot(child: footer!),
           ],
         ),
       ],
@@ -1533,11 +1534,8 @@ class _PageInset extends InheritedWidget {
 }
 
 class _Foot extends StatelessWidget {
-  const _Foot({required this.child, this.column});
+  const _Foot({required this.child});
   final Widget child;
-
-  /// On a desk, where the page's window stands: the footer's buttons end where it ends, not at the screen's end.
-  final (double, double) Function(double width)? column;
   @override
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
@@ -1562,35 +1560,22 @@ class _Foot extends StatelessWidget {
                     child: child,
                   ),
                 )
-              : LayoutBuilder(
-                  builder: (context, box) {
-                    final (start, end) =
-                        column?.call(box.maxWidth) ??
-                        (
-                          RetroDesktopSpacing.s12,
-                          box.maxWidth - RetroDesktopSpacing.s12,
-                        );
-                    return Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(
-                        start,
-                        RetroDesktopSpacing.s10,
-                        box.maxWidth - end,
-                        RetroDesktopSpacing.s10,
-                      ),
-                      // At the window's end, as a dialog's buttons stand at its end: a button its own width, a row of
-                      // them at most 360.
-                      child: Align(
-                        alignment: AlignmentDirectional.centerEnd,
-                        heightFactor: 1,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: math.min(360, math.max(0, end - start)),
-                          ),
-                          child: child,
-                        ),
-                      ),
-                    );
-                  },
+              : Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: RetroDesktopSpacing.s24,
+                    vertical: RetroDesktopSpacing.s10,
+                  ),
+                  // At the strip's end, as a dialog's buttons stand at its end: a button its own width, a row of them
+                  // at most 360. The strip runs the screen's width, so its buttons end where it ends, on the desk's
+                  // margin; at the window's end they stood mid-strip on a wide desk.
+                  child: Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    heightFactor: 1,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 360),
+                      child: child,
+                    ),
+                  ),
                 ),
         ),
       ),
@@ -1895,11 +1880,12 @@ class RetroDesktopInput extends StatelessWidget {
     this.autofocus = false,
     this.hintText,
     this.controller,
-    this.initial,
+    String? initialValue,
+    @Deprecated('Use initialValue.') String? initial,
     this.onChanged,
     this.onSubmitted,
     this.enabled = true,
-  });
+  }) : initialValue = initialValue ?? initial;
 
   /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
@@ -1919,8 +1905,12 @@ class RetroDesktopInput extends StatelessWidget {
   /// Placeholder text shown while the input has no value.
   final String? hintText;
 
-  /// The initial value used when no external controller supplies one.
-  final String? initial;
+  /// The first words when no controller supplies them (Flutter's `TextFormField.initialValue`).
+  final String? initialValue;
+
+  /// The first words when no controller supplies them.
+  @Deprecated('Use initialValue.')
+  String? get initial => initialValue;
 
   /// {@template retro_desktop.controller}
   /// An optional externally owned controller; the caller disposes it.
@@ -1943,7 +1933,7 @@ class RetroDesktopInput extends StatelessWidget {
     autofocus: autofocus,
     hintText: hintText,
     controller: controller,
-    initial: initial,
+    initialValue: initialValue,
     onChanged: onChanged,
     onSubmitted: onSubmitted,
   );
@@ -1970,7 +1960,7 @@ class RetroDesktopInput extends StatelessWidget {
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
       ..add(StringProperty('hintText', hintText, defaultValue: null))
-      ..add(StringProperty('initial', initial, defaultValue: null))
+      ..add(StringProperty('initialValue', initialValue, defaultValue: null))
       ..add(
         DiagnosticsProperty<TextEditingController>(
           'controller',

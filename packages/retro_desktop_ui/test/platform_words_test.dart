@@ -42,7 +42,7 @@ void main() {
                           width: 320,
                           child: RetroDesktopTextField(
                             labelText: 'Name',
-                            initial: 'Ada Lovelace',
+                            initialValue: 'Ada Lovelace',
                           ),
                         ),
                       ),

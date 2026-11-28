@@ -79,7 +79,7 @@ void main() {
                             RetroDesktopTextField(
                               key: ValueKey(name),
                               labelText: name,
-                              initial: name,
+                              initialValue: name,
                             ),
                         ],
                       ),

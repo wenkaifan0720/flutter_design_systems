@@ -1,6 +1,5 @@
 // What the adopters' study found on retro's pages: title-bar boxes that looked pressable and did nothing, a subtitle that
-// never showed, a description list that dropped its glyphs, and a footer that stood in a box at the screen's end, on
-// neither the window's edge nor the screen's.
+// never showed and a description list that dropped its glyphs. Where a desk's footer stands: app_page_test.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
@@ -159,29 +158,4 @@ void main() {
     );
     expect(find.byIcon(RetroDesktopGlyphs.wind), findsOneWidget);
   });
-
-  for (final direction in TextDirection.values) {
-    testWidgets(
-      "on a desk the footer's button stands at the page window's end (${direction.name})",
-      (tester) async {
-        await _at(
-          tester,
-          1440,
-          RetroDesktopScaffold(
-            appBar: const RetroDesktopAppBar(title: 'Add a book'),
-            body: const Text('Fields'),
-            footer: RetroDesktopButton('Save', onPressed: () {}),
-          ),
-          direction: direction,
-        );
-        final window = tester.getRect(find.byType(RetroDesktopWindow));
-        final save = tester.getRect(find.byType(RetroDesktopButton));
-        if (direction == TextDirection.ltr) {
-          expect(save.right, closeTo(window.right, 1));
-        } else {
-          expect(save.left, closeTo(window.left, 1));
-        }
-      },
-    );
-  }
 }

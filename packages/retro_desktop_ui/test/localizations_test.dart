@@ -181,7 +181,7 @@ void main() {
                               children: [
                                 const RetroDesktopTextField(
                                   labelText: 'Name',
-                                  initial: 'Ada Lovelace',
+                                  initialValue: 'Ada Lovelace',
                                 ),
                                 const RetroDesktopSearchField(
                                   hintText: 'Search',
@@ -413,7 +413,7 @@ void main() {
                 width: 320,
                 child: RetroDesktopTextField(
                   labelText: 'Name',
-                  initial: 'Ada Lovelace',
+                  initialValue: 'Ada Lovelace',
                 ),
               ),
             ),

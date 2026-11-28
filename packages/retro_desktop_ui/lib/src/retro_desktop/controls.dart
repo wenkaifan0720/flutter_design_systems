@@ -363,7 +363,8 @@ class RetroDesktopTextField extends StatefulWidget {
   const RetroDesktopTextField({
     super.key,
     this.controller,
-    this.initial,
+    String? initialValue,
+    @Deprecated('Use initialValue.') String? initial,
     this.hintText,
     this.onChanged,
     this.onSubmitted,
@@ -386,7 +387,8 @@ class RetroDesktopTextField extends StatefulWidget {
     this.onSaved,
     this.autovalidateMode,
     this.style,
-  }) : assert(lines >= 1);
+  }) : initialValue = initialValue ?? initial,
+       assert(lines >= 1);
 
   /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
@@ -394,8 +396,12 @@ class RetroDesktopTextField extends StatefulWidget {
   /// {@macro retro_desktop.controller}
   final TextEditingController? controller;
 
-  /// The initial value used when no external controller supplies one.
-  final String? initial;
+  /// The first words when no controller supplies them (Flutter's `TextFormField.initialValue`).
+  final String? initialValue;
+
+  /// The first words when no controller supplies them.
+  @Deprecated('Use initialValue.')
+  String? get initial => initialValue;
 
   /// Placeholder text shown while the input has no value.
   final String? hintText;
@@ -460,6 +466,11 @@ class RetroDesktopTextField extends StatefulWidget {
   @override
   State<RetroDesktopTextField> createState() => _TextFieldState();
 
+  /// The widest a field stands, its label and its note with it: about seventy characters of the reading face. The
+  /// date and select fields, the combobox and an input group keep to it too; a wider room holds them at its start. A
+  /// [RetroDesktopSearchField] stands as wide as the list it searches; a [RetroDesktopNumberField] keeps its own width.
+  static const double measure = retroDesktopFieldMeasure;
+
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
@@ -478,7 +489,7 @@ class RetroDesktopTextField extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('initial', initial, defaultValue: null))
+      ..add(StringProperty('initialValue', initialValue, defaultValue: null))
       ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
@@ -566,7 +577,7 @@ class _TextFieldState extends State<RetroDesktopTextField> {
   // A field in a form reads its text from a controller, its own when the app gives none.
   TextEditingController get _controller =>
       widget.controller ??
-      (_ownController ??= TextEditingController(text: widget.initial));
+      (_ownController ??= TextEditingController(text: widget.initialValue));
 
   @override
   void dispose() {
@@ -577,6 +588,14 @@ class _TextFieldState extends State<RetroDesktopTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final own = _build(context);
+    // A form's own field (a search's input, a code's) keeps the measure its form gives it.
+    return RetroDesktopFieldHooks.maybeOf(context) == null
+        ? retroDesktopMeasured(own)
+        : own;
+  }
+
+  Widget _build(BuildContext context) {
     final validator = widget.validator;
     if (validator == null && widget.onSaved == null) {
       return _field(
@@ -615,7 +634,7 @@ class _TextFieldState extends State<RetroDesktopTextField> {
     String? error,
     ValueChanged<String>? onChanged,
   ) {
-    final initial = widget.initial;
+    final initial = widget.initialValue;
     final hint = widget.hintText;
     final onSubmitted = widget.onSubmitted;
     final leading = widget.leading;

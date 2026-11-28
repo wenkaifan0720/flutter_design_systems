@@ -282,9 +282,41 @@ class _RaisedDialogRoute<T> extends RawModalDialogRoute<T>
   final bool escapeDismissible;
 }
 
+// The look's bottom sheet on a phone (showRetroDesktopBottomSheet), on ui_core's RawBottomSheetRoute: it stands on the
+// shell's strip and a page's foot, or on the keyboard, and a drag down closes it; its focus taken and given back, Tab
+// kept inside. It stands at once while the theme's raise is zero (the default and Reduce Motion), else rises on
+// ui_core's spring within that time. Nothing behind it is dimmed; Escape closes it when [escapeDismissible] says so,
+// apart from a press outside ([barrierDismissible]). On a desk the sheet opens as a window ([_RaisedRoute]).
+class _RaisedSheetRoute<T> extends RawBottomSheetRoute<T>
+    with
+        _EscapeCloses<T>,
+        RetroDesktopModalRoute<T>,
+        RetroDesktopRouteStill<T> {
+  _RaisedSheetRoute({
+    required _Carried carried,
+    required WidgetBuilder builder,
+    required super.barrierDismissible,
+    required this.escapeDismissible,
+    required super.barrierLabel,
+  }) : retroDesktopTime = carried.motion.raise,
+       super(
+         barrierColor: const Color(0x00000000),
+         stiffness: retroDesktopRouteStiffness(carried.motion.raise),
+         builder: (context, details) => carried.wrap(
+           FocusTraversalGroup(child: Builder(builder: builder)),
+         ),
+       );
+
+  @override
+  final Duration retroDesktopTime;
+
+  @override
+  final bool escapeDismissible;
+}
+
 // Whether [context] stands in a window the look raised on its own (a dialog, a bottom sheet), not one a page draws.
 bool _inRaisedWindow(BuildContext context) => switch (ModalRoute.of(context)) {
-  _RaisedRoute() || _RaisedDialogRoute() => true,
+  _RaisedRoute() || _RaisedDialogRoute() || _RaisedSheetRoute() => true,
   _ => false,
 };
 
@@ -303,6 +335,14 @@ Future<T?> _show<T>(
   final carried = _Carried(context, navigator.context);
   final RetroDesktopModalRoute<T> route = modal && !sheet
       ? _RaisedDialogRoute<T>(
+          carried: carried,
+          builder: builder,
+          barrierDismissible: dismissible,
+          escapeDismissible: escapeDismissible ?? dismissible,
+          barrierLabel: label ?? carried.shared.closeButtonLabel,
+        )
+      : sheet && !carried.theme.desk
+      ? _RaisedSheetRoute<T>(
           carried: carried,
           builder: builder,
           barrierDismissible: dismissible,
@@ -649,8 +689,10 @@ class RetroDesktopDialog extends StatelessWidget {
   }
 }
 
-/// Opens a bottom sheet; on a desk the same panel opens as a window a third of
-/// the way down the display, as an alert does.
+/// Opens a bottom sheet: on a phone it stands on the shell's strip and a page's
+/// foot, or on the keyboard, and a drag down closes it; on a desk the same
+/// panel opens as a window a third of the way down the display, as an alert
+/// does.
 /// [escapeDismissible] defaults to [barrierDismissible] and may be overridden
 /// independently when only presses outside must be ignored.
 Future<T?> showRetroDesktopBottomSheet<T>(
@@ -753,6 +795,9 @@ class RetroDesktopBottomSheet extends StatelessWidget {
     // way down the display, framed all round: docked to the display's foot it
     // stood over its own button with its shadow off screen.
     final floating = !inPlace && t.desk;
+    // Raised on a phone, ui_core's sheet stands it on the strip, a page's foot or the keyboard; its title still names
+    // the route, as a dialog's does.
+    final onSheet = !inPlace && ModalRoute.of(context) is _RaisedSheetRoute;
     final inner = LayoutBuilder(
       builder: (context, room) {
         // Placed in a scrolling page (a kit screen's body), the sheet has
@@ -852,6 +897,23 @@ class RetroDesktopBottomSheet extends StatelessWidget {
       ),
     );
     if (inPlace) return panel;
+    // The screen's bottom inset reaches it only where it stands on the screen's foot.
+    if (onSheet) {
+      return SafeArea(
+        top: false,
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          heightFactor: 1,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: 560,
+              maxHeight: media.size.height * .9,
+            ),
+            child: panel,
+          ),
+        ),
+      );
+    }
     return SafeArea(
       child: Padding(
         padding: floating
