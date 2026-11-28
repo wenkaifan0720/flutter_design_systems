@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../chrome_metrics.dart';
 import '../../internal/cap_center.dart';
+import '../../internal/corners.dart';
 import '../../theme.dart';
 import '../inputs/inputs.dart';
 import '../pressable/pressable.dart';
@@ -104,13 +106,13 @@ class LedgerSearchEntry extends StatelessWidget {
             onTap: onFilterPressed,
             semanticLabel: filterLabel,
             value: filterCount > 0 ? '$filterCount in force' : null,
-            radius: t.controlRadius,
+            borderRadius: ledgerStep(t, RawCorner.full),
             child: SizedBox.square(
               dimension: LedgerChromeMetrics.searchHeight,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: t.surface,
-                  borderRadius: BorderRadius.circular(t.controlRadius),
+                  borderRadius: ledgerStep(t, RawCorner.full),
                   border: Border.all(color: t.border),
                 ),
                 child: Stack(

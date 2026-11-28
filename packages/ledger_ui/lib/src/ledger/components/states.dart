@@ -7,6 +7,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
+import '../internal/corners.dart';
 import '../internal/leader.dart';
 import '../theme.dart';
 import 'button/button.dart';
@@ -291,11 +292,11 @@ class _BlankPage extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: t.surface,
-        borderRadius: BorderRadius.circular(t.cardRadius),
+        borderRadius: ledgerStep(t, RawCorner.medium),
         boxShadow: t.paperShadow,
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(t.cardRadius),
+        borderRadius: ledgerStep(t, RawCorner.medium),
         child: _RuledPage(
           pitch: pitch,
           rules: wide
@@ -343,7 +344,7 @@ class _BlankPage extends StatelessWidget {
               : DecoratedBox(
                   decoration: BoxDecoration(
                     color: t.surface,
-                    borderRadius: BorderRadius.circular(t.controlRadius),
+                    borderRadius: ledgerStep(t, RawCorner.full),
                   ),
                   child: act,
                 ),

@@ -2,11 +2,13 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../format.dart';
 import '../../internal/button_ends.dart';
 import '../../internal/cap_center.dart';
+import '../../internal/corners.dart';
 import '../../internal/engraving.dart';
 import '../../internal/even_acts.dart';
 import '../../internal/face.dart';
@@ -113,7 +115,7 @@ class LedgerMenu extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: _padY),
         decoration: BoxDecoration(
           color: t.surface,
-          borderRadius: BorderRadius.circular(t.cardRadius),
+          borderRadius: ledgerStep(t, RawCorner.medium),
           boxShadow: t.menuShadow,
         ),
         child: LedgerMenuMarks(
@@ -356,7 +358,7 @@ class LedgerSuggestion extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: _goPad),
       decoration: BoxDecoration(
         border: Border.all(color: t.accent),
-        borderRadius: BorderRadius.circular(t.controlRadius),
+        borderRadius: ledgerStep(t, RawCorner.full),
       ),
       child: Center(
         widthFactor: 1,
@@ -375,7 +377,7 @@ class LedgerSuggestion extends StatelessWidget {
       onTap: onTap,
       semanticLabel:
           semanticLabel ?? '$action the ${title.toLowerCase()} $figureText',
-      radius: t.cardRadius,
+      borderRadius: ledgerStep(t, RawCorner.medium),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: _padY, horizontal: _padX),
@@ -383,7 +385,7 @@ class LedgerSuggestion extends StatelessWidget {
           // rgba(222, 231, 221, .55): the green's wash at .55.
           color: t.accentSubtle.withValues(alpha: _wash),
           border: Border.all(color: t.accentRule),
-          borderRadius: BorderRadius.circular(t.cardRadius),
+          borderRadius: ledgerStep(t, RawCorner.medium),
         ),
         // At a large text size the words stand under the figure and its act,
         // at the line's whole width, rather than squeezed between them.
@@ -505,13 +507,13 @@ class LedgerCategoryTile extends StatelessWidget {
       onTap: onTap,
       role: LedgerPressRole.link,
       semanticLabel: '$name, ${LedgerFormat.money(spent)}',
-      radius: t.cardRadius,
+      borderRadius: ledgerStep(t, RawCorner.medium),
       child: Container(
         padding: const EdgeInsets.all(_pad),
         decoration: BoxDecoration(
           color: t.surface,
           border: Border.all(color: t.border),
-          borderRadius: BorderRadius.circular(t.cardRadius),
+          borderRadius: ledgerStep(t, RawCorner.medium),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -964,7 +966,7 @@ class LedgerIconPicker extends StatelessWidget {
         onTap: onSelect == null ? null : () => onSelect(i),
         semanticLabel: '$semanticLabel: ${c.name.replaceAll('-', ' ')}',
         selected: on,
-        radius: _round / 2,
+        borderRadius: BorderRadius.circular(_round / 2),
         child: Container(
           width: _round,
           height: _round,

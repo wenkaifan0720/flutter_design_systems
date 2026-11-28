@@ -8,6 +8,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../chrome_metrics.dart';
 import '../internal/bar_slot.dart';
 import '../internal/cap_center.dart';
+import '../internal/corners.dart';
 import '../internal/end_glyph.dart';
 import '../internal/side_inset.dart';
 import '../theme.dart';
@@ -801,7 +802,7 @@ class _SearchPill extends StatelessWidget {
       onTap: onTap,
       semanticLabel: hint,
       role: LedgerPressRole.link,
-      radius: t.controlRadius,
+      borderRadius: ledgerStep(t, RawCorner.full),
       child: Container(
         width: LedgerChromeMetrics.deskSearchWidth,
         // 40 at standard, 4 off each density step: the bell beside it
@@ -815,7 +816,7 @@ class _SearchPill extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: t.surface,
-          borderRadius: BorderRadius.circular(t.controlRadius),
+          borderRadius: ledgerStep(t, RawCorner.full),
           border: Border.all(color: t.border),
         ),
         child: Row(

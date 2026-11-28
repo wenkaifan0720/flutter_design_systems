@@ -8,6 +8,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../chrome_metrics.dart';
 import '../../format.dart';
+import '../../internal/corners.dart';
 import '../../internal/state_face.dart';
 import '../../theme.dart';
 import '../button/button.dart';
@@ -61,8 +62,11 @@ enum LedgerDatePickerPresentation {
 /// clock and figures are that language's, in its order and its digits, from
 /// ui_core's [RawWidgetsLocalizations] (`٢٠ نوفمبر ٢٠٢٦`, `٠٩:٣٠`, `20. Nov. 2026`).
 /// Nothing here reads the clock: pass [currentDate] to have it ringed. A null
-/// [onChanged] dims the whole picker and holds it. Each wheel is an adjustable
-/// value for a screen reader, and each day a button named by its full date.
+/// [onChanged] dims the whole picker and holds it. An optional date's sheet
+/// opens with no day struck and its Done keeps it unset until a day is
+/// picked; with [onClear], a chosen date's sheet offers Clear beside Done.
+/// Each wheel is an adjustable value for a screen reader, and each day a
+/// button named by its full date.
 ///
 /// ```dart
 /// LedgerDatePicker(labelText: 'Due', value: due, mode: LedgerDatePickerMode.dateAndTime, onChanged: setDue)
@@ -79,6 +83,7 @@ class LedgerDatePicker extends StatefulWidget {
     this.lastDate,
     this.currentDate,
     this.use24hFormat = false,
+    this.onClear,
     super.key,
   });
 
@@ -89,6 +94,15 @@ class LedgerDatePicker extends StatefulWidget {
 
   /// Told the new value; null holds the picker and dims it.
   final ValueChanged<DateTime>? onChanged;
+
+  /// Called when the reader clears a chosen date (an optional one): its
+  /// sheet then offers Clear beside Done once a date is chosen. Null offers
+  /// none, as for a date a form requires.
+  ///
+  /// ```dart
+  /// LedgerDatePicker(labelText: 'Date started', value: started, onChanged: (d) => setState(() => started = d), onClear: () => setState(() => started = null))
+  /// ```
+  final VoidCallback? onClear;
 
   /// What the picker is of: the compact line's words, its pills' and its
   /// wheels' spoken names and its sheet's title.
@@ -152,7 +166,8 @@ class LedgerDatePicker extends StatefulWidget {
           value: use24hFormat,
           ifTrue: 'use24hFormat',
         ),
-      );
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onClear', onClear));
   }
 
   @override
@@ -186,12 +201,18 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
   void _set(DateTime v) => widget.onChanged?.call(_kept(v));
 
   Future<void> _raise(LedgerDatePickerMode part) async {
-    final draft = ValueNotifier<DateTime>(_shown);
+    // A day's sheet stands on the chosen day; with none chosen it opens on
+    // the current date (or today) with no day struck, and Done keeps it
+    // unset until a day is picked. A clock's wheels always stand on a time.
+    final draft = ValueNotifier<DateTime?>(
+      part == LedgerDatePickerMode.date ? widget.value : _shown,
+    );
+    final onClear = widget.onClear;
     final picked = await LedgerSheet.show<DateTime>(
       context,
       title: widget.labelText,
       builder: (sheetContext) => [
-        ValueListenableBuilder<DateTime>(
+        ValueListenableBuilder<DateTime?>(
           valueListenable: draft,
           builder: (context, value, _) => LedgerDatePicker(
             value: value,
@@ -209,6 +230,15 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
         ),
       ],
       foot: (sheetContext) => [
+        if (onClear != null && widget.value != null)
+          LedgerButton(
+            RawWidgetsLocalizations.of(sheetContext).clearButtonTooltip,
+            expand: true,
+            onPressed: () {
+              Navigator.of(sheetContext).pop();
+              onClear();
+            },
+          ),
         LedgerButton.filled(
           RawWidgetsLocalizations.of(sheetContext).doneButtonLabel,
           expand: true,
@@ -503,13 +533,13 @@ class _Pill extends StatelessWidget {
         onTap: onTap,
         semanticLabel: label,
         value: text,
-        radius: t.controlRadius,
+        borderRadius: ledgerStep(t, RawCorner.full),
         child: Container(
           constraints: const BoxConstraints(minHeight: _height),
           padding: const EdgeInsets.symmetric(horizontal: _pad),
           decoration: BoxDecoration(
             color: t.surface,
-            borderRadius: BorderRadius.circular(t.controlRadius),
+            borderRadius: ledgerStep(t, RawCorner.full),
             border: Border.all(color: t.border),
           ),
           child: Center(
@@ -700,7 +730,7 @@ class _CalendarState extends State<_Calendar> {
                 onTap: open ? () => widget.onPick(d) : null,
                 semanticLabel: dates.longDay(d),
                 selected: chosen,
-                radius: mark / 2,
+                borderRadius: BorderRadius.circular(mark / 2),
                 child: Container(
                   width: mark,
                   height: mark,
@@ -946,7 +976,7 @@ class _Wheel extends StatelessWidget {
         ),
         columnBuilder: (context, column, wheel) => LedgerStateFace(
           states: column.states,
-          radius: t.smallRadius,
+          borderRadius: ledgerStep(t, RawCorner.small),
           sinks: false,
           child: Stack(
             children: [

@@ -166,8 +166,7 @@ class LedgerImpression extends SingleChildRenderObjectWidget {
     this.wash,
     super.child,
     super.key,
-  }) : assert(depth >= 0 && depth <= 1),
-       assert(wash == null || wash >= 0);
+  }) : assert(depth >= 0 && depth <= 1);
 
   /// How far a held face's marks go toward the ink: 12%, about as deep as
   /// Material's 10% pressed state layer.
@@ -179,9 +178,9 @@ class LedgerImpression extends SingleChildRenderObjectWidget {
   /// How far, from 0 (as drawn) to 1 (all ink).
   final double depth;
 
-  /// The corner radius of the face's paper, which takes the ink under the
-  /// marks as deep as they go; null leaves the paper as it is.
-  final double? wash;
+  /// The corners of the face's paper, which takes the ink under the marks
+  /// as deep as they go; null leaves the paper as it is.
+  final BorderRadius? wash;
 
   @override
   RenderObject createRenderObject(BuildContext context) =>
@@ -201,7 +200,9 @@ class LedgerImpression extends SingleChildRenderObjectWidget {
     properties
       ..add(ColorProperty('ink', ink))
       ..add(DoubleProperty('depth', depth))
-      ..add(DoubleProperty('wash', wash, defaultValue: null));
+      ..add(
+        DiagnosticsProperty<BorderRadius>('wash', wash, defaultValue: null),
+      );
   }
 }
 
@@ -224,8 +225,8 @@ class _RenderImpression extends RenderProxyBox {
     markNeedsPaint();
   }
 
-  double? _wash;
-  set wash(double? value) {
+  BorderRadius? _wash;
+  set wash(BorderRadius? value) {
     if (value == _wash) return;
     _wash = value;
     markNeedsPaint();
@@ -249,7 +250,7 @@ class _RenderImpression extends RenderProxyBox {
     final wash = _wash;
     if (wash != null) {
       context.canvas.drawRRect(
-        RRect.fromRectAndRadius(offset & size, Radius.circular(wash)),
+        wash.toRRect(offset & size),
         Paint()..color = ink,
       );
     }

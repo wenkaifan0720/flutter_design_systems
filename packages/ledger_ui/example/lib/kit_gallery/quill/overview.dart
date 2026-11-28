@@ -137,6 +137,36 @@ class QuillOverview extends StatelessWidget {
         ),
       ),
     );
+    final own = LedgerSection(
+      head: LedgerHead(context.say('Corners of its own')),
+      child: LedgerSlip(
+        style: _ticketSlip,
+        padding: const EdgeInsets.symmetric(
+          horizontal: LedgerSpacing.s20,
+          vertical: LedgerSpacing.s16,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: LedgerSpacing.s16,
+          children: [
+            Text(
+              context.say(
+                'A part takes its own step at each corner from its style: '
+                "this slip and its button cut two diagonal corners square, as "
+                "a ticket's stub is. A corner takes square to extra large, or "
+                'round.',
+              ),
+              style: t.body,
+            ),
+            LedgerButton(
+              context.say('Print the receipt'),
+              style: _ticketButton,
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
+    );
     final index = parts.isEmpty
         ? null
         : LedgerSection(
@@ -182,6 +212,11 @@ class QuillOverview extends StatelessWidget {
               SizedBox(width: _recordWidth, child: install),
             ],
           ),
+          gap,
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: SizedBox(width: _recordWidth, child: own),
+          ),
           if (index != null) ...[gap, index],
         ],
       );
@@ -198,6 +233,8 @@ class QuillOverview extends StatelessWidget {
           holds,
           gap,
           install,
+          gap,
+          own,
           if (index != null) ...[gap, index],
         ],
       );
@@ -212,6 +249,25 @@ class QuillOverview extends StatelessWidget {
   }
 
   static const double _recordWidth = 400;
+
+  // A ticket's stub: two diagonal corners square, the others an app's own.
+  static const _ticketSlip = LedgerStyle(
+    corners: WidgetStatePropertyAll(
+      RawCorners(
+        topStart: RawCorner.extraLarge,
+        topEnd: RawCorner.none,
+        bottomStart: RawCorner.none,
+        bottomEnd: RawCorner.extraLarge,
+      ),
+    ),
+  );
+
+  // The button keeps its round ends where the slip keeps its corners.
+  static const _ticketButton = LedgerStyle(
+    corners: WidgetStatePropertyAll(
+      RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none),
+    ),
+  );
 
   // Code reads left to right in any page and keeps its lines: too wide for
   // the slip (a large text), it sets smaller rather than break inside a

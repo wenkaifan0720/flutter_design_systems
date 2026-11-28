@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/presence.dart';
 import '../../internal/styled.dart';
 import '../../style.dart';
@@ -40,8 +41,8 @@ class LedgerTooltip extends StatelessWidget {
   /// The control explained.
   final Widget child;
 
-  /// The slip's look, over `components.tooltip`. It reads `fill`,
-  /// `foreground`, `side`, `shape`, `padding` and `textStyle`.
+  /// The slip's look, over `components.tooltip`. It reads `fill`, `foreground`,
+  /// `side`, `corners` (or `shape`), `padding` and `textStyle`.
   final LedgerStyle? style;
 
   @override
@@ -85,7 +86,7 @@ class LedgerTooltip extends StatelessWidget {
                       )
                     : BoxDecoration(
                         color: so.fill ?? t.toast,
-                        borderRadius: BorderRadius.circular(t.smallRadius),
+                        borderRadius: ledgerRadius(t, so, RawCorner.small),
                         border: so.side == null
                             ? null
                             : Border.fromBorderSide(so.side!),

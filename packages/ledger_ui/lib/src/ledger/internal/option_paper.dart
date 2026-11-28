@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../theme.dart';
 import 'cap_center.dart';
+import 'corners.dart';
 import 'face.dart';
 
 /// The raised paper a suggestion list stands on, as the select's: the
@@ -14,12 +16,12 @@ Widget ledgerOptionPaper(BuildContext context, Widget list) {
   return DecoratedBox(
     decoration: BoxDecoration(
       color: t.surface,
-      borderRadius: BorderRadius.circular(t.smallRadius),
+      borderRadius: ledgerStep(t, RawCorner.medium),
       border: Border.all(color: t.border),
       boxShadow: t.menuShadow,
     ),
     child: ClipRRect(
-      borderRadius: BorderRadius.circular(t.smallRadius),
+      borderRadius: ledgerStep(t, RawCorner.medium),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: LedgerSpacing.s4),
         child: list,

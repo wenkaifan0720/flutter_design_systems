@@ -216,7 +216,7 @@ final class LedgerTokenShape {
 /// A ThemeTokens v2 record, baked into constants
 /// (`internal/themes/<id>.g.dart`, generated from the theme's JSON and
 /// checked against it): both appearances, the twelve type slots and the shape.
-/// [LedgerThemeData.fromTokens] dresses the system in one.
+/// Each of [LedgerThemeData.palettes] is dressed from one.
 @immutable
 final class LedgerTokens {
   /// A theme record's appearances, type slots and shape.

@@ -8,6 +8,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
 import '../internal/cap_center.dart';
+import '../internal/corners.dart';
 import '../internal/even_acts.dart';
 import '../internal/grabber.dart';
 import '../internal/narrow.dart';
@@ -267,9 +268,8 @@ class LedgerSheetCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final wide = LedgerLayout.isWide(context);
-    final radius = wide
-        ? BorderRadius.circular(t.sheetRadius)
-        : BorderRadius.vertical(top: Radius.circular(t.sheetRadius));
+    final large = ledgerStep(t, RawCorner.large);
+    final radius = wide ? large : BorderRadius.vertical(top: large.topLeft);
     return Material(
       // Text defaults for a sheet composed above any Material; paints
       // nothing.

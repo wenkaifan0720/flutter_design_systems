@@ -16,7 +16,7 @@ export 'package:ui_core/ui_core.dart' show RawStyle, RawStyleOf;
 ///
 /// A part reads each slot from its own `style:` first, then from its
 /// component theme on `LedgerThemeData.components`, then from the theme's
-/// own roles (its inks, papers, rules and radii). A slot that is null, or
+/// own roles (its inks, papers, rules and corners). A slot that is null, or
 /// resolves to null for the states at hand, falls through to the next.
 ///
 /// | slot | what it sets in Ledger |
@@ -26,7 +26,8 @@ export 'package:ui_core/ui_core.dart' show RawStyle, RawStyleOf;
 /// | `edge` | the rule round it, at the face's own width |
 /// | `overlay` | a wash over the face in the states it names |
 /// | `side` | the whole rule, ink and width; it wins over `edge` |
-/// | `shape` | the corners: a rounded rectangle's, a stadium or a circle |
+/// | `corners` | a step of the theme's corner scale at each corner, start and end as the text reads |
+/// | `shape` | the outline as drawn (a rounded rectangle, a stadium, a circle); it wins over `corners` |
 /// | `padding` | the room between the rule and what stands inside |
 /// | `minimumSize` | the least the face stands; its tap target stays the tap floor round it |
 /// | `textStyle` | the words' style, merged over Ledger's (its ink comes from `foreground`) |

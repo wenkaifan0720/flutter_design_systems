@@ -328,6 +328,14 @@ const Map<String, String> quillHebrewWords = {
   'Spoken names, a double-ruled focus, text to 200%':
       'שמות מוקראים, מיקוד בקו כפול, טקסט עד 200%',
   'Add it': 'הוספה',
+  'Corners of its own': 'פינות משלו',
+  'A part takes its own step at each corner from its style: this slip and '
+          "its button cut two diagonal corners square, as a ticket's stub is. "
+          'A corner takes square to extra large, or round.':
+      'כל רכיב מקבל מהסגנון שלו מדרגה משלו בכל פינה: הפתק הזה והכפתור שלו '
+      'חותכים שתי פינות אלכסוניות ישרות, כמו ספח של כרטיס. פינה מקבלת ישרה '
+      'עד גדולה מאוד, או עגולה.',
+  'Print the receipt': 'הדפסת הקבלה',
   "In your app's builder, under a MaterialApp, a CupertinoApp or a "
           'WidgetsApp; then any part.':
       'ב־builder של האפליקציה, מתחת ל־MaterialApp, ל־CupertinoApp או '

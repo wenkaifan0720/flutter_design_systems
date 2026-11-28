@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
+import '../internal/corners.dart';
 import '../internal/face.dart';
 import '../internal/shell_faces.dart';
 import '../internal/state_face.dart';
@@ -558,7 +559,7 @@ class _Tab extends StatelessWidget {
     if (shell != null) {
       return LedgerStateFace(
         states: shell,
-        radius: t.smallRadius,
+        borderRadius: ledgerStep(t, RawCorner.small),
         washes: !disc,
         child: face,
       );
@@ -570,7 +571,7 @@ class _Tab extends StatelessWidget {
       excludeSemantics: true,
       builder: (context, states, child) => LedgerStateFace(
         states: states,
-        radius: t.smallRadius,
+        borderRadius: ledgerStep(t, RawCorner.small),
         washes: !disc,
         child: child!,
       ),

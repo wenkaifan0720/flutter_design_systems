@@ -4,8 +4,10 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/hatch.dart';
 import '../../theme.dart';
 
@@ -62,7 +64,7 @@ class LedgerMedia extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    final corners = BorderRadius.circular(t.smallRadius);
+    final corners = ledgerStep(t, RawCorner.small);
     const stand = _Engraving();
     final picture = image;
     final framed = AspectRatio(

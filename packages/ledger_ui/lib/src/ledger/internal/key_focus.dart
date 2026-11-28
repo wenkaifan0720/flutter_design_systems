@@ -111,7 +111,7 @@ class _LedgerKeyFocusState extends State<LedgerKeyFocus> {
         return KeyEventResult.handled;
       },
       child: LedgerFocusRing(
-        radius: widget.radius,
+        borderRadius: BorderRadius.circular(widget.radius),
         insets: widget.ringInsets,
         color: t.textPrimary,
         shown: _focused && _keyboard,

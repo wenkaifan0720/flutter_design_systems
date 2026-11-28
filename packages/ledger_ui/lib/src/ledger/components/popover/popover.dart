@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/corners.dart';
 import '../../theme.dart';
 
 export 'package:ui_core/ui_core.dart' show RawOverlayAnchor;
@@ -81,7 +82,7 @@ class LedgerPopover extends StatelessWidget {
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: t.surface,
-              borderRadius: BorderRadius.circular(t.smallRadius),
+              borderRadius: ledgerStep(t, RawCorner.small),
               border: Border.all(color: t.border),
               boxShadow: t.menuShadow,
             ),

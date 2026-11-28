@@ -8,6 +8,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
+import '../internal/corners.dart';
 import '../internal/end_glyph.dart';
 import '../internal/footer_band.dart';
 import '../internal/styled.dart';
@@ -164,7 +165,7 @@ class _LedgerToasterState extends State<LedgerToaster> {
     final card = Container(
       foregroundDecoration: d.focused
           ? BoxDecoration(
-              borderRadius: BorderRadius.circular(t.cardRadius),
+              borderRadius: ledgerStep(t, RawCorner.medium),
               border: Border.all(
                 color: t.onToast,
                 width: LedgerChromeMetrics.focusRing,
@@ -259,8 +260,8 @@ class LedgerToastCard extends StatelessWidget {
   /// What the action does.
   final VoidCallback? onActionPressed;
 
-  /// The toast's look, over `components.toast`. It reads `fill`,
-  /// `foreground` (its words' and mark's ink), `edge`, `side`, `shape`,
+  /// The toast's look, over `components.toast`. It reads `fill`, `foreground`
+  /// (its words' and mark's ink), `edge`, `side`, `corners` (or `shape`),
   /// `padding`, `textStyle` and `iconSize`; its act keeps the toast's own.
   final LedgerStyle? style;
 
@@ -309,7 +310,7 @@ class LedgerToastCard extends StatelessWidget {
         decoration: so.paper(
           BoxDecoration(
             color: t.toast,
-            borderRadius: BorderRadius.circular(t.cardRadius),
+            borderRadius: ledgerRadius(t, so, RawCorner.medium),
             boxShadow: t.toastShadow,
           ),
         ),
@@ -340,7 +341,7 @@ class LedgerToastCard extends StatelessWidget {
                   child: LedgerPressable(
                     onTap: onActionPressed,
                     semanticLabel: actionLabel,
-                    radius: act / 2,
+                    borderRadius: BorderRadius.circular(act / 2),
                     child: Container(
                       height: larger ? null : act,
                       constraints: larger

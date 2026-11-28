@@ -105,7 +105,10 @@ void main() {
     await tester.tap(find.byIcon(LucideIcons.plus));
     await tester.pumpAndSettle();
     await _press(tester, find.text('Select date'));
-    // The sheet's Done (a status of the form is Done too).
+    // A day, then the sheet's Done (a status of the form is Done too): the
+    // field stays unset until a day is picked.
+    await tester.tap(find.text('15').last);
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Done').last);
     await tester.pumpAndSettle();
     expect(find.text('Select date'), findsNothing);

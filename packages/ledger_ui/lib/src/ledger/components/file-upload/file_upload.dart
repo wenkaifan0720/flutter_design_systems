@@ -4,9 +4,11 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../format.dart';
+import '../../internal/corners.dart';
 import '../../internal/face.dart';
 import '../../theme.dart';
 import '../icon-button/icon_button.dart';
@@ -106,7 +108,7 @@ class LedgerFileUpload extends StatelessWidget {
         LedgerPressable(
           onTap: onPick,
           semanticLabel: labelText == null ? hintText : '$labelText: $hintText',
-          radius: t.controlRadius,
+          borderRadius: ledgerStep(t, RawCorner.full),
           child: Builder(
             builder: (context) {
               final hot = LedgerPressStates.isHot(context);
@@ -124,7 +126,10 @@ class LedgerFileUpload extends StatelessWidget {
                       : t.borderStrong,
                 ),
                 builder: (context, s, _) => CustomPaint(
-                  painter: _Dashed(color: s.rule!, radius: t.controlRadius),
+                  painter: _Dashed(
+                    color: s.rule!,
+                    radius: ledgerStep(t, RawCorner.full).topLeft.x,
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: LedgerSpacing.s16,

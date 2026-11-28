@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui' show lerpDouble;
 
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoLocalizations;
 import 'package:flutter/foundation.dart';
@@ -36,9 +35,10 @@ export 'tokens.dart';
 /// the choices behind it in its header; its dark appearance, the same book
 /// by lamplight, in `_Night`), and four token themes (ThemeTokens v2 records
 /// whose light and dark are both designed, held in `internal/themes/`)
-/// dressed in the same roles through [LedgerThemeData.fromTokens]:
-/// `terracotta` (paper), `indigo` (signal), `verdigris` (frost) and `carbon`
-/// (gallery). Nothing else constructs a [LedgerThemeData].
+/// whose colours dress the same roles on Ledger's own type and corners
+/// through `_fromTokens`: `terracotta` (paper), `indigo` (signal),
+/// `verdigris` (frost) and `carbon` (gallery). An app's own colours come
+/// through [LedgerThemeData.from].
 ///
 /// The comments here and in the parts call Ledger's source stylesheet "the
 /// source". A value it holds no instance of is marked and a role it
@@ -99,24 +99,6 @@ abstract final class LedgerSpacing {
 
   /// 72: under the last section on the desktop.
   static const double s72 = 72;
-}
-
-/// Corner radii: the scale behind the shape roles of [LedgerThemeData]. The
-/// source's language is paper at 6 (a memo slip, a sheet, a menu, a toast,
-/// a date tab), plastic at 12 to 16 (a card face) and round for everything
-/// held in the hand (buttons, chips, pills, the tab's disc).
-abstract final class LedgerCorners {
-  /// Paper: a memo slip, a sheet, a menu, a toast, a date tab.
-  static const double r6 = 6;
-
-  /// 12: plastic, a card face's smaller corner.
-  static const double r12 = 12;
-
-  /// 16: plastic, a card face.
-  static const double r16 = 16;
-
-  /// Round: what the hand holds (buttons, chips, pills, the tab's disc).
-  static const double rFull = 999;
 }
 
 /// Glyph sizes: a section link's chevron (14), a crumb's, a toast's and a
@@ -348,7 +330,7 @@ enum LedgerTone {
 final class LedgerThemeData with Diagnosticable {
   /// Every role given; [LedgerThemeData.light], [LedgerThemeData.dark],
   /// [LedgerThemeData.preset] and [LedgerThemeData.from] build one for you.
-  const LedgerThemeData({
+  LedgerThemeData({
     required this.id,
     required this.brightness,
     required this.background,
@@ -438,45 +420,13 @@ final class LedgerThemeData with Diagnosticable {
     required this.initials,
     required this.footnote,
     required this.search,
-    required this.cardRadius,
-    required this.controlRadius,
-    required this.smallRadius,
-    required this.sheetRadius,
+    RawShapeScheme? shapeScheme,
     this.density = LedgerDensity.standard,
     this.components = const LedgerComponentThemes(),
-  }) : assert(
-         cardRadius >= 0 && cardRadius <= cardRadiusMost,
-         'cardRadius is $cardRadius: a Ledger slip rounds from 0 to 22, the '
-         "range its presets span (carbon's 2 to verdigris's 22). Rounder, it "
-         'reads as a plastic pill, not a leaf of paper. controlRadius, what '
-         'the hand holds, may be any corner.',
-       ),
-       assert(
-         smallRadius >= 0 && smallRadius <= smallRadiusMost,
-         'smallRadius is $smallRadius: a Ledger date tab rounds from 0 to 10, '
-         "the range its presets span (carbon's 2 to verdigris's 10). Rounder, "
-         'it reads as a plastic chip, not paper.',
-       ),
-       assert(
-         sheetRadius >= 0 && sheetRadius <= sheetRadiusMost,
-         'sheetRadius is $sheetRadius: a Ledger sheet or dialog rounds from 0 '
-         "to 28, the range its presets span (carbon's 4 to verdigris's 28). "
-         'Rounder, it reads as a plastic pill, not a leaf of paper.',
+  }) : shapeScheme = shapeLimits.clamp(
+         shapeScheme ?? defaultShapeScheme,
+         look: 'Ledger',
        );
-
-  /// The roundest a slip, a menu or a toast is drawn ([cardRadius]): 22,
-  /// the roundest of Ledger's presets (verdigris). A theme past it, or below
-  /// 0, fails an assert in debug builds.
-  static const double cardRadiusMost = 22;
-
-  /// The roundest a date tab or a small paper part is drawn ([smallRadius]):
-  /// 10, the roundest of Ledger's presets (verdigris).
-  static const double smallRadiusMost = 10;
-
-  /// The roundest a sheet or a dialog is drawn ([sheetRadius]): 28, the
-  /// roundest of Ledger's presets (verdigris). [controlRadius] has no bound:
-  /// round or square, a control held in the hand is still Ledger's.
-  static const double sheetRadiusMost = 28;
 
   /// The preset this theme is (`quire`, `terracotta`).
   final String id;
@@ -503,7 +453,8 @@ final class LedgerThemeData with Diagnosticable {
   /// The rule: a ringed button's ring, a field's edge, the tab bar's top.
   final Color border;
 
-  /// The strong rule: a secondary button's ring.
+  /// The strong rule: a secondary button's ring, and a radio's and a
+  /// checkbox's empty ring, at 3:1 on every paper.
   final Color borderStrong;
 
   /// The first ink: words, figures, the head rule.
@@ -782,17 +733,57 @@ final class LedgerThemeData with Diagnosticable {
 
   // ---- shape --------------------------------------------------------------
 
-  /// Paper: a memo slip, a menu, a toast. 0 to [cardRadiusMost].
-  final double cardRadius;
+  /// The shapes an app can change, held to [shapeLimits]: Ledger's corner
+  /// steps. A bar's ends take extra small; a date tab, a tooltip, a popover
+  /// and a key cap small; a slip, a menu and a toast medium; a sheet and a
+  /// dialog large; extra large is an app's, for the roundest paper it
+  /// wants. What the hand holds (a button, a chip, a field, a search) is
+  /// full: round at any height, or at most the scale's fullMaxRadius when an
+  /// app gives one. Ledger's rules are ink to be read and its paper lies
+  /// flat, so it opens no stroke and no depth.
+  ///
+  /// | Shape | Ledger's | Band | Why |
+  /// |---|---|---|---|
+  /// | extra small | 3 | 2–5 | a bar's ends, softened, never a pill |
+  /// | small | 6 | 2–10 | a paper cut; rounder, a plastic chip |
+  /// | medium | 6 | 2–12 | a slip; past 12 it reads as a plastic card |
+  /// | large | 6 | 4–16 | a leaf of paper, never a pill |
+  /// | extra large | 12 | 8–16 | an app's roundest paper |
+  /// | full | round | any cap | what the hand holds |
+  ///
+  /// An app's own corners for one part (a slip's ticket cut, say) go on the
+  /// part's style as `corners`, each corner a step of this scale.
+  ///
+  /// ```dart
+  /// LedgerThemeData.light(shapeScheme: LedgerThemeData.defaultShapeScheme.copyWith(corners: LedgerThemeData.defaultShapeScheme.corners.copyWith(medium: 10)))
+  /// ```
+  final RawShapeScheme shapeScheme;
 
-  /// What the hand holds: buttons, chips, pills (round). Any corner.
-  final double controlRadius;
+  /// Ledger's own shapes: corners of 3, 6, 6, 6 and 12, round, controls
+  /// round at any height; no stroke, no depth.
+  static const RawShapeScheme defaultShapeScheme = RawShapeScheme(
+    corners: RawCornerScale(
+      extraSmall: 3,
+      small: 6,
+      medium: 6,
+      large: 6,
+      extraLarge: 12,
+    ),
+  );
 
-  /// A date tab, a small paper part. 0 to [smallRadiusMost].
-  final double smallRadius;
-
-  /// A sheet and a dialog. 0 to [sheetRadiusMost].
-  final double sheetRadius;
+  /// The bands Ledger holds a [shapeScheme] to, so that every end still
+  /// reads as paper and ink (the table on [shapeScheme]). Corners stay
+  /// round; a part's own corners ([RawCorners] on its style) take any step,
+  /// each corner its own, as a slip's dog-ear or a ticket's cut is still
+  /// paper.
+  static const RawShapeLimits shapeLimits = RawShapeLimits(
+    extraSmall: RawBand(2, 5),
+    small: RawBand(2, 10),
+    medium: RawBand(2, 12),
+    large: RawBand(4, 16),
+    extraLarge: RawBand(8, 16),
+    cornerFreedom: RawCornerFreedom.perCorner,
+  );
 
   // ---- density ------------------------------------------------------------
 
@@ -895,13 +886,14 @@ final class LedgerThemeData with Diagnosticable {
     );
   }
 
-  /// The preset [id] (a [palettes] id) in [brightness]: `quire` (Ledger's own paper and ink,
-  /// by day and by lamplight), one of the four token themes: `terracotta`
-  /// (paper), `indigo` (signal), `verdigris` (frost) or `carbon`
-  /// (gallery), or `prussian` (Prussian blue on an account book's buff
-  /// paper, in a navy ink). By day terracotta, indigo and verdigris write in
-  /// their accent's hue, as prussian does. Throws an [ArgumentError] for any
-  /// other id. The same preset is the same value.
+  /// The preset [id] (a [palettes] id) in [brightness]: `quire` (Ledger's
+  /// own paper and ink, by day and by lamplight), `terracotta`, `indigo`,
+  /// `verdigris`, `carbon` or `prussian` (Prussian blue on an account
+  /// book's buff paper, in a navy ink). A preset changes the colours only:
+  /// each keeps Ledger's type, spacing and corners, so a page stands still
+  /// as the reader changes palette. By day terracotta, indigo and verdigris
+  /// write in their accent's hue, as prussian does. Throws an
+  /// [ArgumentError] for any other id. The same preset is the same value.
   static LedgerThemeData preset(String id, Brightness brightness) {
     final dark = brightness == Brightness.dark;
     return switch (id) {
@@ -917,42 +909,42 @@ final class LedgerThemeData with Diagnosticable {
 
   static final LedgerThemeData _ledgerLight = _quire(Brightness.light);
   static final LedgerThemeData _ledgerDark = _quire(Brightness.dark);
-  static final LedgerThemeData _terracottaLight = LedgerThemeData.fromTokens(
+  static final LedgerThemeData _terracottaLight = LedgerThemeData._fromTokens(
     'terracotta',
     _inkedByDay(paperTokens),
     Brightness.light,
   );
-  static final LedgerThemeData _terracottaDark = LedgerThemeData.fromTokens(
+  static final LedgerThemeData _terracottaDark = LedgerThemeData._fromTokens(
     'terracotta',
     _inkedByDay(paperTokens),
     Brightness.dark,
   );
-  static final LedgerThemeData _indigoLight = LedgerThemeData.fromTokens(
+  static final LedgerThemeData _indigoLight = LedgerThemeData._fromTokens(
     'indigo',
     _inkedByDay(signalTokens),
     Brightness.light,
   );
-  static final LedgerThemeData _indigoDark = LedgerThemeData.fromTokens(
+  static final LedgerThemeData _indigoDark = LedgerThemeData._fromTokens(
     'indigo',
     _inkedByDay(signalTokens),
     Brightness.dark,
   );
-  static final LedgerThemeData _verdigrisLight = LedgerThemeData.fromTokens(
+  static final LedgerThemeData _verdigrisLight = LedgerThemeData._fromTokens(
     'verdigris',
     _inkedByDay(frostTokens),
     Brightness.light,
   );
-  static final LedgerThemeData _verdigrisDark = LedgerThemeData.fromTokens(
+  static final LedgerThemeData _verdigrisDark = LedgerThemeData._fromTokens(
     'verdigris',
     _inkedByDay(frostTokens),
     Brightness.dark,
   );
-  static final LedgerThemeData _carbonLight = LedgerThemeData.fromTokens(
+  static final LedgerThemeData _carbonLight = LedgerThemeData._fromTokens(
     'carbon',
     galleryTokens,
     Brightness.light,
   );
-  static final LedgerThemeData _carbonDark = LedgerThemeData.fromTokens(
+  static final LedgerThemeData _carbonDark = LedgerThemeData._fromTokens(
     'carbon',
     galleryTokens,
     Brightness.dark,
@@ -1136,10 +1128,7 @@ final class LedgerThemeData with Diagnosticable {
     TextStyle? initials,
     TextStyle? footnote,
     TextStyle? search,
-    double? cardRadius,
-    double? controlRadius,
-    double? smallRadius,
-    double? sheetRadius,
+    RawShapeScheme? shapeScheme,
     LedgerDensity? density,
     LedgerComponentThemes? components,
   }) => LedgerThemeData(
@@ -1232,10 +1221,7 @@ final class LedgerThemeData with Diagnosticable {
     initials: initials ?? this.initials,
     footnote: footnote ?? this.footnote,
     search: search ?? this.search,
-    cardRadius: cardRadius ?? this.cardRadius,
-    controlRadius: controlRadius ?? this.controlRadius,
-    smallRadius: smallRadius ?? this.smallRadius,
-    sheetRadius: sheetRadius ?? this.sheetRadius,
+    shapeScheme: shapeScheme ?? this.shapeScheme,
     density: density ?? this.density,
     components: components ?? this.components,
   );
@@ -1338,19 +1324,7 @@ final class LedgerThemeData with Diagnosticable {
       initials: TextStyle.lerp(a.initials, b.initials, t)!,
       footnote: TextStyle.lerp(a.footnote, b.footnote, t)!,
       search: TextStyle.lerp(a.search, b.search, t)!,
-      cardRadius: _within(
-        lerpDouble(a.cardRadius, b.cardRadius, t)!,
-        cardRadiusMost,
-      ),
-      controlRadius: lerpDouble(a.controlRadius, b.controlRadius, t)!,
-      smallRadius: _within(
-        lerpDouble(a.smallRadius, b.smallRadius, t)!,
-        smallRadiusMost,
-      ),
-      sheetRadius: _within(
-        lerpDouble(a.sheetRadius, b.sheetRadius, t)!,
-        sheetRadiusMost,
-      ),
+      shapeScheme: RawShapeScheme.lerp(a.shapeScheme, b.shapeScheme, t),
       density: t < 0.5 ? a.density : b.density,
       components: LedgerComponentThemes.lerp(a.components, b.components, t),
     );
@@ -1449,10 +1423,7 @@ final class LedgerThemeData with Diagnosticable {
           other.initials == initials &&
           other.footnote == footnote &&
           other.search == search &&
-          other.cardRadius == cardRadius &&
-          other.controlRadius == controlRadius &&
-          other.smallRadius == smallRadius &&
-          other.sheetRadius == sheetRadius &&
+          other.shapeScheme == shapeScheme &&
           other.density == density &&
           other.components == components;
 
@@ -1547,10 +1518,7 @@ final class LedgerThemeData with Diagnosticable {
     initials,
     footnote,
     search,
-    cardRadius,
-    controlRadius,
-    smallRadius,
-    sheetRadius,
+    shapeScheme,
     density,
     components,
   ]);
@@ -1648,10 +1616,7 @@ final class LedgerThemeData with Diagnosticable {
       ..add(DiagnosticsProperty<TextStyle>('initials', initials))
       ..add(DiagnosticsProperty<TextStyle>('footnote', footnote))
       ..add(DiagnosticsProperty<TextStyle>('search', search))
-      ..add(DoubleProperty('cardRadius', cardRadius))
-      ..add(DoubleProperty('controlRadius', controlRadius))
-      ..add(DoubleProperty('smallRadius', smallRadius))
-      ..add(DoubleProperty('sheetRadius', sheetRadius))
+      ..add(DiagnosticsProperty<RawShapeScheme>('shapeScheme', shapeScheme))
       ..add(DiagnosticsProperty<LedgerDensity>('density', density))
       ..add(
         DiagnosticsProperty<LedgerComponentThemes>('components', components),
@@ -1680,51 +1645,41 @@ final class LedgerThemeData with Diagnosticable {
   /// Ledger's type scale: each slot's face, size, line, weight and
   /// tracking (in em), and the token slot a token set sizes it by.
   static const _scale = (
-    figure: _Slot(_Face.serif, 88, 88 * .84, 400, -.012, _Anchor.giant),
-    figureMedium: _Slot(_Face.serif, 44, 44 * .84, 400, -.012, _Anchor.display),
-    figureSmall: _Slot(_Face.serif, 28, 30, 400, -.012, _Anchor.h1),
-    title: _Slot(_Face.serif, 30, 33, 400, -.005, _Anchor.h1),
-    barTitle: _Slot(_Face.serif, 24, 24, 400, -.005, _Anchor.h2),
-    sheetTitle: _Slot(_Face.serif, 28, 30, 400, -.005, _Anchor.h1),
-    wordmark: _Slot(_Face.serif, 28, 28, 400, -.01, _Anchor.h1),
-    body: _Slot(_Face.sans, 15, 15 * 1.45, 400, 0, _Anchor.body),
-    rowTitle: _Slot(_Face.sans, 15, 20, 500, 0, _Anchor.body),
-    bodySmall: _Slot(_Face.sans, 13, 18, 400, 0, _Anchor.bodySmall),
-    label: _Slot(_Face.sans, 11, 16, 600, .14, _Anchor.label),
-    meta: _Slot(_Face.mono, 11, 16, 400, .04, _Anchor.mono),
-    amount: _Slot(_Face.mono, 14, 20, 500, -.02, _Anchor.mono),
-    tab: _Slot(_Face.sans, 11, 12, 500, 0, _Anchor.label),
-    button: _Slot(_Face.sans, 15, 15, 600, 0, _Anchor.body),
-    buttonSmall: _Slot(_Face.sans, 13, 13, 500, 0, _Anchor.bodySmall),
-    navLink: _Slot(_Face.sans, 14.5, 14.5, 500, 0, _Anchor.body),
-    link: _Slot(_Face.mono, 11, 16, 500, .04, _Anchor.mono),
-    pill: _Slot(_Face.mono, 12, 12, 500, -.01, _Anchor.mono),
-    tag: _Slot(_Face.mono, 11, 12, 500, .06, _Anchor.mono),
-    toastText: _Slot(_Face.sans, 15, 20, 500, 0, _Anchor.body),
-    toastAction: _Slot(_Face.mono, 12, 36, 500, .06, _Anchor.mono),
-    monogram: _Slot(_Face.italic, 16, 16, 400, .03, _Anchor.body),
-    initials: _Slot(_Face.italic, 15, 15, 400, .04, _Anchor.body),
-    footnote: _Slot(_Face.mono, 11, 12, 500, 0, _Anchor.mono),
-    search: _Slot(_Face.sans, 15, 15, 400, 0, _Anchor.body),
+    figure: _Slot(_Face.serif, 88, 88 * .84, 400, -.012),
+    figureMedium: _Slot(_Face.serif, 44, 44 * .84, 400, -.012),
+    figureSmall: _Slot(_Face.serif, 28, 30, 400, -.012),
+    title: _Slot(_Face.serif, 30, 33, 400, -.005),
+    barTitle: _Slot(_Face.serif, 24, 24, 400, -.005),
+    sheetTitle: _Slot(_Face.serif, 28, 30, 400, -.005),
+    wordmark: _Slot(_Face.serif, 28, 28, 400, -.01),
+    body: _Slot(_Face.sans, 15, 15 * 1.45, 400, 0),
+    rowTitle: _Slot(_Face.sans, 15, 20, 500, 0),
+    bodySmall: _Slot(_Face.sans, 13, 18, 400, 0),
+    label: _Slot(_Face.sans, 11, 16, 600, .14),
+    meta: _Slot(_Face.mono, 11, 16, 400, .04),
+    amount: _Slot(_Face.mono, 14, 20, 500, -.02),
+    tab: _Slot(_Face.sans, 11, 12, 500, 0),
+    button: _Slot(_Face.sans, 15, 15, 600, 0),
+    buttonSmall: _Slot(_Face.sans, 13, 13, 500, 0),
+    navLink: _Slot(_Face.sans, 14.5, 14.5, 500, 0),
+    link: _Slot(_Face.mono, 11, 16, 500, .04),
+    pill: _Slot(_Face.mono, 12, 12, 500, -.01),
+    tag: _Slot(_Face.mono, 11, 12, 500, .06),
+    toastText: _Slot(_Face.sans, 15, 20, 500, 0),
+    toastAction: _Slot(_Face.mono, 12, 36, 500, .06),
+    monogram: _Slot(_Face.italic, 16, 16, 400, .03),
+    initials: _Slot(_Face.italic, 15, 15, 400, .04),
+    footnote: _Slot(_Face.mono, 11, 12, 500, 0),
+    search: _Slot(_Face.sans, 15, 15, 400, 0),
   );
 
   /// The size Ledger gives each token slot's place in its scale: what
   /// a token set's slot is measured against when it sizes a Ledger slot.
-  static double _sourceSize(_Anchor anchor) => switch (anchor) {
-    _Anchor.giant => _scale.figure.size,
-    _Anchor.display => _scale.figureMedium.size,
-    _Anchor.h1 => _scale.title.size,
-    _Anchor.h2 => _scale.barTitle.size,
-    _Anchor.body => _scale.body.size,
-    _Anchor.bodySmall => _scale.bodySmall.size,
-    _Anchor.label => _scale.label.size,
-    _Anchor.mono => _scale.amount.size,
-  };
 
-  /// [slot] as a TextStyle in [color], its size scaled by [factor]
-  /// (the line keeps its multiple, the tracking its em).
-  static TextStyle _type(_Slot slot, Color color, [double factor = 1]) {
-    final size = slot.size * factor;
+  /// [slot] as a TextStyle in [color] (the line a multiple of its size,
+  /// the tracking in em).
+  static TextStyle _type(_Slot slot, Color color) {
+    final size = slot.size;
     return TextStyle(
       fontFamily: switch (slot.face) {
         _Face.sans => face,
@@ -1756,18 +1711,28 @@ final class LedgerThemeData with Diagnosticable {
   /// ```dart
   /// LedgerTheme(data: LedgerThemeData.light(), child: page)
   /// ```
-  factory LedgerThemeData.light({LedgerDensity? density}) => _withDensity(
+  factory LedgerThemeData.light({
+    LedgerDensity? density,
+    RawShapeScheme? shapeScheme,
+  }) => _withDensity(
     _ledgerLight,
     density ?? LedgerDensity.adaptivePlatformDensity,
-  );
+  )._shaped(shapeScheme);
 
   /// The same book by lamplight: a warm umber paper, cream ink and a jade
   /// seal, designed rather than inverted. [density] defaults to the
   /// platform's.
-  factory LedgerThemeData.dark({LedgerDensity? density}) => _withDensity(
+  factory LedgerThemeData.dark({
+    LedgerDensity? density,
+    RawShapeScheme? shapeScheme,
+  }) => _withDensity(
     _ledgerDark,
     density ?? LedgerDensity.adaptivePlatformDensity,
-  );
+  )._shaped(shapeScheme);
+
+  // This theme with an app's [scheme], when it gives one.
+  LedgerThemeData _shaped(RawShapeScheme? scheme) =>
+      scheme == null ? this : copyWith(shapeScheme: scheme);
 
   /// A Ledger theme in an app's own colours: its [paper] (the page), its
   /// [ink] (words and rules) and its [accent] (the one act, money in and the
@@ -1805,17 +1770,22 @@ final class LedgerThemeData with Diagnosticable {
     Color? nightInk,
     Color? nightAccent,
     LedgerDensity? density,
-  }) => _fromColors(
-    'custom',
-    paper: paper,
-    ink: ink,
-    accent: accent,
-    over: over,
-    brightness: brightness,
-    nightPaper: nightPaper,
-    nightInk: nightInk,
-    nightAccent: nightAccent,
-  ).copyWith(density: density ?? LedgerDensity.adaptivePlatformDensity);
+    RawShapeScheme? shapeScheme,
+  }) =>
+      _fromColors(
+        'custom',
+        paper: paper,
+        ink: ink,
+        accent: accent,
+        over: over,
+        brightness: brightness,
+        nightPaper: nightPaper,
+        nightInk: nightInk,
+        nightAccent: nightAccent,
+      ).copyWith(
+        density: density ?? LedgerDensity.adaptivePlatformDensity,
+        shapeScheme: shapeScheme,
+      );
 
   /// [LedgerThemeData.from]'s theme, named [id].
   static LedgerThemeData _fromColors(
@@ -2104,16 +2074,12 @@ final class LedgerThemeData with Diagnosticable {
       initials: _type(_scale.initials, background),
       footnote: _type(_scale.footnote, greenWords),
       search: _type(_scale.search, ink3),
-      cardRadius: _Source.rSheet,
-      controlRadius: LedgerCorners.rFull,
-      smallRadius: _Source.rSheet,
-      sheetRadius: _Source.rSheet,
     );
   }
 
-  /// A token theme dressed in Ledger's roles: the token set's colours,
-  /// shadows, sizes and shape, Ledger's faces, weights, leading and
-  /// tracking (the bundled faces carry only Ledger's weights). Ledger's
+  /// A token theme dressed in Ledger's roles: the token set's colours and
+  /// shadows on Ledger's type, corners and density, so a palette changes
+  /// colour only and switching one moves nothing on the page. Ledger's
   /// own roles follow from the token roles by the rules below; a quiet ink
   /// that sets words, and the accent's words, are eased toward the next ink
   /// until they read (4.5:1) on every paper. Both appearances are the
@@ -2124,9 +2090,8 @@ final class LedgerThemeData with Diagnosticable {
   /// cannot read 4.5:1 on the eased accent words, the act wears those words'
   /// colour, with the page or its ink (whichever reads better) as its words.
   /// A record's translucent surface is laid on its page: Ledger's papers are
-  /// opaque. Its corners are the record's own, within the bounds a Ledger
-  /// theme keeps ([cardRadiusMost], [smallRadiusMost], [sheetRadiusMost]).
-  factory LedgerThemeData.fromTokens(
+  /// opaque.
+  factory LedgerThemeData._fromTokens(
     String id,
     LedgerTokens tokens,
     Brightness brightness,
@@ -2138,19 +2103,7 @@ final class LedgerThemeData with Diagnosticable {
     // the page (frost's white at 78% would read grey there).
     final paper = Color.alphaBlend(c.surface, c.background);
     final grounds = [c.background, paper, c.surfaceAlt];
-    double factor(_Slot slot) =>
-        (switch (slot.anchor) {
-          _Anchor.giant => tokens.giant.size,
-          _Anchor.display => tokens.display.size,
-          _Anchor.h1 => tokens.h1.size,
-          _Anchor.h2 => tokens.h2.size,
-          _Anchor.body => tokens.body.size,
-          _Anchor.bodySmall => tokens.bodySmall.size,
-          _Anchor.label => tokens.label.size,
-          _Anchor.mono => tokens.mono.size,
-        }) /
-        _sourceSize(slot.anchor);
-    TextStyle type(_Slot slot, Color color) => _type(slot, color, factor(slot));
+    TextStyle type(_Slot slot, Color color) => _type(slot, color);
     final ink3 = RawPalette.readableTone(c.textTertiary, on: grounds);
     final moneyIn = RawPalette.readableTone(c.success, on: grounds);
     final over = RawPalette.readableTone(
@@ -2195,7 +2148,13 @@ final class LedgerThemeData with Diagnosticable {
       surfaceAlt: c.surfaceAlt,
       surfaceInverse: c.surfaceInverse,
       border: c.border,
-      borderStrong: c.borderStrong,
+      // A radio's and a checkbox's empty ring: a control's edge, at 3:1 on
+      // every paper (a record's quiet rule is a hairline).
+      borderStrong: RawPalette.readableTone(
+        Color.alphaBlend(c.borderStrong, paper),
+        on: grounds,
+        ratio: 3,
+      ),
       textPrimary: c.textPrimary,
       textSecondary: c.textSecondary,
       textTertiary: ink3,
@@ -2279,22 +2238,11 @@ final class LedgerThemeData with Diagnosticable {
       initials: type(_scale.initials, c.background),
       footnote: type(_scale.footnote, accentText),
       search: type(_scale.search, ink3),
-      cardRadius: tokens.shape.cardRadius,
-      controlRadius: tokens.shape.controlRadius,
-      smallRadius: tokens.shape.smallRadius,
-      sheetRadius: tokens.shape.sheetRadius,
     );
   }
-
-  /// A [lerp]'s paper corner [r] held from 0 to [most], where a theme
-  /// animated on a curve that overshoots its ends would pass the bound.
-  static double _within(double r, double most) => r.clamp(0, most).toDouble();
 }
 
 enum _Face { sans, serif, italic, mono }
-
-/// The token type slot a token set sizes a Ledger slot by.
-enum _Anchor { giant, display, h1, h2, body, bodySmall, label, mono }
 
 /// One set of inks a Ledger theme is built from: the papers, the inks, the
 /// rules, the seal's green and the vermilion, and the toast's.
@@ -2324,21 +2272,13 @@ typedef _Inks = ({
 
 /// One step of Ledger's type scale.
 final class _Slot {
-  const _Slot(
-    this.face,
-    this.size,
-    this.line,
-    this.weight,
-    this.trackingEm,
-    this.anchor,
-  );
+  const _Slot(this.face, this.size, this.line, this.weight, this.trackingEm);
 
   final _Face face;
   final double size;
   final double line;
   final int weight;
   final double trackingEm;
-  final _Anchor anchor;
 }
 
 class _LedgerScope extends InheritedTheme {
@@ -2680,9 +2620,6 @@ abstract final class _Source {
   static const Color greenRule = Color.fromRGBO(30, 90, 68, .35);
   static const Color red = Color(0xFFC9402A);
   static const Color redWash = Color(0xFFF6DFD6);
-
-  /// `--r-sheet`.
-  static const double rSheet = 6;
 
   /// `.amt.in .c` and `.amt.over .c`: opacity .72.
   static const double centsVeil = .72;

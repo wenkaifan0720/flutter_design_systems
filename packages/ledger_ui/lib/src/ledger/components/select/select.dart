@@ -6,6 +6,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../internal/cap_center.dart';
+import '../../internal/corners.dart';
 import '../../internal/end_glyph.dart';
 import '../../internal/field_frame.dart';
 import '../../internal/option_paper.dart';
@@ -359,12 +360,12 @@ class _SelectListState<T> extends State<_SelectList<T>> {
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: t.surface,
-            borderRadius: BorderRadius.circular(t.smallRadius),
+            borderRadius: ledgerStep(t, RawCorner.medium),
             border: Border.all(color: t.border),
             boxShadow: t.menuShadow,
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(t.smallRadius),
+            borderRadius: ledgerStep(t, RawCorner.medium),
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(vertical: LedgerSpacing.s4),
               child: Column(
@@ -392,7 +393,7 @@ class _SelectListState<T> extends State<_SelectList<T>> {
                       autofocus: item.enabled && item.value == value,
                       semanticLabel: item.label,
                       selected: item.value == value,
-                      radius: 0,
+                      borderRadius: BorderRadius.zero,
                       rulesFocus: false,
                       child: Builder(
                         builder: (context) => Container(

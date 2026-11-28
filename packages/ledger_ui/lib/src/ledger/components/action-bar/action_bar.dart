@@ -2,8 +2,10 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../chrome_metrics.dart';
+import '../../internal/corners.dart';
 import '../../internal/footer_band.dart';
 import '../../theme.dart';
 import '../button/button.dart';
@@ -141,7 +143,7 @@ class LedgerActionBar extends StatelessWidget {
           ? DecoratedBox(
               decoration: BoxDecoration(
                 color: t.surface,
-                borderRadius: BorderRadius.circular(t.cardRadius),
+                borderRadius: ledgerStep(t, RawCorner.medium),
                 border: Border.all(color: t.border),
                 boxShadow: t.paperShadow,
               ),

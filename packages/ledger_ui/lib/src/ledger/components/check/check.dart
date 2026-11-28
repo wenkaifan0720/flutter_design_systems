@@ -117,7 +117,7 @@ class LedgerCheck extends StatelessWidget {
         onTap: () => onChanged!(!value),
         semanticLabel: semanticLabel,
         checked: value,
-        radius: size / 2,
+        borderRadius: BorderRadius.circular(size / 2),
         child: face,
       ),
     );

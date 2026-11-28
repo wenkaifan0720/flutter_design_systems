@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../internal/corners.dart';
 import '../../theme.dart';
 import '../icon-button/icon_button.dart';
 import '../page-dots/page_dots.dart';
@@ -92,7 +93,7 @@ class LedgerCarousel extends StatelessWidget {
           horizontal: viewportFraction < 1 ? LedgerSpacing.s4 : 0,
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(t.smallRadius),
+          borderRadius: ledgerStep(t, RawCorner.small),
           child: itemBuilder(context, i),
         ),
       ),
@@ -104,7 +105,7 @@ class LedgerCarousel extends StatelessWidget {
           DecoratedBox(
             position: DecorationPosition.foreground,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(t.smallRadius),
+              borderRadius: ledgerStep(t, RawCorner.small),
               border: controls.focused
                   ? Border.all(color: t.textPrimary, width: 1.5)
                   : null,

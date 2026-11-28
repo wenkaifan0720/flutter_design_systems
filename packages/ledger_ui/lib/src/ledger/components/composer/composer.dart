@@ -7,6 +7,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../chrome_metrics.dart';
+import '../../internal/corners.dart';
 import '../../internal/text_input.dart';
 import '../../theme.dart';
 import '../chip/chip.dart';
@@ -220,7 +221,7 @@ class _LedgerComposerState extends State<LedgerComposer> {
             return DecoratedBox(
               decoration: BoxDecoration(
                 color: t.surface,
-                borderRadius: BorderRadius.circular(t.cardRadius),
+                borderRadius: ledgerStep(t, RawCorner.medium),
                 border: Border.all(color: t.border),
               ),
               child: Padding(
@@ -274,7 +275,10 @@ class _LedgerComposerState extends State<LedgerComposer> {
               // The round of one line, kept as the box grows: its discs stay
               // concentric with the corners.
               borderRadius: BorderRadius.circular(
-                math.min(t.controlRadius, LedgerChromeMetrics.searchHeight / 2),
+                math.min(
+                  ledgerStep(t, RawCorner.full).topLeft.x,
+                  LedgerChromeMetrics.searchHeight / 2,
+                ),
               ),
               border: Border.all(color: t.border),
             ),
@@ -450,7 +454,7 @@ class _Disc extends StatelessWidget {
       child: LedgerPressable(
         onTap: onTap,
         semanticLabel: label,
-        radius: across / 2,
+        borderRadius: BorderRadius.circular(across / 2),
         child: Container(
           width: across,
           height: across,

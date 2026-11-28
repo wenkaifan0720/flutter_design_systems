@@ -7,6 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
 import '../internal/cap_center.dart';
+import '../internal/corners.dart';
 import '../internal/end_glyph.dart';
 import '../internal/face.dart';
 import '../internal/shell_faces.dart';
@@ -423,13 +424,17 @@ class _RailMark extends StatelessWidget {
     );
     final shell = states;
     if (shell != null) {
-      return LedgerStateFace(states: shell, radius: _size / 2, child: face);
+      return LedgerStateFace(
+        states: shell,
+        borderRadius: BorderRadius.circular(_size / 2),
+        child: face,
+      );
     }
     return LedgerPressable(
       onTap: onTap,
       semanticLabel: label,
       selected: on,
-      radius: _size / 2,
+      borderRadius: BorderRadius.circular(_size / 2),
       child: face,
     );
   }
@@ -463,12 +468,16 @@ class _SideAct extends StatelessWidget {
     final t = context.ledgerTheme;
     final shell = states;
     Widget press(Widget face) => shell != null
-        ? LedgerStateFace(states: shell, radius: t.controlRadius, child: face)
+        ? LedgerStateFace(
+            states: shell,
+            borderRadius: ledgerStep(t, RawCorner.full),
+            child: face,
+          )
         : LedgerPressable(
             onTap: onTap,
             semanticLabel: label,
             selected: current,
-            radius: t.controlRadius,
+            borderRadius: ledgerStep(t, RawCorner.full),
             child: face,
           );
     return press(
@@ -476,7 +485,7 @@ class _SideAct extends StatelessWidget {
         height: LedgerChromeMetrics.sideAct,
         decoration: BoxDecoration(
           color: t.accent,
-          borderRadius: BorderRadius.circular(t.controlRadius),
+          borderRadius: ledgerStep(t, RawCorner.full),
           // `.btn-move.is-on`: `0 0 0 3px paper-lo, 0 0 0
           // 4px green`. CSS paints its first shadow on top, Flutter its
           // last: the green ring goes first, the paper gap over it.
@@ -551,7 +560,7 @@ class _Link extends StatelessWidget {
             key: item.key,
             child: LedgerStateFace(
               states: shell,
-              radius: t.controlRadius,
+              borderRadius: ledgerStep(t, RawCorner.full),
               child: face,
             ),
           )
@@ -560,7 +569,7 @@ class _Link extends StatelessWidget {
             onTap: onTap,
             semanticLabel: item.label,
             selected: current,
-            radius: t.controlRadius,
+            borderRadius: ledgerStep(t, RawCorner.full),
             child: face,
           );
     // The chosen link's fill, ring and ink land at once, in the frame its
@@ -574,7 +583,7 @@ class _Link extends StatelessWidget {
           quiet: current ? t.accent : t.textSecondary,
           ground: BoxDecoration(
             color: current ? t.selectedFill : null,
-            borderRadius: BorderRadius.circular(t.controlRadius),
+            borderRadius: ledgerStep(t, RawCorner.full),
             boxShadow: current
                 ? [BoxShadow(color: t.selectedRing, spreadRadius: 1)]
                 : null,

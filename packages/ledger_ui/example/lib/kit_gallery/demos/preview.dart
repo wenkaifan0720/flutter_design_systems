@@ -75,7 +75,9 @@ Widget kitPreviewDemo(Brightness brightness) => kitScreen(
                 decoration: BoxDecoration(
                   color: t.background,
                   border: Border.all(color: t.border),
-                  borderRadius: BorderRadius.circular(t.cardRadius),
+                  borderRadius: BorderRadius.circular(
+                    t.shapeScheme.corners.medium,
+                  ),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(LedgerSpacing.s20),

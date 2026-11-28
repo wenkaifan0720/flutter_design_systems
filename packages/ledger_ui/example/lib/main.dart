@@ -470,7 +470,7 @@ class PaletteSwatch extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: paper,
-        borderRadius: BorderRadius.circular(t.smallRadius),
+        borderRadius: BorderRadius.circular(t.shapeScheme.corners.small),
         border: Border.all(color: t.border),
       ),
       child: Container(

@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/dashed.dart';
 import '../../internal/end_glyph.dart';
 import '../../theme.dart';
@@ -851,7 +853,7 @@ class LedgerSplitTicket extends StatelessWidget {
     return LedgerSlip(
       // `.ticket`: overflow hidden.
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(t.smallRadius),
+        borderRadius: ledgerStep(t, RawCorner.medium),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -1121,7 +1123,7 @@ class LedgerBeforeRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final subLine = ledgerSubLine(context, start: subtitle);
-    final radius = BorderRadius.circular(t.smallRadius);
+    final radius = ledgerStep(t, RawCorner.small);
     return MergeSemantics(
       child: Padding(
         // `.row`: padding 14px 0, its parts 14px apart.

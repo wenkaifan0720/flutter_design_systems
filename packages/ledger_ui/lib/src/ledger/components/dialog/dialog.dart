@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../chrome_metrics.dart';
+import '../../internal/corners.dart';
 import '../../internal/even_acts.dart';
 import '../../internal/narrow.dart';
 import '../../internal/pixel_center.dart';
@@ -118,9 +119,9 @@ class LedgerDialog extends StatelessWidget {
   /// The decision, in the serif.
   final String title;
 
-  /// The card's look, over `components.dialog` (which also dresses every
-  /// dialog `LedgerDialog.show` raises). It reads `fill`, `edge`, `side`,
-  /// `shape` and `padding`.
+  /// The card's look, over `components.dialog` (which also dresses every dialog
+  /// `LedgerDialog.show` raises). It reads `fill`, `edge`, `side`, `corners`
+  /// (or `shape`) and `padding`.
   final LedgerStyle? style;
 
   /// The question's words.
@@ -400,7 +401,7 @@ class LedgerDialog extends StatelessWidget {
               decoration: so.paper(
                 BoxDecoration(
                   color: t.surface,
-                  borderRadius: BorderRadius.circular(t.sheetRadius),
+                  borderRadius: ledgerRadius(t, so, RawCorner.large),
                   boxShadow: t.dialogShadow,
                 ),
               ),

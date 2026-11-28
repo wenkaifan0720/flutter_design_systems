@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
+import '../../internal/corners.dart';
 import '../../theme.dart';
 import '../marks/marks.dart';
 import '../money/money.dart';
@@ -148,7 +150,7 @@ class LedgerNoteRow extends StatelessWidget {
                 horizontal: LedgerSpacing.s12,
               ),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(t.smallRadius),
+                borderRadius: ledgerStep(t, RawCorner.small),
                 gradient: LinearGradient(
                   colors: [
                     t.accentSubtle.withValues(alpha: .85),

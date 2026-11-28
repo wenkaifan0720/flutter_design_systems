@@ -3,14 +3,14 @@
 library;
 
 import 'package:flutter/foundation.dart';
-
-import 'dart:math' as math;
-
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'dart:math' as math;
+
 import '../../internal/cap_center.dart';
+import '../../internal/corners.dart';
 import '../../internal/face.dart';
 import '../../internal/state_face.dart';
 import '../../internal/styled.dart';
@@ -76,8 +76,8 @@ class LedgerToggleGroup<T> extends StatelessWidget {
   final bool Function(T value)? isEnabled;
 
   /// Each pill's look, over `components.toggleGroup`. It reads `fill`,
-  /// `foreground`, `edge`, `side`, `overlay`, `shape`, `padding`,
-  /// `minimumSize` and `textStyle`; a chosen pill is `selected`.
+  /// `foreground`, `edge`, `side`, `overlay`, `corners` (or `shape`),
+  /// `padding`, `minimumSize` and `textStyle`; a chosen pill is `selected`.
   final LedgerStyle? style;
 
   @override
@@ -137,7 +137,7 @@ class LedgerToggleGroup<T> extends StatelessWidget {
                 : t.textSecondary,
             ground: BoxDecoration(
               color: on ? t.textPrimary : t.surface,
-              borderRadius: BorderRadius.circular(t.controlRadius),
+              borderRadius: ledgerRadius(t, so, RawCorner.full),
               border: Border.all(
                 color: on
                     ? t.textPrimary
@@ -189,7 +189,7 @@ class LedgerToggleGroup<T> extends StatelessWidget {
         heightFactor: 1,
         child: LedgerStateFace(
           states: states,
-          radius: t.controlRadius,
+          borderRadius: ledgerRadius(t, so, RawCorner.full),
           child: states.contains(WidgetState.disabled) && !on
               ? Opacity(opacity: _off, child: face)
               : face,

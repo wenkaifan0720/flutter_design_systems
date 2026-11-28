@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../chrome_metrics.dart';
+import '../../internal/corners.dart';
 import '../../theme.dart';
 
 /// A scrolling region (the terms of a transfer, a long note) whose scrollbar
@@ -82,7 +83,7 @@ class LedgerScrollArea extends StatelessWidget {
       frameBuilder: (context, focused, area) => DecoratedBox(
         position: DecorationPosition.foreground,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(t.smallRadius),
+          borderRadius: ledgerStep(t, RawCorner.small),
           border: focused
               ? Border.all(
                   color: t.textPrimary,

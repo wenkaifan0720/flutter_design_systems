@@ -16,7 +16,7 @@ class LedgerStateFace extends StatelessWidget {
   /// The states' marks round [child].
   const LedgerStateFace({
     required this.states,
-    required this.radius,
+    required this.borderRadius,
     required this.child,
     this.ringInsets = EdgeInsets.zero,
     this.sinks = true,
@@ -27,8 +27,9 @@ class LedgerStateFace extends StatelessWidget {
   /// The face's states, as the behaviour reports them.
   final Set<WidgetState> states;
 
-  /// The face's corner, which the focus rule keeps clear of.
-  final double radius;
+  /// The face's corners, which the focus rule keeps clear of and a press's
+  /// wash takes.
+  final BorderRadiusGeometry borderRadius;
 
   /// How far the face stands inside the box (the rule rules under the face).
   final EdgeInsetsGeometry ringInsets;
@@ -39,7 +40,7 @@ class LedgerStateFace extends StatelessWidget {
   final bool sinks;
 
   /// Whether a press also washes the bare paper of the face's box, its
-  /// corners [radius] round. False where the box holds more than the mark
+  /// corners [borderRadius]. False where the box holds more than the mark
   /// the press deepens, as the tab bar's disc column holds its name.
   final bool washes;
 
@@ -51,7 +52,9 @@ class LedgerStateFace extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<WidgetState>('states', states))
-      ..add(DoubleProperty('radius', radius))
+      ..add(
+        DiagnosticsProperty<BorderRadiusGeometry>('borderRadius', borderRadius),
+      )
       ..add(DiagnosticsProperty<EdgeInsetsGeometry>('ringInsets', ringInsets))
       ..add(FlagProperty('sinks', value: sinks, ifTrue: 'sinks'))
       ..add(FlagProperty('washes', value: washes, ifTrue: 'washes'));
@@ -63,7 +66,7 @@ class LedgerStateFace extends StatelessWidget {
     final held = states.contains(WidgetState.pressed);
     final face = LedgerPressStates(states: states, child: child);
     return LedgerFocusRing(
-      radius: radius,
+      borderRadius: borderRadius,
       insets: ringInsets,
       color: t.textPrimary,
       shown: states.contains(WidgetState.focused),
@@ -73,7 +76,9 @@ class LedgerStateFace extends StatelessWidget {
               builder: (context, depth, face) => LedgerImpression(
                 ink: t.textPrimary,
                 depth: depth,
-                wash: washes ? radius : null,
+                wash: washes
+                    ? borderRadius.resolve(Directionality.of(context))
+                    : null,
                 child: face,
               ),
               child: face,

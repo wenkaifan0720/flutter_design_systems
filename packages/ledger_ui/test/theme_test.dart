@@ -137,7 +137,7 @@ void main() {
       expect(t.overCents, t.over.withValues(alpha: .72));
       expect(t.move, t.textTertiary);
       expect(t.moveCents, t.textFaint);
-      expect(t.sheetRadius, 6); // --r-sheet
+      expect(t.shapeScheme.corners.large, 6); // --r-sheet
     });
 
     test('quire dark is designed: the book by lamplight', () {
@@ -211,24 +211,16 @@ void main() {
       expect(t.figure.leadingDistribution, TextLeadingDistribution.even);
     });
 
-    test("terracotta is the baked paper theme, through the same roles", () {
-      final fromTokens = LedgerThemeData.fromTokens(
-        'terracotta',
-        paperTokens,
-        Brightness.light,
-      );
+    test("terracotta is the baked paper's colours on Ledger's type", () {
       final preset = LedgerThemeData.preset('terracotta', Brightness.light);
-      expect(preset.background, fromTokens.background);
+      final quire = LedgerThemeData.preset('quire', Brightness.light);
       expect(preset.background, paperTokens.light.background);
-      expect(preset.accent, fromTokens.accent);
-      expect(preset.cardRadius, fromTokens.cardRadius);
-      expect(
-        preset.background,
-        isNot(LedgerThemeData.preset('quire', Brightness.light).background),
-      );
-      // The figure follows the tokens' giant step; the faces stay Ledger's.
-      expect(preset.figure.fontSize, paperTokens.giant.size);
+      expect(preset.background, isNot(quire.background));
+      // A palette changes colour only: the figure, its face and the corners
+      // stay Ledger's.
+      expect(preset.figure.fontSize, quire.figure.fontSize);
       expect(preset.figure.fontFamily, ledgerFontFamily('InstrumentSerif'));
+      expect(preset.shapeScheme, quire.shapeScheme);
     });
 
     test('terracotta keeps its steps in order, largest first', () {
@@ -254,84 +246,81 @@ void main() {
     });
   });
 
-  group('paper corners', () {
-    test('every preset keeps its own corners, within the bounds', () {
+  group('shapes', () {
+    test("every preset stands on Ledger's own shapes", () {
       for (final id in [for (final p in LedgerThemeData.palettes) p.id]) {
         for (final brightness in Brightness.values) {
-          final t = LedgerThemeData.preset(id, brightness);
           expect(
-            t.cardRadius,
-            inInclusiveRange(0, LedgerThemeData.cardRadiusMost),
-          );
-          expect(
-            t.smallRadius,
-            inInclusiveRange(0, LedgerThemeData.smallRadiusMost),
-          );
-          expect(
-            t.sheetRadius,
-            inInclusiveRange(0, LedgerThemeData.sheetRadiusMost),
+            LedgerThemeData.preset(id, brightness).shapeScheme,
+            LedgerThemeData.defaultShapeScheme,
+            reason: '$id $brightness',
           );
         }
       }
-      // A record's corners are its own (paper's: 16, 8, 24 and 12).
-      final terracotta = LedgerThemeData.preset('terracotta', Brightness.light);
-      expect(terracotta.cardRadius, paperTokens.shape.cardRadius);
-      expect(terracotta.smallRadius, paperTokens.shape.smallRadius);
-      expect(terracotta.sheetRadius, paperTokens.shape.sheetRadius);
-      expect(terracotta.controlRadius, paperTokens.shape.controlRadius);
     });
 
-    test('a paper rounded past its bound fails an assert that says why', () {
+    test('a scheme past its bands is held to their ends', () {
       final day = LedgerThemeData.light();
-      for (final (make, rule) in <(LedgerThemeData Function(), String)>[
-        (
-          () => day.copyWith(cardRadius: 40),
-          'a Ledger slip rounds from 0 to 22',
+      final wild = day.copyWith(
+        shapeScheme: const RawShapeScheme(
+          corners: RawCornerScale(
+            style: RawCornerStyle.bevel,
+            extraSmall: 0,
+            small: 40,
+            medium: 40,
+            large: 0,
+            extraLarge: 40,
+          ),
+          stroke: 3,
+          depth: 4,
         ),
-        (
-          () => day.copyWith(cardRadius: -1),
-          'a Ledger slip rounds from 0 to 22',
-        ),
-        (
-          () => day.copyWith(smallRadius: 12),
-          'a Ledger date tab rounds from 0 to 10',
-        ),
-        (
-          () => day.copyWith(sheetRadius: 40),
-          'a Ledger sheet or dialog rounds from 0',
-        ),
-      ]) {
-        expect(
-          make,
-          throwsA(
-            isA<AssertionError>().having(
-              (e) => '${e.message}',
-              'message',
-              contains(rule),
-            ),
+      );
+      final c = wild.shapeScheme.corners;
+      expect(c.style, RawCornerStyle.round);
+      expect(
+        [c.extraSmall, c.small, c.medium, c.large, c.extraLarge],
+        [2, 10, 12, 4, 16],
+      );
+      expect(wild.shapeScheme.stroke, isNull);
+      expect(wild.shapeScheme.depth, isNull);
+      // What the hand holds may take any cap, or none.
+      for (final cap in [0.0, 12.0, null]) {
+        final capped = day.copyWith(
+          shapeScheme: LedgerThemeData.defaultShapeScheme.copyWith(
+            corners: RawCornerScale(fullMaxRadius: cap),
           ),
         );
+        expect(capped.shapeScheme.corners.fullMaxRadius, cap);
       }
-      // The ends of each range, and any corner for what the hand holds.
-      final ends = day.copyWith(
-        cardRadius: 22,
-        smallRadius: 0,
-        sheetRadius: 28,
-      );
-      expect(
-        [ends.cardRadius, ends.smallRadius, ends.sheetRadius],
-        [22, 0, 28],
-      );
-      expect(day.copyWith(controlRadius: 0).controlRadius, 0);
-      expect(day.copyWith(controlRadius: 999).controlRadius, 999);
     });
 
-    test('a curve past its ends keeps a paper within its bound', () {
-      final square = LedgerThemeData.light().copyWith(sheetRadius: 0);
-      final round = LedgerThemeData.light().copyWith(sheetRadius: 28);
-      expect(LedgerThemeData.lerp(square, round, 1.2).sheetRadius, 28);
-      expect(LedgerThemeData.lerp(square, round, -.2).sheetRadius, 0);
-      expect(LedgerThemeData.lerp(square, round, .5).sheetRadius, 14);
+    test('a lerp between two held schemes stays within the bands', () {
+      final square = LedgerThemeData.light().copyWith(
+        shapeScheme: const RawShapeScheme(
+          corners: RawCornerScale(
+            extraSmall: 2,
+            small: 2,
+            medium: 2,
+            large: 4,
+            extraLarge: 8,
+          ),
+        ),
+      );
+      final round = LedgerThemeData.light().copyWith(
+        shapeScheme: const RawShapeScheme(
+          corners: RawCornerScale(
+            extraSmall: 5,
+            small: 10,
+            medium: 12,
+            large: 16,
+            extraLarge: 16,
+          ),
+        ),
+      );
+      expect(
+        LedgerThemeData.lerp(square, round, .5).shapeScheme.corners.medium,
+        7,
+      );
     });
   });
 

@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/face.dart';
 import '../../internal/styled.dart';
 import '../../style.dart';
@@ -24,7 +25,7 @@ class _Choice extends StatelessWidget {
     required this.isError,
     required this.focusNode,
     required this.autofocus,
-    required this.radius,
+    required this.corners,
     this.live,
     this.press,
     this.leading,
@@ -40,7 +41,7 @@ class _Choice extends StatelessWidget {
   final bool isError;
   final FocusNode? focusNode;
   final bool autofocus;
-  final double radius;
+  final BorderRadiusGeometry corners;
 
   // Whether it can be pressed; null: while [onTap] is set.
   final bool? live;
@@ -48,7 +49,12 @@ class _Choice extends StatelessWidget {
   // Its control over the face, when not a [LedgerPressable] on [onTap] (a
   // radio's [LedgerRadioPress]): given the face, the words for a screen
   // reader and the corner of its press.
-  final Widget Function(Widget face, String? label, double radius)? press;
+  final Widget Function(
+    Widget face,
+    String? label,
+    BorderRadiusGeometry corners,
+  )?
+  press;
 
   // Drawn between the mark and the words.
   final Widget? leading;
@@ -91,7 +97,7 @@ class _Choice extends StatelessWidget {
         ),
       );
     }
-    final corner = words == null ? radius : t.smallRadius;
+    final corner = words == null ? corners : ledgerStep(t, RawCorner.small);
     final control =
         press?.call(face, semanticLabel ?? words, corner) ??
         LedgerPressable(
@@ -103,7 +109,7 @@ class _Choice extends StatelessWidget {
           isError: isError,
           focusNode: focusNode,
           autofocus: autofocus,
-          radius: corner,
+          borderRadius: corner,
           child: face,
         );
     final drawn = Opacity(opacity: live ? 1 : _off, child: control);
@@ -267,7 +273,7 @@ class LedgerCheckbox extends StatelessWidget {
       isError: isError,
       focusNode: focusNode,
       autofocus: autofocus,
-      radius: _radius,
+      corners: const BorderRadius.all(Radius.circular(_radius)),
     );
   }
 
@@ -404,13 +410,13 @@ class LedgerRadio<T> extends StatelessWidget {
       mark: mark,
       onTap: null,
       live: live,
-      press: (face, label, radius) => LedgerRadioPress<T>(
+      press: (face, label, corners) => LedgerRadioPress<T>(
         value: value,
         enabled: live,
         registry: registry,
         toggleable: toggleable,
         semanticLabel: label,
-        radius: radius,
+        borderRadius: corners,
         focusNode: focusNode,
         autofocus: autofocus,
         child: face,
@@ -423,7 +429,7 @@ class LedgerRadio<T> extends StatelessWidget {
       isError: false,
       focusNode: focusNode,
       autofocus: autofocus,
-      radius: _size / 2,
+      corners: const BorderRadius.all(Radius.circular(_size / 2)),
       leading: leading,
     );
   }

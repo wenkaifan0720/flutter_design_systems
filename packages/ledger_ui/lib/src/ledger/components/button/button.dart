@@ -7,6 +7,7 @@ import 'package:ui_core/ui_core.dart';
 import '../../chrome_metrics.dart';
 import '../../internal/button_ends.dart';
 import '../../internal/cap_center.dart';
+import '../../internal/corners.dart';
 import '../../internal/end_glyph.dart';
 import '../../internal/face.dart';
 import '../../internal/styled.dart';
@@ -168,8 +169,8 @@ class LedgerButton extends StatelessWidget {
 
   /// This button's look, over its component theme (`components.button`,
   /// `.filledButton`, `.inkButton` or `.textButton` by its kind). It reads
-  /// `fill`, `foreground`, `edge`, `side`, `overlay`, `shape`, `padding`,
-  /// `minimumSize`, `textStyle` and `iconSize`.
+  /// `fill`, `foreground`, `edge`, `side`, `overlay`, `corners` (or `shape`),
+  /// `padding`, `minimumSize`, `textStyle` and `iconSize`.
   final LedgerStyle? style;
 
   final _Face _face;
@@ -344,6 +345,12 @@ class LedgerButton extends StatelessWidget {
                 _inkKeyDeepen,
               )
             : Color.lerp(fill, t.textPrimary, _pressSink);
+        // Either way a filled face keeps its words at 4.5:1: a lift toward
+        // light words (or a sink toward a dark ink) would wash them out, so
+        // the state's fill takes the nearest tone of its hue where they read.
+        Color? reading(Color? c) => c == null || fill == null
+            ? c
+            : RawPalette.readableTone(c, on: [ink]);
         return LedgerFace(
           style: so.dress(
             LedgerFaceStyle(
@@ -353,11 +360,11 @@ class LedgerButton extends StatelessWidget {
                 color: !live
                     ? fill
                     : held
-                    ? pressedFill
+                    ? reading(pressedFill)
                     : hovered
-                    ? hoveredFill
+                    ? reading(hoveredFill)
                     : fill,
-                borderRadius: BorderRadius.circular(t.controlRadius),
+                borderRadius: ledgerRadius(t, so, RawCorner.full),
                 border: ring == null ? null : Border.all(color: ring),
                 boxShadow: held ? null : shadow,
               ),
@@ -428,7 +435,11 @@ class LedgerButton extends StatelessWidget {
       child: LedgerPressable(
         onTap: onPressed,
         semanticLabel: semanticLabel ?? label,
-        radius: t.controlRadius,
+        borderRadius: ledgerRadius(
+          t,
+          LedgerStyleOf([style, themed], const {}),
+          RawCorner.full,
+        ),
         focusNode: focusNode,
         autofocus: autofocus,
         child: face,

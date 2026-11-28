@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/styled.dart';
 import '../../style.dart';
 import '../../theme.dart';
@@ -74,9 +75,10 @@ class LedgerBanner extends StatelessWidget {
   final VoidCallback? onDismiss;
 
   /// The banner's look, over `components.banner`. It reads `fill`, `edge`,
-  /// `side`, `shape`, `foreground` (its title's ink) and `textStyle` (its
-  /// title's); a [LedgerBannerTone.wrong] banner is in the `error` state.
-  /// The tone's stroke and glyph keep their inks: they carry its meaning.
+  /// `side`, `corners` (or `shape`), `foreground` (its title's ink) and
+  /// `textStyle` (its title's); a [LedgerBannerTone.wrong] banner is in the
+  /// `error` state. The tone's stroke and glyph keep their inks: they carry its
+  /// meaning.
   final LedgerStyle? style;
 
   @override
@@ -113,7 +115,7 @@ class LedgerBanner extends StatelessWidget {
     final ground = so.paper(
       BoxDecoration(
         color: t.surface,
-        borderRadius: BorderRadius.circular(t.smallRadius),
+        borderRadius: ledgerRadius(t, so, RawCorner.medium),
         border: Border.all(color: t.border),
       ),
     );
@@ -123,8 +125,7 @@ class LedgerBanner extends StatelessWidget {
       child: DecoratedBox(
         decoration: ground,
         child: ClipRRect(
-          borderRadius:
-              ground.borderRadius ?? BorderRadius.circular(t.smallRadius),
+          borderRadius: ground.borderRadius ?? ledgerStep(t, RawCorner.medium),
           child: IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,

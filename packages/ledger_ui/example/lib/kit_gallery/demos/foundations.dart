@@ -57,7 +57,9 @@ class _Swatches extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: color,
                     border: Border.all(color: t.border),
-                    borderRadius: BorderRadius.circular(t.smallRadius),
+                    borderRadius: BorderRadius.circular(
+                      t.shapeScheme.corners.small,
+                    ),
                   ),
                   child: const SizedBox(width: 32, height: 22),
                 ),
@@ -144,7 +146,7 @@ class _PresetSlip extends StatelessWidget {
       decoration: BoxDecoration(
         color: t.background,
         border: Border.all(color: t.border),
-        borderRadius: BorderRadius.circular(t.smallRadius),
+        borderRadius: BorderRadius.circular(t.shapeScheme.corners.small),
       ),
       child: Padding(
         padding: const EdgeInsets.all(LedgerSpacing.s12),
@@ -284,7 +286,7 @@ class _Papers extends StatelessWidget {
             decoration: BoxDecoration(
               color: t.surface,
               border: Border.all(color: t.border),
-              borderRadius: BorderRadius.circular(t.cardRadius),
+              borderRadius: BorderRadius.circular(t.shapeScheme.corners.medium),
               boxShadow: t.paperShadow,
             ),
           ),
@@ -295,7 +297,7 @@ class _Papers extends StatelessWidget {
             ink: t.textPrimary,
             decoration: BoxDecoration(
               color: t.surface,
-              borderRadius: BorderRadius.circular(t.sheetRadius),
+              borderRadius: BorderRadius.circular(t.shapeScheme.corners.large),
               boxShadow: t.sheetShadow,
             ),
           ),
@@ -307,7 +309,7 @@ class _Papers extends StatelessWidget {
             decoration: BoxDecoration(
               color: t.toast,
               border: Border.all(color: t.toastRing),
-              borderRadius: BorderRadius.circular(t.cardRadius),
+              borderRadius: BorderRadius.circular(t.shapeScheme.corners.medium),
               boxShadow: t.toastShadow,
             ),
           ),
@@ -418,14 +420,20 @@ class _Slots extends StatelessWidget {
 class _Shapes extends StatelessWidget {
   const _Shapes();
 
+  // Round at any height: a control's corner.
+  static const double _round = 999;
+
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
+    final c = t.shapeScheme.corners;
     final radii = <(String, double)>[
-      ('sheet', t.sheetRadius),
-      ('card', t.cardRadius),
-      ('small', t.smallRadius),
-      ('control', t.controlRadius),
+      ('extra small', c.extraSmall),
+      ('small', c.small),
+      ('medium', c.medium),
+      ('large', c.large),
+      ('extra large', c.extraLarge),
+      ('full', c.fullMaxRadius ?? _round),
     ];
     Widget shape((String, double) r) => Column(
       // Each swatch fills its share, its name under it on the
@@ -442,7 +450,10 @@ class _Shapes extends StatelessWidget {
           ),
           child: const SizedBox(width: double.infinity, height: 64),
         ),
-        Text('${r.$1} ${_number(r.$2)}', style: t.amount),
+        Text(
+          r.$2 == _round ? '${r.$1} round' : '${r.$1} ${_number(r.$2)}',
+          style: t.amount,
+        ),
       ],
     );
     // Four across on a wide page; on a phone or with a large text two, so
@@ -533,7 +544,7 @@ class _OnItsGround extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: avatar ? t.avatar : t.toast,
-          borderRadius: BorderRadius.circular(t.smallRadius),
+          borderRadius: BorderRadius.circular(t.shapeScheme.corners.small),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(

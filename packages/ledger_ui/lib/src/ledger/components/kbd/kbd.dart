@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../internal/cap_center.dart';
+import '../../internal/corners.dart';
 import '../../theme.dart';
 
 /// The keys of a shortcut, each printed as a ledger prints a mark: its
@@ -81,7 +82,7 @@ class LedgerKbd extends StatelessWidget {
               DecoratedBox(
                 decoration: BoxDecoration(
                   color: t.textSecondary,
-                  borderRadius: BorderRadius.circular(t.smallRadius),
+                  borderRadius: ledgerStep(t, RawCorner.small),
                 ),
                 child: Container(
                   margin: const EdgeInsets.only(bottom: _edge - _rule),
@@ -92,7 +93,7 @@ class LedgerKbd extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: _pad),
                   decoration: BoxDecoration(
                     color: t.surface,
-                    borderRadius: BorderRadius.circular(t.smallRadius),
+                    borderRadius: ledgerStep(t, RawCorner.small),
                     border: Border.all(color: t.border, width: _rule),
                   ),
                   child: Center(

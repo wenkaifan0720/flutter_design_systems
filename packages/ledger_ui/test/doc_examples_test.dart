@@ -943,6 +943,12 @@ void main() {
         mode: LedgerDatePickerMode.dateAndTime,
         onChanged: setDue,
       ),
+      'LedgerDatePicker 2': (context) => LedgerDatePicker(
+        labelText: 'Date started',
+        value: started,
+        onChanged: (d) => setState(() => started = d),
+        onClear: () => setState(() => started = null),
+      ),
       'LedgerScrollArea': (context) => LedgerScrollArea(
         controller: scroll,
         semanticLabel: 'Terms',
@@ -1437,5 +1443,23 @@ Future<void> _compiledOnly(BuildContext context) async {
   );
   show(
     LedgerDialogAction('Save changes', value: 'save', isDefaultAction: true),
+  );
+  show(ledgerStep(context.ledgerTheme, RawCorner.medium));
+  show(
+    ledgerRadius(
+      t,
+      LedgerStyleOf([style, t.components.slip], states),
+      RawCorner.medium,
+    ),
+  );
+  show(ledgerInset(BorderRadius.circular(999), 3, TextDirection.ltr));
+  show(
+    LedgerThemeData.light(
+      shapeScheme: LedgerThemeData.defaultShapeScheme.copyWith(
+        corners: LedgerThemeData.defaultShapeScheme.corners.copyWith(
+          medium: 10,
+        ),
+      ),
+    ),
   );
 }

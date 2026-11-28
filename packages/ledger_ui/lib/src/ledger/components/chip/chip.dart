@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../internal/cap_center.dart';
+import '../../internal/corners.dart';
 import '../../internal/face.dart';
 import '../../internal/styled.dart';
 import '../../style.dart';
@@ -49,10 +50,9 @@ class LedgerChip extends StatelessWidget {
   /// How many things it matches, after the words.
   final int? count;
 
-  /// This chip's look, over `components.chip`. It reads `fill`,
-  /// `foreground`, `edge`, `side`, `overlay`, `shape`, `padding`,
-  /// `minimumSize`, `textStyle` and `iconSize`; `selected` is among its
-  /// states.
+  /// This chip's look, over `components.chip`. It reads `fill`, `foreground`,
+  /// `edge`, `side`, `overlay`, `corners` (or `shape`), `padding`,
+  /// `minimumSize`, `textStyle` and `iconSize`; `selected` is among its states.
   final LedgerStyle? style;
 
   @override
@@ -99,7 +99,7 @@ class LedgerChip extends StatelessWidget {
                   : t.textTertiary,
               ground: BoxDecoration(
                 color: selected ? t.textPrimary : t.surface,
-                borderRadius: BorderRadius.circular(t.controlRadius),
+                borderRadius: ledgerRadius(t, so, RawCorner.full),
                 border: Border.all(color: selected ? t.textPrimary : t.border),
               ),
             ),
@@ -163,7 +163,11 @@ class LedgerChip extends StatelessWidget {
         semanticLabel: label,
         value: count == null ? null : '$count',
         selected: selected,
-        radius: t.controlRadius,
+        borderRadius: ledgerRadius(
+          t,
+          LedgerStyleOf([style, t.components.chip], const {}),
+          RawCorner.full,
+        ),
         child: face,
       ),
     );

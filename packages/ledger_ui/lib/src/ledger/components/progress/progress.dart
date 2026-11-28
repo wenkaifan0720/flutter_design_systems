@@ -3,11 +3,12 @@
 library;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import 'dart:math' as math;
 
-import 'package:flutter/widgets.dart';
-
+import '../../internal/corners.dart';
 import '../../internal/face.dart';
 import '../../theme.dart';
 
@@ -409,7 +410,7 @@ class _LedgerSkeletonState extends State<LedgerSkeleton>
         height: height,
         decoration: BoxDecoration(
           color: t.selectedFill,
-          borderRadius: BorderRadius.circular(t.smallRadius / 2),
+          borderRadius: ledgerStep(t, RawCorner.extraSmall),
         ),
       ),
     );

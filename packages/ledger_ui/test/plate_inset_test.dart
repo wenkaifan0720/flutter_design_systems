@@ -67,7 +67,12 @@ void main() {
       addTearDown(t.view.reset);
       const radius = 12.0;
       const inset = 2.0;
-      final theme = LedgerThemeData.light().copyWith(controlRadius: radius);
+      const scheme = LedgerThemeData.defaultShapeScheme;
+      final theme = LedgerThemeData.light().copyWith(
+        shapeScheme: scheme.copyWith(
+          corners: scheme.corners.copyWith(fullMaxRadius: radius),
+        ),
+      );
       for (final current in ['First', 'Last']) {
         final pixels = await _paint(
           t,

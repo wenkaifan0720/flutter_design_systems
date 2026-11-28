@@ -433,7 +433,11 @@ class LedgerStatementTotal extends StatelessWidget {
 /// setting's line stands its leader 6 clear and lets it shrink to 8
 /// ([inset], [minLength]). [centred] stands the parts and the leader
 /// centred on the line instead (a goal's line: align-items
-/// center, the leader align-self center).
+/// center, the leader align-self center). [wrapsEnd] lets an [end] of
+/// words wrap beside a start that stands whole (a record's detail): the
+/// end takes what the start and the leader's least leave, its first line on
+/// the start's, so the leader runs from the name to it; the line turns over
+/// only where the end's longest word cannot stand beside the start.
 ///
 /// ```dart
 /// LedgerLeaderLine(start: Text('Checking', style: t.rowTitle), end: LedgerAmount(6248.30))
@@ -446,6 +450,7 @@ class LedgerLeaderLine extends StatelessWidget {
     this.inset = LedgerChromeMetrics.leaderInset,
     this.minLength = LedgerChromeMetrics.leaderMin,
     this.centred = false,
+    this.wrapsEnd = false,
     super.key,
   }) : assert(inset >= 0),
        assert(minLength >= 0);
@@ -466,13 +471,18 @@ class LedgerLeaderLine extends StatelessWidget {
   /// than on one baseline.
   final bool centred;
 
+  /// Whether an [end] of words wraps beside the [start], which stands whole,
+  /// before the line turns over (at the reader's own text size).
+  final bool wrapsEnd;
+
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
       ..add(DoubleProperty('inset', inset))
       ..add(DoubleProperty('minLength', minLength))
-      ..add(FlagProperty('centred', value: centred, ifTrue: 'centred'));
+      ..add(FlagProperty('centred', value: centred, ifTrue: 'centred'))
+      ..add(FlagProperty('wrapsEnd', value: wrapsEnd, ifTrue: 'wrapsEnd'));
   }
 
   @override
@@ -490,6 +500,7 @@ class LedgerLeaderLine extends StatelessWidget {
       inset: inset,
       minLength: minLength,
       centred: centred,
+      wrapsEnd: wrapsEnd,
       larger: MediaQuery.textScalerOf(context).scale(1) > 1,
       start: start,
       end: end,
@@ -507,6 +518,7 @@ class _LeaderLine
     required this.inset,
     required this.minLength,
     required this.centred,
+    required this.wrapsEnd,
     required this.larger,
     required this.start,
     required this.end,
@@ -517,6 +529,7 @@ class _LeaderLine
   final double inset;
   final double minLength;
   final bool centred;
+  final bool wrapsEnd;
   final bool larger;
   final Widget start;
   final Widget end;
@@ -532,7 +545,15 @@ class _LeaderLine
 
   @override
   _RenderLeaderLine createRenderObject(BuildContext context) =>
-      _RenderLeaderLine(dots, textDirection, inset, minLength, centred, larger);
+      _RenderLeaderLine(
+        dots,
+        textDirection,
+        inset,
+        minLength,
+        centred,
+        larger,
+        wrapsEnd,
+      );
 
   @override
   void updateRenderObject(BuildContext context, _RenderLeaderLine line) {
@@ -542,6 +563,7 @@ class _LeaderLine
       ..inset = inset
       ..minLength = minLength
       ..centred = centred
+      ..wrapsEnd = wrapsEnd
       ..larger = larger;
   }
 }
@@ -568,7 +590,15 @@ class _RenderLeaderLine extends RenderBox
     this._min,
     this._centred,
     this._larger,
+    this._wrapsEnd,
   );
+
+  bool _wrapsEnd;
+  set wrapsEnd(bool value) {
+    if (value == _wrapsEnd) return;
+    _wrapsEnd = value;
+    markNeedsLayout();
+  }
 
   bool _larger;
   set larger(bool value) {
@@ -631,6 +661,50 @@ class _RenderLeaderLine extends RenderBox
     double? Function(RenderBox, BoxConstraints) baselineOf,
   ) {
     final maxWidth = constraints.maxWidth;
+    final ltr = _textDirection == TextDirection.ltr;
+    if (_wrapsEnd && !_larger && maxWidth.isFinite) {
+      // A detail's words wrap beside a name that stands whole, the leader's
+      // least between them, the first line on the name's.
+      final startWidth = _start.getMaxIntrinsicWidth(double.infinity);
+      final endLeast = _end.getMinIntrinsicWidth(double.infinity);
+      if (maxWidth - startWidth - 2 * _inset - _min >= endLeast) {
+        // The name is offered all that the end's least leaves, not its
+        // measure alone: a measure a hair under the width its words take (a
+        // font fallback's on the web) would cut it to an ellipsis. It keeps
+        // its own width; the end wraps in what that leaves.
+        final startIn = BoxConstraints(
+          maxWidth: maxWidth - 2 * _inset - _min - endLeast,
+          maxHeight: constraints.maxHeight,
+        );
+        final start = layout(_start, startIn);
+        final wrapIn = BoxConstraints(
+          maxWidth: math.max(0.0, maxWidth - start.width - 2 * _inset - _min),
+          maxHeight: constraints.maxHeight,
+        );
+        final end = layout(_end, wrapIn);
+        final startBase = baselineOf(_start, startIn) ?? start.height;
+        final endBase = baselineOf(_end, wrapIn) ?? end.height;
+        final baseline = math.max(math.max(startBase, endBase), _height);
+        final below = math.max(start.height - startBase, end.height - endBase);
+        final size = constraints.constrain(
+          Size(maxWidth, (baseline + math.max(0.0, below)).roundToDouble()),
+        );
+        return (
+          size: size,
+          baseline: baseline,
+          startWidth: start.width,
+          startTop: baseline - startBase,
+          endWidth: end.width,
+          endTop: baseline - endBase,
+          leaderTop: baseline - _height,
+          leaderLeft: (ltr ? start.width : end.width) + _inset,
+          leader: math.max(
+            0.0,
+            size.width - start.width - end.width - 2 * _inset,
+          ),
+        );
+      }
+    }
     final endIn = BoxConstraints(
       maxWidth: maxWidth,
       maxHeight: constraints.maxHeight,
@@ -639,7 +713,6 @@ class _RenderLeaderLine extends RenderBox
     final room = maxWidth.isFinite
         ? math.max(0.0, maxWidth - end.width - 2 * _inset - _min)
         : double.infinity;
-    final ltr = _textDirection == TextDirection.ltr;
     if (maxWidth.isFinite &&
         ((!_centred && room < _start.getMinIntrinsicWidth(double.infinity)) ||
             (_larger && room < _start.getMaxIntrinsicWidth(double.infinity)))) {

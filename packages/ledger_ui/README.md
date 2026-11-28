@@ -338,7 +338,7 @@ class PalettePicker extends StatelessWidget {
 ## Make it yours
 
 `LedgerTheme.of(context)` (or `context.ledgerTheme`) returns the `LedgerThemeData` in scope: its colours, its type
-(the serif for heads and figures, the sans for words, the mono for amounts), its density and its radii. Restyle a part
+(the serif for heads and figures, the sans for words, the mono for amounts), its density and its corner steps. Restyle a part
 of the tree with a nested `LedgerTheme`; `AnimatedLedgerTheme` animates between two.
 
 ```dart
@@ -378,6 +378,52 @@ LedgerButton('Export', onPressed: () {}, style: LedgerStyle(edge: inGreen, foreg
 
 Labels and glyphs are a `String` and an `IconData` where Flutter would take a `Widget`, as in
 `LedgerButton.filled('Save', icon: LucideIcons.check)`. A control without words of its own takes a `semanticLabel`.
+
+Your corners. Ledger's steps are 3, 6, 6, 6 and 12, and what the hand holds (a button, a chip, a field, a search) is
+round at any height. Each step moves within a band where Ledger still reads as paper (`LedgerThemeData.shapeLimits`); a
+value past its band is held to the band's end, with a note in debug builds. Its rules are ink and its paper lies flat,
+so Ledger opens no stroke and no depth.
+
+| Step | Ledger's | Band | On |
+| --- | --- | --- | --- |
+| extraSmall | 3 | 2–5 | a bar's ends |
+| small | 6 | 2–10 | a date tab, a tooltip, a popover, a key cap |
+| medium | 6 | 2–12 | a slip, a card, a menu, a toast, a banner |
+| large | 6 | 4–16 | a sheet, a dialog |
+| extraLarge | 12 | 8–16 | a part's own corners |
+| full | round | any cap | a button, a chip, a field, a search |
+
+```dart
+LedgerThemeData.light(
+  shapeScheme: const RawShapeScheme(
+    corners: RawCornerScale(
+      extraSmall: 3,
+      small: 8,
+      medium: 10,
+      large: 12,
+      extraLarge: 16,
+      fullMaxRadius: 12, // buttons and fields with soft corners, not round ends
+    ),
+  ),
+)
+```
+
+One part's own corners, a step at each, start and end as the text reads. A full corner beside corners of other steps is
+20, or the scale's `fullMaxRadius`:
+
+```dart
+LedgerButton(
+  'Print the receipt',
+  onPressed: () {},
+  style: const LedgerStyle(
+    corners: WidgetStatePropertyAll(
+      RawCorners(topEnd: RawCorner.none, bottomStart: RawCorner.none),
+    ),
+  ),
+)
+```
+
+A style's `shape` still wins over `corners`, drawn as given.
 
 ## Change one component
 

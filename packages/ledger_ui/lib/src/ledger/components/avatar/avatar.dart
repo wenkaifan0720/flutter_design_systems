@@ -112,7 +112,7 @@ class LedgerAvatar extends StatelessWidget {
         autofocus: autofocus,
         onTap: onTap,
         semanticLabel: semanticLabel ?? initials,
-        radius: LedgerChromeMetrics.avatar / 2,
+        borderRadius: BorderRadius.circular(LedgerChromeMetrics.avatar / 2),
         child: disc,
       ),
     );

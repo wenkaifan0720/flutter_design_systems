@@ -12,12 +12,13 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../chrome_metrics.dart';
 import '../../format.dart';
 import '../../internal/cap_center.dart';
+import '../../internal/corners.dart';
 import '../../internal/end_glyph.dart';
 import '../../internal/face.dart';
 import '../../internal/field_frame.dart';
 import '../../internal/on_cheque.dart';
-import '../../internal/text_input.dart';
 import '../../internal/styled.dart';
+import '../../internal/text_input.dart';
 import '../../style.dart';
 import '../../theme.dart';
 import '../marks/marks.dart';
@@ -67,9 +68,9 @@ class LedgerSegmentedControl<T> extends StatelessWidget {
   /// The words of each segment; null: the value's `toString()`.
   final String Function(T option)? labelOf;
 
-  /// Each segment's look, over `components.segmentedControl`. It reads
-  /// `fill`, `foreground`, `edge`, `side`, `overlay`, `shape`, `padding` and
-  /// `textStyle`; the chosen segment is `selected`.
+  /// Each segment's look, over `components.segmentedControl`. It reads `fill`,
+  /// `foreground`, `edge`, `side`, `overlay`, `corners` (or `shape`), `padding`
+  /// and `textStyle`; the chosen segment is `selected`.
   final LedgerStyle? style;
 
   String _say(T option) => labelOf?.call(option) ?? '$option';
@@ -101,7 +102,14 @@ class LedgerSegmentedControl<T> extends StatelessWidget {
     // above and under it, so its chosen ink fills the slot it is given.
     final floor = RawTapTargets.of(context).floorOn();
     final chip = math.max(height, floor.height - 2 * _pad);
-    final innerRadius = math.max(0.0, t.controlRadius - _pad);
+    // The strip takes an app's corners; each chip's stand concentric
+    // inside them.
+    final outer = ledgerRadius(
+      t,
+      LedgerStyleOf([style, t.components.segmentedControl], const {}),
+      RawCorner.full,
+    );
+    final inner = ledgerInset(outer, _pad, Directionality.of(context));
     // A chip: a radio of the strip's group, in a pressable's dress. The
     // chosen chip stays live (a screen reader must not call it dimmed);
     // choosing it again changes nothing.
@@ -112,7 +120,7 @@ class LedgerSegmentedControl<T> extends StatelessWidget {
       // The focus rule runs the chip's whole width and stands on its foot:
       // its face is 2 inside the target above, and the rule's own drop under
       // a face is taken back.
-      radius: 0,
+      borderRadius: BorderRadius.zero,
       ringInsets: const EdgeInsets.only(
         top: _pad,
         bottom: _pad + 2 * LedgerChromeMetrics.focusGap,
@@ -137,7 +145,7 @@ class LedgerSegmentedControl<T> extends StatelessWidget {
                   ink: o == value ? t.surface : t.textSecondary,
                   ground: BoxDecoration(
                     color: o == value ? t.textPrimary : null,
-                    borderRadius: BorderRadius.circular(innerRadius),
+                    borderRadius: inner,
                   ),
                 ),
               ),
@@ -179,7 +187,7 @@ class LedgerSegmentedControl<T> extends StatelessWidget {
     final strip = DecoratedBox(
       decoration: BoxDecoration(
         color: t.surface,
-        borderRadius: BorderRadius.circular(t.controlRadius),
+        borderRadius: outer,
         border: Border.all(color: t.border),
       ),
       child: Padding(
@@ -262,8 +270,8 @@ class LedgerFilters<T> extends StatelessWidget {
   /// The words of each pill; null: the value's `toString()`.
   final String Function(T option)? labelOf;
 
-  /// Each pill's look, over `components.toggleGroup` (the same pill). It
-  /// reads `fill`, `foreground`, `edge`, `side`, `overlay`, `shape`,
+  /// Each pill's look, over `components.toggleGroup` (the same pill). It reads
+  /// `fill`, `foreground`, `edge`, `side`, `overlay`, `corners` (or `shape`),
   /// `padding` and `textStyle`; the chosen pill is `selected`.
   final LedgerStyle? style;
 
@@ -315,7 +323,11 @@ class LedgerFilters<T> extends StatelessWidget {
                     : () => onChanged!(o == value ? null : o),
                 semanticLabel: wordsOf(o),
                 selected: o == value,
-                radius: t.controlRadius,
+                borderRadius: ledgerRadius(
+                  t,
+                  LedgerStyleOf([style, t.components.toggleGroup], const {}),
+                  RawCorner.full,
+                ),
                 child: Builder(
                   builder: (context) {
                     final so = LedgerStyleOf(
@@ -332,9 +344,7 @@ class LedgerFilters<T> extends StatelessWidget {
                           ink: o == value ? t.surface : t.textSecondary,
                           ground: BoxDecoration(
                             color: o == value ? t.textPrimary : t.surface,
-                            borderRadius: BorderRadius.circular(
-                              t.controlRadius,
-                            ),
+                            borderRadius: ledgerRadius(t, so, RawCorner.full),
                             border: Border.all(
                               color: o == value ? t.textPrimary : t.border,
                             ),
@@ -490,7 +500,7 @@ class LedgerSwitch extends StatelessWidget {
         onTap: change == null ? null : () => change(!value),
         semanticLabel: semanticLabel,
         toggled: value,
-        radius: _height / 2,
+        borderRadius: BorderRadius.circular(_height / 2),
         focusNode: focusNode,
         autofocus: autofocus,
         child: change == null ? Opacity(opacity: _off, child: face) : face,
@@ -1006,7 +1016,7 @@ class LedgerSearchField extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: t.surface,
-        borderRadius: BorderRadius.circular(t.controlRadius),
+        borderRadius: ledgerStep(t, RawCorner.full),
         border: Border.all(color: live ? t.textPrimary : t.border),
       ),
       child: Row(
@@ -1022,7 +1032,7 @@ class LedgerSearchField extends StatelessWidget {
         onTap: onTap,
         role: LedgerPressRole.link,
         semanticLabel: semanticLabel ?? hint,
-        radius: t.controlRadius,
+        borderRadius: ledgerStep(t, RawCorner.full),
         child: box(
           ledgerCapCenter(
             t.search,
@@ -1091,7 +1101,7 @@ class LedgerSearchField extends StatelessWidget {
                         key: clearKey,
                         onTap: onCleared,
                         semanticLabel: clearLabel ?? words.clearButtonTooltip,
-                        radius: _clear / 2,
+                        borderRadius: BorderRadius.circular(_clear / 2),
                         child: Container(
                           width: _clear,
                           height: _clear,
@@ -1781,7 +1791,7 @@ class LedgerChequeAmount extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: t.background,
-              borderRadius: BorderRadius.circular(t.smallRadius),
+              borderRadius: ledgerStep(t, RawCorner.small),
               border: Border.all(color: t.textPrimary),
             ),
             // The box holds a sum, left to right in either direction: its
@@ -2034,7 +2044,7 @@ class LedgerStepper extends StatelessWidget {
         LedgerPressable(
           onTap: tap,
           semanticLabel: name,
-          radius: _ring / 2,
+          borderRadius: BorderRadius.circular(_ring / 2),
           child: Container(
             width: _ring,
             height: _ring,

@@ -157,6 +157,7 @@ double budget = 250;
 
 /// A check's value.
 bool done = false;
+DateTime? started;
 
 /// A due date.
 final DateTime due = DateTime(2026, 11, 1);

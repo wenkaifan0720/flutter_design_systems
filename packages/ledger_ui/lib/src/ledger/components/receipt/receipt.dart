@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart' show OverflowBoxFit;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/corners.dart';
 import '../../internal/narrow.dart';
 import '../../internal/on_cheque.dart';
 import '../../internal/styled.dart';
@@ -31,8 +32,8 @@ class LedgerSlip extends StatelessWidget {
   /// The room round [child]; null takes the style's, then the slip's own.
   final EdgeInsetsGeometry? padding;
 
-  /// The slip's look, over `components.slip`. It reads `fill`, `edge`,
-  /// `side`, `shape` and `padding`.
+  /// The slip's look, over `components.slip`. It reads `fill`, `edge`, `side`,
+  /// `corners` (or `shape`) and `padding`.
   final LedgerStyle? style;
 
   @override
@@ -55,23 +56,48 @@ class LedgerSlip extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final so = LedgerStyleOf([style, t.components.slip], const {});
+    final paper = so.paper(
+      BoxDecoration(
+        color: t.surface,
+        borderRadius: ledgerRadius(t, so, RawCorner.medium),
+        boxShadow: t.paperShadow,
+      ),
+    );
     // A card for the keyline check: what is printed on it starts and ends
     // on its side room.
     return RawKeylineRegion(
       label: 'slip',
       child: Container(
         padding: padding ?? so.padding(Directionality.of(context)),
-        decoration: so.paper(
-          BoxDecoration(
-            color: t.surface,
-            borderRadius: BorderRadius.circular(t.smallRadius),
-            boxShadow: t.paperShadow,
-          ),
+        decoration: paper,
+        child: _SlipCorners(
+          corners: paper.borderRadius ?? BorderRadius.zero,
+          child: child,
         ),
-        child: child,
       ),
     );
   }
+}
+
+// The corners of the slip a band is printed on: its band's top corners
+// are the slip's own, an app's included.
+class _SlipCorners extends InheritedWidget {
+  const _SlipCorners({required this.corners, required super.child});
+
+  final BorderRadiusGeometry corners;
+
+  // The top corners of the slip above [context], square at the foot; a
+  // band outside a slip takes the slip's own step.
+  static BorderRadius topOf(BuildContext context, LedgerThemeData t) {
+    final slip = context.dependOnInheritedWidgetOfExactType<_SlipCorners>();
+    final r = (slip?.corners ?? ledgerStep(t, RawCorner.medium)).resolve(
+      Directionality.of(context),
+    );
+    return BorderRadius.only(topLeft: r.topLeft, topRight: r.topRight);
+  }
+
+  @override
+  bool updateShouldNotify(_SlipCorners old) => old.corners != corners;
 }
 
 /// The slip's sides: 20 (36 from 1024), as a receipt and a cheque inset
@@ -99,9 +125,7 @@ class LedgerSlipBand extends StatelessWidget {
     // var(--r-sheet) var(--r-sheet) 0 0.
     return ExcludeSemantics(
       child: ClipRRect(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(t.smallRadius),
-        ),
+        borderRadius: _SlipCorners.topOf(context, t),
         child: Opacity(
           opacity: .5,
           child: LedgerGuillocheBand(color: t.accent),

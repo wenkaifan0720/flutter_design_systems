@@ -10,6 +10,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../internal/cap_center.dart';
+import '../../internal/corners.dart';
 import '../../internal/face.dart';
 import '../../internal/option_paper.dart';
 import '../../internal/presence.dart';
@@ -90,7 +91,11 @@ class LedgerSplitButton extends StatelessWidget {
         .colored(ink)
         .copyWith(leadingDistribution: TextLeadingDistribution.even);
     // The halves' corners sit inside the ring's, one rule in.
-    final inner = (t.controlRadius - _rule).clamp(0.0, t.controlRadius);
+    final inner = ledgerInset(
+      ledgerStep(t, RawCorner.full),
+      _rule,
+      Directionality.of(context),
+    ).topLeft;
     return RawSplitButton(
       label: label,
       onPressed: onPressed,
@@ -99,7 +104,7 @@ class LedgerSplitButton extends StatelessWidget {
       minimumSize: Size(floor.width, height),
       layoutBuilder: (context, main, toggle) => DecoratedBox(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(t.controlRadius),
+          borderRadius: ledgerStep(t, RawCorner.full),
           border: Border.all(color: ring, width: _rule),
           boxShadow: filled && onPressed != null ? t.primaryShadow : null,
         ),
@@ -130,8 +135,8 @@ class LedgerSplitButton extends StatelessWidget {
         final off = states.contains(WidgetState.disabled);
         final main = part == RawSplitPart.main;
         final corners = main
-            ? BorderRadiusDirectional.horizontal(start: Radius.circular(inner))
-            : BorderRadiusDirectional.horizontal(end: Radius.circular(inner));
+            ? BorderRadiusDirectional.horizontal(start: inner)
+            : BorderRadiusDirectional.horizontal(end: inner);
         final face = LedgerFace(
           style: LedgerFaceStyle(
             ink: off ? (filled ? ink : t.textTertiary) : ink,
@@ -180,7 +185,7 @@ class LedgerSplitButton extends StatelessWidget {
         );
         return LedgerStateFace(
           states: states,
-          radius: inner,
+          borderRadius: corners,
           sinks: false,
           child: off && filled ? Opacity(opacity: _off, child: face) : face,
         );
@@ -230,12 +235,12 @@ class LedgerSplitButton extends StatelessWidget {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: t.surface,
-                borderRadius: BorderRadius.circular(t.smallRadius),
+                borderRadius: ledgerStep(t, RawCorner.small),
                 border: Border.all(color: t.border),
                 boxShadow: t.menuShadow,
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(t.smallRadius),
+                borderRadius: ledgerStep(t, RawCorner.small),
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(vertical: _menuPad),
                   child: IntrinsicWidth(

@@ -4,6 +4,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../format.dart';
 import '../../internal/cap_center.dart';
+import '../../internal/corners.dart';
 import '../../internal/dashed.dart';
 import '../../theme.dart';
 
@@ -367,7 +368,7 @@ class LedgerDashedFrame extends StatelessWidget {
     // radius --r-sheet (6).
     return CustomPaint(
       painter: LedgerDashedOutline(
-        radius: BorderRadius.circular(t.cardRadius),
+        radius: ledgerStep(t, RawCorner.medium),
         color: t.textFaint,
       ),
       child: Padding(padding: padding, child: child),
@@ -407,7 +408,7 @@ class LedgerDateTab extends StatelessWidget {
         decoration: BoxDecoration(
           color: t.surface,
           border: Border.all(color: t.border),
-          borderRadius: BorderRadius.circular(t.smallRadius),
+          borderRadius: ledgerStep(t, RawCorner.small),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -524,7 +525,7 @@ class LedgerPill extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: small ? _smallPad : _pad),
       decoration: BoxDecoration(
         color: wash,
-        borderRadius: BorderRadius.circular(t.controlRadius),
+        borderRadius: ledgerStep(t, RawCorner.full),
       ),
       // Its own width under a loose one: a Container's alignment would stretch
       // it.
@@ -595,7 +596,7 @@ class LedgerTag extends StatelessWidget {
       constraints: larger ? const BoxConstraints(minHeight: _height) : null,
       padding: const EdgeInsets.symmetric(horizontal: _pad),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(t.controlRadius),
+        borderRadius: ledgerStep(t, RawCorner.full),
         border: Border.all(color: unread ? t.accentRule : t.textFaint),
       ),
       // Its own width under a loose one: a Container's alignment would stretch

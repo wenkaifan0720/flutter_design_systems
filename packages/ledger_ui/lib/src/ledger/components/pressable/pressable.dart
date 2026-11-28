@@ -25,7 +25,7 @@ enum LedgerPressRole {
 /// says each state in its rules and its ink, never in light or depth: a
 /// press leaves the face where it is and deepens its marks a shade toward
 /// the ink, like a stamp pressed harder, and the bare paper of its box (its
-/// corners [radius] round) takes the same ink under them, so a face drawn
+/// corners [borderRadius]) takes the same ink under them, so a face drawn
 /// in the ink itself still shows it ([LedgerImpression]); keyboard
 /// focus rules the accountant's double rule in the ink under the face
 /// ([LedgerFocusRing]), only while the keyboard moved focus; a hover or a
@@ -55,7 +55,7 @@ class LedgerPressable extends StatelessWidget {
     this.inMutuallyExclusiveGroup = false,
     this.expanded,
     this.isError = false,
-    this.radius = 0,
+    this.borderRadius = BorderRadius.zero,
     this.ringInsets = EdgeInsets.zero,
     this.rulesFocus = true,
     this.excludeChild = true,
@@ -64,8 +64,7 @@ class LedgerPressable extends StatelessWidget {
     this.autofocus = false,
     this.onLongPress,
     super.key,
-  }) : assert(radius >= 0),
-       assert(pressedOpacity >= 0 && pressedOpacity <= 1);
+  }) : assert(pressedOpacity >= 0 && pressedOpacity <= 1);
 
   /// What a press does; null makes the control inert.
   final VoidCallback? onTap;
@@ -110,9 +109,9 @@ class LedgerPressable extends StatelessWidget {
   /// What it holds is wrong: the node says so.
   final bool isError;
 
-  /// The face's corner radius: the focus rule keeps to the straight run of
-  /// its foot, and a press's wash of the paper rounds its corners by it.
-  final double radius;
+  /// The face's corners: the focus rule keeps to the straight run of its
+  /// foot, and a press's wash of the paper takes them.
+  final BorderRadiusGeometry borderRadius;
 
   /// How far inside the child's box the face stands.
   final EdgeInsetsGeometry ringInsets;
@@ -161,7 +160,13 @@ class LedgerPressable extends StatelessWidget {
       )
       ..add(DiagnosticsProperty<bool>('expanded', expanded, defaultValue: null))
       ..add(FlagProperty('isError', value: isError, ifTrue: 'isError'))
-      ..add(DoubleProperty('radius', radius))
+      ..add(
+        DiagnosticsProperty<BorderRadiusGeometry>(
+          'borderRadius',
+          borderRadius,
+          defaultValue: BorderRadius.zero,
+        ),
+      )
       ..add(DiagnosticsProperty<EdgeInsetsGeometry>('ringInsets', ringInsets))
       ..add(
         FlagProperty(
@@ -216,7 +221,7 @@ class LedgerPressable extends StatelessWidget {
         t,
         states,
         child!,
-        radius: radius,
+        borderRadius: borderRadius,
         ringInsets: ringInsets,
         rulesFocus: rulesFocus,
         pressedOpacity: pressedOpacity,
@@ -234,7 +239,7 @@ Widget _dress(
   LedgerThemeData t,
   Set<WidgetState> states,
   Widget child, {
-  required double radius,
+  required BorderRadiusGeometry borderRadius,
   required EdgeInsetsGeometry ringInsets,
   required bool rulesFocus,
   required double pressedOpacity,
@@ -245,7 +250,7 @@ Widget _dress(
   final pressed = states.contains(WidgetState.pressed);
   final face = LedgerPressStates(states: states, child: child);
   return LedgerFocusRing(
-    radius: radius,
+    borderRadius: borderRadius,
     insets: ringInsets,
     color: t.textPrimary,
     shown:
@@ -263,7 +268,7 @@ Widget _dress(
             builder: (context, depth, face) => LedgerImpression(
               ink: t.textPrimary,
               depth: depth,
-              wash: radius,
+              wash: borderRadius.resolve(Directionality.of(context)),
               child: face,
             ),
             child: face,
@@ -286,7 +291,7 @@ class LedgerRadioPress<T> extends StatefulWidget {
     this.registry,
     this.toggleable = false,
     this.semanticLabel,
-    this.radius = 0,
+    this.borderRadius = BorderRadius.zero,
     this.ringInsets = EdgeInsets.zero,
     this.focusNode,
     this.autofocus = false,
@@ -311,8 +316,8 @@ class LedgerRadioPress<T> extends StatefulWidget {
   /// Its spoken name, in place of what [child] says.
   final String? semanticLabel;
 
-  /// As [LedgerPressable.radius].
-  final double radius;
+  /// As [LedgerPressable.borderRadius].
+  final BorderRadiusGeometry borderRadius;
 
   /// As [LedgerPressable.ringInsets].
   final EdgeInsetsGeometry ringInsets;
@@ -338,7 +343,13 @@ class LedgerRadioPress<T> extends StatefulWidget {
       )
       ..add(FlagProperty('toggleable', value: toggleable, ifTrue: 'toggleable'))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
-      ..add(DoubleProperty('radius', radius))
+      ..add(
+        DiagnosticsProperty<BorderRadiusGeometry>(
+          'borderRadius',
+          borderRadius,
+          defaultValue: BorderRadius.zero,
+        ),
+      )
       ..add(DiagnosticsProperty<EdgeInsetsGeometry>('ringInsets', ringInsets))
       ..add(
         DiagnosticsProperty<FocusNode>(
@@ -394,7 +405,7 @@ class _LedgerRadioPressState<T> extends State<LedgerRadioPress<T>> {
                 if (radio.downPosition != null) WidgetState.pressed,
               },
               widget.child,
-              radius: widget.radius,
+              borderRadius: widget.borderRadius,
               ringInsets: widget.ringInsets,
               rulesFocus: true,
               pressedOpacity: 1,
@@ -455,8 +466,9 @@ class LedgerPressStates extends InheritedWidget {
 /// two lines of [LedgerChromeMetrics.focusRing] in [color],
 /// [LedgerChromeMetrics.focusGap] apart and twice that under the face
 /// standing [insets] inside [child]'s box, clear of the face's drop. It is
-/// centred under the face and as long as the face less one corner of
-/// [radius], never shorter than three quarters of the face. It is drawn in
+/// centred under the face and as long as the face less the larger of the
+/// corners of its foot ([borderRadius]), never shorter than three quarters
+/// of the face. It is drawn in
 /// from the reading start as a pen draws it, in [LedgerMotion.base], and
 /// drawn back out when focus leaves. Painted over the child, it takes no
 /// room and no taps.
@@ -464,16 +476,16 @@ class LedgerPressStates extends InheritedWidget {
 class LedgerFocusRing extends StatelessWidget {
   /// The double rule under [child].
   const LedgerFocusRing({
-    required this.radius,
+    required this.borderRadius,
     required this.color,
     required this.child,
     this.insets = EdgeInsets.zero,
     this.shown = true,
     super.key,
-  }) : assert(radius >= 0);
+  });
 
-  /// The corner radius of the face it rules under.
-  final double radius;
+  /// The corners of the face it rules under.
+  final BorderRadiusGeometry borderRadius;
 
   /// The rule's ink.
   final Color color;
@@ -491,7 +503,9 @@ class LedgerFocusRing extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DoubleProperty('radius', radius))
+      ..add(
+        DiagnosticsProperty<BorderRadiusGeometry>('borderRadius', borderRadius),
+      )
       ..add(ColorProperty('color', color))
       ..add(DiagnosticsProperty<EdgeInsetsGeometry>('insets', insets))
       ..add(FlagProperty('shown', value: shown, ifTrue: 'shown'));
@@ -505,6 +519,8 @@ class LedgerFocusRing extends StatelessWidget {
     final direction = Directionality.of(context);
     final rtl = direction == TextDirection.rtl;
     final at = insets.resolve(direction);
+    final corners = borderRadius.resolve(direction);
+    final foot = math.max(corners.bottomLeft.x, corners.bottomRight.x);
     return LedgerEase(
       value: shown ? 1 : 0,
       duration: LedgerMotion.base,
@@ -521,7 +537,7 @@ class LedgerFocusRing extends StatelessWidget {
               height: 2 * line + gap,
               child: IgnorePointer(
                 child: CustomPaint(
-                  painter: _DoubleRule(color, radius, drawn, rtl: rtl),
+                  painter: _DoubleRule(color, foot, drawn, rtl: rtl),
                 ),
               ),
             ),

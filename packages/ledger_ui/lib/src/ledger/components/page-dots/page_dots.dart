@@ -95,7 +95,7 @@ class LedgerPageDots extends StatelessWidget {
                   pageCount,
                 ),
                 selected: i == page,
-                radius: _thick,
+                borderRadius: BorderRadius.circular(_thick),
                 child: Builder(
                   builder: (context) => Padding(
                     padding: const EdgeInsets.symmetric(

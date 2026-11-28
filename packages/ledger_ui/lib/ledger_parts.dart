@@ -19,6 +19,7 @@ export 'src/ledger/components/structure/structure.dart';
 export 'src/ledger/internal/bar_slot.dart';
 export 'src/ledger/internal/button_ends.dart';
 export 'src/ledger/internal/cap_center.dart';
+export 'src/ledger/internal/corners.dart';
 export 'src/ledger/internal/css_shadow.dart';
 export 'src/ledger/internal/dashed.dart';
 export 'src/ledger/internal/end_glyph.dart';

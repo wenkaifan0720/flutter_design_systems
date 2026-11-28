@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../internal/cap_center.dart';
+import '../../internal/corners.dart';
 import '../../internal/state_face.dart';
 import '../../theme.dart';
 
@@ -223,7 +224,7 @@ class _Tab extends StatelessWidget {
     // selection moves both.
     return LedgerStateFace(
       states: states,
-      radius: t.smallRadius,
+      borderRadius: ledgerStep(t, RawCorner.small),
       ringInsets: room,
       child: Padding(
         padding: room,

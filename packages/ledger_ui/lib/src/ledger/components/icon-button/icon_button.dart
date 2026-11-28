@@ -217,7 +217,7 @@ class LedgerIconButton extends StatelessWidget {
       child: LedgerPressable(
         onTap: onPressed,
         semanticLabel: semanticLabel,
-        radius: side / 2,
+        borderRadius: BorderRadius.circular(side / 2),
         focusNode: focusNode,
         autofocus: autofocus,
         child: face,

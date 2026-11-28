@@ -892,7 +892,6 @@ class LedgerKeyValue extends StatelessWidget {
     final figure = monospace
         ? t.amount.sized(_monoSize).tracked(0).line(_line)
         : words;
-    final wraps = !monospace && MediaQuery.textScalerOf(context).scale(1) > 1;
     // The key and its value read as one node; the action (Change) stands
     // outside the merge as its own button, as Ledger's separate
     // "Change category" button, so a tap on its node
@@ -908,14 +907,20 @@ class LedgerKeyValue extends StatelessWidget {
               .copyWith(fontWeight: FontWeight.w400)
               .colored(t.textSecondary),
         ),
-        // At a large text size, turned under its key, a value of words wraps
-        // whole rather than run past the slip's edge; a mask stays one line.
-        end: Text(
-          value,
-          maxLines: wraps ? null : 1,
-          softWrap: wraps,
-          style: figure,
-        ),
+        // A value of words wraps whole beside its key, its first line on
+        // the key's (under its key at a large text size), rather than run
+        // past the slip's edge; a mask stays one line and ends in an
+        // ellipsis where it cannot stand whole.
+        end: monospace
+            ? Text(
+                value,
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.ellipsis,
+                style: figure,
+              )
+            : Text(value, textAlign: TextAlign.end, style: figure),
+        wrapsEnd: !monospace,
       ),
     );
     return Padding(

@@ -7,6 +7,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../chrome_metrics.dart';
+import '../../internal/corners.dart';
 import '../../internal/face.dart';
 import '../../internal/position_words.dart';
 import '../../theme.dart';
@@ -172,7 +173,7 @@ class _Figure extends StatelessWidget {
         onTap: onTap ?? (shown ? _stay : null),
         semanticLabel: 'Page $page',
         selected: shown,
-        radius: t.smallRadius,
+        borderRadius: ledgerStep(t, RawCorner.small),
         child: Builder(
           builder: (context) {
             final hot = LedgerPressStates.isHot(context);
