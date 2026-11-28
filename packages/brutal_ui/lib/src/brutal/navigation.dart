@@ -15,6 +15,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'button.dart';
 import 'lists.dart';
 import 'internal/focus_ink.dart';
+import 'internal/ruled_cells.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -104,10 +105,14 @@ class _CellFace extends StatelessWidget {
             : lit
             ? c.onColor(layered.fill ?? c.ink)
             : c.ink);
-    return AnimatedBrutalSurface(
+    final fill = lit ? (layered.fill ?? c.ink) : c.ink.withValues(alpha: 0);
+    // In a ruled row (a bar's) the fill runs on under the rules round the
+    // cell, so no light seam shows where the two meet.
+    final reach = BrutalCellReach.of(context);
+    final face = AnimatedBrutalSurface(
       stiffness: BrutalMotion.colorStiffness,
       face: BrutalFace(
-        fill: lit ? (layered.fill ?? c.ink) : c.ink.withValues(alpha: 0),
+        fill: reach == EdgeInsets.zero ? fill : c.ink.withValues(alpha: 0),
         border: c.ink.withValues(alpha: 0),
         foreground: words,
         borderWidth: 0,
@@ -121,6 +126,9 @@ class _CellFace extends StatelessWidget {
         child: builder(context, words, lit, layered),
       ),
     );
+    return reach == EdgeInsets.zero
+        ? face
+        : BrutalReachingFill(reach: reach, fill: fill, child: face);
   }
 }
 
@@ -512,7 +520,8 @@ class BrutalNavigationBar extends StatelessWidget {
   );
 
   // The bar round its [cells]: all the same width on full-height rules,
-  // under a rule across, over the safe area's foot.
+  // under a rule across, over the safe area's foot. The rules are drawn over
+  // the cells, a chosen cell's ink running on under them.
   static Widget _barLayout(
     BuildContext context,
     List<BrutalStyle?> layers,
@@ -522,24 +531,40 @@ class BrutalNavigationBar extends StatelessWidget {
     final bottom = MediaQuery.paddingOf(context).bottom;
     final bar = RawStyleOf(layers, const {});
     final rule = bar.side?.color ?? bar.edge;
+    final half = theme.borderWidth / 2;
     return ColoredBox(
       color: theme.colors.paper,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          BrutalRule(color: rule),
-          SizedBox(
-            height: 64,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (final (i, cell) in cells.indexed) ...[
-                  if (i > 0) BrutalRule(vertical: true, color: rule),
-                  Expanded(child: cell),
-                ],
-              ],
-            ),
+          Stack(
+            children: [
+              Padding(
+                padding: EdgeInsets.only(top: theme.borderWidth),
+                child: SizedBox(
+                  height: 64,
+                  child: brutalRuledCells(
+                    cells: cells,
+                    gap: theme.borderWidth,
+                    rule: () => BrutalRule(vertical: true, color: rule),
+                    reach: (i) => EdgeInsetsDirectional.fromSTEB(
+                      i > 0 ? half : 0,
+                      half,
+                      i < cells.length - 1 ? half : 0,
+                      0,
+                    ),
+                    ruleRise: half,
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 0,
+                top: 0,
+                right: 0,
+                child: IgnorePointer(child: BrutalRule(color: rule)),
+              ),
+            ],
           ),
           SizedBox(height: bottom),
         ],
@@ -1145,15 +1170,18 @@ class BrutalScaffold extends StatelessWidget {
                   ],
                   Expanded(
                     child: details.group(
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          for (final (i, cell)
-                              in details.destinations.indexed) ...[
-                            if (i > 0) BrutalRule(vertical: true, color: rule),
-                            Expanded(child: cell),
-                          ],
-                        ],
+                      brutalRuledCells(
+                        cells: details.destinations,
+                        gap: theme.borderWidth,
+                        rule: () => BrutalRule(vertical: true, color: rule),
+                        reach: (i) => EdgeInsetsDirectional.fromSTEB(
+                          i > 0 ? theme.borderWidth / 2 : 0,
+                          0,
+                          i < details.destinations.length - 1
+                              ? theme.borderWidth / 2
+                              : 0,
+                          theme.borderWidth / 2,
+                        ),
                       ),
                     ),
                   ),

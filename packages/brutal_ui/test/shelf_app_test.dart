@@ -52,7 +52,8 @@ void main() {
         expect(words('Stoner'), findsOneWidget);
         await tester.tap(words('Piranesi'));
         await settle(tester);
-        expect(words('Started 2 Oct 2026'), findsOneWidget);
+        // The day as the app's language writes it: English, month first.
+        expect(words('Started Oct 2, 2026'), findsOneWidget);
         await tester.tap(words('Remove from the shelf'));
         await settle(tester);
         expect(find.byType(BrutalDialog), findsOneWidget);
@@ -60,7 +61,7 @@ void main() {
         await settle(tester);
         expect(find.byType(BrutalDialog), findsNothing);
         expect(
-          words('Started 2 Oct 2026'),
+          words('Started Oct 2, 2026'),
           findsOneWidget,
           reason: 'Keep keeps the page',
         );

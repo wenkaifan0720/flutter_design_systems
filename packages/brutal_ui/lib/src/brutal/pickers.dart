@@ -1,6 +1,6 @@
 /// Brutal's pickers. [BrutalCalendar] is a month as a table: the bar, the
 /// weekdays and the days all cells on shared rules, the chosen day ink and a
-/// span's middle lime. [BrutalDatePicker] and [BrutalDateRangePicker] are a
+/// span's middle the lead block's colour. [BrutalDatePicker] and [BrutalDateRangePicker] are a
 /// field that drops one; [BrutalWheelPicker] and [BrutalTimePicker] are flat
 /// wheels between two heavy rules; [BrutalColorPicker] is a ruled field of
 /// colour with a hue track and the colour's code.
@@ -248,7 +248,7 @@ class _EndBottom extends CustomPainter {
 /// heavy over a bar; the keyboard's day carries the inset focus rule.
 ///
 /// The unnamed constructor chooses one day; [BrutalCalendar.range] a span,
-/// its ends ink and its middle lime (a span waiting for its end shows the
+/// its ends ink and its middle [BrutalColors.lead] (a span waiting for its end shows the
 /// same, to the day under the pointer). A null callback greys every day.
 ///
 /// The arrows move by a day and a week, Page Up and Down by a month, Enter
@@ -261,7 +261,7 @@ class _EndBottom extends CustomPainter {
 /// contrast), `foreground` (the month's other days), `textStyle` (the
 /// figures) and `iconSize` (the turns), then
 /// [BrutalThemeData.calendarStyle]'s. A pressed day stays ink and a span's
-/// middle lime.
+/// middle [BrutalColors.lead].
 ///
 /// ```dart
 /// BrutalCalendar(firstDate: DateTime(2026), lastDate: DateTime(2027), selectedDate: day, onDateChanged: (d) => setState(() => day = d))
@@ -538,7 +538,7 @@ class _BrutalCalendarState extends State<BrutalCalendar> {
               fill = layered.fill ?? c.ink;
               figures = c.onColor(fill);
             } else if (middle) {
-              fill = c.lime;
+              fill = c.lead;
               figures = c.onBlock;
             } else {
               fill = null;
@@ -639,9 +639,9 @@ class _PickerField extends StatelessWidget {
                 ? c.danger
                 : c.ink);
         final ink = layered.foreground ?? (enabled ? c.ink : c.disabled);
-        // A value longer than the field at a large text size (a full date
-        // at 200%) takes a second line and the field grows with it, rather
-        // than cutting the date short.
+        // A value longer than the field at a large text size (a date at 200%
+        // in a narrow column) takes a second line and the field grows with
+        // it, rather than cutting the date short.
         return ConstrainedBox(
           constraints: BoxConstraints(minHeight: height),
           child: AnimatedBrutalSurface(
@@ -781,6 +781,10 @@ Widget _labelled(
 /// A date in a field: a press drops a [BrutalCalendar] under it, and a
 /// chosen day closes it. A null [onChanged] disables it.
 ///
+/// The field writes its day as the app's language writes a date in a field
+/// ([RawWidgetsLocalizations.formatMediumDate]): "Oct 2, 2026" in English,
+/// "2 Oct 2026" in British English.
+///
 /// The field reads [BrutalThemeData.textFieldStyle] as every field does;
 /// the panel and its calendar read [style], then
 /// [BrutalThemeData.calendarStyle], as [BrutalCalendar] does.
@@ -857,7 +861,7 @@ class BrutalDatePicker extends StatelessWidget {
         stiffness: BrutalMotion.overlayStiffness,
         anchorBuilder: (context, anchor) => _PickerField(
           anchor: anchor,
-          text: value == null ? null : words.formatFullDate(value!),
+          text: value == null ? null : words.formatMediumDate(value!),
           hint: hintText,
           icon: LucideIcons.calendar,
           enabled: enabled,

@@ -42,7 +42,8 @@ fallback.
 
 `BrutalHost` is the one mount an app needs, in its app's `builder`, above the navigator: Brutal's theme by day and by
 night, the palette, the page's ground and the toasts. Its `brightness` is light, dark, or null for the platform's
-setting; its `palette` is one of `BrutalThemeData.palettes`. A new appearance or palette blends: every colour of the
+setting; its `palette` is one of `BrutalThemeData.palettes`; its `density` holds by day and by night, over the
+themes' own. A new appearance or palette blends: every colour of the
 page lerps to it. Dialogs and sheets need no mount of their own: each rises on the navigator's overlay in the theme it
 was raised in. Your navigator, routes and localizations stay yours.
 
@@ -127,7 +128,7 @@ class BookPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => BrutalScreen(
     topBar: BrutalAppBar(title: title, leading: BrutalAppBar.autoLeading(context)),
-    body: Text('Started ${BrutalFormat.date(DateTime(2026, 10, 2))}'),
+    body: Text('Started ${RawWidgetsLocalizations.of(context).formatMediumDate(DateTime(2026, 10, 2))}'),
   );
 }
 
@@ -181,8 +182,9 @@ Future<void> confirmRemove(BuildContext context, String title) async {
 **A form.** `RawForm` (ui_core's, exported with brutal_ui) checks every field's `validator` on submit, as Flutter's
 `Form` does with `TextFormField`: each error shows under its field in red, the first wrong field takes the focus and
 a screen reader hears how many need attention; after that the errors follow the typing. Every field takes its
-column's width, so a form stands on one edge; `BrutalDatePicker` raises the calendar and writes the day as
-`BrutalFormat.date` does ("14 Nov 2026").
+column's width, so a form stands on one edge; `BrutalDatePicker` raises the calendar and writes the day as the app's
+language writes a date in a field (`RawWidgetsLocalizations.formatMediumDate`): "Oct 2, 2026" in English, "2 Oct 2026"
+in British English.
 
 ```dart
 class AddBookPage extends StatefulWidget {
@@ -350,8 +352,8 @@ A press uses `onPressed` (a row `onTap`), a control `value` and `onChanged`, and
 part's `label` is the words it draws; `semanticLabel` is a name only a screen reader hears, and `debugLabel` one only
 the layout checks use. A glyph beside words, a tag and a person's monogram grow with the reader's text.
 
-**Density.** `BrutalThemeData.light(density: ...)` (and `.dark`, `.preset`, `.from`) sets how tight the controls
-stand: `BrutalDensity.standard` (48 px controls), `.comfortable` (44) or `.compact` (40). Left out, it follows the
+**Density.** `BrutalHost(density: ...)`, or `BrutalThemeData.light(density: ...)` (and `.dark`, `.preset`, `.from`),
+sets how tight the controls stand: `BrutalDensity.standard` (48 px controls), `.comfortable` (44) or `.compact` (40). Left out, it follows the
 platform, as Material's `VisualDensity.adaptivePlatformDensity` does. Whatever the density, every control's tap target
 stays at 40 by 40.
 
@@ -388,8 +390,9 @@ final yellow = BrutalButton.filled(
 ```
 
 Every part takes `style:` and reads its slot in the theme (`BrutalThemeData.chipStyle`, `.dialogStyle` and so on);
-each part's documentation says which of the style's fields it reads. `typeface:` sets the face for every part and the
-Material theme under them; give the family's cap height so words sit centred in their cells.
+each part's documentation says which of the style's fields it reads. A style's `shape` and `corners` are not among
+them: every box is square. `typeface:` sets the face for every part and the Material theme under them; give the
+family's cap height so words sit centred in their cells.
 
 A pointer over a part changes nothing but the cursor: hover is a desktop's wash, not Brutal's. The hovered state still
 reaches every style, and a value left null falls through to the next layer, so a hover takes one line:

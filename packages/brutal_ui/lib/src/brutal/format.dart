@@ -65,7 +65,10 @@ abstract final class BrutalFormat {
       '${_days[at.weekday - 1].substring(0, 3)} ${at.day} '
       '${_months[at.month - 1].substring(0, 3)}';
 
-  /// "14 Nov 2026": a day with its year, as a record or a form states it.
+  /// "14 Nov 2026": a day with its year, in English, day first. A field's
+  /// day follows the app's language instead
+  /// ([RawWidgetsLocalizations.formatMediumDate]), as [BrutalDatePicker]
+  /// writes it.
   static String date(DateTime at) =>
       '${at.day} ${_months[at.month - 1].substring(0, 3)} ${at.year}';
 

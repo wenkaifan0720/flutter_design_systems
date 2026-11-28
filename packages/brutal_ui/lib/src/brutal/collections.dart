@@ -10,6 +10,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'feedback.dart';
+import 'internal/row_inset.dart';
 import 'lists.dart';
 import 'localizations.dart';
 import 'surface.dart';
@@ -52,7 +53,7 @@ class BrutalTableController<R> extends RawDataTableController<R> {
 
 /// A table that sorts, selects and pages: its header in ink (a press on a
 /// sortable heading sorts by it, its arrow says which way), each row on a
-/// rule with a box for its selection (lime once chosen, ink while pressed),
+/// rule with a box for its selection ([BrutalColors.lead] once chosen, ink while pressed),
 /// and pages under it when [BrutalTableController.pageSize] is set.
 ///
 /// Up and Down move through the rows, Space (or a press) selects one,
@@ -251,7 +252,7 @@ class BrutalDataTable<R> extends StatelessWidget {
         });
         final fill = pressed
             ? c.ink
-            : layered.fill ?? (row.selected ? c.lime : c.surface);
+            : layered.fill ?? (row.selected ? c.lead : c.surface);
         final ink = pressed
             ? c.onColor(fill)
             : layered.foreground ?? c.onColor(fill);
@@ -910,6 +911,9 @@ class BrutalSwipeRow extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layers = [style, theme.swipeRowStyle];
+    // In a list group the row runs on under the group's rule at each side:
+    // its own row and the acts' words keep inside it.
+    final inset = BrutalRowInset.of(context);
     RawSwipeAction wrap(BrutalSwipeAction a) => RawSwipeAction(
       label: a.label,
       onPressed: a.onPressed,
@@ -941,40 +945,50 @@ class BrutalSwipeRow extends StatelessWidget {
                 ),
               ),
             ),
-            child: CustomPaint(
-              foregroundPainter: details.states.contains(WidgetState.focused)
-                  ? BrutalInsetFocusPainter(pressed ? c.ink : words)
-                  : null,
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (a.icon != null)
-                      Icon(
-                        a.icon,
-                        size: layered.iconSize ?? 20,
-                        color: pressed ? c.ink : words,
+            // The acts lay out from the row's edge (the end side reversed),
+            // so an act's start is the side at the group's rule.
+            child: Padding(
+              padding: EdgeInsetsDirectional.only(start: inset),
+              child: CustomPaint(
+                foregroundPainter: details.states.contains(WidgetState.focused)
+                    ? BrutalInsetFocusPainter(pressed ? c.ink : words)
+                    : null,
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (a.icon != null)
+                        Icon(
+                          a.icon,
+                          size: layered.iconSize ?? 20,
+                          color: pressed ? c.ink : words,
+                        ),
+                      Text(
+                        a.label.toUpperCase(),
+                        maxLines: 1,
+                        style: layered
+                            .text(theme.textTheme.caption)
+                            .copyWith(
+                              color: pressed ? c.ink : words,
+                              decoration: details.armed
+                                  ? TextDecoration.underline
+                                  : null,
+                              decorationThickness: 2,
+                            ),
                       ),
-                    Text(
-                      a.label.toUpperCase(),
-                      maxLines: 1,
-                      style: layered
-                          .text(theme.textTheme.caption)
-                          .copyWith(
-                            color: pressed ? c.ink : words,
-                            decoration: details.armed
-                                ? TextDecoration.underline
-                                : null,
-                            decorationThickness: 2,
-                          ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           );
         },
-        child: ColoredBox(color: c.surface, child: child),
+        child: ColoredBox(
+          color: c.surface,
+          child: inset == 0
+              ? child
+              : brutalToSides(child, inset, keepsRoom: child is BrutalListTile),
+        ),
       ),
     );
   }
@@ -1065,7 +1079,7 @@ class BrutalPullToRefresh extends StatelessWidget {
                           child: FractionallySizedBox(
                             heightFactor: details.progress.clamp(0.0, 1.0),
                             widthFactor: 1,
-                            child: ColoredBox(color: layered.fill ?? c.lime),
+                            child: ColoredBox(color: layered.fill ?? c.lead),
                           ),
                         ),
                       mark,

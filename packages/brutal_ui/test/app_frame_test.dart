@@ -201,7 +201,7 @@ void main() {
         final c = BrutalThemeData.preset(p.id, b).colors;
         expect(p.swatchesFor(b), [
           c.signal,
-          c.lime,
+          c.lead,
           c.paper,
         ], reason: '${p.id} $b');
       }

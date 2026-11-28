@@ -45,7 +45,7 @@ class AdmitHome extends StatelessWidget {
         const BrutalSectionHeader('Your next night out'),
         BrutalBlock(
           lead: true,
-          color: c.lime,
+          color: c.lead,
           padding: const EdgeInsets.all(BrutalSpacing.large),
           onTap: () => frame.push(AdmitTicketPage(held: next)),
           semanticLabel: 'Show ticket for ${event.title}',

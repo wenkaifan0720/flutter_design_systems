@@ -19,7 +19,7 @@ import 'theme.dart';
 /// button.
 ///
 /// [color] fills it with one of the flat colours
-/// ([BrutalColors.signal], [BrutalColors.lime], [BrutalColors.blue],
+/// ([BrutalColors.signal], [BrutalColors.lead], [BrutalColors.blue],
 /// [BrutalColors.pink], [BrutalColors.violet]); the words on it are the
 /// ones [BrutalColors.onColor] gives (black on the blocks whatever the mode,
 /// black or white by contrast on a colour of the app's own). Use one per
@@ -32,7 +32,7 @@ import 'theme.dart';
 /// line.
 ///
 /// ```dart
-/// BrutalBlock(lead: true, color: context.brutalTheme.colors.lime, onTap: () {}, child: const Text('Tonight: Low Tide, Hall 4'))
+/// BrutalBlock(lead: true, color: context.brutalTheme.colors.lead, onTap: () {}, child: const Text('Tonight: Low Tide, Hall 4'))
 /// ```
 class BrutalBlock extends StatelessWidget {
   /// A block holding [child].

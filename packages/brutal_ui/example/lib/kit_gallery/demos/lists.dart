@@ -478,7 +478,7 @@ Widget kitSpecimenCarousel() => BrutalCarousel(
   itemBuilder: (context, i) => ColoredBox(
     color: [
       context.brutalTheme.colors.signal,
-      context.brutalTheme.colors.lime,
+      context.brutalTheme.colors.lead,
       context.brutalTheme.colors.pink,
     ][i],
     child: Center(

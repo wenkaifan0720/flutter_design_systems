@@ -1,6 +1,6 @@
 // BrutalThemeData.from on ui_core's palette maths: the signal stays the
 // main action's fill with black or white words at 4.5:1 (the named rule),
-// the lead block (lime) takes the signal's hue at the look's own lime tone
+// the lead block takes the signal's hue at the look's own lime tone
 // under black words, the other blocks stay the look's own unless named, a
 // named block wins; the focus ink is the nearest tone of the signal's hue
 // that holds 3:1, not a mix toward black.
@@ -49,13 +49,13 @@ void main() {
           signal: signal,
           brightness: brightness,
         ).colors;
-        expect(_hueApart(c.lime, signal), lessThan(6), reason: '${c.lime}');
+        expect(_hueApart(c.lead, signal), lessThan(6), reason: '${c.lead}');
         expect(
-          RawHct.fromColor(c.lime).tone,
-          moreOrLessEquals(RawHct.fromColor(own.lime).tone, epsilon: 1),
+          RawHct.fromColor(c.lead).tone,
+          moreOrLessEquals(RawHct.fromColor(own.lead).tone, epsilon: 1),
         );
         expect(
-          RawPalette.contrastRatio(c.onBlock, c.lime),
+          RawPalette.contrastRatio(c.onBlock, c.lead),
           greaterThanOrEqualTo(4.5),
         );
         // The other blocks are a chart's series and the avatars' colours:
@@ -65,15 +65,15 @@ void main() {
     }
 
     test('a named block wins (${brightness.name})', () {
-      const lime = Color(0xFFFFE066);
+      const lead = Color(0xFFFFE066);
       const blue = Color(0xFF8AB4FF);
       final c = BrutalThemeData.from(
         signal: _briefs['navy']!,
-        lime: lime,
+        lead: lead,
         blue: blue,
         brightness: brightness,
       ).colors;
-      expect(c.lime, lime);
+      expect(c.lead, lead);
       expect(c.blue, blue);
     });
   }

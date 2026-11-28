@@ -38,7 +38,7 @@ void main() {
           expect(c.brightness, brightness);
         }
         expect(colours.map((c) => c.signal).toSet(), hasLength(6));
-        expect(colours.map((c) => c.lime).toSet(), hasLength(6));
+        expect(colours.map((c) => c.lead).toSet(), hasLength(6));
         expect(colours.map((c) => c.paper).toSet().length, greaterThan(2));
       },
     );
@@ -47,7 +47,7 @@ void main() {
       test("$id by $when holds the look's words", () {
         final c = BrutalThemeData.preset(id, brightness).colors;
         for (final (name, block) in [
-          ('lime', c.lime),
+          ('lead', c.lead),
           ('blue', c.blue),
           ('pink', c.pink),
           ('violet', c.violet),

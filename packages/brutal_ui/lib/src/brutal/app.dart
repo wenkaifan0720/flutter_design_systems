@@ -39,6 +39,7 @@ class BrutalHost extends StatelessWidget {
     this.theme,
     this.darkTheme,
     this.brightness,
+    this.density,
     required this.child,
   });
 
@@ -56,6 +57,12 @@ class BrutalHost extends StatelessWidget {
   /// platform's.
   final Brightness? brightness;
 
+  /// How tight every part stands, by day and by night: given, it holds over
+  /// [theme]'s and [darkTheme]'s own, so a palette's presets need no
+  /// rebuilding for it; null keeps each theme's (a preset's is the
+  /// platform's, [BrutalDensity.adaptivePlatformDensity]).
+  final BrutalDensity? density;
+
   /// The app.
   final Widget child;
 
@@ -65,12 +72,15 @@ class BrutalHost extends StatelessWidget {
         brightness ??
         PreviewFrame.maybeOf(context)?.brightness ??
         MediaQuery.platformBrightnessOf(context);
-    final data =
+    final given =
         (wanted == Brightness.dark ? darkTheme : theme) ??
         BrutalThemeData.preset(
           palette?.id ?? BrutalThemeData.presets.first,
           wanted,
         );
+    final data = density == null || given.density == density
+        ? given
+        : given.copyWith(density: density);
     return AnimatedBrutalTheme(
       data: data,
       child: BrutalToaster(
@@ -113,6 +123,13 @@ class BrutalHost extends StatelessWidget {
         DiagnosticsProperty<Brightness>(
           'brightness',
           brightness,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<BrutalDensity>(
+          'density',
+          density,
           defaultValue: null,
         ),
       );

@@ -777,7 +777,7 @@ class BrutalAvatar extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layered = RawStyleOf([style, theme.avatarStyle], const {});
-    final blocks = [c.lime, c.blue, c.pink, c.violet];
+    final blocks = [c.lead, c.blue, c.pink, c.violet];
     final fill =
         layered.fill ?? blocks[name.codeUnits.fold(0, (a, b) => a + b) % 4];
     final words = layered.foreground ?? c.onColor(fill);

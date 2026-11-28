@@ -1,0 +1,33 @@
+// The name brutal_ui 0.7.1 gives the lead block's colour, which a palette recolours: renamed_0_7_1.dart calls it
+// as before `dart fix --apply`, renamed_0_7_1.dart.expect as after.
+import 'package:flutter/widgets.dart';
+import 'package:brutal_ui/brutal_ui.dart';
+
+void calls(BuildContext context) {
+  final c = BrutalTheme.of(context).colors;
+  print(c.lime);
+  final v1 = c.copyWith(lime: const Color(0xFFFFC2A1));
+  final v2 = BrutalThemeData.from(
+    signal: const Color(0xFF2F5BFF),
+    lime: const Color(0xFFFFE066),
+  );
+  final v3 = BrutalColors(
+    brightness: c.brightness,
+    paper: c.paper,
+    surface: c.surface,
+    ink: c.ink,
+    inkMuted: c.inkMuted,
+    disabled: c.disabled,
+    signal: c.signal,
+    onSignal: c.onSignal,
+    danger: c.danger,
+    onDanger: c.onDanger,
+    lime: const Color(0xFFB8F229),
+    blue: c.blue,
+    pink: c.pink,
+    violet: c.violet,
+    onBlock: c.onBlock,
+    scrim: c.scrim,
+  );
+  print([v1, v2, v3]);
+}

@@ -1,3 +1,13 @@
+## 0.7.1
+
+- Requires ui_core 0.8.6.
+- A date field writes its day as the app's language writes a date in a field (`RawWidgetsLocalizations.formatMediumDate`): "Oct 2, 2026" in English, "2 Oct 2026" in British English. It wrote the whole day out, "Friday, 2 October 2026", where the docs said a medium date. The README's dates and the example's follow the app's language too; `BrutalFormat.date` stays English, day first.
+- `BrutalColors.lead` names the lead block's colour, which a palette recolours (peach in Zine, yellow in Riso). `lime` is its deprecated old name and still answers as the same colour; `dart fix --apply` moves a caller to `lead` in `BrutalColors`, its `copyWith` and `BrutalThemeData.from`.
+- `BrutalHost.density` holds by day and by night, over the palette's presets and an app's own themes, so an app no longer rebuilds both themes for a density.
+- A chosen cell's ink meets the rules beside it with no seam of the page between, where cells fall on fractions of a pixel: a phone's bar split three ways at 2x and 2.625x, the places across the top, a segmented button across its column. The rules stand over the cells and a chosen cell's fill runs on under them; a bar's rules and the rule across it share no pixel either.
+- A list group clips to its own square, and a list tile or a swipe row in it runs to its sides under the frame's rule: a pressed row's ink meets the rule with no seam, a swipe's act reaches the frame's edge, and nothing a row moves shows past the frame. A row's words stand where they stood; any other row stands inside the rule, as before.
+- Docs: a style's `shape` and `corners` (ui_core's corners of one part's own) are not taken: every box is square.
+
 ## 0.7.0
 
 - Requires ui_core 0.8.2.

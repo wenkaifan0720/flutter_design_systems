@@ -14,6 +14,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'internal/focus_ink.dart';
+import 'internal/ruled_cells.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -759,22 +760,19 @@ class BrutalSegmentedButton<T> extends StatelessWidget {
             jump,
             layers,
           ),
-          layout: (context, items) => Row(
+          // The rules between the cells are drawn over them, a chosen cell's
+          // ink running on under its rules and the frame's.
+          layout: (context, items) => brutalRuledCells(
+            cells: items,
+            gap: theme.borderWidth,
+            rule: () => SizedBox(
+              width: theme.borderWidth,
+              child: ColoredBox(color: rule),
+            ),
+            reach: (_) =>
+                EdgeInsets.symmetric(horizontal: theme.borderWidth / 2),
+            width: wide ? null : cell,
             mainAxisSize: wide ? MainAxisSize.max : MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final (i, item) in items.indexed) ...[
-                if (i > 0)
-                  SizedBox(
-                    width: theme.borderWidth,
-                    child: ColoredBox(color: rule),
-                  ),
-                if (wide)
-                  Expanded(child: item)
-                else
-                  SizedBox(width: cell, child: item),
-              ],
-            ],
           ),
         );
         // The frame's rule is drawn over the cells, so each cell (and the
@@ -887,64 +885,80 @@ class BrutalSegmentedButton<T> extends StatelessWidget {
             : lit
             ? c.paper
             : c.ink);
+    final fill = lit
+        ? (disabled ? c.disabled : c.ink)
+        : c.ink.withValues(alpha: 0);
+    // The fill runs on under the rules round the cell, so no light seam
+    // shows where the two meet on a fraction of a pixel.
+    final reach = BrutalCellReach.of(context);
     // Inside the frame's rule, top and bottom.
     return Padding(
       padding: EdgeInsets.symmetric(vertical: theme.borderWidth),
-      child: AnimatedBrutalSurface(
-        stiffness: BrutalMotion.colorStiffness,
-        face: BrutalFace(
-          fill: lit
-              ? (disabled ? c.disabled : c.ink)
-              : c.ink.withValues(alpha: 0),
-          border: c.ink.withValues(alpha: 0),
-          foreground: words,
-          borderWidth: 0,
-        ),
-        child: CustomPaint(
-          foregroundPainter: states.contains(WidgetState.focused)
-              ? BrutalInsetFocusPainter(
-                  brutalFocusInk(c, lit ? c.ink : c.surface),
-                )
-              : null,
-          child: Padding(
-            padding:
-                layered.padding(Directionality.of(context)) ??
-                const EdgeInsets.symmetric(horizontal: BrutalSpacing.small),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (s.icon != null) ...[
-                  IconTheme.merge(
-                    // The glyph grows with the words beside it.
-                    data: IconThemeData(
-                      size: MediaQuery.textScalerOf(context)
-                          .scale(layered.iconSize ?? 20),
+      child: _reaching(
+        reach,
+        fill,
+        AnimatedBrutalSurface(
+          stiffness: BrutalMotion.colorStiffness,
+          face: BrutalFace(
+            fill: reach == EdgeInsets.zero ? fill : c.ink.withValues(alpha: 0),
+            border: c.ink.withValues(alpha: 0),
+            foreground: words,
+            borderWidth: 0,
+          ),
+          child: CustomPaint(
+            foregroundPainter: states.contains(WidgetState.focused)
+                ? BrutalInsetFocusPainter(
+                    brutalFocusInk(c, lit ? c.ink : c.surface),
+                  )
+                : null,
+            child: Padding(
+              padding:
+                  layered.padding(Directionality.of(context)) ??
+                  const EdgeInsets.symmetric(horizontal: BrutalSpacing.small),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (s.icon != null) ...[
+                    IconTheme.merge(
+                      // The glyph grows with the words beside it.
+                      data: IconThemeData(
+                        size: MediaQuery.textScalerOf(context)
+                            .scale(layered.iconSize ?? 20),
+                      ),
+                      child: s.icon!,
                     ),
-                    child: s.icon!,
-                  ),
-                  const SizedBox(width: BrutalSpacing.small),
-                ],
-                Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: RawCapCenter(
-                      capHeightFactor: BrutalTheme.of(context).capHeightFactor,
-                      child: Text(
-                        s.label,
-                        maxLines: 1,
-                        softWrap: false,
-                        style: style.copyWith(color: words),
+                    const SizedBox(width: BrutalSpacing.small),
+                  ],
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: RawCapCenter(
+                        capHeightFactor: BrutalTheme.of(context)
+                            .capHeightFactor,
+                        child: Text(
+                          s.label,
+                          maxLines: 1,
+                          softWrap: false,
+                          style: style.copyWith(color: words),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
+
+  // [face] over [fill] reaching [reach] past its sides; with no reach, [face]
+  // draws its own fill.
+  static Widget _reaching(EdgeInsets reach, Color fill, Widget face) =>
+      reach == EdgeInsets.zero
+      ? face
+      : BrutalReachingFill(reach: reach, fill: fill, child: face);
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {

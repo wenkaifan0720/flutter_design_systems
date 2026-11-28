@@ -136,11 +136,11 @@ void main() {
             brightness: brightness,
             direction: direction,
           );
-          // The whole date, as the app's locale writes it.
+          // The day, as the app's language writes a date in a field.
           final words = RawWidgetsLocalizations.of(
             t.element(find.byType(BrutalDatePicker)),
           );
-          final date = find.text(words.formatFullDate(day));
+          final date = find.text(words.formatMediumDate(day));
           expect(date, findsOneWidget, reason: where);
           final paragraph = t.renderObject<RenderParagraph>(date);
           expect(paragraph.didExceedMaxLines, isFalse, reason: where);

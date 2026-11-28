@@ -127,7 +127,7 @@ abstract final class BrutalMotion {
 ///
 /// [ink] draws every rule, every shadow and every word, and fills a chosen
 /// thing; [paper] is the page. One [signal] marks the main action. The four
-/// block colours ([lime], [blue], [pink], [violet]) are spent one per screen
+/// block colours ([lead], [blue], [pink], [violet]) are spent one per screen
 /// on its lead block, to say which part of an app it is; words on them are
 /// [onBlock].
 @immutable
@@ -145,13 +145,14 @@ class BrutalColors with Diagnosticable {
     required this.onSignal,
     required this.danger,
     required this.onDanger,
-    required this.lime,
+    Color? lead,
+    @Deprecated('Use lead.') Color? lime,
     required this.blue,
     required this.pink,
     required this.violet,
     required this.onBlock,
     required this.scrim,
-  });
+  }) : lead = lead ?? lime ?? const Color(0xFFB8F229);
 
   /// The look by day: a white page, black rules and shadows.
   const BrutalColors.light()
@@ -165,7 +166,7 @@ class BrutalColors with Diagnosticable {
       onSignal = const Color(0xFF000000),
       danger = const Color(0xFFD7000F),
       onDanger = const Color(0xFFFFFFFF),
-      lime = const Color(0xFFB8F229),
+      lead = const Color(0xFFB8F229),
       blue = const Color(0xFF5C8DFF),
       pink = const Color(0xFFFF85C8),
       violet = const Color(0xFFA68BFF),
@@ -185,7 +186,7 @@ class BrutalColors with Diagnosticable {
       onSignal = const Color(0xFF000000),
       danger = const Color(0xFFFF5A5F),
       onDanger = const Color(0xFF000000),
-      lime = const Color(0xFFB8F229),
+      lead = const Color(0xFFB8F229),
       blue = const Color(0xFF6E9BFF),
       pink = const Color(0xFFFF85C8),
       violet = const Color(0xFFAE96FF),
@@ -223,8 +224,14 @@ class BrutalColors with Diagnosticable {
   /// Words and icons on [danger].
   final Color onDanger;
 
-  /// A block colour: lime.
-  final Color lime;
+  /// The lead block's colour, the block colour a palette makes its own: a
+  /// screen's one block, a chosen row, a span's days. The look's own lime by
+  /// default; a palette recolours it (peach in Zine, yellow in Riso).
+  final Color lead;
+
+  /// The lead block's colour, by its old name.
+  @Deprecated('Use lead.')
+  Color get lime => lead;
 
   /// A block colour: blue.
   final Color blue;
@@ -247,7 +254,7 @@ class BrutalColors with Diagnosticable {
     if (fill == ink) return paper;
     if (fill == signal) return onSignal;
     if (fill == danger) return onDanger;
-    if (fill == lime || fill == blue || fill == pink || fill == violet) {
+    if (fill == lead || fill == blue || fill == pink || fill == violet) {
       return onBlock;
     }
     return wordsOn(fill);
@@ -273,7 +280,8 @@ class BrutalColors with Diagnosticable {
     Color? onSignal,
     Color? danger,
     Color? onDanger,
-    Color? lime,
+    Color? lead,
+    @Deprecated('Use lead.') Color? lime,
     Color? blue,
     Color? pink,
     Color? violet,
@@ -290,7 +298,7 @@ class BrutalColors with Diagnosticable {
     onSignal: onSignal ?? this.onSignal,
     danger: danger ?? this.danger,
     onDanger: onDanger ?? this.onDanger,
-    lime: lime ?? this.lime,
+    lead: lead ?? lime ?? this.lead,
     blue: blue ?? this.blue,
     pink: pink ?? this.pink,
     violet: violet ?? this.violet,
@@ -313,7 +321,7 @@ class BrutalColors with Diagnosticable {
       onSignal: c(a.onSignal, b.onSignal),
       danger: c(a.danger, b.danger),
       onDanger: c(a.onDanger, b.onDanger),
-      lime: c(a.lime, b.lime),
+      lead: c(a.lead, b.lead),
       blue: c(a.blue, b.blue),
       pink: c(a.pink, b.pink),
       violet: c(a.violet, b.violet),
@@ -335,7 +343,7 @@ class BrutalColors with Diagnosticable {
       other.onSignal == onSignal &&
       other.danger == danger &&
       other.onDanger == onDanger &&
-      other.lime == lime &&
+      other.lead == lead &&
       other.blue == blue &&
       other.pink == pink &&
       other.violet == violet &&
@@ -354,7 +362,7 @@ class BrutalColors with Diagnosticable {
     onSignal,
     danger,
     onDanger,
-    lime,
+    lead,
     blue,
     pink,
     violet,
@@ -376,7 +384,7 @@ class BrutalColors with Diagnosticable {
       ..add(ColorProperty('onSignal', onSignal))
       ..add(ColorProperty('danger', danger))
       ..add(ColorProperty('onDanger', onDanger))
-      ..add(ColorProperty('lime', lime))
+      ..add(ColorProperty('lead', lead))
       ..add(ColorProperty('blue', blue))
       ..add(ColorProperty('pink', pink))
       ..add(ColorProperty('violet', violet))
@@ -659,7 +667,8 @@ class BrutalTextTheme with Diagnosticable {
 /// Every part reads its `style:` first, then its slot here, then the look's
 /// own default; a style reaches only what keeps the look (colours, room,
 /// size, words and glyph size), never a corner, a rule's width or a shadow's
-/// blur.
+/// blur. A style's `shape` and its `corners` (ui_core's corners of one
+/// part's own) are not taken: every box is square.
 ///
 /// ```dart
 /// BrutalThemeData.from(signal: const Color(0xFF0A7D4F)).copyWith(filledButtonStyle: const BrutalStyle(padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 32))))
@@ -816,9 +825,9 @@ class BrutalThemeData with Diagnosticable {
   /// style's core, so a gold or a pastel keeps its colour, where Material's
   /// scheme would darken it under white words.
   ///
-  /// [lime] is the lead block's colour: a screen's one block, a chosen row,
-  /// a success, a span's days. Unnamed, it takes the signal's hue at the
-  /// look's own lime's tone and chroma, its black words held at 4.5:1, so a
+  /// [lead] is the lead block's colour: a screen's one block, a chosen row,
+  /// a span's days. Unnamed, it takes the signal's hue at the look's own
+  /// lime's tone and chroma, its black words held at 4.5:1, so a
   /// screen's main action and its lead block are one family. [blue], [pink]
   /// and [violet] stay the look's own unless named: they are also a chart's
   /// series and the avatars' colours, which need four hues told apart. A
@@ -831,7 +840,8 @@ class BrutalThemeData with Diagnosticable {
   /// ```
   factory BrutalThemeData.from({
     required Color signal,
-    Color? lime,
+    Color? lead,
+    @Deprecated('Use lead.') Color? lime,
     Color? blue,
     Color? pink,
     Color? violet,
@@ -848,8 +858,9 @@ class BrutalThemeData with Diagnosticable {
       rule: RawAccentRule.named,
       darkInk: base.onBlock,
     );
+    lead ??= lime;
     for (final (name, block) in [
-      ('lime', lime),
+      ('lead', lead),
       ('blue', blue),
       ('pink', pink),
       ('violet', violet),
@@ -865,7 +876,7 @@ class BrutalThemeData with Diagnosticable {
       colors: base.copyWith(
         signal: main.fill,
         onSignal: main.ink,
-        lime: lime ?? _leadFrom(signal, base),
+        lead: lead ?? _leadFrom(signal, base),
         blue: blue,
         pink: pink,
         violet: violet,
@@ -875,10 +886,10 @@ class BrutalThemeData with Diagnosticable {
     );
   }
 
-  // The lead block for [signal]: its hue at [base]'s lime's tone and chroma,
+  // The lead block for [signal]: its hue at [base]'s own lead's tone and chroma,
   // under black words at 4.5:1.
   static Color _leadFrom(Color signal, BrutalColors base) {
-    final own = RawHct.fromColor(base.lime);
+    final own = RawHct.fromColor(base.lead);
     final lead = RawHct.fromColor(signal)
         .withTone(own.tone)
         .withChroma(own.chroma)
@@ -1005,7 +1016,7 @@ class BrutalThemeData with Diagnosticable {
     onSignal: Color(0xFF000000),
     danger: Color(0xFFD7000F),
     onDanger: Color(0xFFFFFFFF),
-    lime: Color(0xFF2ED573),
+    lead: Color(0xFF2ED573),
     blue: Color(0xFF4F7BFF),
     pink: Color(0xFFFF4F9A),
     violet: Color(0xFF9B7BFF),
@@ -1024,7 +1035,7 @@ class BrutalThemeData with Diagnosticable {
     onSignal: Color(0xFF000000),
     danger: Color(0xFFFF5A5F),
     onDanger: Color(0xFF000000),
-    lime: Color(0xFF3DDC7A),
+    lead: Color(0xFF3DDC7A),
     blue: Color(0xFF6B8FFF),
     pink: Color(0xFFFF63A8),
     violet: Color(0xFFAA8FFF),
@@ -1043,7 +1054,7 @@ class BrutalThemeData with Diagnosticable {
     onSignal: Color(0xFF000000),
     danger: Color(0xFFD7000F),
     onDanger: Color(0xFFFFFFFF),
-    lime: Color(0xFFFFC2A1),
+    lead: Color(0xFFFFC2A1),
     blue: Color(0xFF8DB4FF),
     pink: Color(0xFFFFA0D2),
     violet: Color(0xFFC1A6FF),
@@ -1062,7 +1073,7 @@ class BrutalThemeData with Diagnosticable {
     onSignal: Color(0xFF000000),
     danger: Color(0xFFFF5A5F),
     onDanger: Color(0xFF000000),
-    lime: Color(0xFFFFC7A8),
+    lead: Color(0xFFFFC7A8),
     blue: Color(0xFF97BBFF),
     pink: Color(0xFFFFA8D6),
     violet: Color(0xFFC8AEFF),
@@ -1081,7 +1092,7 @@ class BrutalThemeData with Diagnosticable {
     onSignal: Color(0xFF000000),
     danger: Color(0xFFD7000F),
     onDanger: Color(0xFFFFFFFF),
-    lime: Color(0xFFFFE600),
+    lead: Color(0xFFFFE600),
     blue: Color(0xFF5C8DFF),
     pink: Color(0xFFFF9BD2),
     violet: Color(0xFFA68BFF),
@@ -1100,7 +1111,7 @@ class BrutalThemeData with Diagnosticable {
     onSignal: Color(0xFF000000),
     danger: Color(0xFFFF5A5F),
     onDanger: Color(0xFF000000),
-    lime: Color(0xFFFFE81F),
+    lead: Color(0xFFFFE81F),
     blue: Color(0xFF6E9BFF),
     pink: Color(0xFFFFA3D6),
     violet: Color(0xFFAE96FF),
@@ -1119,7 +1130,7 @@ class BrutalThemeData with Diagnosticable {
     onSignal: Color(0xFF000000),
     danger: Color(0xFFD7000F),
     onDanger: Color(0xFFFFFFFF),
-    lime: Color(0xFF8AA4FF),
+    lead: Color(0xFF8AA4FF),
     blue: Color(0xFF6CC6FF),
     pink: Color(0xFFFF85C8),
     violet: Color(0xFFA68BFF),
@@ -1138,7 +1149,7 @@ class BrutalThemeData with Diagnosticable {
     onSignal: Color(0xFF000000),
     danger: Color(0xFFFF5A5F),
     onDanger: Color(0xFF000000),
-    lime: Color(0xFF93ABFF),
+    lead: Color(0xFF93ABFF),
     blue: Color(0xFF79CDFF),
     pink: Color(0xFFFF8FCC),
     violet: Color(0xFFAE96FF),
@@ -1157,7 +1168,7 @@ class BrutalThemeData with Diagnosticable {
     onSignal: Color(0xFF000000),
     danger: Color(0xFFD7000F),
     onDanger: Color(0xFFFFFFFF),
-    lime: Color(0xFF3DE7FF),
+    lead: Color(0xFF3DE7FF),
     blue: Color(0xFF6E8BFF),
     pink: Color(0xFFFF5CC8),
     violet: Color(0xFFA27BFF),
@@ -1176,7 +1187,7 @@ class BrutalThemeData with Diagnosticable {
     onSignal: Color(0xFF000000),
     danger: Color(0xFFFF5A5F),
     onDanger: Color(0xFF000000),
-    lime: Color(0xFF3DE7FF),
+    lead: Color(0xFF3DE7FF),
     blue: Color(0xFF7A97FF),
     pink: Color(0xFFFF6CCE),
     violet: Color(0xFFAE8CFF),

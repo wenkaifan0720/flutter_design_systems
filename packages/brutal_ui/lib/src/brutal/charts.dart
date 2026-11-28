@@ -35,7 +35,7 @@ class BrutalSeries {
   /// Its values, left to right.
   final List<double> values;
 
-  /// Its colour; null takes the next of ink, blue, pink, lime and violet.
+  /// Its colour; null takes the next of ink, blue, pink, the lead block's colour and violet.
   final Color? color;
 }
 
@@ -43,7 +43,7 @@ List<Color> _palette(BrutalColors c) => [
   c.ink,
   c.blue,
   c.pink,
-  c.lime,
+  c.lead,
   c.violet,
 ];
 
@@ -706,7 +706,7 @@ class BrutalPieChart extends StatelessWidget {
     final c = theme.colors;
     final layered = RawStyleOf([style, theme.chartStyle], const {});
     final rule = layered.side?.color ?? layered.edge ?? c.ink;
-    final blocks = [c.blue, c.pink, c.lime, c.violet, c.signal, c.ink];
+    final blocks = [c.blue, c.pink, c.lead, c.violet, c.signal, c.ink];
     final total = slices.fold<double>(0, (a, s) => a + s.value);
     String share(BrutalSlice s) =>
         total == 0 ? '0%' : '${(s.value / total * 100).round()}%';

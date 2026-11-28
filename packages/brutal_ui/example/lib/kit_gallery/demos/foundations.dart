@@ -68,7 +68,7 @@ class _Palette extends StatelessWidget {
       ('Muted', c.inkMuted),
       ('Signal', c.signal),
       ('Danger', c.danger),
-      ('Lime', c.lime),
+      ('Lead', c.lead),
       ('Blue', c.blue),
       ('Pink', c.pink),
       ('Violet', c.violet),
@@ -157,7 +157,7 @@ class _Presets extends StatelessWidget {
   static List<Color> _strip(BrutalColors p) => [
     p.paper,
     p.signal,
-    p.lime,
+    p.lead,
     p.blue,
     p.pink,
     p.violet,

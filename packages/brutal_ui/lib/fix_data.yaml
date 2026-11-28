@@ -1,8 +1,50 @@
-# brutal_ui's data-driven fixes: `dart fix --apply` moves a caller to each name 0.4.0 renames, and off what 0.7.0
-# removes. test_fixes/ holds
-# their before and after (`dart fix --compare-to-golden test_fixes`).
+# brutal_ui's data-driven fixes: `dart fix --apply` moves a caller to each name 0.4.0 and 0.7.1 rename, and off what
+# 0.7.0 removes. test_fixes/ holds their before and after (`dart fix --compare-to-golden test_fixes`).
 version: 1
 transforms:
+
+  - title: "Rename to 'lead'"
+    date: 2026-11-27
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalColors'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'lime'
+        newName: 'lead'
+
+  - title: "Rename to 'lead'"
+    date: 2026-11-27
+    element:
+      uris: ['brutal_ui.dart']
+      method: 'copyWith'
+      inClass: 'BrutalColors'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'lime'
+        newName: 'lead'
+
+  - title: "Rename to 'lead'"
+    date: 2026-11-27
+    element:
+      uris: ['brutal_ui.dart']
+      getter: 'lime'
+      inClass: 'BrutalColors'
+    changes:
+      - kind: 'rename'
+        newName: 'lead'
+
+  - title: "Rename to 'lead'"
+    date: 2026-11-27
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: 'from'
+      inClass: 'BrutalThemeData'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'lime'
+        newName: 'lead'
 
   - title: "Rename to 'debugLabel'"
     date: 2026-11-26

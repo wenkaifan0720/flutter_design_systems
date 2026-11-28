@@ -7,6 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'collections.dart' show BrutalSwipeRow;
+import 'internal/row_inset.dart';
 import 'internal/ruled_column.dart';
 import 'internal/focus_ink.dart';
 import 'surface.dart';
@@ -120,18 +122,46 @@ class BrutalListGroup extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (header != null) BrutalSectionHeader(header!),
-          BrutalSurface(
-            face: BrutalFace(
-              fill: layered.fill ?? c.surface,
-              border: rule,
-              foreground: c.ink,
-            ),
-            // A rule between each two rows; a row that draws nothing adds
-            // none.
-            child: BrutalRuledColumn(
-              gap: theme.borderWidth,
-              rule: rule,
-              children: children,
+          // The group clips to its own square, and its rows run to its sides
+          // under the frame's rule, drawn over them: a pressed row's ink and
+          // the act a swipe uncovers meet the rule on no pixel they share,
+          // and nothing a row moves shows past the frame. A list tile and a
+          // swipe row keep their words clear of the rule with room of their
+          // own; any other row stands inside it.
+          ClipRect(
+            child: DecoratedBox(
+              position: DecorationPosition.foreground,
+              decoration: BoxDecoration(
+                border: Border.all(color: rule, width: theme.borderWidth),
+              ),
+              child: ColoredBox(
+                color: layered.fill ?? c.surface,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: theme.borderWidth),
+                  child: IconTheme.merge(
+                    data: IconThemeData(color: c.ink),
+                    child: DefaultTextStyle.merge(
+                      style: TextStyle(color: c.ink),
+                      // A rule between each two rows; a row that draws
+                      // nothing adds none.
+                      child: BrutalRuledColumn(
+                        gap: theme.borderWidth,
+                        rule: rule,
+                        children: [
+                          for (final row in children)
+                            brutalToSides(
+                              row,
+                              theme.borderWidth,
+                              keepsRoom:
+                                  row is BrutalListTile ||
+                                  row is BrutalSwipeRow,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
           if (footer != null)
@@ -323,121 +353,133 @@ class BrutalListTile extends StatelessWidget {
           foreground: ink,
           borderWidth: 0,
         ),
-        child: CustomPaint(
-          foregroundPainter: states.contains(WidgetState.focused)
-              ? BrutalInsetFocusPainter(
-                  brutalFocusInk(c, layered.fill ?? (lit ? c.ink : c.surface)),
-                )
-              : null,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight:
-                  layered.minimumSize?.height ?? (subtitle == null ? 56 : 72),
-            ),
-            child: Padding(
-              padding:
-                  layered.padding(Directionality.of(context)) ??
-                  const EdgeInsets.symmetric(
-                    horizontal: BrutalSpacing.regular,
-                    vertical: BrutalSpacing.medium,
-                  ),
-              child: Row(
-                children: [
-                  if (leading != null) ...[
-                    IconTheme.merge(
-                      data: IconThemeData(
-                        size: layered.iconSize ?? 24,
-                        color: ink,
-                      ),
-                      child: SizedBox.square(
-                        dimension: 24,
-                        // Decoration: the title names the row (a monogram
-                        // would say its title again).
-                        child: ExcludeSemantics(child: Center(child: leading)),
-                      ),
+        // In a group the face runs on under the group's rule at each side;
+        // the words and the focus keep inside it.
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: BrutalRowInset.of(context)),
+          child: CustomPaint(
+            foregroundPainter: states.contains(WidgetState.focused)
+                ? BrutalInsetFocusPainter(
+                    brutalFocusInk(
+                      c,
+                      layered.fill ?? (lit ? c.ink : c.surface),
                     ),
-                    const SizedBox(width: BrutalSpacing.medium),
-                  ],
-                  Expanded(
-                    child: ExcludeSemantics(
-                      excluding: named,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          RawCapCenter(
-                            capHeightFactor: BrutalTheme.of(context)
-                                .capHeightFactor,
-                            child: Text(
-                              title,
-                              style: layered.text(
-                                theme.textTheme.label.copyWith(color: ink),
-                              ),
-                            ),
+                  )
+                : null,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight:
+                    layered.minimumSize?.height ?? (subtitle == null ? 56 : 72),
+              ),
+              child: Padding(
+                padding:
+                    layered.padding(Directionality.of(context)) ??
+                    const EdgeInsets.symmetric(
+                      horizontal: BrutalSpacing.regular,
+                      vertical: BrutalSpacing.medium,
+                    ),
+                child: Row(
+                  children: [
+                    if (leading != null) ...[
+                      IconTheme.merge(
+                        data: IconThemeData(
+                          size: layered.iconSize ?? 24,
+                          color: ink,
+                        ),
+                        child: SizedBox.square(
+                          dimension: 24,
+                          // Decoration: the title names the row (a monogram
+                          // would say its title again).
+                          child: ExcludeSemantics(
+                            child: Center(child: leading),
                           ),
-                          if (subtitle != null)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                top: BrutalSpacing.tight,
-                              ),
+                        ),
+                      ),
+                      const SizedBox(width: BrutalSpacing.medium),
+                    ],
+                    Expanded(
+                      child: ExcludeSemantics(
+                        excluding: named,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            RawCapCenter(
+                              capHeightFactor: BrutalTheme.of(context)
+                                  .capHeightFactor,
                               child: Text(
-                                subtitle!,
-                                style: theme.textTheme.secondary.copyWith(
-                                  color: muted,
+                                title,
+                                style: layered.text(
+                                  theme.textTheme.label.copyWith(color: ink),
                                 ),
                               ),
                             ),
-                        ],
+                            if (subtitle != null)
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  top: BrutalSpacing.tight,
+                                ),
+                                child: Text(
+                                  subtitle!,
+                                  style: theme.textTheme.secondary.copyWith(
+                                    color: muted,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  if (trailingText != null) ...[
-                    const SizedBox(width: BrutalSpacing.medium),
-                    // The value at the row's end, taking at most half the
-                    // row before it ends in an ellipsis.
-                    Flexible(
-                      child: Align(
-                        alignment: AlignmentDirectional.centerEnd,
-                        child: ExcludeSemantics(
-                          excluding: named,
-                          child: Text(
-                            trailingText!,
-                            textAlign: TextAlign.end,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.body.copyWith(color: muted),
+                    if (trailingText != null) ...[
+                      const SizedBox(width: BrutalSpacing.medium),
+                      // The value at the row's end, taking at most half the
+                      // row before it ends in an ellipsis.
+                      Flexible(
+                        child: Align(
+                          alignment: AlignmentDirectional.centerEnd,
+                          child: ExcludeSemantics(
+                            excluding: named,
+                            child: Text(
+                              trailingText!,
+                              textAlign: TextAlign.end,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.body.copyWith(
+                                color: muted,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                  if (trailing != null) ...[
-                    const SizedBox(width: BrutalSpacing.medium),
-                    // On the ink of a chosen or pressed row, the control at
-                    // its end stands in the look turned over (paper for ink),
-                    // so a plain glyph button, a value or a checkbox reads
-                    // there as it does on the page, and the row's fill runs
-                    // under it to the row's end.
-                    AnimatedBrutalTheme(
-                      data: lit && !disabled && layered.fill == null
-                          ? _turnedOver(theme)
-                          : theme,
-                      child: trailing!,
-                    ),
-                  ],
-                  if (chevron) ...[
-                    const SizedBox(width: BrutalSpacing.small),
-                    Transform.flip(
-                      flipX: Directionality.of(context) == TextDirection.rtl,
-                      child: SizedBox.square(
-                        dimension: 20,
-                        child: CustomPaint(
-                          painter: _ArrowPainter(ink, theme.borderWidth),
+                    ],
+                    if (trailing != null) ...[
+                      const SizedBox(width: BrutalSpacing.medium),
+                      // On the ink of a chosen or pressed row, the control at
+                      // its end stands in the look turned over (paper for ink),
+                      // so a plain glyph button, a value or a checkbox reads
+                      // there as it does on the page, and the row's fill runs
+                      // under it to the row's end.
+                      AnimatedBrutalTheme(
+                        data: lit && !disabled && layered.fill == null
+                            ? _turnedOver(theme)
+                            : theme,
+                        child: trailing!,
+                      ),
+                    ],
+                    if (chevron) ...[
+                      const SizedBox(width: BrutalSpacing.small),
+                      Transform.flip(
+                        flipX: Directionality.of(context) == TextDirection.rtl,
+                        child: SizedBox.square(
+                          dimension: 20,
+                          child: CustomPaint(
+                            painter: _ArrowPainter(ink, theme.borderWidth),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),

@@ -92,7 +92,7 @@ class BrutalNotice extends StatelessWidget {
         : const BrutalColors.light();
     return switch (tone) {
       BrutalNoticeTone.info => colors.ink,
-      BrutalNoticeTone.success => own.lime,
+      BrutalNoticeTone.success => own.lead,
       BrutalNoticeTone.warning => own.signal,
       BrutalNoticeTone.danger => colors.danger,
     };

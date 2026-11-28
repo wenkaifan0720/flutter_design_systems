@@ -33,7 +33,7 @@ class _Blocks extends StatelessWidget {
           children: [
             BrutalBlock(
               lead: true,
-              color: c.lime,
+              color: c.lead,
               onTap: () {},
               padding: const EdgeInsets.all(BrutalSpacing.large),
               child: Column(
@@ -121,7 +121,7 @@ class _Media extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.brutalTheme.colors;
     final t = context.brutalTheme.textTheme;
-    final slides = [c.lime, c.blue, c.pink];
+    final slides = [c.lead, c.blue, c.pink];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

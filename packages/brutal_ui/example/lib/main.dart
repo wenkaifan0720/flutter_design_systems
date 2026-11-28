@@ -206,7 +206,7 @@ class BookPage extends StatelessWidget {
                   Text(
                     started == null
                         ? 'Not started yet'
-                        : 'Started ${BrutalFormat.date(started)}',
+                        : 'Started ${RawWidgetsLocalizations.of(context).formatMediumDate(started)}',
                   ),
                   StatusTag(book),
                 ],

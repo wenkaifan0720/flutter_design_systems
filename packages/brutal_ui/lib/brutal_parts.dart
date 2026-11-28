@@ -20,5 +20,7 @@ export 'src/brutal/internal/focus_ink.dart';
 export 'src/brutal/internal/inventory.dart';
 export 'src/brutal/internal/keep_in_view.dart';
 export 'src/brutal/internal/keyed_row.dart';
+export 'src/brutal/internal/row_inset.dart';
+export 'src/brutal/internal/ruled_cells.dart';
 export 'src/brutal/internal/ruled_column.dart';
 export 'src/brutal/internal/type_ahead.dart';
