@@ -214,21 +214,24 @@ abstract class FrostedLocalizations {
   /// A select's prompt before anything is chosen.
   String get select;
 
-  /// The time wheel's columns. Left at English ("Hour", "Minute"), the
-  /// wheel says ui_core's `RawWidgetsLocalizations` words in the reader's
-  /// language (`timePickerHourLabel`, `timePickerMinuteLabel`).
+  /// The time wheel's hour column. Left at English ("Hour"), the wheel says
+  /// ui_core's `RawWidgetsLocalizations` word in the reader's language
+  /// (`timePickerHourLabel`).
   String get hour;
 
-  /// See [hour].
+  /// The time wheel's minute column. Left at English ("Minute"), the wheel says
+  /// `RawWidgetsLocalizations`' word in the reader's language
+  /// (`timePickerMinuteLabel`).
   String get minute;
 
-  /// Before and after noon. Left at English, the time wheel says
-  /// `RawWidgetsLocalizations`' (`anteMeridiemAbbreviation`,
-  /// `postMeridiemAbbreviation`, and `timeFieldDayPeriodLabel` for the
-  /// column).
+  /// Before noon. Left at English, the time wheel says
+  /// `RawWidgetsLocalizations`' (`anteMeridiemAbbreviation`, and
+  /// `timeFieldDayPeriodLabel` for the column).
   String get am;
 
-  /// See [am].
+  /// After noon. Left at English, the time wheel says
+  /// `RawWidgetsLocalizations`' (`postMeridiemAbbreviation`, and
+  /// `timeFieldDayPeriodLabel` for the column).
   String get pm;
 
   /// Whether times are told on a 24-hour clock.

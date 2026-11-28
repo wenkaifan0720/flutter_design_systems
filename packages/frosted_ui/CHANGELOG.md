@@ -1,3 +1,27 @@
+## 0.8.3
+
+- Requires ui_core 0.8.7.
+- `frostedLoadFonts` loads the Lucide icon font Frosted's parts draw their glyphs from (`FrostedGlyphs`), as well as
+  the faces. On the web a glyph had come up as an empty box until the font arrived.
+- A `FrostedTooltip` whose words say its control's label again leaves the semantics, so the label is heard once, as
+  Material's `IconButton` says its tooltip once: a back key named "Back" under the tooltip "Back" is "Back", where it
+  was "Back, Back". A tooltip with words of its own stays the control's tooltip.
+- `FrostedTextFormField`'s doc says how a form resets a field with a controller: the field's initial value is the
+  controller's text when it was last built, and `reset()` restores it. To empty a form, call `reset()` and then clear
+  the controllers. The behaviour is Material's and is unchanged.
+- The README gives one list of localization delegates: `RawWidgetsLocalizations.delegate`,
+  `FrostedLocalizations.delegate` and `GlobalMaterialLocalizations.delegates` from material_ui, with
+  `RawWidgetsLocalizations.supportedLocales`, and says an app on material_ui needs no `flutter_localizations`. The
+  example lists the same delegates. Under Mount the host it says how `theme`, `darkTheme`, `palette` and
+  `density` combine, and that the window's width changes none of them.
+- The README's Forms section shows how to clear a form after a save and how a form checks fields as they are put right
+  (`autovalidateMode`). The requirements name ui_core ^0.8.7.
+- A style's `corners` example (the gallery's own-corners tile, the README and `FrostedThemeData.shapeLimits`' doc)
+  rounds a part's top corners one step and its bottom corners another, where it squared two diagonal corners.
+- Every property of `FrostedChromeMetrics`, `FrostedSheens`, `FrostedPearlColors`, `FrostedToastColors`,
+  `FrostedColorScheme`, `FrostedGlassColors`, `FrostedChartInks` and `FrostedLocalizations` has a sentence of
+  its own in its doc, where 584 of them said only "See [another]".
+
 ## 0.8.2
 
 - Requires ui_core 0.8.5.

@@ -986,6 +986,9 @@ class _FrostedAmountFieldState extends State<FrostedAmountField>
 /// [initialValue] back. Keep the text in a [controller] or start it at
 /// [initialValue], not both.
 ///
+/// With a controller, the field's initial value is the controller's text when it was last built; reset() restores it.
+/// To empty a form, call reset() and then clear the controllers.
+///
 /// ```dart
 /// FrostedTextFormField(labelText: 'Title', validator: (v) => (v ?? '').trim().isEmpty ? 'Give the book a title' : null, onSaved: (v) => title = v!)
 /// ```

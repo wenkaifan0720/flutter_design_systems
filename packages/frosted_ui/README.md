@@ -51,6 +51,13 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: 'Ledger',
+    // The parts' own words in 30 languages, and Material's (from material_ui).
+    localizationsDelegates: const [
+      RawWidgetsLocalizations.delegate,
+      FrostedLocalizations.delegate,
+      ...GlobalMaterialLocalizations.delegates,
+    ],
+    supportedLocales: RawWidgetsLocalizations.supportedLocales,
     // brightness: null follows the platform; Brightness.light or
     // Brightness.dark pins it. palette: one of the six, opal by default.
     builder: (context, child) => FrostedHost(
@@ -66,8 +73,16 @@ class App extends StatelessWidget {
 }
 ```
 
-A `CupertinoApp` (from `cupertino_ui`) or a bare `WidgetsApp` takes the same `builder:`. `FrostedHost(theme:,
-darkTheme:)` takes themes of your own instead of a palette. To theme one subtree, wrap it in `FrostedTheme(data: …)`;
+These delegates are the whole list: `RawWidgetsLocalizations.delegate` (the words every look shares: Cancel, Today,
+Close, in 30 languages), `FrostedLocalizations.delegate` (the look's own) and `GlobalMaterialLocalizations.delegates`,
+which `material_ui` exports with Flutter's translations: an app on material_ui needs no `flutter_localizations`
+dependency. A `CupertinoApp` (from `cupertino_ui`) or a bare `WidgetsApp` takes the same `builder:` and delegates.
+
+`FrostedHost(theme:, darkTheme:)` takes themes of your own instead of a palette's: a light theme given is the light
+theme whatever `palette` says, and a dark theme left out is the light theme's night. `density:` stands over both, so
+a stored palette and a density from your settings go together:
+`FrostedHost(palette: palette, density: FrostedDensity.compact, child: child!)`. The window's width changes none of
+these: the parts follow the width themselves. To theme one subtree, wrap it in `FrostedTheme(data: …)`;
 `AnimatedFrostedTheme` eases between two.
 
 ## Build an app
@@ -186,15 +201,23 @@ class PayeePage extends StatelessWidget {
 
 ### Forms
 
-Frosted's form fields are Flutter `FormField`s: put them in a `Form`, and `validate()` shows each one's error under
-it.
+`FrostedTextFormField` is a Flutter `FormField`: put it in a `Form`, and `validate()` shows its error under it. The
+other parts a form holds are controlled, as Material's are: `FrostedDateField` and `FrostedSwitchRow` take a value
+and `onChanged`; keep their values in your state.
+
+Set the form's `autovalidateMode` to `AutovalidateMode.onUserInteraction` after a save that fails, and each error
+clears as its field is put right. A text form field resets as Material's `TextFormField` does: with a controller, its
+initial value is the controller's text when it was last built, so `reset()` brings back the words typed. To clear the
+form after a save and stay on the page, call `reset()` and then clear the controllers, as `_save` does here:
 
 ```dart
 import 'package:frosted_ui/frosted_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
 class NewGoalPage extends StatefulWidget {
-  const NewGoalPage({super.key});
+  const NewGoalPage({super.key, required this.onAdd});
+
+  final void Function(String name, DateTime? by, bool remind) onAdd;
 
   @override
   State<NewGoalPage> createState() => _NewGoalPageState();
@@ -202,14 +225,32 @@ class NewGoalPage extends StatefulWidget {
 
 class _NewGoalPageState extends State<NewGoalPage> {
   final _form = GlobalKey<FormState>();
-  String _name = '';
+  final _name = TextEditingController();
+  var _check = AutovalidateMode.disabled;
   DateTime? _by;
   bool _remind = true;
 
+  @override
+  void dispose() {
+    _name.dispose();
+    super.dispose();
+  }
+
   void _save() {
-    if (!_form.currentState!.validate()) return;
-    _form.currentState!.save();
-    Navigator.of(context).pop(_name);
+    if (!_form.currentState!.validate()) {
+      setState(() => _check = AutovalidateMode.onUserInteraction);
+      return;
+    }
+    widget.onAdd(_name.text.trim(), _by, _remind);
+    // Clear the form after a save: reset() takes the errors away, then the
+    // controller and the controlled values empty the fields.
+    _form.currentState!.reset();
+    _name.clear();
+    setState(() {
+      _check = AutovalidateMode.disabled;
+      _by = null;
+      _remind = true;
+    });
   }
 
   @override
@@ -218,15 +259,16 @@ class _NewGoalPageState extends State<NewGoalPage> {
     topBar: const FrostedAppBar(title: 'New goal', backLabel: 'Goals'),
     body: Form(
       key: _form,
+      autovalidateMode: _check,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: FrostedSpacing.s16,
         children: [
           FrostedTextFormField(
             labelText: 'Name',
+            controller: _name,
             hintText: 'What are you saving for?',
             validator: (value) => (value ?? '').trim().isEmpty ? 'Name the goal' : null,
-            onSaved: (value) => _name = value!.trim(),
           ),
           FrostedDateField(
             labelText: 'By',
@@ -465,8 +507,9 @@ own. `style:` takes a `FrostedStyle` with the slots of Material's `ButtonStyle` 
 `overlay`, `side`, `shape`, `padding`, `minimumSize`, `textStyle`, `iconSize`), each a `WidgetStateProperty` resolved
 per state (pressed, hovered, focused, selected, disabled, error). A `shape` takes any `OutlinedBorder`: a rounded border
 is drawn at its radius; a superellipse, a bevel or any other is cut to its outline, fill, edge, glass and focus
-clearing alike. `corners` names a step per corner (`RawCorners`): `RawCorners(topStart: RawCorner.none, bottomEnd: RawCorner.none)`
-squares a card's top start and bottom end, start and end mirroring right to left; a corner left out keeps the part's
+clearing alike. `corners` names a step per corner (`RawCorners`): `RawCorners(topStart: RawCorner.extraLarge, topEnd:
+RawCorner.extraLarge, bottomStart: RawCorner.extraSmall, bottomEnd: RawCorner.extraSmall)` rounds a card's top corners
+further and keeps its foot nearly square, start and end mirroring right to left; a corner left out keeps the part's
 own. A part of several pieces (a segmented strip, a menu) takes them on its outer corners, and a `shape` wins over
 them. The ink act (`FrostedButton`) keeps its pill: a shape or corners of its own that square its ends fail a debug
 assert, and the theme's button shape and corners, which shape the glass buttons, pass it by. A bead (a switch, a
@@ -560,7 +603,7 @@ costs no blur at all. The canvas's washes are painted once and cached.
   mirror, and charts with their time axes run left to right. Times and dates an app passes in as words are the app's
   to write in its language. The gallery's Customize panel (`example/lib/gallery.dart`) switches the direction and
   the text size.
-- **Strings.** Install `RawWidgetsLocalizations.delegate` and `FrostedLocalizations.delegate`, and use `RawWidgetsLocalizations.supportedLocales`, for shared control labels in 30 languages. `FrostedLocalizations` supplies labels specific to the look, including Send, Swap, Pending and Frozen. Its delegate serves every locale with the English labels. Where a part says a word every design system shares (Done, Try again, a day's or a month's name, a time, the time wheel's columns), a reader of another language hears `RawWidgetsLocalizations`' word for it. To translate Frosted's own labels, extend `FrostedLocalizationsEn` and register a delegate for your locale; your words then win. The gallery includes an Arabic delegate.
+- **Strings.** Install `RawWidgetsLocalizations.delegate` and `FrostedLocalizations.delegate`, and use `RawWidgetsLocalizations.supportedLocales`, for shared control labels in 30 languages (the list under Mount the host). `FrostedLocalizations` supplies labels specific to the look, including Send, Swap, Pending and Frozen. Its delegate serves every locale with the English labels. Where a part says a word every design system shares (Done, Try again, a day's or a month's name, a time, the time wheel's columns), a reader of another language hears `RawWidgetsLocalizations`' word for it. To translate Frosted's own labels, extend `FrostedLocalizationsEn` and register a delegate for your locale; your words then win. The gallery includes an Arabic delegate.
 - **Dates and amounts.** Calendars use `RawWidgetsLocalizations` for the start of the week. For an English reader, `FrostedLocalizations` supplies picker month names, date captions and the 12- or 24-hour clock. For a reader of another language, they come from `RawWidgetsLocalizations` unless your app gives Frosted words of its own. The separate `FrostedFormat` utility formats US English dates and dollar amounts. Supply localized strings to components that accept preformatted text when your app uses another currency or locale.
 - **Other scripts.** Frosted's fonts carry Latin. Arabic, Hebrew, Chinese, Japanese, Hindi and Thai fall back to the
   platform's fonts (on the web, Flutter's Noto fallback).
@@ -584,7 +627,7 @@ size).
 
 ## Requirements
 
-Flutter 3.47.0 or later (Dart 3.13), on Android, iOS, web, macOS, Windows and Linux. The package depends on ui_core ^0.8.0
+Flutter 3.47.0 or later (Dart 3.13), on Android, iOS, web, macOS, Windows and Linux. The package depends on ui_core ^0.8.7
 and re-exports it, so `RawWidgetsLocalizations`, `RawNamedPalette` and the `Raw*` parts come with the one import.
 
 ## Licences

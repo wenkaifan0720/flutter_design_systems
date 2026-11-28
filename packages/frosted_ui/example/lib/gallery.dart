@@ -715,15 +715,20 @@ class _Overview extends StatelessWidget {
   }
 }
 
-/// A part's own corners: a style's `corners` squares two diagonal corners
-/// of a card and of the glass button on it, the others keeping their own
-/// (mirrored right to left); the ink act beside it keeps its pill.
+/// A part's own corners: a style's `corners` rounds the top corners of a
+/// card and of the glass button on it further and keeps their foot nearly
+/// square, the same on both sides; the ink act beside it keeps its pill.
 class _OwnCorners extends StatelessWidget {
   const _OwnCorners();
 
   static const _cut = FrostedStyle(
     corners: WidgetStatePropertyAll(
-      RawCorners(topStart: RawCorner.none, bottomEnd: RawCorner.none),
+      RawCorners(
+        topStart: RawCorner.extraLarge,
+        topEnd: RawCorner.extraLarge,
+        bottomStart: RawCorner.extraSmall,
+        bottomEnd: RawCorner.extraSmall,
+      ),
     ),
   );
 
@@ -745,9 +750,9 @@ class _OwnCorners extends StatelessWidget {
                 style: t.textTheme.titleMedium.c(t.colorScheme.textPrimary),
               ),
               Text(
-                "A style's corners square two of this card's corners and two "
-                "of its glass button's; the others keep their own. The ink "
-                'act keeps its pill.',
+                "A style's corners round this card's top corners and its "
+                "glass button's further and keep their foot nearly square. "
+                'The ink act keeps its pill.',
                 style: t.textTheme.bodyMedium.c(t.colorScheme.textSecondary),
               ),
               Wrap(

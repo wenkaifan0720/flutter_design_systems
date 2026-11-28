@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show MaterialLocalizations, RawDialogRoute;
+import 'package:flutter/rendering.dart'
+    show RenderMergeSemantics, SemanticsConfiguration, SemanticsNode;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -372,7 +374,10 @@ Future<T?> showFrostedActionSheet<T>(
 /// while a pointer rests on the child (and on the tip itself), after a long
 /// press (for a moment past the lift), and while the keyboard's focus is on
 /// it; Escape hides it; one shows at a time. A screen reader hears [message]
-/// as the child's tooltip.
+/// as the child's tooltip. Where [message] says the child's own label again
+/// (an icon button's `semanticLabel`), the tooltip leaves the semantics and
+/// the label is heard once, as Material's `IconButton` says its tooltip
+/// once.
 ///
 /// ```dart
 /// FrostedTooltip(message: 'Copy link', child: FrostedIconButton(FrostedGlyphs.share, semanticLabel: 'Copy link', onPressed: copy))
@@ -439,8 +444,9 @@ class FrostedTooltip extends StatelessWidget {
       FrostedStyleLayers.stockMedium,
       8,
     );
-    // One node, the tooltip on its control, as the published look read.
-    return MergeSemantics(
+    // One node, the tooltip on its control, as the published look read; a
+    // tooltip that repeats the control's label leaves it.
+    return _SaidOnce(
       child: RawTooltipPlacement(
         placement: _placement,
         builder: (context, positionDelegate) => RawTooltip(
@@ -489,6 +495,52 @@ class FrostedTooltip extends StatelessWidget {
       ..add(
         DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
       );
+  }
+}
+
+/// Merges a tooltip's control and its words into one node, as
+/// [MergeSemantics] does, and drops the tooltip when it says the merged label
+/// again: "Back" heard once, not "Back, Back".
+class _SaidOnce extends SingleChildRenderObjectWidget {
+  const _SaidOnce({required super.child});
+
+  @override
+  RenderMergeSemantics createRenderObject(BuildContext context) =>
+      _RenderSaidOnce();
+}
+
+class _RenderSaidOnce extends RenderMergeSemantics {
+  @override
+  void assembleSemanticsNode(
+    SemanticsNode node,
+    SemanticsConfiguration config,
+    Iterable<SemanticsNode> children,
+  ) {
+    final tooltip = config.tooltip.trim();
+    super.assembleSemanticsNode(
+      node,
+      tooltip.isNotEmpty && tooltip == _label(config, children)
+          ? (config.copy()..tooltip = '')
+          : config,
+      children,
+    );
+  }
+
+  /// The label the node is heard with: its own and those of the nodes merged
+  /// into it (a control that stands a node of its own keeps its label there).
+  static String _label(
+    SemanticsConfiguration config,
+    Iterable<SemanticsNode> children,
+  ) {
+    final words = <String>[config.label.trim()];
+    bool visit(SemanticsNode node) {
+      words.add(node.label.trim());
+      node.visitChildren(visit);
+      return true;
+    }
+
+    children.forEach(visit);
+    return words.where((w) => w.isNotEmpty).join('\n');
   }
 }
 

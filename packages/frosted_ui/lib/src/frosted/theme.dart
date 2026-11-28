@@ -1162,10 +1162,10 @@ final class FrostedChartInks {
   /// The gridlines and a chart's floor.
   final Color grid;
 
-  /// The light under a line, from the line down to nothing.
+  /// The light under a line where it meets the line, fading down to [areaTo].
   final Color areaFrom;
 
-  /// See [areaFrom].
+  /// The light under a line at its foot, where it fades to nothing.
   final Color areaTo;
 
   /// An annotation on a mark.
@@ -1174,10 +1174,10 @@ final class FrostedChartInks {
   /// The pace line's dashes.
   final Color pace;
 
-  /// The dot at a line's end and the ring round it.
+  /// The dot at a line's end.
   final Color endDot;
 
-  /// See [endDot].
+  /// The ring round the dot at a line's end.
   final Color endRing;
 
   /// The line's light as a shader's gradient.
@@ -1365,46 +1365,43 @@ final class FrostedSheens {
     pillEdge: pillEdge,
   );
 
-  /// A band's top sheen (fading out at 55%), its inset top light
-  /// and its inset bottom shade.
+  /// A band's top sheen, fading out at 55%.
   final Color bandSheen;
 
-  /// See [bandSheen].
+  /// A band's inset light along its top.
   final Color bandLight;
 
-  /// See [bandSheen].
+  /// A band's inset shade along its bottom.
   final Color bandShade;
 
-  /// A leaving band's fill; an arriving band's sheen (fading out at 70%) and
-  /// ring.
+  /// A leaving band's fill.
   final Color leaveFill;
 
-  /// See [leaveFill].
+  /// An arriving band's sheen, fading out at 70%.
   final Color arriveSheen;
 
-  /// See [leaveFill].
+  /// An arriving band's ring.
   final Color arriveRing;
 
-  /// A glass tube's fill sheen (fading out at 60%), its inset light and its
-  /// track's ring.
+  /// A glass tube's fill sheen, fading out at 60%.
   final Color tubeSheen;
 
-  /// See [tubeSheen].
+  /// A glass tube's inset light.
   final Color tubeLight;
 
-  /// See [tubeSheen].
+  /// The ring round a glass tube's track.
   final Color tubeRing;
 
-  /// The statement's rule and the due bead's ring.
+  /// The statement's rule.
   final Color rule;
 
-  /// See [rule].
+  /// The ring round the statement's due bead.
   final Color beadRing;
 
-  /// The visit strip's rule and its day ticks.
+  /// The visit strip's rule.
   final Color stripRule;
 
-  /// See [stripRule].
+  /// The visit strip's day ticks.
   final Color stripTick;
 
   /// A struck balance's line.
@@ -1422,75 +1419,70 @@ final class FrostedSheens {
   /// A card's inset top light.
   final Color cardSheen;
 
-  /// The specular band across the pearl credit card, the debit card's and a
-  /// wide
-  /// pane's.
+  /// The specular band across the pearl credit card.
   final Color specular;
 
-  /// See [specular].
+  /// The specular band across the debit card.
   final Color debitSpecular;
 
-  /// See [specular].
+  /// The specular band across a wide pane.
   final Color paneSpecular;
 
   /// A mosaic pane's haze at its top start corner.
   final Color paneHaze;
 
-  /// The new-goal ghost card: its fill, its ring and its edge.
+  /// The new-goal ghost card's fill.
   final Color newGoalFill;
 
-  /// See [newGoalFill].
+  /// The new-goal ghost card's ring.
   final Color newGoalRing;
 
-  /// See [newGoalFill].
+  /// The new-goal ghost card's edge.
   final Color ghostEdge;
 
-  /// The debit card's base, top start to bottom end, and its shadow.
+  /// The debit card's base at its top start corner, running to [debitTo].
   final Color debitFrom;
 
-  /// See [debitFrom].
+  /// The debit card's base at its bottom end corner.
   final Color debitTo;
 
-  /// See [debitFrom].
+  /// The debit card's shadow.
   final Color debitShade;
 
-  /// A frozen card's shadow, and the frost over it: its streaks, its haze, its
-  /// wash (three stops at 160deg), its inner glow, its ring, and its mark's
-  /// fill, ring and shadow.
+  /// A frozen card's shadow.
   final Color frozenShade;
 
-  /// See [frozenShade].
+  /// The streaks of the frost over a frozen card.
   final Color frostStreak;
 
-  /// See [frozenShade].
+  /// The haze of the frost over a frozen card.
   final Color frostHaze;
 
-  /// See [frozenShade].
+  /// The wash of the frost over a frozen card: three stops at 160deg.
   final List<Color> frostWash;
 
-  /// See [frozenShade].
+  /// The inner glow of the frost over a frozen card.
   final Color frostGlow;
 
-  /// See [frozenShade].
+  /// The ring of the frost over a frozen card.
   final Color frostRing;
 
-  /// See [frozenShade].
+  /// The fill of a frozen card's mark.
   final Color frostMarkFill;
 
-  /// See [frozenShade].
+  /// The ring of a frozen card's mark.
   final Color frostMarkRing;
 
-  /// See [frozenShade].
+  /// The shadow of a frozen card's mark.
   final Color frostMarkShade;
 
-  /// The glass pill on a card: its fill, the ring inside it and the hairline
-  /// outside.
+  /// The fill of the glass pill on a card.
   final Color pillFill;
 
-  /// See [pillFill].
+  /// The ring inside the glass pill on a card.
   final Color pillRing;
 
-  /// See [pillFill].
+  /// The hairline outside the glass pill on a card.
   final Color pillEdge;
 
   /// Opal's by day: white at its alphas, the ink at its alphas.
@@ -3809,11 +3801,11 @@ class FrostedThemeData with Diagnosticable {
   /// [RoundedSuperellipseBorder] among them) wins.
   ///
   /// A part's corners each take their own step (cornerFreedom perCorner): a
-  /// style's `corners` can square two diagonal corners of a card or round
-  /// only a button's top start one, since the blur clips to any round outline
-  /// and the rim of light runs along each fillet as it finds it, square
-  /// corners among them (a docked sheet's foot, a grouped list's inner rows
-  /// already are). Every step is open, a square corner and a capsule's end
+  /// style's `corners` can round a card's top corners further than its foot,
+  /// or square a button's foot under its round top, since the blur clips to
+  /// any round outline and the rim of light runs along each fillet as it
+  /// finds it, square corners among them (a docked sheet's foot, a grouped
+  /// list's inner rows already are). Every step is open, a square corner and a capsule's end
   /// among them. A bead stays round (a switch's, a slider's, a radio's, a
   /// calendar's day): the bead is a drop of glass, and Material's Radio and
   /// Switch take no shape either.
@@ -4368,10 +4360,10 @@ class FrostedColorScheme with Diagnosticable {
   /// The ink on the act.
   final Color onButton;
 
-  /// The focus ring round a lit act: its inner white and its outer ink.
+  /// The inner white of the focus ring round a lit act.
   final Color ringInner;
 
-  /// See [ringInner].
+  /// The outer ink of the focus ring round a lit act.
   final Color ringOuter;
 
   /// Money in: an amount that came in, a positive change.
@@ -4386,13 +4378,13 @@ class FrostedColorScheme with Diagnosticable {
   /// Over budget's tint.
   final Color overTint;
 
-  /// The cold of a frozen card: its ink, tint and edge.
+  /// The ink of a frozen card's cold.
   final Color cold;
 
-  /// See [cold].
+  /// The tint of a frozen card's cold.
   final Color coldTint;
 
-  /// See [cold].
+  /// The edge of a frozen card's cold.
   final Color coldEdge;
 
   /// The unread dot on the bell and the ring round it.
@@ -4401,16 +4393,16 @@ class FrostedColorScheme with Diagnosticable {
   /// The track of a meter on a pane's floor.
   final Color meterTrack;
 
-  /// The pace tick across a bar and the ring round it.
+  /// The pace tick across a bar.
   final Color paceTick;
 
-  /// See [paceTick].
+  /// The ring round the pace tick across a bar.
   final Color paceTickRing;
 
-  /// A toggle's track when off, and its knob.
+  /// A toggle's track when it is off.
   final Color toggleTrack;
 
-  /// See [toggleTrack].
+  /// A toggle's knob.
   final Color toggleKnob;
 
   /// The act's fill: [buttonTop] falling to [buttonBottom].
@@ -5227,37 +5219,37 @@ class FrostedGlassColors with Diagnosticable {
   /// The canvas the page fades into under the tab bar.
   final Color barFade;
 
-  /// The sidebar's glass and its right edge.
+  /// The sidebar's glass.
   final Color sidebar;
 
-  /// See [sidebar].
+  /// The sidebar's right edge.
   final Color sidebarEdge;
 
   /// The current nav link's face.
   final Color navCurrent;
 
-  /// A sheet's face at its top and at its foot, and its edge.
+  /// A sheet's face at its top.
   final Color sheetTop;
 
-  /// See [sheetTop].
+  /// A sheet's face at its foot.
   final Color sheetBottom;
 
-  /// See [sheetTop].
+  /// A sheet's edge.
   final Color sheetEdge;
 
   /// The grab handle at a phone sheet's top.
   final Color grabber;
 
-  /// A menu's face and edge.
+  /// A menu's face.
   final Color menu;
 
-  /// See [menu].
+  /// A menu's edge.
   final Color menuEdge;
 
-  /// The prism bar's glass tube: its track and the hairline round it.
+  /// The track of the prism bar's glass tube.
   final Color track;
 
-  /// See [track].
+  /// The hairline round the prism bar's glass tube.
   final Color trackEdge;
 
   /// The spectrum's rim, left to right: nothing at 4%, the five stops at 18,
@@ -5454,38 +5446,36 @@ class FrostedPearlColors with Diagnosticable {
     required this.avatar,
   });
 
-  /// The pearl credit card: its cool base from [from] to [to],
-  /// the blush inside its rings, its rim (a neutral reflection, brightest
-  /// where the light falls; five stops) and the glow it floats on;
-  /// the ink and the quiet ink of the words on it (the card is a pale object
-  /// in both appearances).
+  /// The pearl credit card's cool base where it starts, running to [to].
   final Color from;
 
-  /// See [from].
+  /// The pearl credit card's cool base where it ends.
   final Color to;
 
-  /// See [from].
+  /// The blush inside the pearl credit card's rings.
   final Color blush;
 
-  /// See [from].
+  /// The pearl credit card's rim: a neutral reflection in five stops, brightest
+  /// where the light falls.
   final List<Color> rim;
 
-  /// See [from].
+  /// The glow the pearl credit card floats on.
   final List<Color> glow;
 
-  /// See [from].
+  /// The ink of the words on the pearl credit card, a pale object in both
+  /// appearances.
   final Color text;
 
-  /// See [from].
+  /// The quiet ink of the words on the pearl credit card.
   final Color textSecondary;
 
-  /// The card's utilisation bar, left to right, and its track.
+  /// The card's utilisation bar at its left, running to [usageTo].
   final Color usageFrom;
 
-  /// See [usageFrom].
+  /// The card's utilisation bar at its right.
   final Color usageTo;
 
-  /// See [usageFrom].
+  /// The track under the card's utilisation bar.
   final Color usageTrack;
 
   /// An avatar's pearl: three stops, top left to bottom right (0, 55%,
@@ -5627,26 +5617,25 @@ class FrostedToastColors with Diagnosticable {
     required this.action,
   });
 
-  /// The toast's slab at its top and foot, the ink on it, the light along
-  /// its top inside edge, its mark's disc and ink, and its action's face.
+  /// The toast's slab at its top.
   final Color top;
 
-  /// See [top].
+  /// The toast's slab at its foot.
   final Color bottom;
 
-  /// See [top].
+  /// The ink on the toast's slab.
   final Color text;
 
-  /// See [top].
+  /// The light along the toast's top inside edge.
   final Color sheen;
 
-  /// See [top].
+  /// The disc of the toast's mark.
   final Color mark;
 
-  /// See [top].
+  /// The ink on the toast's mark.
   final Color onMark;
 
-  /// See [top].
+  /// The face of the toast's action.
   final Color action;
 
   /// The toast's slab, top to foot.

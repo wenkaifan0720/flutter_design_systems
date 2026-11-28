@@ -10,137 +10,133 @@ abstract final class FrostedChromeMetrics {
   /// The lit hairline round a pane of light glass: white at 85%.
   static const Color litEdge = Color(0xD9FFFFFF);
 
-  /// The page gutter on a phone and on the desktop (`0 32px 40px`).
+  /// The page gutter on a phone.
   static const double gutter = 16;
 
-  /// See [gutter].
+  /// The page gutter on the desktop (`0 32px 40px`).
   static const double gutterWide = 32;
 
-  /// The page's foot: 20 under its last tile on a phone, 40 on the desktop.
+  /// The room under a page's last tile on a phone.
   static const double pageBottom = 20;
 
-  /// See [pageBottom].
+  /// The room under a page's last tile on the desktop.
   static const double pageBottomWide = 40;
 
-  /// Tiles in a column stand 10 apart on a phone, 16 on the desktop.
+  /// The gap between tiles in a column on a phone.
   static const double columnGap = 10;
 
-  /// See [columnGap].
+  /// The gap between tiles in a column on the desktop.
   static const double columnGapWide = 16;
 
   // --- top bars ---------------------------------------------------------------
 
-  /// A phone top bar: 10 over and under its parts, its two sides 12 apart, the
-  /// controls at its end 8 apart; it is at least as tall as its 40 controls.
+  /// The room over and under a phone top bar's parts.
   static const double barInset = 10;
 
-  /// See [barInset].
+  /// The gap between a phone top bar's two sides.
   static const double barGap = 12;
 
-  /// See [barInset].
+  /// The gap between the controls at a phone top bar's end.
   static const double barEndGap = 8;
 
-  /// See [barInset].
+  /// A phone top bar's control, the least height of the bar.
   static const double barControl = 40;
 
-  /// The desktop bar: 32 over its words and 8 under them, in the page.
+  /// The room over the desktop bar's words, in the page.
   static const double barTopWide = 32;
 
-  /// See [barTopWide].
+  /// The room under the desktop bar's words.
   static const double barBottomWide = 8;
 
-  /// The caption over a title: 2 above it on a phone, 6 on the desktop.
+  /// The gap between a caption and the title under it on a phone.
   static const double captionGap = 2;
 
-  /// See [captionGap].
+  /// The gap between a caption and the title under it on the desktop.
   static const double captionGapWide = 6;
 
-  /// The frost behind a phone bar: a blur of 20 under the canvas at half
-  /// strength, running 16 past the bar's foot and fading out over its last 40%.
+  /// The blur of the frost behind a phone bar, under the canvas at half
+  /// strength.
   static const double topFrostBlur = 20;
 
-  /// See [topFrostBlur].
+  /// How far the frost behind a phone bar runs past the bar's foot.
   static const double topFrostReach = 16;
 
-  /// See [topFrostBlur].
+  /// Where the frost behind a phone bar starts to fade: it fades out over its
+  /// last 40%.
   static const double topFrostSolid = 0.6;
 
   /// A phone detail bar: its back and a balancing space 40 wide either side
   /// of the centred kind of record.
   static const double detailColumn = 40;
 
-  /// The desktop crumb over a detail's title: its chevron 14, pulled 3
-  /// into the gutter, 2 from its word; the title 6 under it.
+  /// The chevron of the desktop crumb over a detail's title.
   static const double crumbGlyph = 14;
 
-  /// See [crumbGlyph].
+  /// The gap between the desktop crumb's chevron and its word.
   static const double crumbGap = 2;
 
-  /// See [crumbGlyph].
+  /// How far the desktop crumb is pulled into the gutter.
   static const double crumbPull = 3;
 
-  /// See [crumbGlyph].
+  /// The gap between the desktop crumb and the title under it.
   static const double crumbTitleGap = 6;
 
-  /// A round button: 40 across with its glyph 18; a small one 32 with 16.
+  /// A round button across.
   static const double roundButton = 40;
 
-  /// See [roundButton].
+  /// A small round button across.
   static const double roundButtonSmall = 32;
 
-  /// See [roundButton].
+  /// A round button's glyph.
   static const double roundGlyph = 18;
 
-  /// See [roundButton].
+  /// A small round button's glyph.
   static const double roundGlyphSmall = 16;
 
-  /// The bell's unread dot: 7 across, 9 from the top and 10 from the right,
-  /// in a ring of 2.
+  /// The bell's unread dot across.
   static const double bellDot = 7;
 
-  /// See [bellDot].
+  /// The bell's unread dot from the bell's top.
   static const double bellDotTop = 9;
 
-  /// See [bellDot].
+  /// The bell's unread dot from the bell's right.
   static const double bellDotRight = 10;
 
-  /// See [bellDot].
+  /// The ring round the bell's unread dot.
   static const double bellDotRing = 2;
 
-  /// An avatar: a bar's (40, its letters 14), the sidebar foot's and a
-  /// row's (36, 13), a person's pearl (52, 16) and the profile's (80, 28).
+  /// A bar's avatar across.
   static const double avatar = 40;
 
-  /// See [avatar].
+  /// The sidebar foot's and a row's avatar across.
   static const double avatarSmall = 36;
 
-  /// See [avatar].
+  /// A person's pearl avatar across.
   static const double avatarLarge = 52;
 
-  /// See [avatar].
+  /// The profile's avatar across.
   static const double avatarProfile = 80;
 
-  /// See [avatar].
+  /// The letters of a bar's avatar.
   static const double avatarType = 14;
 
-  /// See [avatar].
+  /// The letters of the sidebar foot's and a row's avatar.
   static const double avatarTypeSmall = 13;
 
-  /// See [avatar].
+  /// The letters of a person's pearl avatar.
   static const double avatarTypeLarge = 16;
 
-  /// See [avatar].
+  /// The letters of the profile's avatar.
   static const double avatarTypeProfile = 28;
 
   // --- the phone tab bar ----------------------------------------------------
 
-  /// The tab bar: the slab on the page's gutter, 16 in from the sides, and 12
-  /// over the foot (or the system's inset where that is more), the page fading into the canvas over the 104 above the foot
-  /// (nothing at its top, 88% at 48%, the canvas at 80%). A floating action bar
-  /// stands on the same gutter.
+  /// The tab bar's slab in from the screen's sides, on the page's gutter; a
+  /// floating action bar stands on it too.
   static const double tabBarSide = gutter;
 
-  /// See [tabBarSide].
+  /// The tab bar's slab over the foot, or the system's inset where that is
+  /// more.
   static const double tabBarBottom = 12;
 
   /// A tab's share of the slab from a tablet's width
@@ -151,19 +147,21 @@ abstract final class FrostedChromeMetrics {
   /// The narrowest the slab stands there under an accessory.
   static const double tabBarAccessoryMedium = 480;
 
-  /// See [tabBarSide].
+  /// The band above the foot over which the page fades into the canvas under
+  /// the tab bar.
   static const double tabBarFade = 104;
 
-  /// See [tabBarSide].
+  /// Where the fade under the tab bar takes [tabBarFadeMidAlpha] of the canvas.
   static const double tabBarFadeMid = 0.48;
 
-  /// See [tabBarSide].
+  /// Where the fade under the tab bar reaches the whole canvas.
   static const double tabBarFadeLow = 0.8;
 
-  /// See [tabBarSide].
+  /// How much of the canvas the fade under the tab bar takes at
+  /// [tabBarFadeMid].
   static const double tabBarFadeMidAlpha = 0.88;
 
-  /// The slab: 64 tall, corners 22, frosted (a blur of 24, saturated 1.4).
+  /// The slab's height.
   static const double slabHeight = 64;
 
   /// How long the selection's pill takes to slide to a new choice (a tab, a
@@ -179,7 +177,7 @@ abstract final class FrostedChromeMetrics {
   /// [selectionInset] from the slab's side as from its top.
   static const double slabInset = 0;
 
-  /// See [slabHeight].
+  /// The slab's corners.
   static const double slabRadius = 22;
 
   /// A footer's slab (FrostedFootSlab, where a page's footer floats): its
@@ -187,42 +185,40 @@ abstract final class FrostedChromeMetrics {
   /// tall as the tab bar's slab ([slabHeight]).
   static const double footSlabInset = 10;
 
-  /// See [slabHeight].
+  /// The blur of the slab's frost.
   static const double slabBlur = 24;
 
-  /// See [slabHeight].
+  /// The saturation of the colour behind the slab's frost.
   static const double slabSaturation = 1.4;
 
-  /// A tab: its glyph (20) 4 over its word.
+  /// A tab's glyph.
   static const double tabGlyph = 20;
 
-  /// See [tabGlyph].
+  /// The gap between a tab's glyph and its word.
   static const double tabGap = 4;
 
-  /// The Move pill in the slab's middle: 40 tall, 12 in at either end, its
-  /// glyph 16 and 4 from its word, 6 of room either side; shown, a white ring
-  /// of 2 and an ink ring 1.5 past it.
+  /// The Move pill's height, in the slab's middle.
   static const double movePill = 40;
 
-  /// See [movePill].
+  /// The Move pill's room at its start.
   static const double movePillInsetStart = 12;
 
-  /// See [movePill].
+  /// The Move pill's room at its end.
   static const double movePillInsetEnd = 12;
 
-  /// See [movePill].
+  /// The gap between the Move pill's glyph and its word.
   static const double movePillGap = 4;
 
-  /// See [movePill].
+  /// The Move pill's glyph.
   static const double movePillGlyph = 16;
 
-  /// See [movePill].
+  /// The room either side of the Move pill.
   static const double movePillRoom = 6;
 
-  /// See [movePill].
+  /// The white ring round the Move pill when it shows.
   static const double movePillRingInner = 2;
 
-  /// See [movePill].
+  /// The reach of the ink ring past the Move pill's white ring.
   static const double movePillRingOuter = 3.5;
 
   /// An accessory stands 8 over the slab.
@@ -236,133 +232,125 @@ abstract final class FrostedChromeMetrics {
   )
   static const double footerFade = 32;
 
-  /// The frost behind a tile of glass: a blur of 24, the colour behind it
-  /// saturated 1.3.
+  /// The blur of the frost behind a tile of glass.
   static const double frostBlur = 24;
 
-  /// See [frostBlur].
+  /// The saturation of the colour behind a tile of glass.
   static const double frostSaturation = 1.3;
 
   // --- the desktop sidebar ----------------------------------------------------
 
-  /// The sidebar: 240 wide, 28 above its wordmark, 20 at its start, 16 at its
-  /// end and 24 at its foot, its parts 24 apart.
+  /// The sidebar's width.
   static const double sideWidth = 240;
 
-  /// See [sideWidth].
+  /// The room above the sidebar's wordmark.
   static const double sideTop = 28;
 
-  /// See [sideWidth].
+  /// The sidebar's room at its start.
   static const double sideStart = 20;
 
-  /// See [sideWidth].
+  /// The sidebar's room at its end.
   static const double sideEnd = 16;
 
-  /// See [sideWidth].
+  /// The sidebar's room at its foot.
   static const double sideBottom = 24;
 
-  /// See [sideWidth].
+  /// The gap between the sidebar's parts.
   static const double sideGap = 24;
 
-  /// The wordmark: 40 tall, its mark (28 across, corners 9, its glyph 18) 10
-  /// before its word, standing on the links' keyline: where a link's glyph's
-  /// ink starts, 17 in ([navLinkInset], the pill's 1 edge and the glyph's own 2
-  /// side bearing).
+  /// The wordmark's height.
   static const double brandHeight = 40;
 
-  /// See [brandHeight].
+  /// The wordmark's mark on the links' keyline: where a link's glyph's ink
+  /// starts ([navLinkInset], the pill's 1 edge and the glyph's own 2 side
+  /// bearing).
   static const double brandInset = navLinkInset + 3;
 
-  /// See [brandHeight].
+  /// The gap between the wordmark's mark and its word.
   static const double brandGap = 10;
 
-  /// See [brandHeight].
+  /// The wordmark's mark across.
   static const double brandMark = 28;
 
-  /// See [brandHeight].
+  /// The corners of the wordmark's mark.
   static const double brandMarkRadius = 9;
 
-  /// See [brandHeight].
+  /// The glyph in the wordmark's mark.
   static const double brandMarkGlyph = 18;
 
-  /// The sidebar's main act: 40 tall across the sidebar, its glyph 18 and 8
-  /// from its word.
+  /// The height of the sidebar's main act, across the sidebar.
   static const double sideAct = 40;
 
-  /// See [sideAct].
+  /// The gap between the sidebar's main act's glyph and its word.
   static const double sideActGap = 8;
 
-  /// See [sideAct].
+  /// The sidebar's main act's glyph.
   static const double sideActGlyph = 18;
 
-  /// A nav link: 40 tall, 14 in, its glyph 18 and 12 from its word; links 2
-  /// apart.
+  /// A nav link's height.
   static const double navLink = 40;
 
-  /// See [navLink].
+  /// A nav link's room at its sides.
   static const double navLinkInset = 14;
 
-  /// See [navLink].
+  /// The gap between a nav link's glyph and its word.
   static const double navLinkGap = 12;
 
-  /// See [navLink].
+  /// A nav link's glyph.
   static const double navGlyph = 18;
 
-  /// See [navLink].
+  /// The gap between nav links.
   static const double navGap = 2;
 
-  /// The sidebar foot: 8 inside, its avatar on the links' keyline at its start
-  /// (16 in and its edge's 1, where the links' glyph ink starts), 12 from the name, the name's line 3 over the
-  /// quiet one.
+  /// The sidebar foot's room at its start, its avatar on the links' keyline
+  /// (where the links' glyph ink starts).
   static const double footInsetStart = navLinkInset + 2;
 
-  /// See [footInsetStart].
+  /// The sidebar foot's room at its end.
   static const double footInsetEnd = 8;
 
-  /// See [footInsetStart].
+  /// The sidebar foot's room over and under its parts.
   static const double footInsetVertical = 8;
 
-  /// See [footInsetStart].
+  /// The gap between the sidebar foot's avatar and the name.
   static const double footGap = 12;
 
-  /// See [footInsetStart].
+  /// The gap between the sidebar foot's name and the quiet line under it.
   static const double footLineGap = 4;
 
   // --- buttons ------------------------------------------------------------------
 
-  /// A button: 44 tall, 20 in, its glyph (18) 8 from its word; a small one 32
-  /// tall, 14 in, its word 12 and its glyph 14, 6 apart; a wide one 48 tall
-  /// across its line, its word 16.
+  /// A button's height.
   static const double buttonHeight = 44;
 
-  /// See [buttonHeight].
+  /// A button's room at its sides.
   static const double buttonInset = 20;
 
-  /// See [buttonHeight].
+  /// The gap between a button's glyph and its word.
   static const double buttonGap = 8;
 
-  /// See [buttonHeight].
+  /// A button's glyph.
   static const double buttonGlyph = 18;
 
-  /// See [buttonHeight].
+  /// A small button's height.
   static const double buttonSmallHeight = 32;
 
-  /// See [buttonHeight].
+  /// A small button's room at its sides.
   static const double buttonSmallInset = 14;
 
-  /// See [buttonHeight].
+  /// The gap between a small button's glyph and its word.
   static const double buttonSmallGap = 6;
 
-  /// See [buttonHeight].
+  /// A small button's glyph.
   static const double buttonSmallGlyph = 14;
 
-  /// See [buttonHeight].
+  /// A small button's word.
   static const double buttonSmallWord = 12;
 
-  /// See [buttonHeight].
+  /// A wide button's height, across its line.
   static const double buttonWideHeight = 48;
 
-  /// See [buttonHeight].
+  /// A wide button's word.
   static const double buttonWideWord = 16;
 
   /// The share of the page's ink a glass button on another glass (a sheet,
@@ -390,1517 +378,1425 @@ abstract final class FrostedChromeMetrics {
 
   // --- money --------------------------------------------------------------------
 
-  /// A hung `$` and stepped-down cents against the figure: 28 on a 64, 16 on
-  /// a 40 and a 28, 40 on the desktop's 96; each rides the cap line, 0.1 em
-  /// down on the 64 (0.14 on the 40, 0.06 on the 28, 0.12 on the 96); the
-  /// `$` keeps 0.05 em before the dollars, the cents 0.03 em after.
+  /// The desktop's giant figure.
   static const double moneyGiant = 96;
 
-  /// See [moneyGiant].
+  /// The display figure.
   static const double moneyDisplay = 64;
 
-  /// See [moneyGiant].
+  /// The figure.
   static const double moneyFigure = 40;
 
-  /// See [moneyGiant].
+  /// The small figure.
   static const double moneyFigureSmall = 28;
 
-  /// See [moneyGiant].
+  /// The hung `$` and stepped-down cents against the desktop's giant figure.
   static const double moneyCentsGiant = 40;
 
-  /// See [moneyGiant].
+  /// The hung `$` and stepped-down cents against the display figure.
   static const double moneyCentsDisplay = 28;
 
-  /// See [moneyGiant].
+  /// The hung `$` and stepped-down cents against the figure.
   static const double moneyCentsFigure = 16;
 
-  /// See [moneyGiant].
+  /// The hung `$` and stepped-down cents against the small figure.
   static const double moneyCentsFigureSmall = 16;
 
-  /// See [moneyGiant].
+  /// How far the hung `$` and cents ride down from the giant figure's cap line,
+  /// in ems.
   static const double moneyDropGiant = 0.12;
 
-  /// See [moneyGiant].
+  /// How far the hung `$` and cents ride down from the display figure's cap
+  /// line, in ems.
   static const double moneyDropDisplay = 0.1;
 
-  /// See [moneyGiant].
+  /// How far the hung `$` and cents ride down from the figure's cap line, in
+  /// ems.
   static const double moneyDropFigure = 0.14;
 
-  /// See [moneyGiant].
+  /// How far the hung `$` and cents ride down from the small figure's cap line,
+  /// in ems.
   static const double moneyDropFigureSmall = 0.06;
 
-  /// See [moneyGiant].
+  /// The room the hung `$` keeps before the dollars, in ems.
   static const double moneyCurrencyGap = 0.05;
 
-  /// See [moneyGiant].
+  /// The room the stepped-down cents keep after the dollars, in ems.
   static const double moneyCentsGap = 0.03;
 
-  /// The home figure: 14 under its head and 10 over its change line; the
-  /// quiet comparison ("of $2,700") 8 under a figure.
+  /// The gap between the home figure and its head.
   static const double heroFigureTop = 14;
 
-  /// See [heroFigureTop].
+  /// The gap between the home figure and its change line.
   static const double heroFigureBottom = 10;
 
-  /// See [heroFigureTop].
+  /// The gap between a figure and the quiet comparison under it ("of $2,700").
   static const double figureOfGap = 8;
 
   // --- the light ------------------------------------------------------------------
 
-  /// The washes of light over the top of every page: the field 560 tall on a
-  /// phone (640 on the desktop), each disc blurred 56 (72).
+  /// The field of washes of light over the top of every page on a phone.
   static const double lightField = 560;
 
-  /// See [lightField].
+  /// The field of washes of light over the top of every page on the desktop.
   static const double lightFieldWide = 640;
 
-  /// See [lightField].
+  /// The blur of each disc of light on a phone.
   static const double lightBlur = 56;
 
-  /// See [lightField].
+  /// The blur of each disc of light on the desktop.
   static const double lightBlurWide = 72;
 
   // --- sheets, menus, toasts -----------------------------------------------
 
-  /// A phone sheet: 8 above its grabber, 16 at its sides, 24 under its last
-  /// part, its parts 12 apart, at most 88% of the screen.
+  /// The room above a phone sheet's grabber.
   static const double sheetTop = 8;
 
-  /// See [sheetTop].
+  /// A phone sheet's room at its sides.
   static const double sheetSide = 16;
 
-  /// See [sheetTop].
+  /// The room under a phone sheet's last part.
   static const double sheetBottom = 24;
 
-  /// See [sheetTop].
+  /// The gap between a phone sheet's parts.
   static const double sheetGap = 12;
 
-  /// See [sheetTop].
+  /// The most of the screen a phone sheet takes.
   static const double sheetMaxFraction = 0.88;
 
-  /// A desktop dialog: 440 wide, corners 20, 64 short of the window's
-  /// height at most, 20 above its head, 24 at its sides and foot.
+  /// A desktop dialog's width.
   static const double sheetWideWidth = 440;
 
-  /// See [sheetWideWidth].
+  /// A desktop dialog's corners.
   static const double sheetWideRadius = 20;
 
-  /// See [sheetWideWidth].
+  /// How far short of the window's height a desktop dialog stops at most.
   static const double sheetWideMargin = 64;
 
-  /// See [sheetWideWidth].
+  /// The room above a desktop dialog's head.
   static const double sheetWideTop = 20;
 
-  /// See [sheetWideWidth].
+  /// A desktop dialog's room at its sides.
   static const double sheetWideSide = 24;
 
-  /// See [sheetWideWidth].
+  /// A desktop dialog's room at its foot.
   static const double sheetWideBottom = 24;
 
   /// A side sheet's width ([FrostedSheet.showSide]): the screen less 56
   /// at most, as ui_core leaves the scrim showing.
   static const double sideSheetWidth = 360;
 
-  /// The grabber: 36 by 4, 12 over the head.
+  /// The grabber's width.
   static const double grabberWidth = 36;
 
-  /// See [grabberWidth].
+  /// The grabber's height.
   static const double grabberHeight = 4;
 
-  /// See [grabberWidth].
+  /// The gap between the grabber and the head.
   static const double grabberGap = 12;
 
-  /// A sheet's head: at least 40 tall, its title 12 from its close; its body
-  /// 12 under the head, its foot 12 under the body.
+  /// The least height of a sheet's head.
   static const double sheetHead = 40;
 
-  /// See [sheetHead].
+  /// The gap between a sheet's title and its close.
   static const double sheetHeadGap = 12;
 
-  /// See [sheetHead].
+  /// The gap between a sheet's head and its body.
   static const double sheetBodyGap = 12;
 
-  /// See [sheetHead].
+  /// The gap between a sheet's body and its foot.
   static const double sheetFootGap = 12;
 
   /// A sheet's acts under its body: 16, the form body's gap they stand in.
   static const double sheetFormFootGap = 16;
 
-  /// The rise and the fall of a sheet.
+  /// The rise of a sheet.
   static const Duration sheetIn = Duration(milliseconds: 320);
 
-  /// See [sheetIn].
+  /// The fall of a sheet.
   static const Duration sheetOut = Duration(milliseconds: 220);
 
-  /// An option: at least 52 tall, 6 over and under, 4 in at its end, its parts
-  /// 12 apart, a hairline between two; its check a 24 disc with a 14 glyph.
+  /// An option's least height, a hairline between two.
   static const double option = 52;
 
-  /// See [option].
+  /// An option's room over and under its parts.
   static const double optionInset = 6;
 
-  /// See [option].
+  /// An option's room at its end.
   static const double optionInsetEnd = 4;
 
-  /// See [option].
+  /// The gap between an option's parts.
   static const double optionGap = 12;
 
-  /// See [option].
+  /// The disc of an option's check.
   static const double optionCheck = 24;
 
-  /// See [option].
+  /// The glyph of an option's check.
   static const double optionCheckGlyph = 14;
 
-  /// A menu: 288 wide, 6 inside, corners 16, 8 under its anchor, its items 2
-  /// apart; its head 8 above, 10 at its sides, 6 under; an item 40 tall, 10 in,
-  /// corners 10, its columns 10 apart, its check 16.
+  /// A menu's width.
   static const double menuWidth = 288;
 
-  /// See [menuWidth].
+  /// A menu's room inside.
   static const double menuInset = 6;
 
-  /// See [menuWidth].
+  /// A menu's corners.
   static const double menuRadius = 16;
 
-  /// See [menuWidth].
+  /// The gap between a menu and its anchor.
   static const double menuGap = 8;
 
   /// A select's list under its field: close enough that its rounded corner
   /// covers the helper words below the field rather than framing them.
   static const double listGap = 4;
 
-  /// See [menuWidth].
+  /// The gap between a menu's items.
   static const double menuItemsGap = 2;
 
-  /// See [menuWidth].
+  /// The room above a menu's head.
   static const double menuHeadTop = 8;
 
-  /// See [menuWidth].
+  /// A menu's head's room at its sides.
   static const double menuHeadSide = 10;
 
-  /// See [menuWidth].
+  /// The room under a menu's head.
   static const double menuHeadBottom = 6;
 
-  /// See [menuWidth].
+  /// A menu item's height.
   static const double menuItem = 40;
 
-  /// See [menuWidth].
+  /// A menu item's room at its sides.
   static const double menuItemInset = 10;
 
-  /// See [menuWidth].
+  /// A menu item's corners.
   static const double menuItemRadius = 10;
 
-  /// See [menuWidth].
+  /// The gap between a menu item's columns.
   static const double menuItemGap = 10;
 
-  /// See [menuWidth].
+  /// A menu item's check.
   static const double menuItemGlyph = 16;
 
-  /// A toast: at least 52 tall, 8 inside (12 at its start), corners 16, its
-  /// parts 12 apart; its mark 28 with a 16 glyph; its act 36 tall, 14 in.
+  /// A toast's least height.
   static const double toastHeight = 52;
 
-  /// See [toastHeight].
+  /// A toast's room inside.
   static const double toastInset = 8;
 
-  /// See [toastHeight].
+  /// A toast's room at its start.
   static const double toastInsetStart = 12;
 
-  /// See [toastHeight].
+  /// A toast's corners.
   static const double toastRadius = 16;
 
-  /// See [toastHeight].
+  /// The gap between a toast's parts.
   static const double toastGap = 12;
 
-  /// See [toastHeight].
+  /// A toast's mark across.
   static const double toastMark = 28;
 
-  /// See [toastHeight].
+  /// The glyph of a toast's mark.
   static const double toastMarkGlyph = 16;
 
-  /// See [toastHeight].
+  /// A toast's act's height.
   static const double toastAct = 36;
 
-  /// See [toastHeight].
+  /// A toast's act's room at its sides.
   static const double toastActInset = 14;
 
-  /// Where a toast stands: 16 in from the screen's sides, 12 over the tab
-  /// bar (88 from the foot), a route's footer or the screen's safe inset;
-  /// on the desktop 32 from the window's right and foot, 380 wide.
+  /// A toast in from the screen's sides.
   static const double toastSide = 16;
 
-  /// See [toastSide].
+  /// A toast over the tab bar (88 from the foot), a route's footer or the
+  /// screen's safe inset.
   static const double toastOverBar = 12;
 
-  /// See [toastSide].
+  /// A toast on the desktop from the window's right and foot.
   static const double toastWideEdge = 32;
 
-  /// See [toastSide].
+  /// A toast's width on the desktop.
   static const double toastWideWidth = 380;
 
-  /// A toast rises 16 as it comes in, and stays 3.2 seconds (5.6
-  /// with an act).
+  /// How far a toast rises as it comes in.
   static const double toastRise = 16;
 
-  /// See [toastRise].
+  /// How long a toast stays.
   static const Duration toastDwell = Duration(milliseconds: 3200);
 
-  /// See [toastRise].
+  /// How long a toast with an act stays.
   static const Duration toastDwellAction = Duration(milliseconds: 5600);
 
   // --- marks ---------------------------------------------------------------------
 
-  /// A monogram or a token: 36 across, corners 11, its glyph 18 and its letters
-  /// 13; a large one 56 across, corners 17, its glyph 24 and its letters 20; a
-  /// ticket's 32 with corners 10 and letters 12; a browse card's token 32 with
-  /// a 16 glyph.
+  /// A monogram or a token across.
   static const double mark = 36;
 
-  /// See [mark].
+  /// A monogram's or a token's corners.
   static const double markRadius = 11;
 
-  /// See [mark].
+  /// A monogram's or a token's glyph.
   static const double markGlyph = 18;
 
-  /// See [mark].
+  /// A monogram's letters.
   static const double markType = 13;
 
-  /// See [mark].
+  /// A large monogram or token across.
   static const double markLarge = 56;
 
-  /// See [mark].
+  /// A large monogram's or token's corners.
   static const double markLargeRadius = 17;
 
-  /// See [mark].
+  /// A large monogram's or token's glyph.
   static const double markLargeGlyph = 24;
 
-  /// See [mark].
+  /// A large monogram's letters.
   static const double markLargeType = 20;
 
-  /// See [mark].
+  /// A ticket's monogram or a browse card's token across.
   static const double markSmall = 32;
 
-  /// See [mark].
+  /// A ticket's monogram's corners.
   static const double markSmallRadius = 10;
 
-  /// See [mark].
+  /// A browse card's token's glyph.
   static const double markSmallGlyph = 16;
 
-  /// See [mark].
+  /// A ticket's monogram's letters.
   static const double markSmallType = 12;
 
-  /// The ink mark: 28 across, corners 9, its glyph 18.
+  /// The ink mark across.
   static const double inkMark = 28;
 
-  /// See [inkMark].
+  /// The ink mark's corners.
   static const double inkMarkRadius = 9;
 
-  /// See [inkMark].
+  /// The ink mark's glyph.
   static const double inkMarkGlyph = 18;
 
-  /// A date block: 40 by 44, corners 11, its day 3 under its month.
+  /// A date block's size.
   static const Size dateBlock = Size(40, 44);
 
-  /// See [dateBlock].
+  /// A date block's corners.
   static const double dateBlockRadius = 11;
 
-  /// See [dateBlock].
+  /// The gap between a date block's month and the day under it.
   static const double dateGap = 4;
 
-  /// A chip: 24 tall, 10 in, its glyph 14 and 4 from its word.
+  /// A chip's height.
   static const double chipHeight = 24;
 
-  /// See [chipHeight].
+  /// A chip's room at its sides.
   static const double chipInset = 10;
 
-  /// See [chipHeight].
+  /// The gap between a chip's glyph and its word.
   static const double chipGap = 4;
 
-  /// See [chipHeight].
+  /// A chip's glyph.
   static const double chipGlyph = 14;
 
-  /// A glass pill on the card: 24 tall, 10 in, its glyph 14, blurred 8.
+  /// The height of a glass pill on the card.
   static const double glassPillHeight = 24;
 
-  /// See [glassPillHeight].
+  /// A glass pill's room at its sides.
   static const double glassPillInset = 10;
 
-  /// See [glassPillHeight].
+  /// A glass pill's glyph.
   static const double glassPillGlyph = 14;
 
-  /// See [glassPillHeight].
+  /// The blur behind a glass pill.
   static const double glassPillBlur = 8;
 
-  /// The segmented control: 2 inside, its segments 2 apart, each 28 tall, at
-  /// least 36 wide and 10 in; filling a field's line, 38 tall with a 14 word.
-  /// The strip stays 32 tall, as iOS's does.
+  /// The segmented control's room inside; the strip stays 32 tall, as iOS's
+  /// does.
   static const double segmentsInset = 2;
 
-  /// See [segmentsInset].
+  /// The gap between the segmented control's segments.
   static const double segmentsGap = 2;
 
-  /// See [segmentsInset].
+  /// A segment's height.
   static const double segmentHeight = 28;
 
-  /// See [segmentsInset].
+  /// A segment's least width.
   static const double segmentMinWidth = 36;
 
-  /// See [segmentsInset].
+  /// A segment's room at its sides.
   static const double segmentInset = 10;
 
-  /// See [segmentsInset].
+  /// A segment's height where the control fills a field's line, its word 14.
   static const double segmentFillHeight = 38;
 
-  /// A swatch: 8 across; a visit's dot 10.
+  /// A swatch across.
   static const double swatch = 8;
 
-  /// See [swatch].
+  /// A visit's dot across.
   static const double visitDot = 10;
 
-  /// The unread dot: 8 across, cut clear of what it stands on by 2.
+  /// The unread dot across.
   static const double unreadDot = 8;
 
-  /// See [unreadDot].
+  /// How far the unread dot is cut clear of what it stands on.
   static const double unreadDotRing = 2;
 
   // --- structure -------------------------------------------------------------------
 
-  /// A tile: 16 inside on a phone, 20 on the desktop; its head at least 24 tall
-  /// and 12 over the body, its two sides 12 apart; a section head 10 over its
-  /// words and 2 in.
+  /// A tile's room inside on a phone.
   static const double tileInset = 16;
 
-  /// See [tileInset].
+  /// A tile's room inside on the desktop.
   static const double tileInsetWide = 20;
 
-  /// See [tileInset].
+  /// The least height of a tile's head.
   static const double tileHead = 24;
 
-  /// See [tileInset].
+  /// The gap between a tile's head and its body.
   static const double tileHeadGap = 12;
 
-  /// See [tileInset].
+  /// The gap between a tile head's two sides.
   static const double tileHeadRowGap = 12;
 
-  /// See [tileInset].
+  /// The room over a section head's words.
   static const double sectionHeadTop = 10;
 
-  /// See [tileInset].
+  /// A section head's room at its sides.
   static const double sectionHeadInset = 2;
 
-  /// A list tile keeps 8 over and under its rows; a list with its own head
-  /// keeps the tile's inset over them and 12 under on the desktop.
+  /// The room a list tile keeps over and under its rows.
   static const double listInset = 8;
 
-  /// See [listInset].
+  /// The room under the rows of a list with its own head on the desktop; it
+  /// keeps the tile's inset over them.
   static const double listBottomWide = 12;
 
-  /// A row: at least 52 tall, 6 over and under, its parts 12 apart, its lines 1
-  /// apart (the end column's 3); a pending mark's glyph 12 and 3 from its word.
+  /// A row's least height.
   static const double row = 52;
 
-  /// See [row].
+  /// A row's room over and under its parts.
   static const double rowInset = 6;
 
-  /// See [row].
+  /// The gap between a row's parts.
   static const double rowGap = 12;
 
-  /// See [row].
+  /// The gap between a row's lines.
   static const double rowLineGap = 1;
 
-  /// See [row].
+  /// The gap between the lines of a row's end column.
   static const double rowEndGap = 4;
 
-  /// See [row].
+  /// The glyph of a row's pending mark.
   static const double rowPendingGlyph = 12;
 
-  /// See [row].
+  /// The gap between a pending mark's glyph and its word.
   static const double rowPendingGap = 4;
 
-  /// On the desktop a list's account column is 148 wide, its glyph 16 and
-  /// 8 from its word, and a row's amount at least 96 wide.
+  /// A list's account column's width on the desktop.
   static const double rowAccountWide = 148;
 
-  /// See [rowAccountWide].
+  /// The glyph in a list's account column.
   static const double rowAccountGlyph = 16;
 
-  /// See [rowAccountWide].
+  /// The gap between the account column's glyph and its word.
   static const double rowAccountGap = 8;
 
-  /// See [rowAccountWide].
+  /// The least width of a row's amount on the desktop.
   static const double rowAmountWide = 96;
 
-  /// A day's head in a list: 14 over it (2 when it leads), 4 under.
+  /// The room over a day's head in a list.
   static const double dayTop = 14;
 
-  /// See [dayTop].
+  /// The room over a day's head that leads its list.
   static const double dayTopFirst = 2;
 
-  /// See [dayTop].
+  /// The room under a day's head in a list.
   static const double dayBottom = 4;
 
-  /// A month divider in a list: 10 over its hairline, 16 under it.
+  /// The room over a month divider's hairline in a list.
   static const double monthDividerTop = 10;
 
-  /// See [monthDividerTop].
+  /// The room under a month divider's hairline in a list.
   static const double monthDividerBottom = 16;
 
-  /// A marked row: 10 past the rows either side, corners 12.
+  /// How far a marked row's mark runs past the rows either side.
   static const double rowMarkBleed = 10;
 
-  /// See [rowMarkBleed].
+  /// The corners of a marked row's mark.
   static const double rowMarkRadius = 12;
 
-  /// A key and its value: a line at least 52 tall, 8 over and under, its two
-  /// sides 12 apart, a value's parts 8 apart, its two lines 2 apart; its
-  /// chevron 16. As a grid on the desktop: three to a row 16 apart, each 12
-  /// over and under, its label 4 over its value, the chevron on the value's
-  /// line.
+  /// The least height of a key and its value's line.
   static const double keyValue = 52;
 
-  /// See [keyValue].
+  /// A key and value line's room over and under.
   static const double keyValueInset = 8;
 
-  /// See [keyValue].
+  /// The gap between a key and value line's two sides.
   static const double keyValueGap = 12;
 
-  /// See [keyValue].
+  /// The gap between a value's parts.
   static const double keyValuePartsGap = 8;
 
-  /// See [keyValue].
+  /// The gap between a value's two lines.
   static const double keyValueLineGap = 2;
 
-  /// See [keyValue].
+  /// A key and value line's chevron.
   static const double keyValueGlyph = 16;
 
-  /// See [keyValue].
+  /// The gap between keys and values set as a grid on the desktop.
   static const double keyValueGridGap = 16;
 
-  /// See [keyValue].
+  /// A grid key and value's room over and under.
   static const double keyValueGridInset = 12;
 
-  /// See [keyValue].
+  /// The gap between a grid key's label and its value.
   static const double keyValueGridLineGap = 4;
 
-  /// See [keyValue].
+  /// Where a grid key's chevron stands from its top: on the value's line.
   static const double keyValueGridChevronTop = 35;
 
-  /// See [keyValue].
+  /// How many keys and values stand to a row in the grid.
   static const int keyValueGridColumns = 3;
 
-  /// The stats under a figure: each 10 over and under on a phone, its two sides
-  /// 12 apart; on the desktop in a line, 24 apart either side of a hairline,
-  /// each its figure 6 under its word.
+  /// A stat's room over and under on a phone, under a figure.
   static const double statInset = 10;
 
-  /// See [statInset].
+  /// The gap between a stat's two sides on a phone.
   static const double statGap = 12;
 
-  /// See [statInset].
+  /// The gap either side of the hairline between stats in a line on the
+  /// desktop.
   static const double statGapWide = 24;
 
-  /// See [statInset].
+  /// The gap between a stat's word and its figure under it on the desktop.
   static const double statLineGapWide = 6;
 
-  /// See [statInset].
+  /// The room under the stats' line on the desktop.
   static const double statsBottomWide = 4;
 
-  /// A record's hero: its parts 16 apart, its mark 12 from its words, the
-  /// figure 10 over its comparison; a transaction's hero 28 over its mark and
-  /// 24 under its last line, its parts 6 apart, the figure 14 over and 12
-  /// under; a review's 24 over and under, 8 apart.
+  /// The gap between a record's hero's parts.
   static const double recordGap = 16;
 
-  /// See [recordGap].
+  /// The gap between a record's hero's mark and its words.
   static const double recordMarkGap = 12;
 
-  /// See [recordGap].
+  /// The gap between a record's hero's figure and its comparison.
   static const double recordFigureGap = 10;
 
-  /// See [recordGap].
+  /// The gap between a record's hero's chips.
   static const double recordChipsGap = 8;
 
-  /// See [recordGap].
+  /// How far a record's hero's chips are pulled up toward its words.
   static const double recordChipsPull = 6;
 
-  /// See [recordGap].
+  /// The room over a transaction's hero's mark.
   static const double transactionTop = 28;
 
-  /// See [recordGap].
+  /// The room under a transaction's hero's last line.
   static const double transactionBottom = 24;
 
-  /// See [recordGap].
+  /// The gap between a transaction's hero's parts.
   static const double transactionGap = 6;
 
-  /// See [recordGap].
+  /// The room over a transaction's hero's figure.
   static const double transactionFigureTop = 14;
 
-  /// See [recordGap].
+  /// The room under a transaction's hero's figure.
   static const double transactionFigureBottom = 12;
 
-  /// See [recordGap].
+  /// The gap under a transaction's hero's mark.
   static const double transactionMarkGap = 8;
 
-  /// See [recordGap].
+  /// The gap between a transaction's hero's facts.
   static const double transactionMetaGap = 8;
 
-  /// See [recordGap].
+  /// The room over a review's hero.
   static const double reviewTop = 24;
 
-  /// See [recordGap].
+  /// The room under a review's hero.
   static const double reviewBottom = 24;
 
-  /// See [recordGap].
+  /// The gap between a review's hero's parts.
   static const double reviewGap = 8;
 
-  /// See [recordGap].
+  /// The room over a review's hero's figure.
   static const double reviewFigureTop = 8;
 
-  /// See [recordGap].
+  /// The room under a review's hero's figure.
   static const double reviewFigureBottom = 4;
 
   /// The rim of light along a hero's top: 1 tall, nothing at 4%, its stops
   /// at 18, 38, 56 and 76%, nothing at 96%.
   static const double heroRim = 1;
 
-  /// A notification: 12 over and under, its parts 12 apart, its glyph 16, its
-  /// when 4 under its words (5 with their own 1 apart); the newest: its parts
-  /// 14 apart, its head's dot 8 from its word, its title's lines 6 apart.
+  /// A notification's room over and under.
   static const double noteInset = 12;
 
-  /// See [noteInset].
+  /// The gap between a notification's parts.
   static const double noteGap = 12;
 
-  /// See [noteInset].
+  /// A notification's glyph.
   static const double noteGlyph = 16;
 
-  /// See [noteInset].
+  /// The gap between a notification's words and its when.
   static const double noteWhenGap = 4;
 
-  /// See [noteInset].
+  /// The gap between the newest notification's parts.
   static const double noteNewGap = 14;
 
-  /// See [noteInset].
+  /// The gap between the newest notification's head's dot and its word.
   static const double noteNewHeadGap = 8;
 
-  /// See [noteInset].
+  /// The gap between the newest notification's title's lines.
   static const double noteNewLineGap = 6;
 
-  /// The profile's hero: 28 over its avatar, the avatar 8 over the name, its
-  /// lines 6 apart, its facts 10 under.
+  /// The room over the profile's avatar.
   static const double profileTop = 28;
 
-  /// See [profileTop].
+  /// The gap between the profile's avatar and the name.
   static const double profileAvatarGap = 8;
 
-  /// See [profileTop].
+  /// The gap between the profile hero's lines.
   static const double profileGap = 6;
 
-  /// See [profileTop].
+  /// The room over the profile's facts.
   static const double profileFactsGap = 10;
 
-  /// A ticket on the rent band: corners 10, 8 inside (12 at its end), its parts
-  /// 10 apart, its lines 2 apart.
+  /// The corners of a ticket on the rent band.
   static const double ticketRadius = 10;
 
-  /// See [ticketRadius].
+  /// A ticket's room inside.
   static const double ticketInset = 8;
 
-  /// See [ticketRadius].
+  /// A ticket's room at its end.
   static const double ticketInsetEnd = 12;
 
-  /// See [ticketRadius].
+  /// The gap between a ticket's parts.
   static const double ticketGap = 10;
 
-  /// See [ticketRadius].
+  /// The gap between a ticket's lines.
   static const double ticketLineGap = 2;
 
-  /// A due line: 8 tall, its beads 8 across and 4 in, its words 8 apart.
+  /// A due line's height.
   static const double dueLine = 8;
 
-  /// See [dueLine].
+  /// A due line's bead across.
   static const double dueBead = 8;
 
-  /// See [dueLine].
+  /// How far in a due line's beads stand.
   static const double dueInset = 4;
 
-  /// See [dueLine].
+  /// The gap between a due line's words.
   static const double dueLabelGap = 8;
 
   // --- meters and the prism ---------------------------------------------------------
 
-  /// The prism track: 40 tall (56 on the desktop's spending), 16 small, 10 at
-  /// its least; its bands 1 apart, the pace tick 1.5 wide reaching 6 over and
-  /// under (5 on a small track) in a ring of 1.5; its scale 10 under, at least
-  /// 16 tall, the pace's word 8 before the tick; a band's words 10 in (16 at
-  /// the track's ends), 3 apart.
+  /// The prism track's height.
   static const double frostedTrack = 40;
 
-  /// See [frostedTrack].
+  /// The prism track's height on the desktop's spending.
   static const double frostedTrackWide = 56;
 
-  /// See [frostedTrack].
+  /// A small prism track's height.
   static const double frostedTrackSmall = 16;
 
-  /// See [frostedTrack].
+  /// The least height of a prism track.
   static const double frostedTrackLeast = 10;
 
-  /// See [frostedTrack].
+  /// The gap between the prism track's bands.
   static const double frostedGap = 1;
 
-  /// See [frostedTrack].
+  /// The pace tick's width.
   static const double paceTick = 1.5;
 
-  /// See [frostedTrack].
+  /// How far the pace tick reaches over and under the track.
   static const double paceReach = 6;
 
-  /// See [frostedTrack].
+  /// How far the pace tick reaches over and under a small track.
   static const double paceReachSmall = 5;
 
-  /// See [frostedTrack].
+  /// The ring round the pace tick.
   static const double paceRing = 1.5;
 
-  /// See [frostedTrack].
+  /// The gap between the prism track and its scale.
   static const double frostedScaleGap = 10;
 
-  /// See [frostedTrack].
+  /// The least height of the prism track's scale.
   static const double frostedScaleHeight = 16;
 
-  /// See [frostedTrack].
+  /// The gap between the pace's word and the tick.
   static const double paceLabelGap = 8;
 
-  /// See [frostedTrack].
+  /// How far in a band's words stand.
   static const double frostedLabelInset = 10;
 
-  /// See [frostedTrack].
+  /// How far in a band's words stand at the track's ends.
   static const double frostedLabelInsetEnd = 16;
 
-  /// See [frostedTrack].
+  /// The gap between a band's words.
   static const double frostedLabelGap = 4;
 
-  /// A bar: 6 tall, 4 thin; a tube: 8 tall, 12 large, its tick 1.5 wide and 20
-  /// tall (16 in a comparison); an over bar: 6 tall, 10 large, its two parts 2
-  /// apart, its scale 14 tall 8 under; a meter on a pane's floor 4 tall (3 on a
-  /// small pane), its parts 1 apart.
+  /// A bar's height.
   static const double bar = 6;
 
-  /// See [bar].
+  /// A thin bar's height.
   static const double barThin = 4;
 
-  /// See [bar].
+  /// A tube's height.
   static const double tube = 8;
 
-  /// See [bar].
+  /// A large tube's height.
   static const double tubeLarge = 12;
 
-  /// See [bar].
+  /// A tube's tick's width.
   static const double tubeTick = 1.5;
 
-  /// See [bar].
+  /// A tube's tick's height.
   static const double tubeTickHeight = 20;
 
-  /// See [bar].
+  /// A tube's tick's height in a comparison.
   static const double tubeTickHeightCompare = 16;
 
-  /// See [bar].
+  /// An over bar's height.
   static const double overBar = 6;
 
-  /// See [bar].
+  /// A large over bar's height.
   static const double overBarLarge = 10;
 
-  /// See [bar].
+  /// The gap between an over bar's two parts.
   static const double overBarGap = 2;
 
-  /// See [bar].
+  /// An over bar's scale's height.
   static const double overBarScale = 14;
 
-  /// See [bar].
+  /// The gap between an over bar and its scale.
   static const double overBarScaleGap = 8;
 
-  /// See [bar].
+  /// The height of a meter on a pane's floor.
   static const double meter = 4;
 
-  /// See [bar].
+  /// The height of a meter on a small pane's floor.
   static const double meterSmall = 3;
 
-  /// See [bar].
+  /// The gap between a meter's parts.
   static const double meterGap = 1;
 
-  /// The card's utilisation bar: 180 wide, 4 tall.
+  /// The card's utilisation bar's width.
   static const double utilWidth = 180;
 
-  /// See [utilWidth].
+  /// The card's utilisation bar's height.
   static const double utilHeight = 4;
 
-  /// The legend: two columns 16 apart, its entries 12 apart, each its swatch 8
-  /// from its words, its lines 4 apart; three across on the goals.
+  /// The gap between the legend's two columns; the goals' legend stands three
+  /// across.
   static const double legendColumnGap = 16;
 
-  /// See [legendColumnGap].
+  /// The gap between the legend's entries.
   static const double legendRowGap = 12;
 
-  /// See [legendColumnGap].
+  /// The gap between a legend entry's swatch and its words.
   static const double legendSwatchGap = 8;
 
-  /// See [legendColumnGap].
+  /// The gap between a legend entry's lines.
   static const double legendLineGap = 4;
 
-  /// A key under a chart: its line 16 by 2, 8 from its word, keys 16 apart (12
-  /// in a chart's head).
+  /// The size of a chart key's line.
   static const Size keyLine = Size(16, 2);
 
-  /// See [keyLine].
+  /// The gap between a chart key's line and its word.
   static const double keyGap = 8;
 
-  /// See [keyLine].
+  /// The gap between keys under a chart.
   static const double keysGap = 16;
 
-  /// See [keyLine].
+  /// The gap between keys in a chart's head.
   static const double keysGapHead = 12;
 
-  /// A merchant line: 6 over and under, its columns 12 apart, its bar 6 under;
-  /// on the desktop a card 16 inside with corners 12, its rows 12 apart, four
-  /// across.
+  /// A merchant line's room over and under.
   static const double merchantInset = 6;
 
-  /// See [merchantInset].
+  /// The gap between a merchant line's columns.
   static const double merchantGap = 12;
 
-  /// See [merchantInset].
+  /// The gap between a merchant line and its bar.
   static const double merchantBarGap = 6;
 
-  /// See [merchantInset].
+  /// A merchant card's room inside on the desktop, where four stand across.
   static const double merchantCardInset = 16;
 
-  /// See [merchantInset].
+  /// The gap between a merchant card's rows.
   static const double merchantCardGap = 12;
 
-  /// A share's line under a figure: 8 apart, its parts 10 apart, 14 under the
-  /// figure; a share's word 8 before the next.
+  /// The gap between the shares in a line under a figure.
   static const double partsGap = 8;
 
-  /// See [partsGap].
+  /// The gap between a share's parts.
   static const double partGap = 10;
 
-  /// See [partsGap].
+  /// The room between a figure and the shares' line under it.
   static const double partsTop = 14;
 
-  /// See [partsGap].
+  /// The gap between a share's word and the next.
   static const double partShareGap = 8;
 
   // --- the mosaic ---------------------------------------------------------------
 
-  /// The spend mosaic: 540 tall on a phone, its panes 6 apart, each 10 inside
-  /// (12 on the desktop) with its parts 6 apart, its floor's parts 8 apart; a
-  /// small pane 8 inside (10 by 12 on the desktop) with its parts 2 apart; a
-  /// group's basis 24; the tile round it 8 inside, its head 8 in (12 on the
-  /// desktop), at least 32 tall (36).
+  /// The spend mosaic's height on a phone.
   static const double mosaicHeight = 540;
 
-  /// See [mosaicHeight].
+  /// The spend mosaic's height on the desktop.
   static const double mosaicHeightWide = 520;
 
-  /// See [mosaicHeight].
+  /// The gap between the spend mosaic's panes.
   static const double mosaicGap = 6;
 
-  /// See [mosaicHeight].
+  /// A pane's room inside on a phone.
   static const double paneInset = 10;
 
-  /// See [mosaicHeight].
+  /// A pane's room inside on the desktop.
   static const double paneInsetWide = 12;
 
-  /// See [mosaicHeight].
+  /// The gap between a pane's parts.
   static const double paneGap = 6;
 
-  /// See [mosaicHeight].
+  /// The gap between the parts on a pane's floor.
   static const double paneFloorGap = 8;
 
-  /// See [mosaicHeight].
+  /// A small pane's room inside on a phone.
   static const double paneSmallInset = 8;
 
-  /// See [mosaicHeight].
+  /// A small pane's room inside on the desktop.
   static const EdgeInsets paneSmallInsetWide = EdgeInsets.symmetric(
     vertical: 10,
     horizontal: 12,
   );
 
-  /// See [mosaicHeight].
+  /// The gap between a small pane's parts.
   static const double paneSmallGap = 2;
 
-  /// See [mosaicHeight].
+  /// A group's basis in the spend mosaic.
   static const double mosaicBasis = 24;
 
-  /// See [mosaicHeight].
+  /// The room inside the tile round the spend mosaic.
   static const double mosaicTileInset = 8;
 
-  /// See [mosaicHeight].
+  /// How far in the spend mosaic's head stands on a phone.
   static const double mosaicHeadInset = 8;
 
-  /// See [mosaicHeight].
+  /// How far in the spend mosaic's head stands on the desktop.
   static const double mosaicHeadInsetWide = 12;
 
-  /// See [mosaicHeight].
+  /// The least height of the spend mosaic's head on a phone.
   static const double mosaicHead = 32;
 
-  /// See [mosaicHeight].
+  /// The least height of the spend mosaic's head on the desktop.
   static const double mosaicHeadWide = 36;
 
-  /// The rent band's middle: its parts 12 apart; on the desktop its ticket
-  /// 340 wide.
+  /// The gap between the parts of the rent band's middle.
   static const double rentGap = 12;
 
-  /// See [rentGap].
+  /// The rent band's ticket's width on the desktop.
   static const double rentTicketWide = 340;
 
   // --- the card ----------------------------------------------------------------
 
-  /// The pearl credit card: 1.586 as wide as tall, corners 16 (18 on the
-  /// desktop, turned 4 degrees), 18 inside (20), its rim 1, frosted 16; its
-  /// glow 24 under its top, 28 in and 8 over its foot (44, 60 and 16 on the
-  /// desktop), blurred 36 (44); its brand 20 with its mark 8 before it;
-  /// its middle's lines 8 apart; its number tracked 0.04 em; its orbits 380
-  /// across, 120 past its right edge and 140 over its top. On the desktop
-  /// the card stands 16 over, 28 in and 4 under in its stage (12, 8 and 8
-  /// on the Cards page, 300 wide).
+  /// How many times as wide as tall the pearl credit card stands.
   static const double cardAspect = 1.586;
 
-  /// See [cardAspect].
+  /// The pearl credit card's corners on a phone.
   static const double cardRadius = 16;
 
-  /// See [cardAspect].
+  /// The pearl credit card's corners on the desktop.
   static const double cardRadiusWide = 18;
 
-  /// See [cardAspect].
+  /// How far the pearl credit card is turned on the desktop, in degrees.
   static const double cardTurnWide = -4;
 
-  /// See [cardAspect].
+  /// The pearl credit card's room inside on a phone.
   static const double cardInset = 18;
 
-  /// See [cardAspect].
+  /// The pearl credit card's room inside on the desktop.
   static const double cardInsetWide = 20;
 
-  /// See [cardAspect].
+  /// The blur of the pearl credit card's frost.
   static const double cardFrostBlur = 16;
 
-  /// See [cardAspect].
+  /// Where the glow under the pearl credit card stands on a phone: under its
+  /// top, in from its sides and over its foot.
   static const EdgeInsets cardGlow = EdgeInsets.fromLTRB(28, 24, 28, 8);
 
-  /// See [cardAspect].
+  /// Where the glow under the pearl credit card stands on the desktop.
   static const EdgeInsets cardGlowWide = EdgeInsets.fromLTRB(60, 44, 60, 16);
 
-  /// See [cardAspect].
+  /// The blur of the pearl credit card's glow on a phone.
   static const double cardGlowBlur = 36;
 
-  /// See [cardAspect].
+  /// The blur of the pearl credit card's glow on the desktop.
   static const double cardGlowBlurWide = 44;
 
-  /// See [cardAspect].
+  /// The pearl credit card's brand.
   static const double cardBrandType = 20;
 
-  /// See [cardAspect].
+  /// The gap between the pearl credit card's mark and its brand.
   static const double cardBrandGap = 8;
 
-  /// See [cardAspect].
+  /// The gap between the lines of the pearl credit card's middle.
   static const double cardMidGap = 8;
 
-  /// See [cardAspect].
+  /// The tracking of the pearl credit card's number, in ems.
   static const double cardNumberTracking = 0.04;
 
-  /// See [cardAspect].
+  /// The pearl credit card's orbits across.
   static const double cardOrbits = 380;
 
-  /// See [cardAspect].
+  /// Where the pearl credit card's orbits stand from its right edge (past it).
   static const double cardOrbitsRight = -120;
 
-  /// See [cardAspect].
+  /// Where the pearl credit card's orbits stand from its top (over it).
   static const double cardOrbitsTop = -140;
 
-  /// See [cardAspect].
+  /// The pearl credit card's room in its stage on the desktop.
   static const EdgeInsets cardStageWide = EdgeInsets.fromLTRB(28, 16, 28, 4);
 
-  /// See [cardAspect].
+  /// The pearl credit card's room in its stage on the Cards page.
   static const EdgeInsets cardStageCards = EdgeInsets.fromLTRB(8, 12, 8, 8);
 
-  /// See [cardAspect].
+  /// The pearl credit card's width on the Cards page.
   static const double cardStageWidth = 300;
 
-  /// A debit card's small face: 92 by 58, corners 9, 8 inside, its mark 18 with
-  /// corners 6 and a 12 glyph; 14 from its words.
+  /// The size of a debit card's small face.
   static const Size debitCard = Size(92, 58);
 
-  /// See [debitCard].
+  /// The corners of a debit card's small face.
   static const double debitCardRadius = 9;
 
-  /// See [debitCard].
+  /// The room inside a debit card's small face.
   static const double debitCardInset = 8;
 
-  /// See [debitCard].
+  /// The mark on a debit card's small face across.
   static const double debitCardMark = 18;
 
-  /// See [debitCard].
+  /// The corners of the mark on a debit card's small face.
   static const double debitCardMarkRadius = 6;
 
-  /// See [debitCard].
+  /// The glyph of the mark on a debit card's small face.
   static const double debitCardMarkGlyph = 12;
 
-  /// See [debitCard].
+  /// The gap between a debit card's small face and its words.
   static const double debitCardGap = 14;
 
-  /// The card's figures: three across in shares of 0.8, 1.2 and 1, 12 either
-  /// side of a hairline, each its lines 4 apart; on the desktop lines 10 over
-  /// and under, 12 apart.
+  /// The gap either side of the hairline between the card's three figures.
   static const double cardFigureGap = 12;
 
-  /// See [cardFigureGap].
+  /// The gap between a card figure's lines.
   static const double cardFigureLineGap = 4;
 
-  /// See [cardFigureGap].
+  /// The room over and under the card's figures' lines on the desktop.
   static const double cardFigureInsetWide = 10;
 
-  /// The card's limit: 4 over and 2 under its bar, its scale 8 under.
+  /// The room over the card's limit bar.
   static const double limitTop = 4;
 
-  /// See [limitTop].
+  /// The room under the card's limit bar.
   static const double limitBottom = 2;
 
-  /// See [limitTop].
+  /// The gap between the card's limit bar and its scale.
   static const double limitScaleGap = 8;
 
-  /// The frost over a frozen card: blurred 5, its glyph on a 48 round (the
-  /// glyph 24), 8 over its word; the banner's mark 36 with an 18 glyph, 12
-  /// from its words, 14 over and under and 16 in; the dialog's mark 56
-  /// with a 24 glyph.
+  /// The blur of the frost over a frozen card.
   static const double frostBlur5 = 5;
 
-  /// See [frostBlur5].
+  /// The round a frozen card's glyph stands on, across.
   static const double frostMark = 48;
 
-  /// See [frostBlur5].
+  /// A frozen card's glyph.
   static const double frostMarkGlyph = 24;
 
-  /// See [frostBlur5].
+  /// The gap between a frozen card's glyph and its word.
   static const double frostGap = 8;
 
-  /// See [frostBlur5].
+  /// The frozen banner's mark across.
   static const double bannerMark = 36;
 
-  /// See [frostBlur5].
+  /// The frozen banner's mark's glyph.
   static const double bannerMarkGlyph = 18;
 
-  /// See [frostBlur5].
+  /// The gap between the frozen banner's mark and its words.
   static const double bannerGap = 12;
 
-  /// See [frostBlur5].
+  /// The frozen banner's room inside.
   static const EdgeInsets bannerInset = EdgeInsets.symmetric(
     vertical: 14,
     horizontal: 16,
   );
 
-  /// See [frostBlur5].
+  /// The freeze dialog's mark across.
   static const double freezeMark = 56;
 
-  /// See [frostBlur5].
+  /// The freeze dialog's mark's glyph.
   static const double freezeMarkGlyph = 24;
 
-  /// The statement line: 12 tall, 2 over (collapsing into a head's 12 above it)
-  /// and 6 in, its rule 1 at 5.5, its beads 12 across; its words 42 tall, 10
-  /// over and under, their lines 4 apart.
+  /// The statement line's height.
   static const double statementLine = 12;
 
-  /// See [statementLine].
+  /// The room over the statement line, collapsing into a head's room above it.
   static const double statementLineTop = 2;
 
-  /// See [statementLine].
+  /// How far in the statement line stands.
   static const double statementLineInset = 6;
 
-  /// See [statementLine].
+  /// Where the statement line's rule stands from its top.
   static const double statementRuleTop = 5.5;
 
-  /// See [statementLine].
+  /// A statement line's bead across.
   static const double statementBead = 12;
 
-  /// See [statementLine].
+  /// The height of the statement line's words.
   static const double statementLabels = 42;
 
-  /// See [statementLine].
+  /// The room over and under the statement line's words.
   static const double statementLabelsGap = 10;
 
-  /// See [statementLine].
+  /// The gap between the statement line's words' lines.
   static const double statementLabelLineGap = 4;
 
-  /// The card number's well: corners 14, 14 by 16 inside, its lines 8 apart;
-  /// its three facts in shares of 1, 1 and 1.6, 12 apart, 4 in, each its lines
-  /// 6 apart.
+  /// The corners of the card number's well.
   static const double numberRadius = 14;
 
-  /// See [numberRadius].
+  /// The room inside the card number's well.
   static const EdgeInsets numberInset = EdgeInsets.symmetric(
     vertical: 14,
     horizontal: 16,
   );
 
-  /// See [numberRadius].
+  /// The gap between the card number's well's lines.
   static const double numberGap = 8;
 
-  /// See [numberRadius].
+  /// The gap between the card number's three facts.
   static const double numberFactsGap = 12;
 
-  /// See [numberRadius].
+  /// How far in the card number's facts stand.
   static const double numberFactsInset = 4;
 
-  /// See [numberRadius].
+  /// The gap between a card number fact's lines.
   static const double numberFactLineGap = 6;
 
   // --- home pieces ----------------------------------------------------------------
 
-  /// The quick actions: four across, 4 apart, 14 over and under and 8 in; each
-  /// its 44 disc (its glyph 18) 8 over its word.
+  /// The gap between the quick actions.
   static const double actionGap = 4;
 
-  /// See [actionGap].
+  /// The quick actions' room.
   static const EdgeInsets actionsInset = EdgeInsets.symmetric(
     vertical: 14,
     horizontal: 8,
   );
 
-  /// See [actionGap].
+  /// A quick action's disc across.
   static const double actionRound = 44;
 
-  /// See [actionGap].
+  /// A quick action's glyph.
   static const double actionGlyph = 18;
 
-  /// See [actionGap].
+  /// The gap between a quick action's disc and its word.
   static const double actionWordGap = 8;
 
-  /// A way to move money: corners 14, 10 inside (16 on the desktop), its 32
-  /// (40) disc with a 16 (18) glyph, 10 (14) from its words, its lines 2 (4)
-  /// apart; two across 8 apart (16).
+  /// The corners of a way to move money.
   static const double moveActRadius = 14;
 
-  /// See [moveActRadius].
+  /// A way to move money's room inside on a phone.
   static const double moveActInset = 10;
 
-  /// See [moveActRadius].
+  /// A way to move money's room inside on the desktop.
   static const double moveActInsetWide = 16;
 
-  /// See [moveActRadius].
+  /// A way to move money's disc across on a phone.
   static const double moveActRound = 32;
 
-  /// See [moveActRadius].
+  /// A way to move money's disc across on the desktop.
   static const double moveActRoundWide = 40;
 
-  /// See [moveActRadius].
+  /// A way to move money's glyph on a phone.
   static const double moveActGlyph = 16;
 
-  /// See [moveActRadius].
+  /// A way to move money's glyph on the desktop.
   static const double moveActGlyphWide = 18;
 
-  /// See [moveActRadius].
+  /// The gap between a way to move money's disc and its words on a phone.
   static const double moveActGap = 10;
 
-  /// See [moveActRadius].
+  /// The gap between a way to move money's disc and its words on the desktop.
   static const double moveActGapWide = 14;
 
-  /// See [moveActRadius].
+  /// The gap between a way to move money's lines on a phone.
   static const double moveActLineGap = 2;
 
-  /// See [moveActRadius].
+  /// The gap between a way to move money's lines on the desktop.
   static const double moveActLineGapWide = 4;
 
-  /// See [moveActRadius].
+  /// The gap between the ways to move money, two across.
   static const double moveActsGap = 8;
 
-  /// An account card: 14 inside (18 by 20 on the desktop), its parts 10 apart,
-  /// its note 6 under; two across on a phone, four on the desktop.
+  /// An account card's room inside on a phone, where two stand across.
   static const double accountInset = 14;
 
-  /// See [accountInset].
+  /// An account card's room inside on the desktop, where four stand across.
   static const EdgeInsets accountInsetWide = EdgeInsets.symmetric(
     vertical: 18,
     horizontal: 20,
   );
 
-  /// See [accountInset].
+  /// The gap between an account card's parts.
   static const double accountGap = 10;
 
-  /// See [accountInset].
+  /// The gap between an account card and its note.
   static const double accountNoteGap = 6;
 
-  /// A goal: 10 over and under, its parts 10 apart, its head's parts 12 apart;
-  /// a goal card: its columns 12 apart and its rows 10 (14 on the desktop), its
-  /// figure's parts 8 apart, its bar 12 from its share (at least 40 wide); a
-  /// ghost card 16 inside with corners 14; the new-goal tile's plus 36 with
-  /// corners 11 and an 18 glyph, its glyph 16, its parts 12 apart (16 on the
-  /// desktop).
+  /// A goal's room over and under.
   static const double goalInset = 10;
 
-  /// See [goalInset].
+  /// The gap between a goal's parts.
   static const double goalGap = 10;
 
-  /// See [goalInset].
+  /// The gap between a goal's head's parts.
   static const double goalHeadGap = 12;
 
-  /// See [goalInset].
+  /// The gap between a goal card's columns.
   static const double goalCardColumnGap = 12;
 
-  /// See [goalInset].
+  /// The gap between a goal card's rows on a phone.
   static const double goalCardRowGap = 10;
 
-  /// See [goalInset].
+  /// The gap between a goal card's rows on the desktop.
   static const double goalCardRowGapWide = 14;
 
-  /// See [goalInset].
+  /// The gap between a goal card's figure's parts.
   static const double goalCardFigureGap = 8;
 
-  /// See [goalInset].
+  /// The gap between a goal card's bar and its share.
   static const double goalCardBarGap = 12;
 
-  /// See [goalInset].
+  /// The least width of a goal card's share.
   static const double goalCardShare = 40;
 
-  /// See [goalInset].
+  /// A ghost card's room inside.
   static const double ghostInset = 16;
 
-  /// See [goalInset].
+  /// A ghost card's corners.
   static const double ghostRadius = 14;
 
-  /// See [goalInset].
+  /// The new-goal tile's plus across.
   static const double newGoalPlus = 36;
 
-  /// See [goalInset].
+  /// The corners of the new-goal tile's plus.
   static const double newGoalPlusRadius = 11;
 
-  /// See [goalInset].
+  /// The glyph of the new-goal tile's plus.
   static const double newGoalPlusGlyph = 18;
 
-  /// See [goalInset].
+  /// The new-goal tile's glyph.
   static const double newGoalGlyph = 16;
 
-  /// See [goalInset].
+  /// The gap between the new-goal tile's parts on a phone.
   static const double newGoalGap = 12;
 
-  /// See [goalInset].
+  /// The gap between the new-goal tile's parts on the desktop.
   static const double newGoalGapWide = 16;
 
-  /// A nudge: corners 14, 10 inside (12 at its start), its mark 28 with a 16
-  /// glyph, 12 from its words.
+  /// A nudge's corners.
   static const double nudgeRadius = 14;
 
-  /// See [nudgeRadius].
+  /// A nudge's room inside.
   static const EdgeInsets nudgeInset = EdgeInsets.fromLTRB(12, 10, 10, 10);
 
-  /// See [nudgeRadius].
+  /// A nudge's mark across.
   static const double nudgeMark = 28;
 
-  /// See [nudgeRadius].
+  /// A nudge's mark's glyph.
   static const double nudgeMarkGlyph = 16;
 
-  /// See [nudgeRadius].
+  /// The gap between a nudge's mark and its words.
   static const double nudgeGap = 12;
 
-  /// Quick amounts: three across 8 apart, each corners 12, 10 by 6 inside, its
-  /// lines 4 apart.
+  /// The gap between the quick amounts, three across.
   static const double quickAmountsGap = 8;
 
-  /// See [quickAmountsGap].
+  /// A quick amount's corners.
   static const double quickAmountRadius = 12;
 
-  /// See [quickAmountsGap].
+  /// A quick amount's room inside.
   static const EdgeInsets quickAmountInset = EdgeInsets.symmetric(
     vertical: 10,
     horizontal: 6,
   );
 
-  /// See [quickAmountsGap].
+  /// The gap between a quick amount's lines.
   static const double quickAmountGap = 4;
 
-  /// A suggestion: corners 14, 12 inside, its mark 36 (corners 11, an 18 glyph)
-  /// 12 from its words.
+  /// A suggestion's corners.
   static const double suggestRadius = 14;
 
-  /// See [suggestRadius].
+  /// A suggestion's room inside.
   static const double suggestInset = 12;
 
-  /// See [suggestRadius].
+  /// A suggestion's mark across.
   static const double suggestMark = 36;
 
-  /// See [suggestRadius].
+  /// A suggestion's mark's corners.
   static const double suggestMarkRadius = 11;
 
-  /// See [suggestRadius].
+  /// A suggestion's mark's glyph.
   static const double suggestMarkGlyph = 18;
 
-  /// See [suggestRadius].
+  /// The gap between a suggestion's mark and its words.
   static const double suggestGap = 12;
 
-  /// A browse card: corners 12, 10 inside, its token 10 from its words; two
-  /// across 8 apart.
+  /// A browse card's corners.
   static const double browseRadius = 12;
 
-  /// See [browseRadius].
+  /// A browse card's room inside.
   static const double browseInset = 10;
 
-  /// See [browseRadius].
+  /// The gap between a browse card's token and its words.
   static const double browseGap = 10;
 
-  /// See [browseRadius].
+  /// The gap between browse cards, two across.
   static const double browseCardsGap = 8;
 
-  /// The month switch: 2 inside, its parts 4
-  /// apart, its arrows 32 round with a 16 glyph, its month 32 tall with a 14
-  /// chevron 4 from its word, 8 in on the desktop; the earlier month's word 4
-  /// in.
+  /// The month switch's room inside.
   static const double monthSwitchInset = 2;
 
-  /// See [monthSwitchInset].
+  /// The gap between the month switch's parts.
   static const double monthSwitchGap = 4;
 
-  /// See [monthSwitchInset].
+  /// The month switch's arrow's round across.
   static const double monthArrow = 32;
 
-  /// See [monthSwitchInset].
+  /// The month switch's arrow's glyph.
   static const double monthArrowGlyph = 16;
 
-  /// See [monthSwitchInset].
+  /// The month switch's month's height.
   static const double monthHeight = 32;
 
-  /// See [monthSwitchInset].
+  /// The chevron beside the month switch's month.
   static const double monthGlyph = 14;
 
-  /// See [monthSwitchInset].
+  /// The gap between the month switch's chevron and its word.
   static const double monthGap = 4;
 
-  /// See [monthSwitchInset].
+  /// How far in the month switch's month stands on the desktop.
   static const double monthInsetWide = 8;
 
-  /// See [monthSwitchInset].
+  /// How far in the earlier month's word stands.
   static const double monthPrevInset = 4;
 
-  /// The spending head: its lines 8 apart, 16 over the track; its foot 14 over
-  /// and 16 under, its parts 8 apart; the desktop's spending grid: its columns
-  /// 48 apart and its rows 24.
+  /// The gap between the spending head's lines.
   static const double monthHeadGap = 8;
 
-  /// See [monthHeadGap].
+  /// The gap between the spending head and the track.
   static const double monthHeadBottom = 16;
 
-  /// See [monthHeadGap].
+  /// The room over the spending foot.
   static const double monthFootTop = 14;
 
-  /// See [monthHeadGap].
+  /// The room under the spending foot.
   static const double monthFootBottom = 16;
 
-  /// See [monthHeadGap].
+  /// The gap between the spending foot's parts.
   static const double monthFootGap = 8;
 
-  /// See [monthHeadGap].
+  /// The gap between the columns of the desktop's spending grid.
   static const double spentColumnGap = 48;
 
-  /// See [monthHeadGap].
+  /// The gap between the rows of the desktop's spending grid.
   static const double spentRowGap = 24;
 
-  /// An insight: its parts 12 apart, its kind's glyph 16 and 6 from its word;
-  /// the visits 6 apart.
+  /// The gap between an insight's parts.
   static const double insightGap = 12;
 
-  /// See [insightGap].
+  /// The glyph of an insight's kind.
   static const double insightKindGlyph = 16;
 
-  /// See [insightGap].
+  /// The gap between an insight kind's glyph and its word.
   static const double insightKindGap = 6;
 
-  /// See [insightGap].
+  /// The gap between an insight's visits.
   static const double visitsGap = 6;
 
-  /// Money in against out: its parts 14 apart, its two figures 16 apart, each
-  /// its lines 8 apart, its scale 8 under, its note's two sides 12 apart; an
-  /// account's split 14 apart, each line's parts 8 apart, its head's 10.
+  /// The gap between the parts of money in against out.
   static const double flowGap = 14;
 
-  /// See [flowGap].
+  /// The gap between the two figures of money in against out.
   static const double flowFiguresGap = 16;
 
-  /// See [flowGap].
+  /// The gap between a flow figure's lines.
   static const double flowFigureGap = 8;
 
-  /// See [flowGap].
+  /// The gap between money in against out and its scale.
   static const double flowScaleGap = 8;
 
-  /// See [flowGap].
+  /// The gap between the two sides of the flow's note.
   static const double flowNoteGap = 12;
 
-  /// See [flowGap].
+  /// The gap between an account's split lines.
   static const double splitGap = 14;
 
-  /// See [flowGap].
+  /// The gap between the parts of an account's split line.
   static const double splitLineGap = 8;
 
-  /// See [flowGap].
+  /// The gap between the parts of an account split's head.
   static const double splitHeadGap = 10;
 
   // --- charts ---------------------------------------------------------------------
 
-  /// A chart: 16 under what is above it; its month labels 8 under it, their row
-  /// 40 short at the end (48 on the desktop, 36 and 40 with a gap); a y label's
-  /// words 12 and the end labels' row 16 tall; a mark's note 6 in and 5 over or
-  /// under a mark (10 at a line's end, 8 beside a step); a bar's value 6 over
-  /// it.
+  /// The room between a chart and what is above it.
   static const double chartTop = 16;
 
-  /// See [chartTop].
+  /// The gap between a chart and its month labels.
   static const double chartLabelsGap = 8;
 
-  /// See [chartTop].
+  /// How far short of a chart's end its month labels' row stops on a phone.
   static const double chartLabelsEnd = 40;
 
-  /// See [chartTop].
+  /// How far short of a chart's end its month labels' row stops on the desktop.
   static const double chartLabelsEndWide = 48;
 
-  /// See [chartTop].
+  /// How far short of a chart's end its month labels' row stops with a gap, on
+  /// a phone.
   static const double chartLabelsEndGap = 36;
 
-  /// See [chartTop].
+  /// How far short of a chart's end its month labels' row stops with a gap, on
+  /// the desktop.
   static const double chartLabelsEndGapWide = 40;
 
-  /// See [chartTop].
+  /// The height of a chart's end labels' row; a y label's words are 12.
   static const double chartLabels = 16;
 
-  /// See [chartTop].
+  /// How far in a mark's note stands.
   static const double chartNoteInset = 6;
 
-  /// See [chartTop].
+  /// The gap between a mark's note and the mark over or under it.
   static const double chartNoteGap = 4;
 
-  /// See [chartTop].
+  /// The gap between a mark's note and the mark at a line's end.
   static const double chartNoteEndGap = 10;
 
-  /// See [chartTop].
+  /// The gap between a mark's note and a step it stands beside.
   static const double chartNoteStepInset = 8;
 
-  /// See [chartTop].
+  /// The gap between a bar and its value over it.
   static const double chartBarValueGap = 6;
 
-  /// A transaction's strip of days: 40 tall, its rule 1 at 4 from its foot, its
-  /// ticks 5 tall, its dots 8 (this one 10, ringed 2.5) standing 9 up and 3
-  /// apart; its labels 14 tall 6 under.
+  /// A transaction's strip of days' height.
   static const double strip = 40;
 
-  /// See [strip].
+  /// Where the strip's rule stands from its foot.
   static const double stripRuleBottom = 4;
 
-  /// See [strip].
+  /// The strip's ticks' height.
   static const double stripTick = 5;
 
-  /// See [strip].
+  /// A strip dot across.
   static const double stripDot = 8;
 
-  /// See [strip].
+  /// This transaction's strip dot across.
   static const double stripDotThis = 10;
 
-  /// See [strip].
+  /// The ring round this transaction's strip dot.
   static const double stripDotRing = 2.5;
 
-  /// See [strip].
+  /// How far up the strip's dots stand.
   static const double stripDotBottom = 9;
 
-  /// See [strip].
+  /// The gap between the strip's dots.
   static const double stripDotGap = 4;
 
-  /// See [strip].
+  /// The strip's labels' height.
   static const double stripLabels = 14;
 
-  /// See [strip].
+  /// The gap between the strip and its labels.
   static const double stripLabelsGap = 6;
 
-  /// The figures in a line: 24 apart, each its lines 6 apart.
+  /// The gap between the figures in a line.
   static const double figuresGap = 24;
 
-  /// See [figuresGap].
+  /// The gap between a figure's lines in a line of figures.
   static const double figureLineGap = 6;
 
-  /// The route of a move: its parts 12 apart, 8 over the words, each line's
-  /// parts 6 apart, its beams 36 by 2 with corners 2, its glyph 16; the done
-  /// art 200 across, 12 up and 4 down, its check 72 (a 32 glyph) in a ring of
-  /// 6.
+  /// The gap between the parts of a move's route.
   static const double routeGap = 12;
 
-  /// See [routeGap].
+  /// The gap between a move's route and its words.
   static const double routeBottom = 8;
 
-  /// See [routeGap].
+  /// The gap between the parts of a route's line.
   static const double routeLineGap = 6;
 
-  /// See [routeGap].
+  /// The size of a route's beam, its corners 2.
   static const Size routeBeam = Size(36, 2);
 
-  /// See [routeGap].
+  /// A route's glyph.
   static const double routeGlyph = 16;
 
-  /// See [routeGap].
+  /// The done art across.
   static const double doneArt = 200;
 
-  /// See [routeGap].
+  /// How far the done art is pulled up.
   static const double doneArtPullTop = 12;
 
-  /// See [routeGap].
+  /// How far the done art is pulled down.
   static const double doneArtPullBottom = 4;
 
-  /// See [routeGap].
+  /// The done art's check across.
   static const double doneCheck = 72;
 
-  /// See [routeGap].
+  /// The done art's check's glyph.
   static const double doneCheckGlyph = 32;
 
-  /// See [routeGap].
+  /// The ring round the done art's check.
   static const double doneCheckRing = 6;
 
-  /// A change: its parts 10 apart, 4 over and 14 under (14 over the next), its
-  /// head's parts 12 apart, its values 3 apart.
+  /// The gap between a change's parts.
   static const double changeGap = 10;
 
-  /// See [changeGap].
+  /// The room over a change.
   static const double changeTop = 4;
 
-  /// See [changeGap].
+  /// The room under a change, the next standing over it.
   static const double changeBottom = 14;
 
-  /// See [changeGap].
+  /// The gap between a change's head's parts.
   static const double changeHeadGap = 12;
 
-  /// See [changeGap].
+  /// The gap between a change's values.
   static const double changeValueGap = 4;
 
   // --- controls ----------------------------------------------------------------------
 
-  /// The search field: 44 tall, 16 in, its glyph 18 and 10 from its words;
-  /// typed, its clear a 28 round (a 14 glyph) pulled 6 into the end.
+  /// The search field's height.
   static const double search = 44;
 
-  /// See [search].
+  /// The search field's room at its sides.
   static const double searchInset = 16;
 
-  /// See [search].
+  /// The gap between the search field's glyph and its words.
   static const double searchGap = 10;
 
-  /// See [search].
+  /// The search field's glyph.
   static const double searchGlyph = 18;
 
-  /// See [search].
+  /// The round across of the search field's clear, shown once there is text.
   static const double searchClear = 28;
 
-  /// See [search].
+  /// The search field's clear's glyph.
   static const double searchClearGlyph = 14;
 
-  /// See [search].
+  /// How far the search field's clear is pulled into its end.
   static const double searchClearPull = 6;
 
-  /// Filter chips: 32 tall, 10 in, 4 apart.
+  /// A filter chip's height.
   static const double filterChip = 32;
 
-  /// See [filterChip].
+  /// A filter chip's room at its sides.
   static const double filterChipInset = 10;
 
-  /// See [filterChip].
+  /// The gap between filter chips.
   static const double filterChipGap = 4;
 
   /// A goal card's "of" words stand 1 over the figure's foot: their 16.8
@@ -1931,221 +1827,206 @@ abstract final class FrostedChromeMetrics {
   /// scrolls away, never a shadow, a glow or a ring.
   static const double stripReach = 16;
 
-  /// A field: its label 8 over the well; the well 48 tall, 14 in, corners 12;
-  /// two fields in a line 12 apart; a form's fields 16 apart (its tile's head
-  /// 16 over them).
+  /// The gap between a field's label and its well.
   static const double fieldLabelGap = 8;
 
-  /// See [fieldLabelGap].
+  /// A field's well's height.
   static const double field = 48;
 
-  /// See [fieldLabelGap].
+  /// A field's well's room at its sides.
   static const double fieldInset = 14;
 
-  /// See [fieldLabelGap].
+  /// A field's well's corners.
   static const double fieldRadius = 12;
 
-  /// See [fieldLabelGap].
+  /// The gap between two fields in a line.
   static const double fieldsGap = 12;
 
-  /// See [fieldLabelGap].
+  /// The gap between a form's fields, its tile's head standing as far over
+  /// them.
   static const double formGap = 16;
 
-  /// An amount well: 64 tall, 12 over and 16 in, corners 14, its `$` 16 and 6
-  /// down, 2 from the figure (40 tall); the small one 48 tall, 14 in, corners
-  /// 12.
+  /// An amount well's height.
   static const double amountWell = 64;
 
-  /// See [amountWell].
+  /// The room over an amount well's figure.
   static const double amountWellTop = 12;
 
-  /// See [amountWell].
+  /// An amount well's room at its sides.
   static const double amountWellInset = 16;
 
-  /// See [amountWell].
+  /// An amount well's corners.
   static const double amountWellRadius = 14;
 
-  /// See [amountWell].
+  /// An amount well's `$`.
   static const double amountWellCurrency = 16;
 
-  /// See [amountWell].
+  /// How far an amount well's `$` stands down.
   static const double amountWellCurrencyDrop = 6;
 
-  /// See [amountWell].
+  /// The gap between an amount well's `$` and its figure.
   static const double amountWellGap = 2;
 
-  /// See [amountWell].
+  /// An amount well's figure's height.
   static const double amountWellFigure = 40;
 
-  /// See [amountWell].
+  /// A small amount well's height.
   static const double amountWellSmall = 48;
 
-  /// See [amountWell].
+  /// A small amount well's room at its sides.
   static const double amountWellSmallInset = 14;
 
-  /// See [amountWell].
+  /// A small amount well's corners.
   static const double amountWellSmallRadius = 12;
 
-  /// A picker: at least 60 tall, 10 inside (14 at its end), corners 14, its
-  /// parts 12 apart, its chevron 16.
+  /// A picker's least height.
   static const double picker = 60;
 
-  /// See [picker].
+  /// A picker's room inside.
   static const EdgeInsets pickerInset = EdgeInsets.fromLTRB(10, 10, 14, 10);
 
-  /// See [picker].
+  /// A picker's corners.
   static const double pickerRadius = 14;
 
-  /// See [picker].
+  /// The gap between a picker's parts.
   static const double pickerGap = 12;
 
-  /// See [picker].
+  /// A picker's chevron.
   static const double pickerGlyph = 16;
 
-  /// The swap between two pickers: a 32 round (a 16 glyph) on a 12 line, pulled
-  /// 14 into both.
+  /// The round across of the swap between two pickers.
   static const double swap = 32;
 
-  /// See [swap].
+  /// The swap's glyph.
   static const double swapGlyph = 16;
 
-  /// See [swap].
+  /// The line the swap stands on.
   static const double swapLine = 12;
 
-  /// See [swap].
+  /// How far the swap is pulled into both pickers.
   static const double swapPull = 14;
 
-  /// An icon picker's wells: six to a row 8 apart, 44 tall with corners 12, the
-  /// glyph 18.
+  /// An icon picker's well's height.
   static const double iconWell = 44;
 
-  /// See [iconWell].
+  /// An icon picker's well's corners.
   static const double iconWellRadius = 12;
 
-  /// See [iconWell].
+  /// The gap between an icon picker's wells.
   static const double iconWellGap = 8;
 
-  /// See [iconWell].
+  /// The glyph in an icon picker's well.
   static const double iconWellGlyph = 18;
 
-  /// See [iconWell].
+  /// How many wells stand to an icon picker's row.
   static const int iconWellsPerRow = 6;
 
-  /// The stepper: its round buttons 48 across and 12 from the well, its note
-  /// pulled 8 up under it.
+  /// The stepper's round buttons across.
   static const double stepper = 48;
 
-  /// See [stepper].
+  /// The gap between the stepper's buttons and the well.
   static const double stepperGap = 12;
 
-  /// See [stepper].
+  /// How far the stepper's note is pulled up under it.
   static const double stepperNotePull = 8;
 
-  /// A settings row: at least 52 tall, 8 over and under, its parts 12 apart,
-  /// its lines 2 apart, its chevron 16; its tile's head 4 over the rows; an off
-  /// row at 0.45.
+  /// A settings row's least height; an off row stands at 0.45.
   static const double settingRow = 52;
 
-  /// See [settingRow].
+  /// A settings row's room over and under.
   static const double settingInset = 8;
 
-  /// See [settingRow].
+  /// The gap between a settings row's parts.
   static const double settingGap = 12;
 
-  /// See [settingRow].
+  /// The gap between a settings row's lines.
   static const double settingLineGap = 2;
 
-  /// See [settingRow].
+  /// A settings row's chevron.
   static const double settingGlyph = 16;
 
-  /// See [settingRow].
+  /// The gap between a settings tile's head and its rows.
   static const double settingsHeadGap = 4;
 
   /// A settings row that is off: [disabledOpacity], the one share.
   static const double settingOffOpacity = disabledOpacity;
 
-  /// The toggle: a 44 by 26 track, its knob 22, 2 inside it; off to use at
-  /// [disabledOpacity], as every part is.
+  /// The toggle's track's width; off to use it stands at [disabledOpacity], as
+  /// every part does.
   static const double toggleWidth = 44;
 
-  /// See [toggleWidth].
+  /// The toggle's track's height.
   static const double toggleHeight = 26;
 
-  /// See [toggleWidth].
+  /// The room between the toggle's knob and its track.
   static const double toggleInset = 2;
 
-  /// See [toggleWidth].
+  /// The toggle's knob across.
   static const double toggleKnob = 22;
 
   /// A toggle that is off to use: [disabledOpacity], the one share.
   static const double toggleDisabledOpacity = disabledOpacity;
 
-  /// People: 8 apart, each its pearl 8 over its name; one not chosen, its pearl
-  /// at 0.55 (its name keeps its ink); chosen, a white ring of 2 and an ink
-  /// ring 1.5 past it.
+  /// The gap between people.
   static const double peopleGap = 8;
 
-  /// See [peopleGap].
+  /// The gap between a person's pearl and the name.
   static const double personGap = 8;
 
-  /// See [peopleGap].
+  /// The opacity of a pearl not chosen; its name keeps its ink.
   static const double personDimOpacity = 0.55;
 
-  /// See [peopleGap].
+  /// The white ring round a chosen person's pearl.
   static const double personRingInner = 2;
 
-  /// See [peopleGap].
+  /// The reach of the ink ring past a chosen person's white ring.
   static const double personRingOuter = 3.5;
 
   // --- states --------------------------------------------------------------------
 
-  /// An empty state: 24 over and under, 20 at its sides, its parts 10 apart,
-  /// its art 220 by 120 with 6 more under it, its words at most 300 wide with
-  /// 10 more under them; on the desktop 40 over, 32 at its sides and 44 under,
-  /// 12 apart, its art 330 by 180 with 8 under, its words 420 wide.
+  /// An empty state's room on a phone.
   static const EdgeInsets emptyInset = EdgeInsets.fromLTRB(20, 24, 20, 24);
 
-  /// See [emptyInset].
+  /// An empty state's room on the desktop.
   static const EdgeInsets emptyInsetWide = EdgeInsets.fromLTRB(32, 40, 32, 44);
 
-  /// See [emptyInset].
+  /// The gap between an empty state's parts on a phone.
   static const double emptyGap = 10;
 
-  /// See [emptyInset].
+  /// The gap between an empty state's parts on the desktop.
   static const double emptyGapWide = 12;
 
-  /// See [emptyInset].
+  /// The size of an empty state's art on a phone.
   static const Size emptyArt = Size(220, 120);
 
-  /// See [emptyInset].
+  /// The size of an empty state's art on the desktop.
   static const Size emptyArtWide = Size(330, 180);
 
-  /// See [emptyInset].
+  /// The room under an empty state's art on a phone.
   static const double emptyArtGap = 6;
 
-  /// See [emptyInset].
+  /// The room under an empty state's art on the desktop.
   static const double emptyArtGapWide = 8;
 
-  /// See [emptyInset].
+  /// The widest an empty state's words stand on a phone.
   static const double emptyWordsWidth = 300;
 
-  /// See [emptyInset].
+  /// The widest an empty state's words stand on the desktop.
   static const double emptyWordsWidthWide = 420;
 
-  /// See [emptyInset].
+  /// The room under an empty state's words.
   static const double emptyWordsGap = 10;
 
-  /// The loading state's ring (40 across, a stroke of 2) and the error state's
-  /// mark (56 across, its glyph 24).
+  /// The loading state's ring across.
   static const double loadingRing = 40;
 
-  /// See [loadingRing].
+  /// The loading state's ring's stroke.
   static const double loadingStroke = 2;
 
-  /// See [loadingRing].
+  /// The error state's mark across.
   static const double stateMark = 56;
 
-  /// See [loadingRing].
+  /// The error state's mark's glyph.
   static const double stateMarkGlyph = 24;
 
   // --- the shared vocabulary's parts ---------------------------------------------
@@ -2155,118 +2036,110 @@ abstract final class FrostedChromeMetrics {
   // bar, a swipe, a week, a stack of avatars); each is DERIVED from the
   // source's language of 4 point steps, its hairlines and its pills.
 
-  /// The completion check: a disc 24 across (the option's) with its ring
-  /// 1.5 wide and its tick 14.
+  /// The completion check's disc across, the option's.
   static const double check = 24;
 
-  /// See [check].
+  /// The completion check's ring's width.
   static const double checkRing = 1.5;
 
-  /// See [check].
+  /// The completion check's tick.
   static const double checkGlyph = 14;
 
-  /// The slider: a track 6 tall (the bar's) under a knob 22 across (the
-  /// toggle's), 44 tall to be reached, a bead of a stepped one 4 across.
+  /// The slider's track's height, the bar's.
   static const double sliderTrack = 6;
 
-  /// See [sliderTrack].
+  /// The slider's knob across, the toggle's.
   static const double sliderThumb = 22;
 
-  /// See [sliderTrack].
+  /// The slider's height to be reached.
   static const double sliderHeight = 44;
 
-  /// See [sliderTrack].
+  /// A stepped slider's bead across.
   static const double sliderBead = 4;
 
-  /// A tab in a line of tabs: 40 tall, 14 in at each side of its word (the
-  /// nav link's), the chosen one on the lit pill.
+  /// A tab's height in a line of tabs, the chosen one on the lit pill.
   static const double tabHeight = 40;
 
-  /// See [tabHeight].
+  /// A tab's room at each side of its word, the nav link's.
   static const double tabInset = 14;
 
-  /// A form's row: the settings row (52, 8 over and under, 12 apart); its
-  /// leading glyph on a 32 round; groups of rows 10 apart.
+  /// A form row's least height, the settings row's.
   static const double formRow = 52;
 
-  /// See [formRow].
+  /// A form row's room over and under.
   static const double formRowInset = 8;
 
-  /// See [formRow].
+  /// The gap between a form row's parts.
   static const double formRowGap = 12;
 
   /// A form row's control under its words, when large text leaves it no
   /// room beside them: as far below them as a field stands below its label.
   static const double formRowUnder = 8;
 
-  /// See [formRow].
+  /// The round a form row's leading glyph stands on, across.
   static const double formLeading = 32;
 
-  /// See [formRow].
+  /// The gap between groups of rows.
   static const double rowGroupGap = 10;
 
-  /// The action bar: 16 in at the sides, 12 over its act, its summary
-  /// stacking over the act under 320 wide or once the text is scaled to
-  /// 1.2 (the host stops the scale at 1.3).
+  /// The action bar's room at its sides.
   static const double actionBarSide = 16;
 
-  /// See [actionBarSide].
+  /// The room over the action bar's act.
   static const double actionBarTop = 12;
 
-  /// See [actionBarSide].
+  /// The gap between the action bar's summary and its act.
   static const double actionBarGap = 12;
 
-  /// See [actionBarSide].
+  /// The width under which the action bar's summary stacks over its act.
   static const double actionBarStackWidth = 320;
 
-  /// See [actionBarSide].
+  /// The text scale from which the action bar's summary stacks over its act;
+  /// the host stops the scale at 1.3.
   static const double actionBarStackScale = 1.2;
 
-  /// The composer: a line 48 tall (the well's) with 4 round its parts, its
-  /// text 10 over and under.
+  /// The composer's line height, the well's.
   static const double composer = 48;
 
-  /// See [composer].
+  /// The room round the composer's parts.
   static const double composerInset = 4;
 
-  /// See [composer].
+  /// The room over and under the composer's text.
   static const double composerText = 10;
 
-  /// The dialog on a phone: at most 320 wide, 24 from the screen's edge,
-  /// its words 24 under its head and its acts 20 under its words (the
-  /// sheet's own insets round them).
+  /// The widest the dialog stands on a phone.
   static const double dialogWidth = 320;
 
-  /// See [dialogWidth].
+  /// The dialog's least room from the screen's edge.
   static const double dialogEdge = 24;
 
-  /// See [dialogWidth].
+  /// The gap between the dialog's head and its words, the sheet's own insets
+  /// round them.
   static const double dialogWordsGap = 24;
 
-  /// See [dialogWidth].
+  /// The gap between the dialog's words and its acts.
   static const double dialogActsGap = 20;
 
   /// The counter rolls to a new value over 700 milliseconds.
   static const Duration counterRoll = Duration(milliseconds: 700);
 
-  /// A stack of avatars: each 32 across in a ring of the canvas 2 wide, the
-  /// next covering 28% of the last.
+  /// An avatar across in a stack of avatars.
   static const double avatarStack = 32;
 
-  /// See [avatarStack].
+  /// The ring of the canvas round each avatar in a stack.
   static const double avatarStackRing = 2;
 
-  /// See [avatarStack].
+  /// How much of the last avatar in a stack the next one covers.
   static const double avatarStackOverlap = 0.28;
 
-  /// The swipe: each action's block 84 wide with the 8 gap before it, a
-  /// drag past 65% of the row's width doing the first action.
+  /// A swipe action's block's width.
   static const double swipeBlock = 84;
 
-  /// See [swipeBlock].
+  /// The gap before a swipe action's block.
   static const double swipeGap = 8;
 
-  /// See [swipeBlock].
+  /// The share of the row's width a drag goes past to do the first swipe
+  /// action.
   static const double swipeFull = 0.65;
 
   /// A day of the week strip: a bead 36 across (the mark's).
@@ -2281,12 +2154,11 @@ abstract final class FrostedChromeMetrics {
 
   // --- focus ---------------------------------------------------------------------
 
-  /// The keyboard focus ring, 2 wide (the theme's heavy stroke), 2 off the
-  /// control, in the ink; the gap between is filled with the page's ground,
-  /// so the ring reads on a face filled in the ink too.
+  /// The gap between the keyboard focus ring and the control, filled with the
+  /// page's ground so the ring reads on a face filled in the ink too.
   static const double focusRingGap = 2;
 
-  /// See [focusRingGap].
+  /// The keyboard focus ring's width (the theme's heavy stroke), in the ink.
   static const double focusRingWidth = 2;
 
   /// The one outline width.

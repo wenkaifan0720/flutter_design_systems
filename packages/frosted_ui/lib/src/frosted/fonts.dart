@@ -29,11 +29,12 @@ const Map<String, List<String>> _faces = {
   'DMSans': ['DMSans-Variable'],
 };
 
-/// Loads the faces Frosted bundles, so the first frame is set in them. Await
-/// it before `runApp`: on the web a bundled face otherwise arrives after the
-/// first frames, which flash in a fallback face. An app that names its own
-/// faces (`FrostedTypeface.app`) loads those itself, the same way, with a
-/// `FontLoader`.
+/// Loads the faces Frosted bundles and the Lucide icon font its parts draw
+/// their glyphs from (`FrostedGlyphs`), so the first frame is set in them.
+/// Await it before `runApp`: on the web a bundled font otherwise arrives
+/// after the first frames, which flash in a fallback face, and a glyph shows
+/// as an empty box. An app that names its own faces (`FrostedTypeface.app`)
+/// loads those itself, the same way, with a `FontLoader`.
 ///
 /// ```dart
 /// Future<void> main() async {
@@ -45,7 +46,13 @@ const Map<String, List<String>> _faces = {
 Future<void> frostedLoadFonts() => Future.wait([
   for (final MapEntry(key: family, value: files) in _faces.entries)
     _loader(family, files).load(),
+  _icons().load(),
 ]);
+
+/// The Lucide icon font under the family `FrostedGlyphs` names, as Flutter
+/// registers a package's font.
+FontLoader _icons() => FontLoader('packages/lucide_icons_flutter/Lucide')
+  ..addFont(rootBundle.load('packages/lucide_icons_flutter/assets/lucide.ttf'));
 
 FontLoader _loader(String family, List<String> files) {
   final loader = FontLoader(frostedFontFamily(family));
