@@ -12,13 +12,10 @@ dependencies:
   material_ui: ^1.9.0
   flutter:
     sdk: flutter
-  # The gallery's delegates for the 30 locales (the README's line): the widgets' from here, Material's from material_ui.
-  flutter_localizations:
-    sdk: flutter
   keycap_ui:
     path: ../
   # An example imports the foundation itself too (its inventory, say).
-  ui_core: ^0.8.6
+  ui_core: ^0.8.8
   lucide_icons_flutter: ">=3.1.25 <5.0.0"
 
 dev_dependencies:

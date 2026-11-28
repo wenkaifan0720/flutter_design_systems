@@ -629,7 +629,9 @@ class KeycapSegment<T> {
 /// the next or the previous key and wrap. Below 600 wide the keys share the
 /// row's width; from 600 each hugs its legend. A legend never cuts short:
 /// when the keys' legends (long words, large text) don't fit the row, the
-/// keys reflow onto more rows, each whole.
+/// keys reflow onto as few rows as hold them, each whole, the rows
+/// balanced (four keys: two and two, not three and one; five: three and
+/// two), and below 600 each row shares the row's width.
 ///
 /// ```dart
 /// KeycapSegmentedButton<String>(segments: sorts, selected: {sort}, onSelectionChanged: (s) => setSort(s.first))
@@ -701,19 +703,33 @@ class KeycapSegmentedButton<T> extends StatelessWidget {
             (wide
                 ? need.reduce(math.max) * keys.length + gaps <= box.maxWidth
                 : need.fold(0.0, (a, b) => a + b) + gaps <= box.maxWidth);
-        if (!fits) {
-          return Wrap(
-            spacing: KeycapMetrics.keyGap,
-            runSpacing: KeycapMetrics.keyGap,
-            children: keys,
-          );
-        }
-        return Row(
+        Widget line(List<Widget> keys) => Row(
           mainAxisSize: wide ? MainAxisSize.max : MainAxisSize.min,
           children: [
             for (final (i, k) in keys.indexed) ...[
               if (i > 0) const SizedBox(width: KeycapMetrics.keyGap),
               wide ? Expanded(child: k) : k,
+            ],
+          ],
+        );
+        if (fits) return line(keys);
+        // As few rows as hold the keys, balanced, the longer rows first.
+        final sizes = _balancedRows(need, box.maxWidth, wide);
+        final rows = <Widget>[];
+        var at = 0;
+        for (final count in sizes) {
+          rows.add(line(keys.sublist(at, at + count)));
+          at += count;
+        }
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: wide
+              ? CrossAxisAlignment.stretch
+              : CrossAxisAlignment.start,
+          children: [
+            for (final (i, row) in rows.indexed) ...[
+              if (i > 0) const SizedBox(height: KeycapMetrics.keyGap),
+              row,
             ],
           ],
         );
@@ -874,6 +890,35 @@ class KeycapRowKey extends StatelessWidget {
 // The width a key in a row needs to print its legend whole: its words at
 // the window's text size, as bold as when latched, its glyph, its padding
 // and its side walls at their widest.
+// How many keys stand on each row when [need] (each key's width) doesn't
+// fit one row [width] wide: the fewest rows that hold them, the counts as
+// even as they go, the longer rows first. Sharing a row ([share]), its keys
+// take the widest one's width each; else each its own.
+List<int> _balancedRows(List<double> need, double width, bool share) {
+  final n = need.length;
+  List<int> split(int rows) => [
+    for (var i = 0; i < rows; i++) n ~/ rows + (i < n % rows ? 1 : 0),
+  ];
+  bool holds(List<int> sizes) {
+    var at = 0;
+    for (final count in sizes) {
+      final row = need.sublist(at, at + count);
+      at += count;
+      final keys = share
+          ? row.reduce(math.max) * count
+          : row.fold(0.0, (a, b) => a + b);
+      if (keys + KeycapMetrics.keyGap * (count - 1) > width) return false;
+    }
+    return true;
+  }
+
+  for (var rows = 2; rows < n; rows++) {
+    final sizes = split(rows);
+    if (holds(sizes)) return sizes;
+  }
+  return split(n);
+}
+
 double _rowKeyWidth(
   BuildContext context,
   KeycapThemeData theme,

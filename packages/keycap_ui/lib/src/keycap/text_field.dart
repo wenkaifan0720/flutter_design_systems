@@ -132,6 +132,10 @@ class KeycapFieldMessage extends StatelessWidget {
 /// well's edge (the danger colour while [errorText] is set). With a
 /// [validator] it checks itself in a `RawForm`, as `TextFormField` does.
 ///
+/// reset() clears the errors and the field's saved value. With a
+/// controller the text stays the controller's; to empty the field, clear
+/// the controller.
+///
 /// ```dart
 /// KeycapTextField(labelText: 'Title', controller: title, onChanged: rename)
 /// ```

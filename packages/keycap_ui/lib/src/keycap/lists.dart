@@ -202,10 +202,15 @@ class KeycapListGroup extends StatelessWidget {
             children: [
               for (final (i, row) in children.indexed) ...[
                 if (i > 0)
-                  const KeycapDivider(
-                    indent: KeycapSpacing.regular,
-                    endIndent: KeycapSpacing.regular,
-                  ),
+                  // Beside a lit row the rule runs from wall to wall, as the
+                  // tint does, so the tint never stands over a step of the
+                  // floor at its ends.
+                  _lit(children[i - 1]) || _lit(row)
+                      ? const KeycapDivider()
+                      : const KeycapDivider(
+                          indent: KeycapSpacing.regular,
+                          endIndent: KeycapSpacing.regular,
+                        ),
                 _RowPlace(
                   first: i == 0,
                   last: i == children.length - 1,
@@ -227,6 +232,9 @@ class KeycapListGroup extends StatelessWidget {
       ],
     );
   }
+
+  // Whether [row] is lit: a chosen row, its tint from wall to wall.
+  static bool _lit(Widget row) => row is KeycapListTile && row.selected;
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {

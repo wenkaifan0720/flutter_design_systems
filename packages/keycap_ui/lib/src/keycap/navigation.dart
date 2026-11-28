@@ -996,63 +996,63 @@ class KeycapScreen extends StatelessWidget {
       color: theme.colors.ground,
       child: Padding(
         padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // The bar's title and keys stand over the content's column.
-            if (bar != null)
-              fullBleed
-                  ? bar
-                  : Align(
+        child: _UnderBar(
+          rule: theme.colors.hairline,
+          // The bar's title and keys stand over the content's column.
+          bar: bar == null
+              ? null
+              : fullBleed
+              ? bar
+              : Align(
+                  alignment: AlignmentDirectional.topStart,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: maxWidth + 2 * margin,
+                    ),
+                    child: bar,
+                  ),
+                ),
+          content: content,
+          // The foot, ruled along its top. A toast stands above it, as a
+          // Scaffold keeps a snackbar above its persistent footer buttons.
+          foot: foot == null
+              ? null
+              : RawToasterKeepClear(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: theme.colors.ground,
+                      border: Border(
+                        top: BorderSide(color: theme.colors.hairline),
+                      ),
+                    ),
+                    // Its keys stand on the content's column: from 600 wide at
+                    // the column's end, under the last field, not the window's.
+                    child: Align(
                       alignment: AlignmentDirectional.topStart,
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
-                          maxWidth: maxWidth + 2 * margin,
+                          maxWidth: fullBleed
+                              ? double.infinity
+                              : maxWidth + 2 * margin,
                         ),
-                        child: bar,
-                      ),
-                    ),
-            Expanded(child: content),
-            // The foot, ruled along its top. A toast stands above it, as a
-            // Scaffold keeps a snackbar above its persistent footer buttons.
-            if (foot != null)
-              RawToasterKeepClear(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: theme.colors.ground,
-                    border: Border(
-                      top: BorderSide(color: theme.colors.hairline),
-                    ),
-                  ),
-                  // Its keys stand on the content's column: from 600 wide at
-                  // the column's end, under the last field, not the window's.
-                  child: Align(
-                    alignment: AlignmentDirectional.topStart,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: fullBleed
-                            ? double.infinity
-                            : maxWidth + 2 * margin,
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(
-                          margin,
-                          KeycapSpacing.medium,
-                          margin,
-                          KeycapSpacing.medium + media.padding.bottom,
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            margin,
+                            KeycapSpacing.medium,
+                            margin,
+                            KeycapSpacing.medium + media.padding.bottom,
+                          ),
+                          child: media.size.width >= 600
+                              ? Align(
+                                  alignment: AlignmentDirectional.centerEnd,
+                                  child: foot,
+                                )
+                              : foot,
                         ),
-                        child: media.size.width >= 600
-                            ? Align(
-                                alignment: AlignmentDirectional.centerEnd,
-                                child: foot,
-                              )
-                            : foot,
                       ),
                     ),
                   ),
                 ),
-              ),
-          ],
         ),
       ),
     );
@@ -1064,6 +1064,75 @@ class KeycapScreen extends StatelessWidget {
     properties
       ..add(FlagProperty('scroll', value: scroll, ifTrue: 'scroll'))
       ..add(FlagProperty('fullBleed', value: fullBleed, ifTrue: 'fullBleed'));
+  }
+}
+
+// A page's bar over its content and its foot under it. While the content
+// has scrolled under the bar, the bar is ruled along its foot, as the foot
+// is along its top, so a row cut at the bar's edge reads as going on above.
+class _UnderBar extends StatefulWidget {
+  const _UnderBar({
+    required this.rule,
+    required this.bar,
+    required this.content,
+    required this.foot,
+  });
+
+  final Color rule;
+  final Widget? bar;
+  final Widget content;
+  final Widget? foot;
+
+  @override
+  State<_UnderBar> createState() => _UnderBarState();
+}
+
+class _UnderBarState extends State<_UnderBar> {
+  bool _under = false;
+
+  bool _scrolled(Notification notification) {
+    final metrics = switch (notification) {
+      ScrollUpdateNotification(depth: 0, :final metrics) => metrics,
+      ScrollMetricsNotification(depth: 0, :final metrics) => metrics,
+      _ => null,
+    };
+    if (metrics != null && metrics.axis == Axis.vertical) {
+      final under = metrics.extentBefore > 0;
+      if (under != _under) setState(() => _under = under);
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bar = widget.bar;
+    final foot = widget.foot;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (bar != null)
+          DecoratedBox(
+            position: DecorationPosition.foreground,
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: _under
+                      ? widget.rule
+                      : widget.rule.withValues(alpha: 0),
+                ),
+              ),
+            ),
+            child: bar,
+          ),
+        Expanded(
+          child: NotificationListener<Notification>(
+            onNotification: _scrolled,
+            child: widget.content,
+          ),
+        ),
+        ?foot,
+      ],
+    );
   }
 }
 

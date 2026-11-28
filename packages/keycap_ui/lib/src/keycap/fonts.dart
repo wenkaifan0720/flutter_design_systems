@@ -36,23 +36,52 @@ const Map<int, String> _weights = {
 String keycapRegisteredFamily(String family) =>
     keycapFontPackage == null ? family : 'packages/$keycapFontPackage/$family';
 
-/// Loads the face Keycap bundles, so the first frame is set in it. Await it
-/// before `runApp`: on the web a bundled face otherwise arrives after the
-/// first frames, which flash in a fallback face.
+/// Loads the face Keycap bundles and Lucide's glyphs, which its parts draw
+/// with (a select's chevron, a field's clear key, a toast's mark), so the
+/// first frame is set in them. Await it before `runApp`: on the web a font
+/// otherwise arrives after the first frames, which flash in a fallback face
+/// and draw every icon as an empty box. Each file is fetched up to three
+/// times, and one that still fails is skipped, never thrown: the engine then
+/// loads it as it would have.
 ///
 /// ```dart
 /// Future<void> main() async {WidgetsFlutterBinding.ensureInitialized(); await keycapLoadFonts(); runApp(const MyApp());}
 /// ```
-Future<void> keycapLoadFonts() {
-  final loader = FontLoader(keycapRegisteredFamily(keycapFontFamily));
-  for (final file in _weights.values) {
-    loader.addFont(
-      rootBundle.load(
+Future<void> keycapLoadFonts() async {
+  await Future.wait([
+    _load(keycapRegisteredFamily(keycapFontFamily), [
+      for (final file in _weights.values)
         keycapFontPackage == null
             ? 'assets/fonts/$file'
             : 'packages/$keycapFontPackage/assets/fonts/$file',
-      ),
-    );
+    ]),
+    _load(_iconFamily, const [_iconAsset]),
+  ]);
+}
+
+// Lucide's glyphs, as Flutter registers them from their package.
+const String _iconFamily = 'packages/lucide_icons_flutter/Lucide';
+const String _iconAsset = 'packages/lucide_icons_flutter/assets/lucide.ttf';
+
+Future<void> _load(String family, List<String> assets) async {
+  try {
+    final loader = FontLoader(family);
+    for (final asset in assets) {
+      loader.addFont(_fetch(asset));
+    }
+    await loader.load();
+  } on Object {
+    // A font that can't be fetched keeps the engine's own attempt.
   }
-  return loader.load();
+}
+
+Future<ByteData> _fetch(String asset) async {
+  for (var attempt = 1; ; attempt++) {
+    try {
+      return await rootBundle.load(asset);
+    } on Object {
+      if (attempt == 3) rethrow;
+      await Future<void>.delayed(Duration(milliseconds: 250 * attempt));
+    }
+  }
 }

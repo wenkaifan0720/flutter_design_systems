@@ -192,8 +192,27 @@ class AddBookPage extends StatefulWidget {
 
 class _AddBookPageState extends State<AddBookPage> {
   final form = GlobalKey<RawFormState>();
+  final title = TextEditingController();
   DateTime? started;
   bool favourite = false;
+
+  @override
+  void dispose() {
+    title.dispose();
+    super.dispose();
+  }
+
+  // Clear the form after a save: reset() clears the errors and the fields'
+  // saved values; the text stays the controller's, so clear the controller.
+  void saved() {
+    showKeycapToast(context, 'Added ${title.text}');
+    form.currentState!.reset();
+    title.clear();
+    setState(() {
+      started = null;
+      favourite = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) => KeycapScreen(
@@ -201,13 +220,14 @@ class _AddBookPageState extends State<AddBookPage> {
     footer: KeycapButton.accent(onPressed: () => form.currentState!.submit(), child: const Text('Save')),
     body: RawForm(
       key: form,
-      onSubmit: () => showKeycapToast(context, 'Added'),
+      onSubmit: saved,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: KeycapSpacing.regular,
         children: [
           KeycapTextField(
             labelText: 'Title',
+            controller: title,
             validator: (value) => (value ?? '').trim().isEmpty ? 'Enter the title' : null,
           ),
           KeycapDatePicker(
@@ -228,6 +248,9 @@ class _AddBookPageState extends State<AddBookPage> {
   );
 }
 ```
+
+A field is checked on submit, then as the reader types; `autovalidateMode: AutovalidateMode.onUserInteraction`
+checks it from the first change, as on Flutter's `TextFormField`.
 
 **Settings: the colourway picker.** `KeycapThemeData.palettes` are the six colourways as ui_core's `RawNamedPalette`:
 an `id` to store, a `label` to show, and `swatchesFor(brightness)`, its keys' colours by day or by night (the accent,
@@ -371,7 +394,9 @@ with it. A glyph beside words, a tag and a person's monogram grow with the reade
 **Density.** `KeycapThemeData.light(density: ...)` (and `.dark`, `.preset`, `.from`) sets how tight the keys stand:
 `RawDensity.standard` (48 px keys), `.comfortable` (44) or `.compact` (40). `KeycapDensity` is the same type under
 Keycap's name, so either name works. Left out, it follows the platform, as Material's
-`VisualDensity.adaptivePlatformDensity` does. Whatever the density, every control's tap target stays at 40 by 40.
+`VisualDensity.adaptivePlatformDensity` does. `KeycapHost(density: ...)` sets it beside `palette`, for the themes
+the host builds from the colourway; a `theme` or `darkTheme` you give it keeps its own. Whatever the density, every
+control's tap target stays at 40 by 40.
 
 ## Colourways and colours
 
@@ -423,12 +448,31 @@ the look.
 - **Large text.** Text at 200% grows keys and rows rather than cutting their words.
 - **Right to left.** In a right-to-left locale the layout mirrors: keys, menus, charts and the side column read from
   the right.
-- **Control labels.** Add `RawWidgetsLocalizations.delegate` to the app's `localizationsDelegates` for the controls'
-  own words (a pager's "next page", a tag's "remove", a search's "no results") in 30 languages. Figures follow the
-  locale: dates, times, the number fields, the charts' scales and a meter's percentage write the reader's digits,
-  Arabic-Indic in Arabic.
+- **Control labels.** `RawWidgetsLocalizations.delegate` gives the controls' own words (a pager's "next page", a tag's
+  "remove", a search's "no results") in 30 languages; without it they stay English. Figures follow the locale: dates,
+  times, the number fields, the charts' scales and a meter's percentage write the reader's digits, Arabic-Indic in
+  Arabic. The delegates, as the example lists them:
 - **Motion.** Every key travels on a short, calm spring that settles without a bounce; under Reduce Motion every spring
   is critically damped.
+
+```dart
+MaterialApp(
+  // ui_core's 30 languages; in Arabic or Hebrew the app reads right to left.
+  supportedLocales: RawWidgetsLocalizations.supportedLocales,
+  localizationsDelegates: const [
+    // The controls' own words, dates and digits.
+    RawWidgetsLocalizations.delegate,
+    // Flutter's words for Material, Cupertino and the widgets, from material_ui.
+    ...GlobalMaterialLocalizations.delegates,
+  ],
+  builder: (context, child) => KeycapHost(child: child!),
+  home: const HomePage(),
+)
+```
+
+On material_ui an app needs no `flutter_localizations` dependency: `GlobalMaterialLocalizations` comes from
+`package:material_ui`, and `RawWidgetsLocalizations` from ui_core, which keycap_ui re-exports.
+`DefaultRawWidgetsLocalizations.delegate` is English only.
 
 ## Copying a component
 

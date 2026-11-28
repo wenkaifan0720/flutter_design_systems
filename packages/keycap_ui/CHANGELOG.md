@@ -1,3 +1,26 @@
+## 0.6.3
+
+- Requires ui_core 0.8.8 (ui_core_test 0.6.3 for the checks). On a phone a date's sheet covers the page's foot and
+  stands on the navigation bar, as a modal sheet does; it stopped above the foot, the dimmed Save key showing under
+  it. A swiped row is cut at its start, so its title no longer shows on the well's wall.
+- `KeycapSegmentedButton`: keys too wide for one row reflow onto as few rows as hold them, the rows balanced (four
+  keys: two and two; five: three and two), and below 600 each row shares the row's width. Before, they wrapped as
+  they came: a Density row at 390 (Auto, Compact, Comfortable, Standard) stood three and one, the first
+  row short of the edge and Standard alone. A row that fits stays one row.
+- `KeycapScreen`: a hairline under its top bar shows while the page is scrolled under it, as Material's app bar
+  marks a scrolled page; at the top the bar and the page stay one surface. Before, scrolled rows were cut straight
+  off at the bar's edge, with nothing to show more lay above.
+- `KeycapListGroup`: the rules beside a lit (selected) row run wall to wall, as its tint does. They were inset, so
+  the tint showed a 1 px step at each end.
+- `KeycapHost`: `density`, how tight the keys stand in the themes it builds from its palette (by the platform when
+  null). Its doc says which theme it gives by day and by night.
+- `keycapLoadFonts` loads the Lucide icon font the parts draw with, as well as Rubik, so no icon arrives late.
+- `KeycapTextField`'s doc says what `reset()` does with a controller: it clears the errors and the field's saved
+  value; the text stays the controller's, so to empty the field, clear the controller.
+- README: one list of localization delegates (ui_core's and material_ui's), and that an app on material_ui needs no
+  `flutter_localizations`; the example lists the same. The form clears after a save, and a line says how to check
+  as the reader types (`autovalidateMode`).
+
 ## 0.6.2
 
 - `KeycapTooltip`: over a key whose menu or popover is open, no tooltip opens at all (it had opened an empty one).
