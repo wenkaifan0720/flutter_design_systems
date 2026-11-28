@@ -129,16 +129,17 @@ abstract interface class _SheetHost {
 /// A modal bottom sheet. Push it with `Navigator.push`; its panel is
 /// [builder]'s, the screen's width, rising from the bottom edge.
 ///
-/// It stands on the bars an app keeps clear of its [RawToaster] along the
-/// bottom ([RawToasterKeepClear]: `RawAdaptiveShell`'s tab bar, a page's
-/// foot standing on it), so a floating panel never leaves a strip of them
-/// showing under it: its room ends at their top, they stay whole under the
-/// barrier (a tap there closes it, as on any of the barrier), and the
-/// bottom inset its content sees is what the screen's has left past them.
-/// A key floating over them with an edge of its own does not lift it; the
-/// keyboard, where taller, does. Pushed where the bars are not under it (a
-/// place's own navigator, an app with no toaster) it stands on the screen's
-/// foot.
+/// It stands on `RawAdaptiveShell`'s navigation bar where the app's
+/// [RawToaster] keeps it clear, so a floating panel never leaves a strip of
+/// it showing under it: its room ends at the bar's top, the bar stays whole
+/// under the barrier (a tap there closes it, as on any of the barrier), and
+/// the bottom inset its content sees is what the screen's has left past the
+/// bar. A page's foot (a Save key kept clear with [RawToasterKeepClear],
+/// on the bar or at the screen's foot) belongs to the page under the
+/// barrier, and the panel covers it; so does a key floating over the bar.
+/// The keyboard, where taller, lifts it. Pushed where the bar is not under
+/// it (a place's own navigator, a pushed page with the bar gone, an app
+/// with no toaster) it stands on the screen's foot.
 ///
 /// With [snapSizes] it rests at one of them, each a share of the room it has
 /// (the screen less the on-screen keyboard or the bars it stands on, and the
@@ -661,9 +662,9 @@ class RawBottomSheetRoute<T> extends PopupRoute<T> {
       );
     }
     final sheet = _SheetScope(host: _host, child: panel);
-    // It stands on the bars the nearest toaster keeps clear along the
-    // bottom (the shell's tab bar, a page's foot on it), or on the keyboard
-    // where that is taller; the bars under it take the bottom inset.
+    // It stands on the shell's navigation bar the nearest toaster keeps
+    // clear (not on a page's foot, which it covers), or on the keyboard
+    // where that is taller; the bar under it takes the bottom inset.
     return escapeCloses(
       context,
       KeptFloorBuilder(

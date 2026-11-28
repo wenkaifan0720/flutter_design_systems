@@ -52,10 +52,10 @@ class RawSideSheetDetails {
 
 /// A modal side sheet. Push it with `Navigator.push`; its panel is
 /// [builder]'s, sized to [width] (at most the screen less [minGap]) and the
-/// full height down to the bars an app keeps clear of its `RawToaster`
-/// along the bottom (`RawToasterKeepClear`: `RawAdaptiveShell`'s tab bar,
-/// a page's foot on it), which stay whole under its barrier and take the
-/// bottom inset under it, as a bottom sheet stands on them.
+/// full height down to `RawAdaptiveShell`'s navigation bar where an app's
+/// `RawToaster` keeps it clear, which stays whole under its barrier and
+/// takes the bottom inset under it, as a bottom sheet stands on it. A
+/// page's foot kept clear with `RawToasterKeepClear` is covered.
 ///
 /// It opens, settles and closes on a spring ([dampingRatio], [stiffness]),
 /// or closes on its own ([closeDampingRatio], [closeStiffness]), from
@@ -290,8 +290,8 @@ class RawSideSheetRoute<T> extends PopupRoute<T> {
         ),
       ),
     );
-    // It stands on the bars the nearest toaster keeps clear along the
-    // bottom (the shell's tab bar, a page's foot on it); they take the
+    // It stands on the shell's navigation bar the nearest toaster keeps
+    // clear (not on a page's foot, which it covers); the bar takes the
     // bottom inset under it.
     return KeptFloorBuilder(
       route: this,

@@ -1,7 +1,8 @@
-/// Where the parts a toaster keeps clear stand (a tab bar, a page's foot),
-/// for the surfaces opened over them: a popover prefers the side where it
-/// stays clear of them, and a sheet stands on the bars along the bottom.
-/// Inside ui_core; not exported.
+/// Where the shell's navigation a toaster keeps clear stands (its tab bar,
+/// its top header), for the surfaces opened over the page: a popover prefers
+/// the side where it stays clear of it, and a sheet stands on the bar. A
+/// page's own foot or top bar, kept clear for the toasts, is the page's: the
+/// surfaces open over it. Inside ui_core; not exported.
 library;
 
 import 'dart:math' as math;
@@ -9,41 +10,35 @@ import 'dart:math' as math;
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
-/// A toaster's area and the bands along its top and bottom that its kept
-/// parts take, as last measured. It tells its listeners as they change,
-/// after the frame when one is being built.
+/// A toaster's area and the bands along its top and bottom that the shell's
+/// navigation takes (the parts kept clear under a [KeptNavigationBar]), as
+/// last measured. It tells its listeners as they change, after the frame
+/// when one is being built.
 class KeptClear extends ChangeNotifier {
   /// The toaster's box.
   RenderBox? box;
 
-  /// The band along the box's top, in its own coordinates.
+  /// The band the shell's top header takes along the box's top, in its own
+  /// coordinates.
   double get top => _top;
 
-  /// The band along the box's bottom, in its own coordinates.
+  /// The band the shell's navigation bar takes along the box's bottom, in
+  /// its own coordinates: where a sheet stands. Not a page's foot, which the
+  /// sheet covers as part of the page under its barrier, whether it stands
+  /// on the bar or on the screen's foot; nor a key floating over the bar,
+  /// nor a part on a popup (a sheet's own foot).
   double get bottom => _bottom;
-
-  /// The part of [bottom] that bars take (a tab bar, a status line), with
-  /// the feet standing on them (a page's foot): where a sheet stands. Not a
-  /// key floating over them with an edge of its own, nor a part on a popup
-  /// (a sheet's own foot).
-  double get floor => _floor;
 
   double _top = 0;
   double _bottom = 0;
-  double _floor = 0;
   bool _telling = false;
   bool _disposed = false;
 
   /// Takes the bands as measured, and tells the listeners if they moved.
-  void update({
-    required double top,
-    required double bottom,
-    required double floor,
-  }) {
-    if (top == _top && bottom == _bottom && floor == _floor) return;
+  void update({required double top, required double bottom}) {
+    if (top == _top && bottom == _bottom) return;
     _top = top;
     _bottom = bottom;
-    _floor = floor;
     if (SchedulerBinding.instance.schedulerPhase !=
         SchedulerPhase.persistentCallbacks) {
       notifyListeners();
@@ -80,17 +75,34 @@ class KeptClear extends ChangeNotifier {
     return Rect.fromPoints(a, b);
   }
 
-  /// How much of [to]'s box, from its foot, the [floor] takes, in [to]'s
-  /// coordinates: 0 with none, where [to] ends above it, or while either
-  /// box is not laid out.
+  /// How much of [to]'s box, from its foot, the [bottom] band takes, in
+  /// [to]'s coordinates: 0 with none, where [to] ends above it, or while
+  /// either box is not laid out.
   double floorIn(RenderBox to) {
     final box = this.box;
-    if (_floor <= 0 || !_laidOut(box) || !_laidOut(to)) return 0;
+    if (_bottom <= 0 || !_laidOut(box) || !_laidOut(to)) return 0;
     final top = to
-        .globalToLocal(box!.localToGlobal(Offset(0, box.size.height - _floor)))
+        .globalToLocal(box!.localToGlobal(Offset(0, box.size.height - _bottom)))
         .dy;
     return math.max(0, to.size.height - math.max(0, top));
   }
+}
+
+/// Marks the parts kept clear below it as the shell's navigation, the one
+/// part a sheet stands on and a popover keeps clear of (`RawAdaptiveShell`
+/// puts its navigation in one). A page's foot kept clear for the toasts is
+/// not in one.
+class KeptNavigationBar extends InheritedWidget {
+  /// Marks [child].
+  const KeptNavigationBar({super.key, required super.child});
+
+  /// Whether [context] stands in one; read once, as a part is created or
+  /// updated, without a dependency.
+  static bool of(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<KeptNavigationBar>() != null;
+
+  @override
+  bool updateShouldNotify(KeptNavigationBar oldWidget) => false;
 }
 
 /// Carries a toaster's [KeptClear] to what opens below it.
@@ -112,8 +124,8 @@ class KeptClearScope extends InheritedWidget {
 }
 
 /// Builds a sheet [route]'s panel standing on the nearest toaster's
-/// [KeptClear.floor] (the bars along the bottom the route's overlay
-/// reaches over): [builder] gets the floor's height across the overlay, and
+/// [KeptClear.bottom] (the shell's navigation bar, where the route's overlay
+/// reaches over it): [builder] gets the floor's height across the overlay, and
 /// builds again as it moves; 0 with no toaster above the route.
 class KeptFloorBuilder extends StatelessWidget {
   /// Builds [builder] on [route]'s floor.

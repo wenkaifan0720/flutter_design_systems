@@ -125,6 +125,10 @@ typedef RawSwipeActionBuilder = Widget Function(
 /// The frame is the look's. In a list of rows, round the group (clip the
 /// list or its card), not the first and last rows: a row slides on its own,
 /// so a row with rounded corners shows them where it meets its neighbour.
+/// Off its rest the row is cut at its start and end edges, so its words
+/// never run onto what stands beside it (a well's wall, a card's padding);
+/// a shadow still reaches past its top and bottom, and at rest nothing is
+/// cut, so a focus ring round the row shows whole.
 /// Where a row has rounded corners anyway, [underlap] runs the actions'
 /// strip on under it, so its corners show the strip, not what is behind.
 ///
@@ -662,29 +666,41 @@ class _RawSwipeActionsState extends State<RawSwipeActions>
                         ),
                       );
                 // The row covers the whole area, so its visible strip
-                // takes the tap that closes it.
-                return Stack(
-                  fit: StackFit.passthrough,
-                  children: [
-                    ?behind,
-                    Transform.translate(
-                      offset: Offset(dx, 0),
-                      // While open, the row is one target that closes it,
-                      // and the pointer says so.
-                      child: MouseRegion(
-                        cursor: x != 0
-                            ? SystemMouseCursors.click
-                            : MouseCursor.defer,
-                        opaque: x != 0,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          excludeFromSemantics: true,
-                          onTap: x != 0 ? close : null,
-                          child: AbsorbPointer(absorbing: x != 0, child: child),
+                // takes the tap that closes it. Off its rest it is cut at
+                // its start and end, as the strip is: its words never run
+                // past the row onto what stands beside it (a well's wall,
+                // a card's padding), and a shadow still reaches past its
+                // top and bottom. At rest nothing is cut, so a focus ring
+                // round the row shows whole.
+                return ClipRect(
+                  clipper: const _AlongTheSwipe(),
+                  clipBehavior: x == 0 ? Clip.none : Clip.hardEdge,
+                  child: Stack(
+                    fit: StackFit.passthrough,
+                    children: [
+                      ?behind,
+                      Transform.translate(
+                        offset: Offset(dx, 0),
+                        // While open, the row is one target that closes it,
+                        // and the pointer says so.
+                        child: MouseRegion(
+                          cursor: x != 0
+                              ? SystemMouseCursors.click
+                              : MouseCursor.defer,
+                          opaque: x != 0,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.translucent,
+                            excludeFromSemantics: true,
+                            onTap: x != 0 ? close : null,
+                            child: AbsorbPointer(
+                              absorbing: x != 0,
+                              child: child,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 );
               },
               child: row,
@@ -696,8 +712,9 @@ class _RawSwipeActionsState extends State<RawSwipeActions>
   }
 }
 
-// The uncovered strip's clip: at its start and end only, open above and
-// below by its own height, more than any shadow an action casts. Its
+// The uncovered strip's clip, and a slid row's: at its start and end only,
+// open above and below by its own height, more than any shadow an action
+// casts. Its
 // approximate rect is the clip itself, so a reader of the paint clip (the
 // clipped-shadow check) sees where it cuts.
 /// Gives a [RawSwipeActions] row's actions to the semantics node a look's

@@ -3,6 +3,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core/ui_core.dart';
+import 'package:ui_core/src/internal/kept_clear.dart';
 
 import 'behaviour_harness.dart';
 
@@ -237,15 +238,22 @@ void main() {
     });
   }
 
-  // A phone 390 x 700 with a dock 80 high kept clear along its foot, and a
-  // date field 44 high [top] down opening a calendar [height] high.
+  // A phone 390 x 700 ([width] wide) with a dock 80 high kept clear along
+  // its foot, the shell's bar as RawAdaptiveShell marks it (a page's foot
+  // with [navigation] false), and a date field 44 high [top] down opening a
+  // calendar [height] high.
   Future<RawPopoverInfo> open(
     WidgetTester tester, {
     required double top,
     required double height,
+    bool navigation = true,
+    double width = 390,
   }) async {
     late RawPopoverInfo info;
-    await _size(tester, 390);
+    await _size(tester, width);
+    const dock = RawToasterKeepClear(
+      child: SizedBox(key: ValueKey('dock'), height: 80),
+    );
     await tester.pumpWidget(
       harness(
         RawToaster(
@@ -283,9 +291,7 @@ void main() {
                   ),
                 ),
               ),
-              const RawToasterKeepClear(
-                child: SizedBox(key: ValueKey('dock'), height: 80),
-              ),
+              if (navigation) const KeptNavigationBar(child: dock) else dock,
             ],
           ),
         ),
@@ -305,6 +311,26 @@ void main() {
     expect(info.side, RawPopoverSide.above);
     final calendar = tester.getRect(find.byKey(const ValueKey('calendar')));
     expect(calendar.bottom, lessThanOrEqualTo(300));
+  });
+
+  testWidgets("a page's foot does not turn a calendar: it opens below, over "
+      'the foot, where it fits (clay r3 at 1440 x 900)', (tester) async {
+    // As the first case, the dock a page's foot: below to the window's foot,
+    // 344, holds it.
+    for (final width in [390.0, 1440.0]) {
+      final info = await open(
+        tester,
+        top: 300,
+        height: 280,
+        navigation: false,
+        width: width,
+      );
+      expect(info.side, RawPopoverSide.below, reason: '$width wide');
+      expect(
+        tester.getRect(find.byKey(const ValueKey('calendar'))).top,
+        300 + 44 + 4,
+      );
+    }
   });
 
   testWidgets('a calendar that fits below clear of the dock stays below', (

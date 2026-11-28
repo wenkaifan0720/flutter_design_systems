@@ -116,7 +116,10 @@ class RawValueHandle extends StatefulWidget {
   final ValueChanged<double>? onChangeEnd;
 
   /// Whether the parent is dragging it ([WidgetState.dragged], and
-  /// [WidgetState.pressed] as before it).
+  /// [WidgetState.pressed] as before it). As it turns on (a press on the
+  /// look's track), the handle takes the focus, as a press on the handle
+  /// itself does: the arrows that follow move it, as a browser's range input
+  /// takes them, and a pointer's press shows no focus ring.
   final bool dragging;
 
   /// What a screen reader calls it.
@@ -282,7 +285,24 @@ class _RawValueHandleState extends State<RawValueHandle> {
     _focus.dispose();
     _controller.removeListener(_changed);
     _own?.dispose();
+    _ownNode?.dispose();
     super.dispose();
+  }
+
+  // The node it takes the focus on: the caller's, or its own.
+  FocusNode? _ownNode;
+  FocusNode get _node =>
+      widget.focusNode ??
+      (_ownNode ??= FocusNode(debugLabel: 'RawValueHandle'));
+
+  // A press on it, or on the look's track that drags it, takes the focus, so
+  // the arrows after it move this handle rather than what was focused
+  // before (a radio group the keys would change).
+  void _takeFocus() {
+    final node = _node;
+    if (_enabled && node.canRequestFocus && !node.hasFocus) {
+      node.requestFocus();
+    }
   }
 
   void _changed() {
@@ -344,6 +364,7 @@ class _RawValueHandleState extends State<RawValueHandle> {
       }
       _controller.addListener(_changed);
     }
+    if (widget.dragging && !oldWidget.dragging) _takeFocus();
     final before = Set.of(_controller.value);
     _sync(oldWidget);
     // A change the widget brought is told to the controller's listeners once
@@ -461,28 +482,31 @@ class _RawValueHandleState extends State<RawValueHandle> {
         onKeyEvent: _key,
         child: FocusableActionDetector(
           enabled: enabled,
-          focusNode: widget.focusNode,
+          focusNode: _node,
           autofocus: widget.autofocus,
           mouseCursor: cursor,
           onFocusChange: _focus.focused,
-          child: MouseRegion(
-            onEnter: (_) {
-              _hovered = true;
-              _putState(WidgetState.hovered, _enabled);
-            },
-            onExit: (_) {
-              _hovered = false;
-              _putState(WidgetState.hovered, false);
-            },
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minWidth: widget.minimumSize.width,
-                minHeight: widget.minimumSize.height,
-              ),
-              child: Center(
-                widthFactor: 1,
-                heightFactor: 1,
-                child: widget.builder(context, states),
+          child: Listener(
+            onPointerDown: (_) => _takeFocus(),
+            child: MouseRegion(
+              onEnter: (_) {
+                _hovered = true;
+                _putState(WidgetState.hovered, _enabled);
+              },
+              onExit: (_) {
+                _hovered = false;
+                _putState(WidgetState.hovered, false);
+              },
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minWidth: widget.minimumSize.width,
+                  minHeight: widget.minimumSize.height,
+                ),
+                child: Center(
+                  widthFactor: 1,
+                  heightFactor: 1,
+                  child: widget.builder(context, states),
+                ),
               ),
             ),
           ),

@@ -1,7 +1,10 @@
-// Sheets stand on the bars kept clear along the bottom: a bottom sheet or a
-// side sheet pushed over an app's shell ends at the top of the shell's bar,
-// and of a page's foot standing on it, so a floating card never leaves a
-// strip of the bar showing under it. A key floating with edge: bottom, a
+// Sheets stand on the shell's navigation bar: a bottom sheet or a side sheet
+// pushed over an app's shell ends at the top of the shell's bar, so a
+// floating card never leaves a strip of the bar showing under it. A page's
+// foot kept clear for the toasts belongs to the page under the barrier: the
+// sheet covers it, whether it stands on the bar or on the screen's foot (a
+// pushed page with the bar gone, a desk with a rail, an app with no shell),
+// and the toasts still keep clear of it. A key floating with edge: bottom, a
 // part kept clear inside the sheet, the keyboard and an app with no toaster
 // are read as before; a full-screen sheet and a dialog still cover the whole
 // screen, the bar too.
@@ -42,17 +45,36 @@ RawBottomSheetRoute<void> _sheet({Widget? foot}) => RawBottomSheetRoute<void>(
   builder: (context, details) => _floating(context, foot),
 );
 
-// The app: a shell whose bar takes the screen's bottom inset, its first
-// place a page with [page]'s foot, under one toaster unless [toaster] is
-// false. [open] pushes on the root navigator, or on the place's own.
+// The app: a shell whose bar takes the screen's bottom inset (a rail on a
+// desk), its first place a page with [page]'s foot, under one toaster unless
+// [toaster] is false. [open] pushes on the root navigator, or on the place's
+// own. With [pushed], the page with the foot is pushed on the place first,
+// and the bar goes.
 Future<void> _pump(
   WidgetTester tester, {
   required Route<void> Function() open,
   Widget Function(Widget key)? page,
   bool toaster = true,
   bool onPlace = false,
+  bool pushed = false,
+  RawNavigationMode mode = RawNavigationMode.bar,
+  Size size = const Size(390, 844),
 }) async {
-  tester.view.physicalSize = const Size(390, 844);
+  Widget withFoot(BuildContext context) => Column(
+    children: [
+      Expanded(
+        child: Builder(
+          builder: (context) => GestureDetector(
+            onTap: () =>
+                Navigator.of(context, rootNavigator: !onPlace).push(open()),
+            child: const Text('Open'),
+          ),
+        ),
+      ),
+      ?page?.call(SizedBox(key: _foot, width: size.width, height: 48)),
+    ],
+  );
+  tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   tester.view.padding = const FakeViewPadding(bottom: 20);
   addTearDown(tester.view.reset);
@@ -63,43 +85,46 @@ Future<void> _pump(
       ValueListenableBuilder<int>(
         valueListenable: place,
         builder: (context, selected, _) => RawAdaptiveShell.branches(
-          mode: RawNavigationMode.bar,
           destinations: _places,
           selectedIndex: selected,
           onDestinationSelected: (i) => place.value = i,
+          mode: mode,
           destinationBuilder: (context, d, details) =>
               SizedBox(height: 56, child: Center(child: Text(d.label))),
-          navigationBuilder: (context, details) => Padding(
-            key: _bar,
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.paddingOf(context).bottom,
-            ),
-            child: SizedBox(
-              height: 64,
-              child: Row(
-                children: [
-                  for (final d in details.destinations) Expanded(child: d),
-                ],
-              ),
-            ),
-          ),
-          branches: [
-            (context) => Column(
-              children: [
-                Expanded(
-                  child: Builder(
-                    builder: (context) => GestureDetector(
-                      onTap: () => Navigator.of(
-                        context,
-                        rootNavigator: !onPlace,
-                      ).push(open()),
-                      child: const Text('Open'),
+          navigationBuilder: (context, details) => mode == RawNavigationMode.bar
+              ? Padding(
+                  key: _bar,
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.paddingOf(context).bottom,
+                  ),
+                  child: SizedBox(
+                    height: 64,
+                    child: Row(
+                      children: [
+                        for (final d in details.destinations)
+                          Expanded(child: d),
+                      ],
                     ),
                   ),
+                )
+              : SizedBox(
+                  key: _bar,
+                  width: 80,
+                  child: Column(children: details.destinations),
                 ),
-                ?page?.call(const SizedBox(key: _foot, width: 390, height: 48)),
-              ],
-            ),
+          branches: [
+            (context) => pushed
+                ? Builder(
+                    builder: (context) => GestureDetector(
+                      onTap: () => Navigator.of(context).push(
+                        PageRouteBuilder<void>(
+                          pageBuilder: (context, _, _) => withFoot(context),
+                        ),
+                      ),
+                      child: const Text('Push'),
+                    ),
+                  )
+                : withFoot(context),
             (context) => const Text('Add page'),
           ],
         ),
@@ -113,9 +138,15 @@ Future<void> _pump(
     ),
   );
   await tester.pumpAndSettle();
+  if (pushed) {
+    await tester.tap(find.text('Push'));
+    await tester.pumpAndSettle();
+  }
   await tester.tap(find.text('Open'));
   await tester.pumpAndSettle();
 }
+
+Rect _footRect(WidgetTester tester) => tester.getRect(find.byKey(_foot));
 
 double _barTop(WidgetTester tester) => tester.getRect(find.byKey(_bar)).top;
 
@@ -135,15 +166,85 @@ void main() {
     expect(find.text('Open'), findsOneWidget);
   });
 
-  testWidgets("it stands on a page's foot standing on the bar", (tester) async {
+  testWidgets("it covers a page's foot standing on the bar and stands on the "
+      'bar; the toasts keep clear of both', (tester) async {
     await _pump(
       tester,
       open: _sheet,
       page: (key) => RawToasterKeepClear(child: key),
     );
-    final foot = tester.getRect(find.byKey(_foot)).top;
+    final foot = _footRect(tester).top;
     expect(foot, _barTop(tester) - 48);
-    expect(tester.getRect(find.byKey(_card)).bottom, foot - 16);
+    // Gloss's "Add book" and Keycap's "Save": the date sheet ran down to
+    // the foot's top, and the dimmed key showed between it and the bar.
+    expect(tester.getRect(find.byKey(_card)).bottom, _barTop(tester) - 16);
+    expect(_inset, 0, reason: 'the bar under the sheet takes the inset');
+    RawToaster.of(tester.element(find.text('Open')))
+        .show(const RawToast(message: 'Saved'));
+    await tester.pumpAndSettle();
+    expect(tester.getRect(find.text('Saved')).bottom, lessThanOrEqualTo(foot));
+  });
+
+  testWidgets("a page's foot at the screen's foot, the bar gone on a pushed "
+      'page, does not lift it', (tester) async {
+    await _pump(
+      tester,
+      open: _sheet,
+      pushed: true,
+      page: (key) => RawToasterKeepClear(child: key),
+    );
+    expect(_footRect(tester).bottom, 844);
+    expect(tester.getRect(find.byKey(_card)).bottom, 844 - 16);
+    expect(_inset, 20, reason: "nothing stands under it: the screen's inset");
+  });
+
+  testWidgets("on a desk, a page's foot beside the rail does not lift it", (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      open: _sheet,
+      mode: RawNavigationMode.rail,
+      size: const Size(1440, 900),
+      page: (key) => RawToasterKeepClear(child: key),
+    );
+    expect(_footRect(tester).bottom, 900);
+    expect(tester.getRect(find.byKey(_card)).bottom, 900 - 16);
+    expect(_inset, 20);
+  });
+
+  testWidgets("with no shell, a page's foot kept clear does not lift it", (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      harness(
+        Column(
+          children: [
+            Expanded(
+              child: Builder(
+                builder: (context) => GestureDetector(
+                  onTap: () => Navigator.of(context).push(_sheet()),
+                  child: const Text('Open'),
+                ),
+              ),
+            ),
+            const RawToasterKeepClear(
+              child: SizedBox(key: _foot, width: 390, height: 48),
+            ),
+          ],
+        ),
+        wrap: (context, navigator) => RawToaster(
+          toastBuilder: (context, details) => Text(details.toast.message),
+          child: navigator!,
+        ),
+      ),
+    );
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    expect(tester.getRect(find.byKey(_card)).bottom, 844 - 16);
   });
 
   testWidgets('a key floating with edge: bottom does not lift it', (
@@ -183,9 +284,12 @@ void main() {
     expect(tester.getRect(find.byKey(_card)).bottom, 844 - 300 - 16);
   });
 
-  testWidgets('a side sheet ends at the top of the bar', (tester) async {
+  testWidgets("a side sheet ends at the top of the bar, past a page's foot", (
+    tester,
+  ) async {
     await _pump(
       tester,
+      page: (key) => RawToasterKeepClear(child: key),
       open: () => RawSideSheetRoute<void>(
         builder: (context, details) {
           _inset = MediaQuery.paddingOf(context).bottom;

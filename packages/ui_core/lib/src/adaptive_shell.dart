@@ -12,6 +12,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
+import 'internal/kept_clear.dart';
 import 'internal/panes.dart';
 import 'internal/roving_focus.dart';
 import 'localizations.dart';
@@ -1119,15 +1120,18 @@ class _RawAdaptiveShellState extends State<RawAdaptiveShell>
     // A bar keeps the toasts above it, as Material's Scaffold keeps a
     // snackbar above its bottomNavigationBar; a header keeps them below it;
     // a rail or a sidebar beside it, whatever stands above or below it, so
-    // they centre on the body.
-    navigation = RawToasterKeepClear(
-      edge: switch (mode) {
-        RawNavigationMode.bar => null,
-        RawNavigationMode.top => RawKeepClearEdge.top,
-        RawNavigationMode.rail ||
-        RawNavigationMode.sidebar => RawKeepClearEdge.start,
-      },
-      child: navigation,
+    // they centre on the body. The bar is the one part a sheet opened over
+    // the shell stands on; a page's foot kept clear on it is covered.
+    navigation = KeptNavigationBar(
+      child: RawToasterKeepClear(
+        edge: switch (mode) {
+          RawNavigationMode.bar => null,
+          RawNavigationMode.top => RawKeepClearEdge.top,
+          RawNavigationMode.rail ||
+          RawNavigationMode.sidebar => RawKeepClearEdge.start,
+        },
+        child: navigation,
+      ),
     );
     final branches = widget.branches;
     Widget body = branches == null ? widget.body! : _branches(branches);

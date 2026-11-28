@@ -272,6 +272,46 @@ void main() {
     expect(clip.describeApproximatePaintClip(clip.child!), cut);
   });
 
+  testWidgets('a slid row is cut at its start and end, open above and '
+      'below; at rest nothing is cut', (tester) async {
+    // Keycap r3: a swiped title ran past the row onto the well's wall.
+    Rect visible(Finder f) {
+      final box = tester.renderObject<RenderBox>(f);
+      var rect = MatrixUtils.transformRect(
+        box.getTransformTo(null),
+        Offset.zero & box.size,
+      );
+      for (RenderObject? o = box.parent; o != null; o = o.parent) {
+        if (o is RenderClipRect && o.clipBehavior != Clip.none) {
+          final cut = o.clipper?.getClip(o.size) ?? Offset.zero & o.size;
+          rect = rect.intersect(
+            MatrixUtils.transformRect(o.getTransformTo(null), cut),
+          );
+        }
+      }
+      return rect;
+    }
+
+    await tester.pumpWidget(_row(initiallyOpen: true));
+    expect(_rowLeft(tester), -160);
+    final words = visible(find.text('Message'));
+    expect(words.left, 0, reason: "cut at the row's start");
+    final clip = tester.renderObject<RenderClipRect>(
+      find
+          .ancestor(of: find.text('Message'), matching: find.byType(ClipRect))
+          .first,
+    );
+    final cut = clip.clipper!.getClip(clip.size);
+    expect(cut.top, lessThan(-6), reason: 'open above, past a shadow');
+    expect(cut.bottom, greaterThan(clip.size.height + 6), reason: 'and below');
+
+    // The row's strip still in sight closes it.
+    await tester.tapAt(const Offset(70, 30));
+    await tester.pumpAndSettle();
+    expect(_rowLeft(tester), 0);
+    expect(clip.clipBehavior, Clip.none, reason: 'a ring round it shows whole');
+  });
+
   testWidgets('an underlap runs the strip on under the row: the innermost '
       'slot is that much wider, and the row still takes the tap', (
     tester,

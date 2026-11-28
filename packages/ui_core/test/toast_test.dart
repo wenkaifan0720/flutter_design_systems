@@ -461,6 +461,62 @@ void main() {
     expect(find.text('Deleted'), findsNothing);
   });
 
+  testWidgets('a focused action that leaves the tree holds no toast: clay '
+      "r3's toasts that stacked for good under the web's semantics", (
+    tester,
+  ) async {
+    // The web's semantics focus the key a click lands on; Flutter tells the
+    // parts above a focused node that leaves the tree nothing, so the stack
+    // kept itself focused and every later toast waited.
+    final focused = <String, bool>{};
+    Widget paint(BuildContext context, RawToastDetails details) {
+      focused[details.toast.message] = details.focused;
+      return _paint(context, details);
+    }
+
+    await tester.pumpWidget(
+      _app(accessibleNavigation: true, toastBuilder: paint),
+    );
+    final saved = _toaster.show(const RawToast(message: 'Saved'));
+    _toaster.show(
+      RawToast(
+        id: 'book',
+        message: 'Deleted',
+        actionLabel: 'Undo',
+        onAction: () {},
+      ),
+    );
+    await tester.pumpAndSettle();
+    Focus.of(tester.element(find.text('Undo'))).requestFocus();
+    await tester.pump();
+    await tester.pump();
+    expect(_toaster.paused, isTrue, reason: 'focus in a toast pauses it');
+    expect(focused['Deleted'], isTrue);
+    await tester.pump(const Duration(seconds: 10));
+    expect(find.text('Saved'), findsOneWidget, reason: 'paused with it');
+
+    // The key leaves while focused: the toast, replaced in place, has none.
+    final restored = _toaster.show(
+      const RawToast(id: 'book', message: 'Restored'),
+    );
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('Undo'), findsNothing);
+    expect(_toaster.paused, isFalse);
+    expect(focused['Restored'], isFalse);
+    final added = _toaster.show(const RawToast(message: 'Added'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+    // Each left after its time: none of them waits for good.
+    for (final message in ['Saved', 'Restored', 'Added']) {
+      expect(find.text(message), findsNothing, reason: message);
+    }
+    expect(await saved.closed, RawToastClosedReason.timeout);
+    expect(await restored.closed, RawToastClosedReason.timeout);
+    expect(await added.closed, RawToastClosedReason.timeout);
+  });
+
   testWidgets('a toast with a shown id replaces it in place', (tester) async {
     await tester.pumpWidget(_app());
     final first = _toaster.show(

@@ -8,7 +8,7 @@ it, so an app that uses a look rarely imports it directly. Add it to build a loo
 
 ```yaml
 dependencies:
-  ui_core: ^0.8.7
+  ui_core: ^0.8.8
 ```
 
 ```dart
@@ -150,6 +150,9 @@ through its accessibility nodes and change appearance with Arabic text at twice 
 They are built from `RawButton` (a press, focus, hover and semantics on any widget) and `RawValueHandle`
 (a value dragged or stepped with the keys). Each class's documentation has an example.
 
+A press on a handle, or on a look's track that drags it, takes the focus without showing it, so the arrows after it
+move that slider, as a browser's range input does; a press on `RawRangeSlider`'s track focuses the thumb it moves.
+
 A slider's value reaches a screen reader as a whole percentage of its range ("23%" for 12 of 52), as Material's
 `Slider` says it. Where the number means something of its own, pass `semanticFormatterCallback` (on
 `RawValueHandle` and `RawRangeSlider`, as on Material's `Slider`): `(value) => '${value.round()} books'` says
@@ -250,8 +253,9 @@ floating on the page's padding takes `edge: RawKeepClearEdge.bottom`. A toast ra
 instead lives and dies with that navigator: it goes when its destination is switched away, and it does not know the
 bars.
 
-A sheet opened over the shell stands on the same bars. A bottom sheet on the root navigator (`RawBottomSheetRoute`)
-ends at the top of the bar and of a footer kept clear on it, and a side sheet (`RawSideSheetRoute`) runs down to it;
+A sheet opened over the shell stands on the shell's bar only. A bottom sheet on the root navigator
+(`RawBottomSheetRoute`) ends at the top of the bar and covers a page's footer, one kept clear for toasts on the bar
+or one at the screen's foot on a pushed page with the bar gone; a side sheet (`RawSideSheetRoute`) runs down to it;
 the bar keeps the bottom inset under them, and their barrier covers it, so a tap on the bar closes the sheet. A
 keyboard taller than the bar lifts a bottom sheet over it; a key floating with `edge: RawKeepClearEdge.bottom` does
 not. A sheet on a destination's own navigator stands above the bar already. A full-screen sheet (`RawSheetRoute`)

@@ -233,6 +233,28 @@ void main() {
     expect(_host.values, const RawRangeValues(65, 75), reason: 'a gap of 10');
   });
 
+  testWidgets('a press on the track focuses the thumb it moves, so the '
+      'arrows after it move that thumb', (tester) async {
+    await tester.pumpWidget(harness(const _Host()));
+    await tester.tapAt(
+      // Off the end thumb and its target, on the track.
+      const Offset(20 + 280, 20),
+      kind: PointerDeviceKind.mouse,
+    );
+    await tester.pump();
+    expect(_host.values, const RawRangeValues(20, 70));
+    expect(
+      _thumbs[1],
+      isNot(contains(WidgetState.focused)),
+      reason: "a pointer's press shows no ring",
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pump();
+    expect(_host.values, const RawRangeValues(20, 71));
+    expect(_thumbs[1], contains(WidgetState.focused), reason: 'a key shows it');
+    expect(_thumbs[0], isNot(contains(WidgetState.focused)));
+  });
+
   testWidgets('the thumb moved last is drawn on top, mid-drag and after, '
       'and keeps its focus as the order changes', (tester) async {
     FocusManager.instance.highlightStrategy =
@@ -261,8 +283,8 @@ void main() {
     await drag.up();
     await tester.pump();
     expect(top(), 'thumb 0', reason: 'the last dragged stays on top');
+    expect(_thumbs[0], contains(WidgetState.focused), reason: 'its press');
 
-    await _press(tester, LogicalKeyboardKey.tab);
     await _press(tester, LogicalKeyboardKey.tab);
     expect(_thumbs[1], contains(WidgetState.focused));
     await _press(tester, LogicalKeyboardKey.arrowLeft);

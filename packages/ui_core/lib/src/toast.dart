@@ -395,7 +395,6 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
   final List<_ToastRecord> _waiting = [];
   int _nextId = 0;
   bool _hovered = false;
-  bool _focused = false;
   FocusNode? _returnFocus;
   // The F6 cycle the toaster's toasts are a pane of.
   final GlobalKey<PaneCycleState> _cycle = GlobalKey();
@@ -424,11 +423,8 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
   void _clearChanged() {
     final parts = _kept.values.toList();
     final clear = _keptBands(parts, _keptSize);
-    _area.update(
-      top: clear.top,
-      bottom: clear.bottom,
-      floor: _keptBands(parts, _keptSize, floor: true).bottom,
-    );
+    final navigation = _keptBands(parts, _keptSize, navigation: true);
+    _area.update(top: navigation.top, bottom: navigation.bottom);
     if (clear == _clear) return;
     _clear = clear;
     // With nothing shown, the next toast's build reads it.
@@ -451,7 +447,32 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
 
   /// Whether the shown toasts' time is paused.
   bool get paused =>
-      (widget.pauseOnHover && _hovered) || (widget.pauseOnFocus && _focused);
+      (widget.pauseOnHover && _hovered) ||
+      (widget.pauseOnFocus && _shown.any((r) => r.focusNode.hasFocus));
+
+  @override
+  void initState() {
+    super.initState();
+    FocusManager.instance.addListener(_focusMoved);
+  }
+
+  // Focus moved anywhere in the app. Flutter tells the parts a focus leaves
+  // only while the focused node stays in the tree: a focused key leaving
+  // with its toast, or rebuilt by the look (the web's semantics focus the
+  // key a click lands on), told the stack nothing, and every later toast
+  // waited for good. So focus is read from where it is now.
+  void _focusMoved() {
+    if (!mounted) return;
+    var moved = false;
+    for (final record in _shown) {
+      final focused = record.focusNode.hasFocus;
+      if (record.focused == focused) continue;
+      record.focused = focused;
+      moved = true;
+    }
+    if (moved) setState(() {});
+    _syncTimers();
+  }
 
   /// Shows [toast], or queues it while [RawToaster.maxVisible] are shown.
   /// A toast whose [RawToast.id] matches one shown or waiting replaces
@@ -668,6 +689,7 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    FocusManager.instance.removeListener(_focusMoved);
     for (final record in [..._shown, ..._waiting]) {
       if (!record.completer.isCompleted) {
         record.completer.complete(RawToastClosedReason.cleared);
@@ -710,10 +732,6 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
     );
     face = Focus(
       focusNode: record.focusNode,
-      onFocusChange: (focused) {
-        if (record.focused == focused || !mounted) return;
-        setState(() => record.focused = focused);
-      },
       onKeyEvent: (node, event) {
         if (event is KeyDownEvent &&
             event.logicalKey == LogicalKeyboardKey.escape) {
@@ -761,17 +779,6 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
           ? null
           : widget.regionLabel ??
                 RawWidgetsLocalizations.of(context).toasterRegionLabel,
-      child: stack,
-    );
-    stack = Focus(
-      canRequestFocus: false,
-      skipTraversal: true,
-      includeSemantics: false,
-      onFocusChange: (focused) {
-        if (_focused == focused) return;
-        setState(() => _focused = focused);
-        _syncTimers();
-      },
       child: stack,
     );
     // A pointer moved over the stack pauses it, as Radix's toast viewport
@@ -885,12 +892,14 @@ enum RawKeepClearEdge {
 /// [RawToaster.padding] stays between the band and the toasts.
 ///
 /// A surface opened over the page (a popover, a menu, a select's list)
-/// prefers the side of its anchor where it stays clear of the parts kept
-/// clear along the top and bottom: a calendar under a date field near a
+/// prefers the side of its anchor where it stays clear of the shell's
+/// navigation along the top and bottom: a calendar under a date field near a
 /// phone's tab bar opens above the field when it fits there. Where neither
-/// side holds it, it may cover them. `RawAdaptiveShell` keeps its bar clear
-/// along the bottom, its top header along the top and its rail or sidebar
-/// along the start.
+/// side holds it, it may cover the bar. A page's own foot or top bar kept
+/// clear for the toasts is the page's: a surface opens over it as over the
+/// rest of the page, and a sheet covers it. `RawAdaptiveShell` keeps its
+/// bar clear along the bottom, its top header along the top and its rail or
+/// sidebar along the start.
 ///
 /// ```dart
 /// Column(
@@ -920,6 +929,7 @@ class RawToasterKeepClear extends SingleChildRenderObjectWidget {
     edge,
     Directionality.maybeOf(context) ?? TextDirection.ltr,
     ModalRoute.of(context),
+    KeptNavigationBar.of(context),
   );
 
   @override
@@ -929,7 +939,8 @@ class RawToasterKeepClear extends SingleChildRenderObjectWidget {
       ..onstage = TickerMode.valuesOf(context).enabled
       ..edge = edge
       ..textDirection = Directionality.maybeOf(context) ?? TextDirection.ltr
-      ..route = ModalRoute.of(context);
+      ..route = ModalRoute.of(context)
+      ..navigationBar = KeptNavigationBar.of(context);
   }
 
   @override
@@ -946,7 +957,12 @@ enum _Side { top, bottom, left, right }
 
 @immutable
 class _KeptPart {
-  const _KeptPart(this.rect, this.side, {this.raised = false});
+  const _KeptPart(
+    this.rect,
+    this.side, {
+    this.raised = false,
+    this.navigationBar = false,
+  });
 
   final Rect rect;
 
@@ -956,15 +972,19 @@ class _KeptPart {
   // Whether it stands on a popup (a sheet's own foot), not on a page.
   final bool raised;
 
+  // Whether it is the shell's navigation bar, the one part a sheet stands on.
+  final bool navigationBar;
+
   @override
   bool operator ==(Object other) =>
       other is _KeptPart &&
       other.rect == rect &&
       other.side == side &&
-      other.raised == raised;
+      other.raised == raised &&
+      other.navigationBar == navigationBar;
 
   @override
-  int get hashCode => Object.hash(rect, side, raised);
+  int get hashCode => Object.hash(rect, side, raised, navigationBar);
 }
 
 class _RenderKeepClear extends RenderProxyBox {
@@ -974,6 +994,7 @@ class _RenderKeepClear extends RenderProxyBox {
     this._edge,
     this._textDirection,
     this._route,
+    this._navigationBar,
   );
 
   RawToasterState? _toaster;
@@ -1022,6 +1043,14 @@ class _RenderKeepClear extends RenderProxyBox {
     if (attached) _listen(value, true);
   }
 
+  // Whether it stands in the shell's navigation bar (KeptNavigationBar).
+  bool _navigationBar;
+  set navigationBar(bool value) {
+    if (value == _navigationBar) return;
+    _navigationBar = value;
+    _measure();
+  }
+
   void _listen(ModalRoute<Object?>? route, bool on) {
     for (final animation in [route?.animation, route?.secondaryAnimation]) {
       if (on) {
@@ -1064,7 +1093,12 @@ class _RenderKeepClear extends RenderProxyBox {
     };
     toaster._keepClear(
       this,
-      _KeptPart(rect, side, raised: _route is PopupRoute),
+      _KeptPart(
+        rect,
+        side,
+        raised: _route is PopupRoute,
+        navigationBar: _navigationBar,
+      ),
       area,
     );
   }
@@ -1107,19 +1141,22 @@ class _RenderKeepClear extends RenderProxyBox {
 // kept top bar and a kept status line), like a part reaching both edges,
 // keeps nothing clear.
 //
-// With [floor], the band a sheet stands on: the bottom band's bars, those
-// reaching the bottom edge (with an edge of their own or not), and the feet
-// chained on them; a part with an edge that floats over them (a key), and a
-// part on a popup (a sheet's own foot), are left out.
+// With [navigation], the bands the shell's navigation takes: its bar along
+// the bottom, reaching the bottom edge, where a sheet stands, and its top
+// header, which a popover keeps clear of with the bar. A page's foot or top
+// bar (standing on the bar or on the screen's edge) is left out, as the
+// surfaces opened over the page cover it with the page; so are a part with
+// an edge that floats over the bar (a key) and a part on a popup (a sheet's
+// own foot).
 EdgeInsets _keptBands(
   List<_KeptPart> allParts,
   Size size, {
-  bool floor = false,
+  bool navigation = false,
 }) {
-  final parts = floor
+  final parts = navigation
       ? [
           for (final p in allParts)
-            if (!p.raised) p,
+            if (p.navigationBar && !p.raised) p,
         ]
       : allParts;
   final height = size.height;
@@ -1137,7 +1174,7 @@ EdgeInsets _keptBands(
             bottom
                 ? atBottom(parts[i].rect) && !atTop(parts[i].rect)
                 : atTop(parts[i].rect) && !atBottom(parts[i].rect),
-          _Side.bottom => bottom && (!floor || atBottom(parts[i].rect)),
+          _Side.bottom => bottom && (!navigation || atBottom(parts[i].rect)),
           _Side.top => !bottom,
           _Side.left || _Side.right => false,
         })

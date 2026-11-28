@@ -211,6 +211,21 @@ class RawRangeSlider extends StatefulWidget {
 }
 
 class _RawRangeSliderState extends State<RawRangeSlider> {
+  // Each thumb's node: a press on the track focuses the thumb it moves, so
+  // the arrows after it move that thumb.
+  final _thumbNodes = [
+    FocusNode(debugLabel: 'RawRangeSlider start'),
+    FocusNode(debugLabel: 'RawRangeSlider end'),
+  ];
+
+  @override
+  void dispose() {
+    for (final node in _thumbNodes) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
   int? _dragging;
 
   // The thumb painted on top where the two meet: the one moved last.
@@ -312,6 +327,7 @@ class _RawRangeSliderState extends State<RawRangeSlider> {
           width: thumb.width,
           height: thumb.height,
           child: RawValueHandle(
+            focusNode: _thumbNodes[index],
             value: index == 0 ? r.start : r.end,
             min: widget.min,
             max: widget.max,
@@ -385,6 +401,7 @@ class _RawRangeSliderState extends State<RawRangeSlider> {
                     final v = _valueAt(d.localPosition.dx, width);
                     final i = _nearer(v);
                     _moving(i);
+                    _thumbNodes[i].requestFocus();
                     _setFromTrack(i, v);
                   },
             child: SizedBox(

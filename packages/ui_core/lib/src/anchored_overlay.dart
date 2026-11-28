@@ -1227,10 +1227,11 @@ class _RawAnchoredOverlayState extends State<RawPopover>
     return _surfaceKeys.value?.call(node, event) ?? KeyEventResult.ignored;
   }
 
-  // The overlay's bounds less the parts a toaster keeps clear along the top
-  // and the bottom (a tab bar, a page's foot), and the margin from them:
-  // where the surface would rather stay. Null when there are none, or where
-  // the anchor stands in one (a menu from the tab bar).
+  // The overlay's bounds less the shell's navigation a toaster keeps clear
+  // along the top and the bottom (its tab bar, its top header; not a page's
+  // foot, which is the page's), and the margin from them: where the surface
+  // would rather stay. Null when there is none, or where the anchor stands
+  // in it (a menu from the tab bar).
   Rect? _clearOf(BuildContext context, Rect bounds, Rect anchor) {
     final area = KeptClearScope.maybeOf(context);
     final overlay = Overlay.maybeOf(
@@ -1273,7 +1274,7 @@ class _RawAnchoredOverlayState extends State<RawPopover>
             0,
           );
     final delegate = widget.positionDelegate;
-    // Clear of the parts kept clear where a side there holds it; a caller
+    // Clear of the shell's navigation where a side there holds it; a caller
     // that places it keeps the whole bounds.
     final clear = delegate == null ? _clearOf(context, outer, anchor) : null;
     final bounds = rawResolveBounds(
