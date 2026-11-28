@@ -422,10 +422,13 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
   }
 
   void _clearChanged() {
-    final clear = _keptBands(_kept.values.toList(), _keptSize);
-    _area
-      ..top = clear.top
-      ..bottom = clear.bottom;
+    final parts = _kept.values.toList();
+    final clear = _keptBands(parts, _keptSize);
+    _area.update(
+      top: clear.top,
+      bottom: clear.bottom,
+      floor: _keptBands(parts, _keptSize, floor: true).bottom,
+    );
     if (clear == _clear) return;
     _clear = clear;
     // With nothing shown, the next toast's build reads it.
@@ -671,6 +674,7 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
       }
       record.dispose();
     }
+    _area.dispose();
     super.dispose();
   }
 
@@ -942,19 +946,25 @@ enum _Side { top, bottom, left, right }
 
 @immutable
 class _KeptPart {
-  const _KeptPart(this.rect, this.side);
+  const _KeptPart(this.rect, this.side, {this.raised = false});
 
   final Rect rect;
 
   // Null: read from where it stands.
   final _Side? side;
 
-  @override
-  bool operator ==(Object other) =>
-      other is _KeptPart && other.rect == rect && other.side == side;
+  // Whether it stands on a popup (a sheet's own foot), not on a page.
+  final bool raised;
 
   @override
-  int get hashCode => Object.hash(rect, side);
+  bool operator ==(Object other) =>
+      other is _KeptPart &&
+      other.rect == rect &&
+      other.side == side &&
+      other.raised == raised;
+
+  @override
+  int get hashCode => Object.hash(rect, side, raised);
 }
 
 class _RenderKeepClear extends RenderProxyBox {
@@ -1052,7 +1062,11 @@ class _RenderKeepClear extends RenderProxyBox {
       RawKeepClearEdge.start => ltr ? _Side.left : _Side.right,
       RawKeepClearEdge.end => ltr ? _Side.right : _Side.left,
     };
-    toaster._keepClear(this, _KeptPart(rect, side), area);
+    toaster._keepClear(
+      this,
+      _KeptPart(rect, side, raised: _route is PopupRoute),
+      area,
+    );
   }
 
   @override
@@ -1092,7 +1106,22 @@ class _RenderKeepClear extends RenderProxyBox {
 // joins that. Chains repeat. A part that would join both (a rail between a
 // kept top bar and a kept status line), like a part reaching both edges,
 // keeps nothing clear.
-EdgeInsets _keptBands(List<_KeptPart> parts, Size size) {
+//
+// With [floor], the band a sheet stands on: the bottom band's bars, those
+// reaching the bottom edge (with an edge of their own or not), and the feet
+// chained on them; a part with an edge that floats over them (a key), and a
+// part on a popup (a sheet's own foot), are left out.
+EdgeInsets _keptBands(
+  List<_KeptPart> allParts,
+  Size size, {
+  bool floor = false,
+}) {
+  final parts = floor
+      ? [
+          for (final p in allParts)
+            if (!p.raised) p,
+        ]
+      : allParts;
   final height = size.height;
   bool meets(double a, double b) => (a - b).abs() <= 0.5;
   bool across(Rect a, Rect b) =>
@@ -1108,7 +1137,7 @@ EdgeInsets _keptBands(List<_KeptPart> parts, Size size) {
             bottom
                 ? atBottom(parts[i].rect) && !atTop(parts[i].rect)
                 : atTop(parts[i].rect) && !atBottom(parts[i].rect),
-          _Side.bottom => bottom,
+          _Side.bottom => bottom && (!floor || atBottom(parts[i].rect)),
           _Side.top => !bottom,
           _Side.left || _Side.right => false,
         })

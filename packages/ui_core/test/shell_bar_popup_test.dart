@@ -41,7 +41,7 @@ void main() {
   late RawNavigationDetails shown;
   late List<GlobalKey<NavigatorState>> keys;
 
-  Future<void> pump(WidgetTester tester) async {
+  Future<void> pump(WidgetTester tester, {WidgetBuilder? books}) async {
     tester.view.physicalSize = const Size(390, 700);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -69,7 +69,10 @@ void main() {
           },
           navigatorKeys: keys,
           branches: [
-            for (final d in _destinations) (context) => Text('${d.label} root'),
+            for (final d in _destinations)
+              d == _destinations.first && books != null
+                  ? books
+                  : (context) => Text('${d.label} root'),
           ],
         ),
       ),
@@ -171,5 +174,31 @@ void main() {
     books.removeRoute(detail);
     await tester.pumpAndSettle();
     expectBar(there: true, reason: 'the page removed under the popup');
+  });
+  testWidgets('a popover open on a branch page (a date field\'s calendar) '
+      'holds Back but leaves the bar where it is', (tester) async {
+    await pump(
+      tester,
+      books: (context) => Align(
+        child: RawPopover(
+          semanticLabel: 'Calendar',
+          anchorBuilder: (context, anchor) =>
+              GestureDetector(onTap: anchor.toggle, child: const Text('Due')),
+          overlayBuilder: (context, info) =>
+              const SizedBox(width: 200, height: 160, child: Text('Calendar')),
+        ),
+      ),
+    );
+    final at = tester.getRect(find.byKey(const ValueKey('bar')));
+    await tester.tap(find.text('Due'));
+    await tester.pumpAndSettle();
+    expect(find.text('Calendar'), findsOneWidget);
+    expectBar(there: true, reason: 'a popover is no page');
+    expect(tester.getRect(find.byKey(const ValueKey('bar'))), at);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('Calendar'), findsNothing, reason: 'Back closed it');
+    expect(find.text('Due'), findsOneWidget, reason: 'the page stays');
+    expectBar(there: true, reason: 'the popover closed');
   });
 }

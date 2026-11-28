@@ -10,6 +10,7 @@ import 'package:flutter/widgets.dart';
 import 'barrier.dart';
 import 'internal/barrier_clip.dart';
 import 'internal/gesture_focus.dart';
+import 'internal/kept_clear.dart';
 import 'internal/painted_barrier.dart';
 import 'internal/route_spring.dart';
 import 'localizations.dart';
@@ -51,7 +52,10 @@ class RawSideSheetDetails {
 
 /// A modal side sheet. Push it with `Navigator.push`; its panel is
 /// [builder]'s, sized to [width] (at most the screen less [minGap]) and the
-/// full height.
+/// full height down to the bars an app keeps clear of its `RawToaster`
+/// along the bottom (`RawToasterKeepClear`: `RawAdaptiveShell`'s tab bar,
+/// a page's foot on it), which stay whole under its barrier and take the
+/// bottom inset under it, as a bottom sheet stands on them.
 ///
 /// It opens, settles and closes on a spring ([dampingRatio], [stiffness]),
 /// or closes on its own ([closeDampingRatio], [closeStiffness]), from
@@ -250,7 +254,7 @@ class RawSideSheetRoute<T> extends PopupRoute<T> {
     _barrierClip.value = side == AxisDirection.left
         ? EdgeInsets.only(left: w)
         : EdgeInsets.only(right: w);
-    return Align(
+    final panel = Align(
       alignment: side == AxisDirection.left
           ? Alignment.centerLeft
           : Alignment.centerRight,
@@ -283,6 +287,19 @@ class RawSideSheetRoute<T> extends PopupRoute<T> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+    // It stands on the bars the nearest toaster keeps clear along the
+    // bottom (the shell's tab bar, a page's foot on it); they take the
+    // bottom inset under it.
+    return KeptFloorBuilder(
+      route: this,
+      builder: (context, floor) => Padding(
+        padding: EdgeInsets.only(bottom: floor),
+        child: MediaQuery(
+          data: KeptFloorBuilder.standingOn(MediaQuery.of(context), floor),
+          child: panel,
         ),
       ),
     );

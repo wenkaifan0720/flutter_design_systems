@@ -1,3 +1,9 @@
+## 0.8.7
+
+- **A sheet stands on the shell's bar.** A bottom sheet (`RawBottomSheetRoute`) opened on the app's root navigator over `RawAdaptiveShell.branches` ends at the top of the bar, and of a page's footer kept clear on it (`RawToasterKeepClear`), where a `RawToaster` above the navigator knows them. Since 0.8.6 keeps the bar under a popup, a floating sheet laid out to the screen's foot ended a few pixels over the bar with its labels showing under the card. The bar takes the bottom inset under the sheet; the barrier still covers it, so a tap there closes the sheet. A keyboard taller than the bar still lifts the sheet; a key floating with `edge: RawKeepClearEdge.bottom`, and a part kept clear inside the sheet, do not. `RawSideSheetRoute` runs down to the same line. Every look's sheet built on these routes gets it; a sheet on a destination's own navigator stands above the bar as before, and with no toaster a sheet stands on the screen's foot as before. A full-screen sheet (`RawSheetRoute`) and a dialog still cover the whole screen, the bar too.
+- A popover open on a destination's page (a date field's calendar) holds Back but leaves the shell's bar, as 0.8.6's rule for popups gives it; 0.8.5 took the bar away while the popover was open. A test now holds it.
+- README: sheets on the shell's bar, beside the toasts that keep clear of it.
+
 ## 0.8.6
 
 - **Dates follow the app's locale, as Material's do.** English writes the month first, as American English and `DefaultMaterialLocalizations` do: `formatMediumDate` gives "Mar 3, 2025", `formatFullDate` "Monday, March 3, 2025", a date field's order M/d/y. `DefaultRawWidgetsLocalizations` (no delegate) and the delegate's English now agree; before, English wrote the day first ("3 Mar 2025") while its field typed M/d/y. **A look test that pins a day-first English date changes with it.**

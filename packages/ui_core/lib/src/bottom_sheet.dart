@@ -19,6 +19,7 @@ import 'barrier.dart';
 import 'haptics.dart';
 import 'internal/barrier_clip.dart';
 import 'internal/gesture_focus.dart';
+import 'internal/kept_clear.dart';
 import 'internal/painted_barrier.dart';
 import 'internal/route_spring.dart';
 import 'internal/sheet_scroll.dart';
@@ -128,9 +129,21 @@ abstract interface class _SheetHost {
 /// A modal bottom sheet. Push it with `Navigator.push`; its panel is
 /// [builder]'s, the screen's width, rising from the bottom edge.
 ///
+/// It stands on the bars an app keeps clear of its [RawToaster] along the
+/// bottom ([RawToasterKeepClear]: `RawAdaptiveShell`'s tab bar, a page's
+/// foot standing on it), so a floating panel never leaves a strip of them
+/// showing under it: its room ends at their top, they stay whole under the
+/// barrier (a tap there closes it, as on any of the barrier), and the
+/// bottom inset its content sees is what the screen's has left past them.
+/// A key floating over them with an edge of its own does not lift it; the
+/// keyboard, where taller, does. Pushed where the bars are not under it (a
+/// place's own navigator, an app with no toaster) it stands on the screen's
+/// foot.
+///
 /// With [snapSizes] it rests at one of them, each a share of the room it has
-/// (the screen less the on-screen keyboard, and the top inset with
-/// [useSafeArea]), opening at [initialSize], and is laid out at its size, so
+/// (the screen less the on-screen keyboard or the bars it stands on, and the
+/// top inset with [useSafeArea]), opening at [initialSize], and is laid out
+/// at its size, so
 /// a footer at its bottom shows at every size. With none it rests at its
 /// content's own height, at most the room.
 ///
@@ -288,8 +301,9 @@ class RawBottomSheetRoute<T> extends PopupRoute<T> {
   // The room's height, and the content's own, as last laid out.
   double _room = 0;
   double _content = 0;
-  // The keyboard's height under the sheet, as the page was last built.
-  double _keyboard = 0;
+  // What stands under the panel from the screen's foot, as the page was last
+  // built: the keyboard, or the bars it stands on where they are taller.
+  double _under = 0;
 
   // A drag moved it since it last rested: under Reduce Motion it moves with
   // the finger, and slides on from there.
@@ -618,7 +632,6 @@ class RawBottomSheetRoute<T> extends PopupRoute<T> {
     final words = RawWidgetsLocalizations.of(context);
     final media = MediaQuery.of(context);
     final top = useSafeArea ? media.padding.top : 0.0;
-    _keyboard = media.viewInsets.bottom;
     Widget panel = ValueListenableBuilder<bool>(
       valueListenable: _dragging,
       builder: (context, dragging, _) => builder(
@@ -647,28 +660,37 @@ class RawBottomSheetRoute<T> extends PopupRoute<T> {
         child: panel,
       );
     }
-    panel = Semantics(
-      container: true,
-      scopesRoute: true,
-      namesRoute: true,
-      explicitChildNodes: true,
-      label: semanticLabel ?? words.bottomSheetLabel,
-      onDismiss: _close,
-      child: MediaQuery.removeViewInsets(
-        context: context,
-        removeBottom: true,
-        child: MediaQuery.removePadding(
-          context: context,
-          removeTop: useSafeArea,
-          child: _SheetScope(host: _host, child: panel),
-        ),
-      ),
-    );
+    final sheet = _SheetScope(host: _host, child: panel);
+    // It stands on the bars the nearest toaster keeps clear along the
+    // bottom (the shell's tab bar, a page's foot on it), or on the keyboard
+    // where that is taller; the bars under it take the bottom inset.
     return escapeCloses(
       context,
-      Padding(
-        padding: EdgeInsets.only(top: top, bottom: media.viewInsets.bottom),
-        child: _SheetLayout(route: this, child: panel),
+      KeptFloorBuilder(
+        route: this,
+        builder: (context, floor) {
+          _under = math.max(media.viewInsets.bottom, floor);
+          return Padding(
+            padding: EdgeInsets.only(top: top, bottom: _under),
+            child: _SheetLayout(
+              route: this,
+              child: Semantics(
+                container: true,
+                scopesRoute: true,
+                namesRoute: true,
+                explicitChildNodes: true,
+                label: semanticLabel ?? words.bottomSheetLabel,
+                onDismiss: _close,
+                child: MediaQuery(
+                  data: KeptFloorBuilder.standingOn(media, floor)
+                      .removeViewInsets(removeBottom: true)
+                      .removePadding(removeTop: useSafeArea),
+                  child: sheet,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -1072,7 +1094,7 @@ class _RenderSheetLayout extends RenderShiftedBox {
     // The barrier's node stops at the sheet's top (and the keyboard under
     // it), as Material's modal bottom sheet's does.
     route._barrierClip.value = EdgeInsets.only(
-      bottom: math.min(height + route._keyboard, room + route._keyboard),
+      bottom: math.min(height + route._under, room + route._under),
     );
     final c = route.animation!.value;
     final shown = route._spring.reduced && !route._dragged

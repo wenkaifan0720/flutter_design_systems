@@ -8,7 +8,7 @@ it, so an app that uses a look rarely imports it directly. Add it to build a loo
 
 ```yaml
 dependencies:
-  ui_core: ^0.8.6
+  ui_core: ^0.8.7
 ```
 
 ```dart
@@ -249,6 +249,13 @@ screen keeps its footer clear; an app's own footer wraps it, with its padding, i
 floating on the page's padding takes `edge: RawKeepClearEdge.bottom`. A toast raised into a navigator's overlay
 instead lives and dies with that navigator: it goes when its destination is switched away, and it does not know the
 bars.
+
+A sheet opened over the shell stands on the same bars. A bottom sheet on the root navigator (`RawBottomSheetRoute`)
+ends at the top of the bar and of a footer kept clear on it, and a side sheet (`RawSideSheetRoute`) runs down to it;
+the bar keeps the bottom inset under them, and their barrier covers it, so a tap on the bar closes the sheet. A
+keyboard taller than the bar lifts a bottom sheet over it; a key floating with `edge: RawKeepClearEdge.bottom` does
+not. A sheet on a destination's own navigator stands above the bar already. A full-screen sheet (`RawSheetRoute`)
+and a dialog cover the bar.
 
 ## Flutter's conventions
 
