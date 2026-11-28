@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../grid.dart';
+import '../internal/face_align.dart';
 import '../theme.dart';
 import 'box.dart';
 import 'spring.dart';
@@ -33,7 +34,10 @@ class TermTapTarget extends StatelessWidget {
     final floor = RawTapTargets.of(context).floorOn();
     return TapTargetPadding(
       minSize: grid.ceil(floor),
-      alignment: alignment,
+      // Centred, as its caller left it, unless a row puts it on its line.
+      alignment: alignment == AlignmentDirectional.center
+          ? TermFaceAlign.maybeOf(context) ?? alignment
+          : alignment,
       child: child,
     );
   }

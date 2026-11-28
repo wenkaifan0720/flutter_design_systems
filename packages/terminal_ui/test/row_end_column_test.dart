@@ -1,5 +1,5 @@
-// In a narrow list every row's words at the end stand on its second line,
-// beside the subtitle, short title or long, so the ends keep one column. On a
+// In a narrow list every row's words at the end stand beside the subtitle,
+// short title or long (a long one wraps), so the ends keep one column. On a
 // line they share they take at most half the row; on a line of their own
 // they may take all of it, and end in an ellipsis at the row's edge.
 import 'package:material_ui/material_ui.dart';
@@ -11,7 +11,7 @@ import 'faces.dart';
 void main() {
   setUpAll(loadFaces);
 
-  testWidgets('the status stands on the second line, short title or long', (
+  testWidgets('the status stands beside the author, short title or long', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -41,6 +41,8 @@ void main() {
         ),
       ),
     );
+    // The long title wraps; the status stands beside its author, at the end,
+    // as the short title's does.
     final short = tester.getRect(find.text('to read'));
     final long = tester.getRect(find.text('reading'));
     expect(
@@ -48,17 +50,14 @@ void main() {
       greaterThanOrEqualTo(tester.getRect(find.text('Beloved')).bottom - 0.5),
     );
     expect(short.right, closeTo(long.right, 0.5));
+    final authors = find.text('an author');
     expect(
-      short.top - tester.getRect(find.text('Beloved')).top,
-      closeTo(
-        long.top -
-            tester
-                .getRect(
-                  find.text('A Psalm for the Wild-Built and the Long Way'),
-                )
-                .top,
-        0.5,
-      ),
+      short.center.dy,
+      closeTo(tester.getRect(authors.first).center.dy, 0.5),
+    );
+    expect(
+      long.center.dy,
+      closeTo(tester.getRect(authors.last).center.dy, 0.5),
     );
   });
 

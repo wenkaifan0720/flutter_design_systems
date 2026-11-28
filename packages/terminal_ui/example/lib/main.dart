@@ -31,6 +31,14 @@ class ShelfApp extends StatelessWidget {
       builder: (context, _) => MaterialApp(
         title: 'Shelf',
         debugShowCheckedModeBanner: false,
+        // The README's delegates: Flutter's from material_ui, ui_core's and
+        // Terminal's own.
+        localizationsDelegates: const [
+          ...GlobalMaterialLocalizations.delegates,
+          RawWidgetsLocalizations.delegate,
+          TermLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('en'), Locale('ar'), Locale('de')],
         builder: (context, child) => TermHost(
           brightness: shelf.appearance.brightness,
           palette: shelf.palette,

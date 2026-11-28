@@ -10,6 +10,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../grid.dart';
+import '../internal/face_align.dart';
 import '../internal/menu_marks.dart';
 import '../internal/shell_face.dart';
 import '../primitives/box.dart';
@@ -32,13 +33,20 @@ import 'pane.dart';
 /// a [subtitle] it stands at the end of the second line, in every row, and
 /// where the subtitle and it don't both fit (an author on a phone at large
 /// text), on a third line of its own, at the end, as it goes under the
-/// title of a row without a subtitle. The
+/// title of a row without a subtitle. In a narrow row a [title] or
+/// [subtitle] of plain `Text` longer than its line wraps at whole words, a
+/// line more for each, as Material's `ListTile` does; a word longer than
+/// the line is cut after its last whole letter, with `…`, and a screen
+/// reader hears the words whole. Where the words wrap, [trailing] stands at
+/// the end of their last line if it fits there, else on a line of its own.
+/// The
 /// row runs from edge to edge (put rows in a [TermPane.list]) and keeps a
 /// one-cell gutter at each end. The keyboard's focus is the cursor over the
 /// whole row, a pair of brackets cut out of its gutters (on a chosen row,
 /// hollow). [selected] draws the row in inverse video, and a screen reader
 /// hears it selected; a press fills it the same way. An [action] (the
-/// row's menu key) stands at its end, on the chosen bar.
+/// row's menu key) stands at its end, on the chosen bar, on the title's
+/// first line.
 ///
 /// ```dart
 /// TermListTile(
@@ -93,7 +101,8 @@ class TermListTile extends StatelessWidget {
   /// A control after the row's end (the row's menu key). It stands on the
   /// chosen row's bar, drawn in inverse video with it, but is its own
   /// target and its own node, apart from the row's press and the words
-  /// read with it.
+  /// read with it. In a row of more than one line it stands on the title's
+  /// first line.
   ///
   /// ```dart
   /// TermListTile(
@@ -303,64 +312,118 @@ class TermListTile extends StatelessWidget {
                   SizedBox(width: cw),
                 ],
               ];
-              Widget body(bool stacked, double width) {
+              // The words of a line of a wrapped [text]: the [i]th of [lines],
+              // one line tall; the first line says the whole text to a
+              // screen reader, the others nothing.
+              Widget part(
+                Text text,
+                List<String> lines,
+                int i,
+                TextStyle style,
+              ) {
+                final shown = slot(
+                  Text(
+                    lines[i],
+                    style: text.style,
+                    textDirection: text.textDirection,
+                    locale: text.locale,
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.clip,
+                  ),
+                  style,
+                );
+                return i == 0
+                    ? Semantics(
+                        label: text.semanticsLabel ?? text.data,
+                        child: ExcludeSemantics(child: shown),
+                      )
+                    : ExcludeSemantics(child: shown);
+              }
+
+              Widget line(List<Widget> children) => SizedBox(
+                height: lh,
+                child: Row(children: children),
+              );
+
+              Widget body(bool stacked, double width, _Stack plan) {
                 if (stacked) {
-                  // A narrow row has two lines. With a subtitle the words at
-                  // the end stand at the end of the second, beside it, in
-                  // every row, so a list's ends keep one column and the
-                  // title, what the row is, keeps the first line whole;
-                  // where the subtitle and they don't both fit (an author at
-                  // large text), they move to a third line of their own, at
-                  // the end. Without a subtitle
-                  // they stand on the title's line, going under it where
-                  // both don't fit (a phone at large text).
-                  return LayoutBuilder(
-                    builder: (context, c) {
-                      final beside =
-                          subtitle == null && _fitsBeside(grid, c.maxWidth);
-                      final endBelow = _endOwnLine(grid, c.maxWidth);
-                      final first = Row(
-                        children: [
-                          ...lead,
-                          Expanded(child: slot(title, words)),
-                          if (beside) ...endIn(width),
-                        ],
-                      );
-                      if (beside) {
-                        // One line of words, centred in the finger's two.
-                        return first;
-                      }
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          SizedBox(height: lh, child: first),
-                          SizedBox(
-                            height: lh,
-                            child: Row(
-                              children: [
-                                ...indent,
-                                Expanded(
-                                  child: subtitle == null
-                                      ? const SizedBox.shrink()
-                                      : slot(subtitle!, faint),
-                                ),
-                                if (!beside && !endBelow) ...endIn(width),
-                              ],
-                            ),
+                  // A narrow row stands its words in lines: the title's (a
+                  // long one wrapped at whole words), then the subtitle's,
+                  // the words at the end beside the subtitle's line, in
+                  // every row, so a list's ends keep one column, where both
+                  // fit whole; else on a line of their own, at the end.
+                  // Without a subtitle they stand on the title's line,
+                  // going under it where both don't fit (a phone at large
+                  // text).
+                  final first = Row(
+                    children: [
+                      ...lead,
+                      Expanded(child: slot(title, words)),
+                      if (plan.beside) ...endIn(width),
+                    ],
+                  );
+                  if (plan.beside) {
+                    // One line of words, centred in the finger's two.
+                    return first;
+                  }
+                  final rows = <Widget>[];
+                  final titles = plan.title;
+                  if (titles == null) {
+                    rows.add(SizedBox(height: lh, child: first));
+                  } else {
+                    for (var i = 0; i < titles.length; i++) {
+                      rows.add(
+                        line([
+                          ...(i == 0 ? lead : indent),
+                          Expanded(
+                            child: part(title as Text, titles, i, words),
                           ),
-                          if (endBelow)
-                            SizedBox(
-                              height: lh,
-                              child: Row(
-                                children: [
-                                  const Spacer(),
-                                  ...endIn(width, alone: true),
-                                ],
-                              ),
-                            ),
-                        ],
+                          if (plan.endAfter && i == titles.length - 1)
+                            ...endIn(width),
+                        ]),
                       );
-                    },
+                    }
+                  }
+                  final more = subtitle;
+                  if (more != null) {
+                    final subtitles = plan.subtitle;
+                    final endHere = !plan.endOwn;
+                    if (subtitles == null) {
+                      rows.add(
+                        line([
+                          ...indent,
+                          Expanded(child: slot(more, faint)),
+                          if (endHere) ...endIn(width),
+                        ]),
+                      );
+                    } else {
+                      for (var i = 0; i < subtitles.length; i++) {
+                        rows.add(
+                          line([
+                            ...indent,
+                            Expanded(
+                              child: part(more as Text, subtitles, i, faint),
+                            ),
+                            if (endHere && i == subtitles.length - 1)
+                              ...endIn(width),
+                          ]),
+                        );
+                      }
+                    }
+                    if (plan.endOwn) {
+                      rows.add(
+                        line([const Spacer(), ...endIn(width, alone: true)]),
+                      );
+                    }
+                  } else if (trailing != null && !plan.endAfter) {
+                    rows.add(
+                      line([...indent, const Spacer(), ...endIn(width)]),
+                    );
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: rows,
                   );
                 }
                 // The glyph and title take three fifths of the row's cells,
@@ -412,15 +475,14 @@ class TermListTile extends StatelessWidget {
                       box.hasBoundedWidth &&
                       box.maxWidth < grid.cols(besideCols);
                   final width = box.maxWidth - 2 * cw;
-                  final twoLines =
-                      touch ||
-                      (stacked &&
-                          (subtitle != null || !_fitsBeside(grid, width)));
-                  final lines = stacked && _endOwnLine(grid, width)
-                      ? 3
-                      : twoLines
-                      ? 2
-                      : 1;
+                  final plan = stacked
+                      ? _stack(grid, width)
+                      : const _Stack(lines: 1);
+                  // A line for each line of words; a finger's floor is two.
+                  final lines = math.max(
+                    stacked ? plan.lines : 1,
+                    touch ? 2 : 1,
+                  );
                   return CustomPaint(
                     painter: _RowPainter(
                       ground: ground,
@@ -437,7 +499,7 @@ class TermListTile extends StatelessWidget {
                       height: lh * lines,
                       child: Padding(
                         padding: EdgeInsetsDirectional.only(start: cw, end: cw),
-                        child: body(stacked, width),
+                        child: body(stacked, width, plan),
                       ),
                     ),
                   );
@@ -479,12 +541,95 @@ class TermListTile extends StatelessWidget {
     if (control == null) return tile(null);
     return _ActionRow(
       tile: tile,
+      manyLines: (width) => _manyLines(context.termGrid, width),
       action: control,
       selected: selected,
       enabled: enabled,
       active: active,
       style: style,
     );
+  }
+
+  // How a narrow row [width] wide (its gutters aside) stands its words: the
+  // title's lines and the subtitle's where they wrap, and where the words at
+  // the end go.
+  _Stack _stack(TermGrid grid, double width) {
+    final glyph = leading == null
+        ? 0.0
+        : grid.widthOf(_plain(leading!) ?? ' ') + grid.cellWidth;
+    final room = width - glyph;
+    final titles = _wrapped(grid, title, room);
+    final t = titles?.length ?? 1;
+    final more = subtitle;
+    if (more == null) {
+      final beside = t == 1 && _fitsBeside(grid, width);
+      // A wrapped title's last line takes the end's words where they fit.
+      final endAfter =
+          titles != null && _fitsAfter(grid, titles.last, room, width);
+      return _Stack(
+        title: titles,
+        beside: beside,
+        endAfter: endAfter,
+        lines: beside ? 1 : t + (trailing == null || endAfter ? 0 : 1),
+      );
+    }
+    final own = _endOwnLine(grid, width);
+    // Beside the words at the end the subtitle fits whole (or keeps its one
+    // line, as it did, where they aren't plain text); else it wraps, and
+    // its last line takes the end's words where they fit.
+    final subtitles = trailing != null && !own
+        ? null
+        : _wrapped(grid, more, room);
+    final endOwn =
+        own &&
+        !(subtitles != null && _fitsAfter(grid, subtitles.last, room, width));
+    return _Stack(
+      title: titles,
+      subtitle: subtitles,
+      endOwn: endOwn,
+      lines: t + (subtitles?.length ?? 1) + (endOwn ? 1 : 0),
+    );
+  }
+
+  // Whether the row stands its words on more than one line at [width]
+  // (its gutters counted): a narrow row whose words don't share one line.
+  bool _manyLines(TermGrid grid, double width) =>
+      width < grid.cols(besideCols) &&
+      _stack(grid, width - 2 * grid.cellWidth).lines > 1;
+
+  // [words]' lines where it is plain `Text` that doesn't stand whole on one
+  // line [room] wide: broken between words, a word longer than the line cut
+  // after its last whole letter that fits, with "…". Null where it keeps
+  // one line as it is.
+  static List<String>? _wrapped(TermGrid grid, Widget words, double room) {
+    if (words is! Text) return null;
+    final text = words.data;
+    if (text == null || room < grid.cols(2)) return null;
+    if (grid.widthOf(text) <= room + 0.5) return null;
+    final lines = <String>[];
+    var line = '';
+    for (final word in text.split(RegExp('[ \t\n]+'))) {
+      if (word.isEmpty) continue;
+      final next = line.isEmpty ? word : '$line $word';
+      if (grid.widthOf(next) <= room + 0.5) {
+        line = next;
+        continue;
+      }
+      if (line.isNotEmpty) lines.add(line);
+      line = '';
+      if (grid.widthOf(word) <= room + 0.5) {
+        line = word;
+      } else {
+        var kept = '';
+        for (final letter in word.characters) {
+          if (grid.widthOf('$kept$letter…') > room + 0.5) break;
+          kept += letter;
+        }
+        lines.add('$kept…');
+      }
+    }
+    if (line.isNotEmpty) lines.add(line);
+    return lines.isEmpty ? null : lines;
   }
 
   // Whether the title and the end's words fit on one line [width] wide, read
@@ -499,6 +644,17 @@ class TermListTile extends StatelessWidget {
         : grid.widthOf(_plain(leading!) ?? ' ') + grid.cellWidth;
     return glyph + grid.widthOf(words) + grid.cellWidth + grid.widthOf(end) <=
         width + 0.5;
+  }
+
+  // Whether the end's words, where they are plain text, fit after [line]
+  // (the last line of wrapped words) in [room], taking at most half the
+  // row [width], as they do on a line they share.
+  bool _fitsAfter(TermGrid grid, String line, double room, double width) {
+    final end = trailing == null ? null : _plain(trailing!);
+    if (end == null) return false;
+    final ends = grid.widthOf(end);
+    return ends <= width / 2 + 0.5 &&
+        grid.widthOf(line) + grid.cellWidth + ends <= room + 0.5;
   }
 
   // Whether a narrow row's end words go to a line of their own: where its
@@ -537,6 +693,29 @@ class TermListTile extends StatelessWidget {
   }
 }
 
+// How a narrow row stands its words: [title] and [subtitle] line by line
+// where they wrap (null where each keeps its one line), whether the words at
+// the end stand [beside] the title, the row one line, after a wrapped
+// title's last line ([endAfter]), or on a line of their own after the
+// subtitle ([endOwn]), and the [lines] the words take.
+class _Stack {
+  const _Stack({
+    this.title,
+    this.subtitle,
+    this.beside = false,
+    this.endAfter = false,
+    this.endOwn = false,
+    required this.lines,
+  });
+
+  final List<String>? title;
+  final List<String>? subtitle;
+  final bool beside;
+  final bool endAfter;
+  final bool endOwn;
+  final int lines;
+}
+
 // A row and the control after its end on one chosen bar: the control stands
 // beside the row's press and its merged node, never inside them, and is
 // drawn in inverse video on the inverse bar. The keys' cursor on the chosen
@@ -544,6 +723,7 @@ class TermListTile extends StatelessWidget {
 class _ActionRow extends StatefulWidget {
   const _ActionRow({
     required this.tile,
+    required this.manyLines,
     required this.action,
     required this.selected,
     required this.enabled,
@@ -552,6 +732,8 @@ class _ActionRow extends StatefulWidget {
   });
 
   final Widget Function(WidgetStatesController states) tile;
+  // Whether the row stands its words on more than one line at a width.
+  final bool Function(double width) manyLines;
   final Widget action;
   final bool selected;
   final bool enabled;
@@ -575,7 +757,6 @@ class _ActionRowState extends State<_ActionRow> {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
-    final active = widget.active;
     // The action in inverse video: the words' ink and the ground swapped.
     final inverted = theme.copyWith(
       foreground: theme.background,
@@ -584,6 +765,28 @@ class _ActionRowState extends State<_ActionRow> {
       dim: theme.background,
       rule: Color.lerp(theme.rule, theme.background, 0.5),
     );
+    return LayoutBuilder(
+      builder: (context, box) {
+        // The action's width: its tap target's floor, or a bracketed
+        // glyph's three cells. In a row of more than one line it stands on
+        // the title's line, its face at the top of its target.
+        final floor = grid.ceil(RawTapTargets.of(context).floorOn());
+        final room =
+            box.maxWidth - math.max(floor.width, grid.cols(3)) - grid.cellWidth;
+        final top = box.hasBoundedWidth && widget.manyLines(room);
+        return _bar(context, theme, grid, inverted, top);
+      },
+    );
+  }
+
+  Widget _bar(
+    BuildContext context,
+    TermThemeData theme,
+    TermGrid grid,
+    TermThemeData inverted,
+    bool top,
+  ) {
+    final active = widget.active;
     return ListenableBuilder(
       listenable: _states,
       builder: (context, _) => TermStateSprings(
@@ -617,6 +820,9 @@ class _ActionRowState extends State<_ActionRow> {
             return ColoredBox(
               color: ground,
               child: Row(
+                crossAxisAlignment: top
+                    ? CrossAxisAlignment.start
+                    : CrossAxisAlignment.center,
                 children: [
                   Expanded(child: widget.tile(_states)),
                   TermTheme(
@@ -625,7 +831,12 @@ class _ActionRowState extends State<_ActionRow> {
                       inverted,
                       inverse * (1 - cursor),
                     ),
-                    child: widget.action,
+                    child: TermFaceAlign(
+                      alignment: top
+                          ? AlignmentDirectional.topCenter
+                          : AlignmentDirectional.center,
+                      child: widget.action,
+                    ),
                   ),
                   SizedBox(width: grid.cellWidth),
                 ],

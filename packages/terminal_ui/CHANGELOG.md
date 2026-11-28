@@ -1,3 +1,20 @@
+## 0.7.3
+
+- `TermListTile`: in a narrow row a long title or subtitle (plain `Text`) wraps at whole words, a line more for
+  each, as Material's `ListTile` does. A word longer than the line is cut after its last whole letter, with `…`,
+  and a screen reader hears the words whole, once. Before, each kept one line, so at 200% text on a phone the books
+  read `The Left…` and `Pride an…` and couldn't be told apart without opening them. Where the words wrap, the
+  words at the end (a status, a time) stand after their last line if they fit there, else on a line of their own.
+- `TermListTile.action` stands on the title's first line in a row of more than one line, its face at the top of its
+  target. It stood centred on the row, between two lines.
+- README, Languages: one list of delegates (material_ui's, ui_core's and Terminal's), and that an app on material_ui
+  needs no `flutter_localizations`. Without `RawWidgetsLocalizations.delegate`, ui_core's words and figures stay
+  English; the README said nothing needed setting up. The example lists the same delegates.
+- README, Forms: clearing the form after a save, and checking as the reader types where Flutter's `Form` takes
+  `autovalidateMode`.
+- `TermHost`: its doc says which theme it gives by day and by night (`theme` and `darkTheme`, or the palette's),
+  that the window's width plays no part, and that the grid is Terminal's density.
+
 ## 0.7.2
 
 - Requires ui_core 0.8.7 (ui_core_test 0.6.3 for the checks).

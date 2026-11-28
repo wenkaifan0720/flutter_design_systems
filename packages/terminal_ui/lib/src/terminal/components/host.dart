@@ -14,6 +14,17 @@ import 'feedback.dart';
 /// one palette to another, the screen blends across in 200 ms
 /// ([AnimatedTermTheme]); under Reduce Motion it cuts.
 ///
+/// Which theme: by day [theme], or, when it is null,
+/// `TermThemeData.fromPalette(palette, Brightness.light)`; by night
+/// [darkTheme], or `TermThemeData.fromPalette(palette, Brightness.dark)`.
+/// A given [theme] or [darkTheme] is used whole: [palette] doesn't change
+/// it. Day or night is [brightness], or the platform's when it is null. The
+/// window's width plays no part: the grid is the theme's
+/// [TermThemeData.grid] grown by the reader's text scale, and the tap floor
+/// follows the pointer (two lines for a finger, one for a mouse), on a phone
+/// as at a desk. Terminal has no density knob: a denser or roomier screen is
+/// another [TermThemeData.grid].
+///
 /// Mount it once in the app's `builder`, above its Navigator, so every
 /// page, dialog and menu stands inside it. Load the bundled faces with
 /// [termLoadFonts] before the first frame. A bare [TermTheme] gives a

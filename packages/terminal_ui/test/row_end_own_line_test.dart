@@ -1,7 +1,8 @@
 // A two-line row whose subtitle and end words don't both fit whole on the
 // second line moves its end words to a line of their own, at the row's end,
 // so a phone at large text reads the author whole (it had kept 6 to 8
-// characters beside the status). Where both fit, they share the line.
+// characters beside the status); a subtitle longer than its line wraps.
+// Where both fit, they share the line.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -65,6 +66,21 @@ bool _whole(WidgetTester tester, String words) {
       p.size.width + 0.5 >= p.getMaxIntrinsicWidth(double.infinity);
 }
 
+// The words the row shows, line by line, each as it is drawn (the glyph
+// and the action aside).
+List<(String, Rect)> _lines(WidgetTester tester) => [
+  for (final e
+      in find
+          .descendant(
+            of: find.byType(TermListTile),
+            matching: find.byType(RichText),
+          )
+          .evaluate())
+    if ((e.renderObject! as RenderParagraph).text.toPlainText() case final text
+        when text != '·' && text != '×')
+      (text, tester.getRect(find.byWidget(e.widget))),
+];
+
 void main() {
   setUpAll(loadFaces);
 
@@ -91,8 +107,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('at 150% an author with a note after it reads whole, the '
-      'status under it', (tester) async {
+  testWidgets('at 150% an author with a note after it reads whole, wrapped, '
+      'the status after its last line', (tester) async {
     await _list(
       tester,
       1.5,
@@ -100,21 +116,21 @@ void main() {
         ('The Left Hand of Darkness', 'Ursula K. Le Guin · favourite', 'done'),
       ],
     );
-    final sub = find.text('Ursula K. Le Guin · favourite');
-    final grid = TermThemeData.dark().grid;
-    // At least the author's 17 cells show (it kept 9 beside the status).
+    final lines = _lines(tester);
+    // Every word shows (it kept 9 cells beside the status, then 17 alone).
     expect(
-      tester.renderObject<RenderParagraph>(sub).size.width,
-      greaterThanOrEqualTo(17 * grid.cellWidth * 1.5 - 0.5),
+      lines.map((l) => l.$1).join(' '),
+      'The Left Hand of Darkness Ursula K. Le Guin · favourite done',
     );
-    expect(
-      tester.getRect(find.text('done')).top,
-      greaterThanOrEqualTo(tester.getRect(sub).bottom - 0.5),
-    );
+    // "done" fits after "favourite": it stands there, no line of its own.
+    final author = lines.lastWhere((l) => l.$1 != 'done').$2;
+    final done = tester.getRect(find.text('done'));
+    expect(done.center.dy, closeTo(author.center.dy, 0.5));
+    expect(done.left, greaterThan(author.right));
   });
 
-  testWidgets('a subtitle too long for the line either way: the end goes '
-      'under all the same, the row three lines tall', (tester) async {
+  testWidgets('a subtitle too long for the line either way wraps, a line '
+      'for each, the end after its last line', (tester) async {
     await _list(
       tester,
       1,
@@ -126,16 +142,18 @@ void main() {
         ),
       ],
     );
-    final message = tester.getRect(
-      find.text('fix the flaky retry in the uploader when the network drops'),
-    );
+    final lines = _lines(tester);
     expect(
-      tester.getRect(find.text('4m')).top,
-      greaterThanOrEqualTo(message.bottom - 0.5),
+      lines.map((l) => l.$1).join(' '),
+      'run #1482 fix the flaky retry in the uploader when the network drops 4m',
     );
+    final message = lines[lines.length - 2].$2;
+    final end = tester.getRect(find.text('4m'));
+    expect(end.center.dy, closeTo(message.center.dy, 0.5));
+    expect(end.left, greaterThan(message.right));
     expect(
       tester.getRect(find.byType(TermListTile)).height,
-      closeTo(3 * TermThemeData.dark().grid.lineHeight, 0.5),
+      closeTo((lines.length - 1) * TermThemeData.dark().grid.lineHeight, 0.5),
     );
   });
 

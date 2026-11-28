@@ -212,6 +212,12 @@ class _AddBookFormState extends State<AddBookForm> {
     setState(() => _titleError = _checkTitle(_title.text));
     if (_titleError != null) return _titleFocus.requestFocus();
     widget.onSaved(_title.text.trim(), _format, _started);
+    // Clear the form after a save: empty the controller, put the other answers back.
+    setState(() {
+      _title.clear();
+      _format = 'paperback';
+      _started = null;
+    });
   }
 
   @override
@@ -249,6 +255,10 @@ class _AddBookFormState extends State<AddBookForm> {
   );
 }
 ```
+
+Terminal's fields don't join a Flutter `Form`: they take no `validator`, and there is no `reset()` or
+`autovalidateMode`. Check on save, as above; to check as the reader types, as
+`autovalidateMode: AutovalidateMode.onUserInteraction` does, set the field's `errorText` in its `onChanged`.
 
 A choice without words of its own (a toggle group, a slider) stands in a `TermPane` whose `title` names it, and
 takes a `semanticLabel` a screen reader hears.
@@ -495,16 +505,32 @@ visible at larger text sizes.
 
 ## Languages
 
-Terminal's own words (a pager's "next page", a tag's "remove", a
-confirmation's `proceed? [y/N]` and its keys, a file field's `browse`, a
-refresh's `pull to refresh`, the palette's colour names) come from
-`TermLocalizations`, in English, Arabic and German. Nothing needs setting
-up: in an Arabic or German app they follow the app's locale, beside
-ui_core's `RawWidgetsLocalizations`, whose words cover 30 languages. Words an
-app passes, such as a dialog's `cancelLabel`, are its own; left at their
-English defaults, they follow the locale too. For another language, extend
-`DefaultTermLocalizations` and add a delegate for it to
-`localizationsDelegates`.
+Give your `MaterialApp` these delegates and the locales it speaks:
+
+```dart
+MaterialApp(
+  localizationsDelegates: const [
+    // Flutter's words for Material, Cupertino and the widgets, from material_ui.
+    ...GlobalMaterialLocalizations.delegates,
+    // ui_core's words, dates and digits, in 30 languages.
+    RawWidgetsLocalizations.delegate,
+    // Terminal's own words, in English, Arabic and German.
+    TermLocalizations.delegate,
+  ],
+  supportedLocales: const [Locale('en'), Locale('ar'), Locale('de')],
+  builder: (context, child) => TermHost(child: child!),
+  home: const TermPane(title: 'shelf', child: Text('your reading list')),
+)
+```
+
+On material_ui an app needs no `flutter_localizations` dependency: `GlobalMaterialLocalizations` comes from
+`package:material_ui`, and `RawWidgetsLocalizations` from ui_core, which Terminal re-exports. Without
+`RawWidgetsLocalizations.delegate`, ui_core's words and figures stay English (`DefaultRawWidgetsLocalizations.delegate`
+is English only). Terminal's own words (a pager's "next page", a tag's "remove", a confirmation's `proceed? [y/N]` and
+its keys, a file field's `browse`, a refresh's `pull to refresh`, the palette's colour names) follow the app's locale
+even without `TermLocalizations.delegate`. Words an app passes, such as a dialog's `cancelLabel`, are its own; left at
+their English defaults, they follow the locale too. For another language, extend `DefaultTermLocalizations` and list a
+delegate for it in place of `TermLocalizations.delegate`.
 
 In a right-to-left locale the layout mirrors: panes, keys, menus and
 charts read from the right, and Hebrew draws in Liberation Mono on the
