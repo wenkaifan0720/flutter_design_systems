@@ -34,17 +34,20 @@
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_NavigateWorkspaceState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">NavigateWorkspace</span>&gt; </span>{
   <span class="hljs-built_in">int</span> selected = <span class="hljs-number">0</span>;
-  <span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> destinations = [
-    KeycapDestination(icon: Icons.home_outlined, label: <span class="hljs-string">'Home'</span>),
-    KeycapDestination(icon: Icons.search, label: <span class="hljs-string">'Search'</span>),
-  ];
 
   <span class="hljs-meta">@override</span>
-  Widget build(BuildContext context) =&gt; KeycapScaffold(
-    destinations: destinations,
+  Widget build(BuildContext context) =&gt; KeycapScaffold.branches(
+    header: <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Workspace'</span>),
+    destinations: <span class="hljs-keyword">const</span> [
+      KeycapDestination(icon: Icons.home_outlined, label: <span class="hljs-string">'Home'</span>),
+      KeycapDestination(icon: Icons.search, label: <span class="hljs-string">'Search'</span>),
+    ],
     selectedIndex: selected,
     onDestinationSelected: (next) =&gt; setState(() =&gt; selected = next),
-    body: Center(child: Text(selected == <span class="hljs-number">0</span> ? <span class="hljs-string">'Home page'</span> : <span class="hljs-string">'Search page'</span>)),
+    branches: [
+      (context) =&gt; <span class="hljs-keyword">const</span> KeycapScreen(body: Center(child: Text(<span class="hljs-string">'Home page'</span>))),
+      (context) =&gt; <span class="hljs-keyword">const</span> KeycapScreen(body: Center(child: Text(<span class="hljs-string">'Search page'</span>))),
+    ],
   );
 }
 </code></pre>
@@ -53,5 +56,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;keycap_ui&#47;latest&#47;keycap_ui&#47;KeycapScaffold-class.html">KeycapScaffold API ↗</a></div>
-  <dl><div><dt><code>destinations</code></dt><dd>The places.</dd></div><div><dt><code>selectedIndex</code></dt><dd>The current place.</dd></div><div><dt><code>onDestinationSelected</code></dt><dd>Called with the place chosen.</dd></div><div><dt><code>body</code></dt><dd>The page.</dd></div></dl>
+  <dl><div><dt><code>header</code></dt><dd>Names the app beside its navigation on wider windows.</dd></div><div><dt><code>destinations</code></dt><dd>The places, each an icon and a label, in reading order.</dd></div><div><dt><code>selectedIndex</code></dt><dd>The place on screen.</dd></div><div><dt><code>onDestinationSelected</code></dt><dd>Receives the place the reader chooses.</dd></div><div><dt><code>branches</code></dt><dd>Builds each place’s first page; each place keeps its own pages, and choosing it again returns to its first.</dd></div></dl>
 </section>

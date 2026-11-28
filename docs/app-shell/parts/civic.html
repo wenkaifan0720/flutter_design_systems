@@ -34,25 +34,26 @@
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_NavigateWorkspaceState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">NavigateWorkspace</span>&gt; </span>{
   <span class="hljs-built_in">int</span> selected = <span class="hljs-number">0</span>;
-  <span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> destinations = [
-    CivicNavigationDestination(icon: Icons.home_outlined, label: <span class="hljs-string">'Home'</span>),
-    CivicNavigationDestination(icon: Icons.search, label: <span class="hljs-string">'Search'</span>),
-  ];
-  <span class="hljs-keyword">void</span> selectPage(<span class="hljs-built_in">int</span> index) =&gt; setState(() =&gt; selected = index);
 
   <span class="hljs-meta">@override</span>
-  Widget build(BuildContext context) =&gt; CivicScaffold(
-    navigationBar: CivicNavigationBar(
-      destinations: destinations,
-      selectedIndex: selected,
-      onDestinationSelected: selectPage,
-    ),
-    sideNavigation: CivicSideNavigation(
-      destinations: destinations,
-      selectedIndex: selected,
-      onDestinationSelected: selectPage,
-    ),
-    body: Center(child: Text(selected == <span class="hljs-number">0</span> ? <span class="hljs-string">'Home page'</span> : <span class="hljs-string">'Search page'</span>)),
+  Widget build(BuildContext context) =&gt; CivicAppShell.branches(
+    brand: <span class="hljs-string">'Workspace'</span>,
+    destinations: <span class="hljs-keyword">const</span> [
+      CivicNavItem(Icons.home_outlined, <span class="hljs-string">'Home'</span>),
+      CivicNavItem(Icons.search, <span class="hljs-string">'Search'</span>),
+    ],
+    selectedIndex: selected,
+    onDestinationSelected: (next) =&gt; setState(() =&gt; selected = next),
+    branches: [
+      (context) =&gt; <span class="hljs-keyword">const</span> CivicScreen(
+        topBar: CivicTopBar(title: <span class="hljs-string">'Home'</span>),
+        body: Center(child: Text(<span class="hljs-string">'Home page'</span>)),
+      ),
+      (context) =&gt; <span class="hljs-keyword">const</span> CivicScreen(
+        topBar: CivicTopBar(title: <span class="hljs-string">'Search'</span>),
+        body: Center(child: Text(<span class="hljs-string">'Search page'</span>)),
+      ),
+    ],
   );
 }
 </code></pre>
@@ -60,6 +61,6 @@
   </div>
 </section>
 <section class="reference" id="parameters">
-  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;civic_ui&#47;latest&#47;civic_ui&#47;CivicScaffold-class.html">CivicScaffold API ↗</a></div>
-  <dl><div><dt><code>navigationBar</code></dt><dd>Destinations presented on smaller screens.</dd></div><div><dt><code>sideNavigation</code></dt><dd>Side navigation used at wide widths.</dd></div><div><dt><code>body</code></dt><dd>Content of the chosen page.</dd></div></dl>
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;civic_ui&#47;latest&#47;civic_ui&#47;CivicAppShell-class.html">CivicAppShell API ↗</a></div>
+  <dl><div><dt><code>brand</code></dt><dd>Names the app beside its navigation on wider windows.</dd></div><div><dt><code>destinations</code></dt><dd>The places, each an icon and a label, in reading order.</dd></div><div><dt><code>selectedIndex</code></dt><dd>The place on screen.</dd></div><div><dt><code>onDestinationSelected</code></dt><dd>Receives the place the reader chooses.</dd></div><div><dt><code>branches</code></dt><dd>Builds each place’s first page; each place keeps its own pages, and choosing it again returns to its first.</dd></div></dl>
 </section>

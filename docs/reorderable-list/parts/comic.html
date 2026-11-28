@@ -53,7 +53,7 @@
         itemBuilder: (context, stop) =&gt; ComicListTile(
           title: stop,
           subtitle: <span class="hljs-string">'Make first'</span>,
-          label: <span class="hljs-string">'<span class="hljs-subst">$stop</span>, make first'</span>,
+          semanticLabel: <span class="hljs-string">'<span class="hljs-subst">$stop</span>, make first'</span>,
           onPressed: () =&gt; move(stops.indexOf(stop), <span class="hljs-number">0</span>),
         ),
       ),

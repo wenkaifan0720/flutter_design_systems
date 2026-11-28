@@ -31,7 +31,7 @@
   Widget build(BuildContext context) =&gt; ConstrainedBox(
     constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
     child: <span class="hljs-keyword">const</span> MinimalCarouselView(
-      label: <span class="hljs-string">'Rooms'</span>,
+      semanticLabel: <span class="hljs-string">'Rooms'</span>,
       height: <span class="hljs-number">112</span>,
       children: [
         Center(child: Text(<span class="hljs-string">'Hall'</span>)),
@@ -47,5 +47,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;minimal_ui&#47;latest&#47;minimal_ui&#47;MinimalCarouselView-class.html">MinimalCarouselView API ↗</a></div>
-  <dl><div><dt><code>children</code></dt><dd>The slides, in order.</dd></div><div><dt><code>height</code></dt><dd>The slides&#39; height.</dd></div><div><dt><code>viewportFraction</code></dt><dd>Each slide&#39;s share of the width.</dd></div><div><dt><code>loop</code></dt><dd>Whether the last slide turns on to the first, and back.</dd></div><div><dt><code>autoplay</code></dt><dd>Sets the interval between automatic advances.</dd></div><div><dt><code>initialPage</code></dt><dd>The slide it starts on.</dd></div><div><dt><code>onPageChanged</code></dt><dd>Called when the slide shown changes.</dd></div><div><dt><code>label</code></dt><dd>What a screen reader calls it.</dd></div><div><dt><code>showControls</code></dt><dd>Whether the arrows, dots and pause stand under the slides.</dd></div><div><dt><code>focusNode</code></dt><dd>The carousel&#39;s keyboard stop (the arrow keys turn the slides).</dd></div><div><dt><code>autofocus</code></dt><dd>Whether it takes focus when it first shows.</dd></div></dl>
+  <dl><div><dt><code>children</code></dt><dd>The slides, in order.</dd></div><div><dt><code>height</code></dt><dd>The slides&#39; height.</dd></div><div><dt><code>viewportFraction</code></dt><dd>Each slide&#39;s share of the width.</dd></div><div><dt><code>loop</code></dt><dd>Whether the last slide turns on to the first, and back.</dd></div><div><dt><code>autoplay</code></dt><dd>Sets the interval between automatic advances.</dd></div><div><dt><code>initialPage</code></dt><dd>The slide it starts on.</dd></div><div><dt><code>onPageChanged</code></dt><dd>Called when the slide shown changes.</dd></div><div><dt><code>semanticLabel</code></dt><dd>What a screen reader calls it.</dd></div><div><dt><code>showControls</code></dt><dd>Whether the arrows, dots and pause stand under the slides.</dd></div><div><dt><code>focusNode</code></dt><dd>The carousel&#39;s keyboard stop (the arrow keys turn the slides).</dd></div><div><dt><code>autofocus</code></dt><dd>Whether it takes focus when it first shows.</dd></div></dl>
 </section>

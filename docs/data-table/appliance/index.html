@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fdfcf9">
+  
+  <title>Data table in Appliance · Flutter Design Systems</title>
+  <meta name="description" content="Use a data table when readers need to work with the records they are comparing. Sorting a numeric column should order its values by size.">
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../site.css">
+  <script defer src="../../navigation.js"></script>
+  <script defer src="../../site.js"></script>
+</head>
+<body tabindex="-1" data-root="../../" data-page="data-table" data-default-look="appliance" data-fixed-look="">
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="mast">
+    <a href="../../" class="brand" data-follow-look aria-label="Flutter Design Systems documentation"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>Flutter Design Systems</a>
+    <span class="mast-divider"></span><nav class="mast-nav" aria-label="Main"><a href="../../" data-follow-look>Documentation</a><a href="../../stint/" data-follow-look>Stint</a></nav>
+    <a href="https://github.com/wenkaifan0720/flutter_design_systems" class="repo-link">GitHub <span aria-hidden="true">↗</span></a>
+    <button class="browse" type="button" aria-expanded="false" aria-controls="sidebar">Browse</button>
+  </header>
+  <div class="layout">
+    <aside id="sidebar">
+      <nav aria-label="Documentation directory">
+        <h2>Documentation</h2>
+        <label class="search"><span class="search-icon" aria-hidden="true"></span><input type="search" autocomplete="off" placeholder="Search" aria-label="Search documentation" aria-controls="directory-links"><kbd aria-hidden="true">/</kbd></label>
+        <div id="directory-links" class="nav-list"><section class="nav-group"><h3>Start here</h3><a data-follow-look href="../../">Overview</a><a data-follow-look href="../../stint/">Stint team planner</a></section><section class="nav-group"><h3>Actions</h3><a data-component="button" href="../../button/">Button</a><a data-component="icon-button" href="../../icon-button/">Icon button</a><a data-component="floating-action-button" href="../../floating-action-button/">Floating action button</a><a data-component="button-group" href="../../button-group/">Button group</a><a data-component="toggle-group" href="../../toggle-group/">Toggle group</a><a data-component="split-button" href="../../split-button/">Split button</a><a data-component="link" href="../../link/">Link</a><a data-component="keyboard-key" href="../../keyboard-key/">Keyboard key</a></section><section class="nav-group"><h3>Inputs</h3><a data-component="text-field" href="../../text-field/">Text field</a><a data-component="text-area" href="../../text-area/">Text area</a><a data-component="search-field" href="../../search-field/">Search field</a><a data-component="password-field" href="../../password-field/">Password field</a><a data-component="input-group" href="../../input-group/">Input group</a><a data-component="one-time-code" href="../../one-time-code/">One-time code</a><a data-component="number-field" href="../../number-field/">Number field</a><a data-component="select" href="../../select/">Select</a><a data-component="combobox" href="../../combobox/">Combobox</a><a data-component="multi-select" href="../../multi-select/">Multi-select</a><a data-component="checkbox" href="../../checkbox/">Checkbox</a><a data-component="radio-group" href="../../radio-group/">Radio group</a><a data-component="switch" href="../../switch/">Switch</a><a data-component="slider" href="../../slider/">Slider</a><a data-component="range-slider" href="../../range-slider/">Range slider</a><a data-component="segmented-control" href="../../segmented-control/">Segmented control</a><a data-component="chips" href="../../chips/">Chips</a><a data-component="rating" href="../../rating/">Rating</a><a data-component="file-upload" href="../../file-upload/">File upload</a><a data-component="date-picker" href="../../date-picker/">Date picker</a><a data-component="date-range-picker" href="../../date-range-picker/">Date range picker</a><a data-component="time-picker" href="../../time-picker/">Time picker</a><a data-component="calendar" href="../../calendar/">Inline calendar</a><a data-component="wheel-picker" href="../../wheel-picker/">Wheel picker</a><a data-component="color-picker" href="../../color-picker/">Color picker</a><a data-component="form-field" href="../../form-field/">Form field</a></section><section class="nav-group"><h3>Navigation</h3><a data-component="app-bar" href="../../app-bar/">App bar</a><a data-component="navigation-bar" href="../../navigation-bar/">Bottom navigation bar</a><a data-component="navigation-rail" href="../../navigation-rail/">Navigation rail</a><a data-component="navigation-drawer" href="../../navigation-drawer/">Navigation drawer</a><a data-component="tabs" href="../../tabs/">Tabs</a><a data-component="breadcrumbs" href="../../breadcrumbs/">Breadcrumbs</a><a data-component="pagination" href="../../pagination/">Pagination</a><a data-component="step-progress" href="../../step-progress/">Step progress</a><a data-component="page-dots" href="../../page-dots/">Page indicator dots</a><a data-component="menu-bar" href="../../menu-bar/">Menu bar</a><a data-component="command-palette" href="../../command-palette/">Command palette</a><a data-component="app-shell" href="../../app-shell/">App shell</a></section><section class="nav-group"><h3>Containers</h3><a data-component="card" href="../../card/">Card</a><a data-component="list-row" href="../../list-row/">List row</a><a data-component="grouped-list" href="../../grouped-list/">Grouped list</a><a data-component="section-header" href="../../section-header/">Section header</a><a data-component="disclosure" href="../../disclosure/">Disclosure</a><a data-component="table" href="../../table/">Table</a><a data-component="data-table" href="../../data-table/" aria-current="page">Data table</a><a data-component="divider" href="../../divider/">Divider</a><a data-component="scroll-area" href="../../scroll-area/">Scroll area</a><a data-component="resizable-panels" href="../../resizable-panels/">Resizable panels</a><a data-component="carousel" href="../../carousel/">Carousel</a><a data-component="reorderable-list" href="../../reorderable-list/">Reorderable list</a><a data-component="swipe-actions" href="../../swipe-actions/">Swipe actions</a><a data-component="pull-to-refresh" href="../../pull-to-refresh/">Pull to refresh</a><a data-component="tree-view" href="../../tree-view/">Tree view</a><a data-component="timeline" href="../../timeline/">Timeline</a><a data-component="avatar" href="../../avatar/">Avatar</a><a data-component="avatar-group" href="../../avatar-group/">Avatar group</a><a data-component="badge" href="../../badge/">Count badge</a><a data-component="tag" href="../../tag/">Tag</a><a data-component="media" href="../../media/">Media with fallback</a><a data-component="empty-state" href="../../empty-state/">Empty state</a><a data-component="description-list" href="../../description-list/">Description list</a></section><section class="nav-group"><h3>Overlays</h3><a data-component="dialog" href="../../dialog/">Dialog</a><a data-component="bottom-sheet" href="../../bottom-sheet/">Bottom sheet</a><a data-component="side-sheet" href="../../side-sheet/">Side sheet</a><a data-component="action-sheet" href="../../action-sheet/">Action sheet</a><a data-component="popover" href="../../popover/">Popover</a><a data-component="hover-card" href="../../hover-card/">Hover card</a><a data-component="tooltip" href="../../tooltip/">Tooltip</a><a data-component="menu" href="../../menu/">Menu</a><a data-component="toast" href="../../toast/">Toast or snackbar</a><a data-component="banner" href="../../banner/">Banner</a></section><section class="nav-group"><h3>Feedback</h3><a data-component="linear-progress" href="../../linear-progress/">Linear progress</a><a data-component="circular-progress" href="../../circular-progress/">Circular progress</a><a data-component="skeleton" href="../../skeleton/">Skeleton</a><a data-component="status-view" href="../../status-view/">Status view</a><a data-component="meter" href="../../meter/">Meter</a></section><section class="nav-group"><h3>Charts</h3><a data-component="line-chart" href="../../line-chart/">Line chart</a><a data-component="bar-chart" href="../../bar-chart/">Bar chart</a><a data-component="area-chart" href="../../area-chart/">Area chart</a><a data-component="pie-chart" href="../../pie-chart/">Pie or donut chart</a><a data-component="sparkline" href="../../sparkline/">Sparkline</a></section><section class="nav-group"><h3>Design systems</h3><a href="../../looks/appliance/">Appliance</a><a href="../../looks/brutal/">Brutal</a><a href="../../looks/civic/">Civic</a><a href="../../looks/clay/">Clay</a><a href="../../looks/comic/">Comic</a><a href="../../looks/fluent2/">Fluent 2</a><a href="../../looks/frosted/">Frosted</a><a href="../../looks/gloss/">Gloss</a><a href="../../looks/keycap/">Keycap</a><a href="../../looks/ledger/">Ledger</a><a href="../../looks/material_expressive/">Material Expressive</a><a href="../../looks/minimal/">Minimal</a><a href="../../looks/neumorphism/">Neumorphism</a><a href="../../looks/retro_desktop/">Retro Desktop</a><a href="../../looks/studio/">Studio</a><a href="../../looks/terminal/">Terminal</a></section><section class="nav-group"><h3>Flutter’s own libraries</h3><a href="../../looks/material/">Material (Flutter)</a><a href="../../looks/cupertino/">Cupertino (Flutter)</a></section></div>
+        <p id="empty" hidden>No matching pages.</p>
+        <p class="sr-only" role="status" id="search-count"></p>
+      </nav>
+    </aside>
+    <main id="main" tabindex="-1">
+      <div class="breadcrumb"><a data-follow-look href="../../#components">Components</a> <span aria-hidden="true">/</span> Containers</div>
+      <h1>Data table</h1>
+      <div class="lead"><p>Use a data table when readers need to work with the records they are comparing. Sorting a numeric column should order its values by size.</p>
+</div>
+      <div class="look-bar">
+        <label for="look">Design system</label><div class="look-select"><span id="swatch" style="background:#df6428" aria-hidden="true"></span><select id="look"><optgroup label="Design systems"><option value="appliance" selected data-name="Appliance" data-swatch="#df6428" data-package="appliance_ui" data-study="true">Appliance</option><option value="brutal" data-name="Brutal" data-swatch="#dc5145" data-package="brutal_ui" data-study="true">Brutal</option><option value="civic" data-name="Civic" data-swatch="#24784b" data-package="civic_ui" data-study="true" data-density="false">Civic</option><option value="clay" data-name="Clay" data-swatch="#ff7a5c" data-package="clay_ui" data-study="true">Clay</option><option value="comic" data-name="Comic" data-swatch="#ce3d56" data-package="comic_ui" data-study="true">Comic</option><option value="fluent2" data-name="Fluent 2" data-swatch="#2468ad" data-package="fluent2_design_ui" data-study="true">Fluent 2</option><option value="frosted" data-name="Frosted" data-swatch="#2a2935" data-package="frosted_ui" data-study="true">Frosted</option><option value="gloss" data-name="Gloss" data-swatch="#0e7652" data-package="gloss_ui" data-study="true">Gloss</option><option value="keycap" data-name="Keycap" data-swatch="#2f59cf" data-package="keycap_ui" data-study="true">Keycap</option><option value="ledger" data-name="Ledger" data-swatch="#945942" data-package="ledger_ui" data-study="true">Ledger</option><option value="material_expressive" data-name="Material Expressive" data-swatch="#728044" data-package="material_expressive_ui" data-study="true">Material Expressive</option><option value="minimal" data-name="Minimal" data-swatch="#4f5c57" data-package="minimal_ui" data-study="true">Minimal</option><option value="neumorphism" data-name="Neumorphism" data-swatch="#2e46d0" data-package="neumorphism_ui" data-study="true">Neumorphism</option><option value="retro_desktop" data-name="Retro Desktop" data-swatch="#4b3fd6" data-package="retro_desktop_ui" data-study="true">Retro Desktop</option><option value="studio" data-name="Studio" data-swatch="#aa650e" data-package="studio_ui" data-study="true">Studio</option><option value="terminal" data-name="Terminal" data-swatch="#0b6870" data-package="terminal_ui" data-study="true">Terminal</option></optgroup><optgroup label="Flutter’s own libraries"><option value="material" data-name="Material (Flutter)" data-swatch="#6750a4" data-package="material_ui" data-study="true">Material (Flutter)</option><option value="cupertino" data-name="Cupertino (Flutter)" data-swatch="#007aff" data-package="cupertino_ui" data-study="true">Cupertino (Flutter)</option></optgroup></select><span class="chevron" aria-hidden="true"></span></div>
+        <a class="look-details" id="look-details" href="../../looks/appliance/">About this look</a>
+        <a class="stint-link" data-follow-look href="../../stint/?look=appliance">Stint app</a>
+        <a id="package-link" href="https://pub.dev/packages/appliance_ui">Appliance on pub.dev <span aria-hidden="true">↗</span></a>
+      </div>
+      <noscript><p class="nojs-note">Enable JavaScript to switch design systems and run the Flutter preview.</p></noscript>
+      <p class="look-pages" id="look-pages">The code and parameters below are Appliance's. This page in each look: <a href="../../data-table/appliance/" aria-current="page">Appliance</a>, <a href="../../data-table/brutal/">Brutal</a>, <a href="../../data-table/civic/">Civic</a>, <a href="../../data-table/clay/">Clay</a>, <a href="../../data-table/comic/">Comic</a>, <a href="../../data-table/fluent2/">Fluent 2</a>, <a href="../../data-table/frosted/">Frosted</a>, <a href="../../data-table/gloss/">Gloss</a>, <a href="../../data-table/keycap/">Keycap</a>, <a href="../../data-table/ledger/">Ledger</a>, <a href="../../data-table/material_expressive/">Material Expressive</a>, <a href="../../data-table/minimal/">Minimal</a>, <a href="../../data-table/neumorphism/">Neumorphism</a>, <a href="../../data-table/retro_desktop/">Retro Desktop</a>, <a href="../../data-table/studio/">Studio</a>, <a href="../../data-table/terminal/">Terminal</a>, <a href="../../data-table/material/">Material (Flutter)</a>, <a href="../../data-table/cupertino/">Cupertino (Flutter)</a>.</p>
+      <div id="look-error" hidden><p role="status"></p><button type="button">Try again</button></div>
+      <div id="specimens" data-look="appliance" data-own><section class="example" id="sort-stock" data-example="sort-stock">
+  <div class="section-title"><h2>Sort the stock list</h2><a class="permalink" href="#sort-stock" aria-label="Link to Sort the stock list">#</a></div>
+  <p>Sort by Units to put the smallest quantity first, then reverse the order. Select a row or move to the next page to inspect the remaining record.</p>
+
+  <p class="keyboard-note">AppliancePagination uses one-based page numbers. The example connects it to the table controller’s zero-based page index.</p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Sort the stock list example">
+      <button type="button" role="tab" id="sort-stock-preview-tab" aria-selected="true" aria-controls="sort-stock-preview">Preview</button>
+      <button type="button" role="tab" id="sort-stock-code-tab" aria-selected="false" aria-controls="sort-stock-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="sort-stock-preview" aria-labelledby="sort-stock-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width"><button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button><button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button></div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Appliance Data table interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="sort-stock-code" aria-labelledby="sort-stock-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;data-table&#47;appliance&#47;sort_stock.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:appliance_ui/appliance_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SortStock</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> SortStock({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;SortStock&gt; createState() =&gt; _SortStockState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_SortStockState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">SortStock</span>&gt; </span>{
+  <span class="hljs-keyword">final</span> stock = RawDataTableController&lt;(<span class="hljs-built_in">String</span>, <span class="hljs-built_in">int</span>)&gt;(
+    rows: <span class="hljs-keyword">const</span> [(<span class="hljs-string">'Ink'</span>, <span class="hljs-number">12</span>), (<span class="hljs-string">'Paper'</span>, <span class="hljs-number">4</span>), (<span class="hljs-string">'Pens'</span>, <span class="hljs-number">8</span>)],
+    rowKey: (item) =&gt; item.$<span class="hljs-number">1</span>,
+    pageSize: <span class="hljs-number">2</span>,
+    columns: [
+      RawDataColumn(id: <span class="hljs-string">'item'</span>, label: <span class="hljs-string">'Item'</span>, sortKey: (item) =&gt; item.$<span class="hljs-number">1</span>),
+      RawDataColumn(
+        id: <span class="hljs-string">'units'</span>,
+        label: <span class="hljs-string">'Units'</span>,
+        numeric: <span class="hljs-keyword">true</span>,
+        sortKey: (item) =&gt; item.$<span class="hljs-number">2</span>,
+      ),
+    ],
+  );
+  <span class="hljs-meta">@override</span>
+  <span class="hljs-keyword">void</span> dispose() {
+    stock.dispose();
+    <span class="hljs-keyword">super</span>.dispose();
+  }
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">620</span>),
+    child: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ApplianceDataTable&lt;(<span class="hljs-built_in">String</span>, <span class="hljs-built_in">int</span>)&gt;(
+            controller: stock,
+            cellText: (item, column) =&gt;
+                column.id == <span class="hljs-string">'item'</span> ? item.$<span class="hljs-number">1</span> : <span class="hljs-string">'<span class="hljs-subst">${item.$<span class="hljs-number">2</span>}</span>'</span>,
+          ),
+          <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+          ListenableBuilder(
+            listenable: stock,
+            builder: (context, _) =&gt; AppliancePagination(
+              page: stock.page + <span class="hljs-number">1</span>,
+              pageCount: stock.pageCount,
+              onChanged: (page) =&gt; stock.goToPage(page - <span class="hljs-number">1</span>),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;appliance_ui&#47;latest&#47;appliance_ui&#47;ApplianceDataTable-class.html">ApplianceDataTable API ↗</a></div>
+  <dl><div><dt><code>controller</code></dt><dd>Holds the rows, columns, sorting, selection and current page.</dd></div><div><dt><code>cellText</code></dt><dd>A cell&#39;s words.</dd></div><div><dt><code>selectable</code></dt><dd>Whether rows are selected (a box at each row&#39;s start).</dd></div><div><dt><code>onActivate</code></dt><dd>Opens a row (Enter, or a press when it does not select).</dd></div><div><dt><code>rowLabel</code></dt><dd>A row&#39;s name for its box, for a screen reader.</dd></div><div><dt><code>style</code></dt><dd>Its style, over ApplianceThemeData.tableStyle.</dd></div></dl>
+</section></div>
+      <section class="behaviour" id="behaviour"><h2>Shared behaviour</h2><ul>
+<li><strong>Keyboard and focus.</strong> Tab through the sortable headers and use Enter or Space. Try the row and paging controls in the order the look supplies.</li>
+<li><strong>Screen readers.</strong> Read the header’s sort state, then follow the first item and its quantity. Compare the announced row state before and after selection.</li>
+<li><strong>Direction and type.</strong> RTL changes where each column starts. Try sorting at phone width and 200% to check how headers and values fit.</li>
+</ul>
+<a href="https://pub.dev/packages/ui_core">Read the ui_core contract <span aria-hidden="true">↗</span></a></section>
+
+    </main>
+  </div>
+</body>
+</html>

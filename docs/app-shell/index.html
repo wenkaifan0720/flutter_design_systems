@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#fdfcf9">
   
   <title>App shell · Flutter Design Systems</title>
-  <meta name="description" content="An app shell holds the current page and its main navigation together. Use the look’s scaffold to give related pages a consistent place to live.">
+  <meta name="description" content="An app shell holds the app’s places and their navigation: a tab bar on a phone, a rail or a sidebar on a wider window. Each place keeps its own pages, so a page opened in one place is still there when the reader comes back to it. Use the look’s app shell for an app’s top-level places.">
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../site.css">
   <script defer src="../navigation.js"></script>
@@ -33,7 +33,7 @@
     <main id="main" tabindex="-1">
       <div class="breadcrumb"><a data-follow-look href="../#components">Components</a> <span aria-hidden="true">/</span> Navigation</div>
       <h1>App shell</h1>
-      <div class="lead"><p>An app shell holds the current page and its main navigation together. Use the look’s scaffold to give related pages a consistent place to live.</p>
+      <div class="lead"><p>An app shell holds the app’s places and their navigation: a tab bar on a phone, a rail or a sidebar on a wider window. Each place keeps its own pages, so a page opened in one place is still there when the reader comes back to it. Use the look’s app shell for an app’s top-level places.</p>
 </div>
       <div class="look-bar">
         <label for="look">Design system</label><div class="look-select"><span id="swatch" aria-hidden="true"></span><select id="look"><optgroup label="Design systems"><option value="appliance" data-name="Appliance" data-swatch="#df6428" data-package="appliance_ui" data-study="true">Appliance</option><option value="brutal" data-name="Brutal" data-swatch="#dc5145" data-package="brutal_ui" data-study="true">Brutal</option><option value="civic" data-name="Civic" data-swatch="#24784b" data-package="civic_ui" data-study="true" data-density="false">Civic</option><option value="clay" data-name="Clay" data-swatch="#ff7a5c" data-package="clay_ui" data-study="true">Clay</option><option value="comic" data-name="Comic" data-swatch="#ce3d56" data-package="comic_ui" data-study="true">Comic</option><option value="fluent2" data-name="Fluent 2" data-swatch="#2468ad" data-package="fluent2_design_ui" data-study="true">Fluent 2</option><option value="frosted" data-name="Frosted" data-swatch="#2a2935" data-package="frosted_ui" data-study="true">Frosted</option><option value="gloss" data-name="Gloss" data-swatch="#0e7652" data-package="gloss_ui" data-study="true">Gloss</option><option value="keycap" data-name="Keycap" data-swatch="#2f59cf" data-package="keycap_ui" data-study="true">Keycap</option><option value="ledger" data-name="Ledger" data-swatch="#945942" data-package="ledger_ui" data-study="true">Ledger</option><option value="material_expressive" data-name="Material Expressive" data-swatch="#728044" data-package="material_expressive_ui" data-study="true">Material Expressive</option><option value="minimal" data-name="Minimal" data-swatch="#4f5c57" data-package="minimal_ui" data-study="true">Minimal</option><option value="neumorphism" data-name="Neumorphism" data-swatch="#2e46d0" data-package="neumorphism_ui" data-study="true">Neumorphism</option><option value="retro_desktop" data-name="Retro Desktop" data-swatch="#4b3fd6" data-package="retro_desktop_ui" data-study="true">Retro Desktop</option><option value="studio" data-name="Studio" data-swatch="#aa650e" data-package="studio_ui" data-study="true">Studio</option><option value="terminal" data-name="Terminal" data-swatch="#0b6870" data-package="terminal_ui" data-study="true">Terminal</option></optgroup><optgroup label="Flutter’s own libraries"><option value="material" data-name="Material (Flutter)" data-swatch="#6750a4" data-package="material_ui" data-study="true">Material (Flutter)</option><option value="cupertino" data-name="Cupertino (Flutter)" data-swatch="#007aff" data-package="cupertino_ui" data-study="true">Cupertino (Flutter)</option></optgroup></select><span class="chevron" aria-hidden="true"></span></div>
@@ -41,9 +41,10 @@
         <a class="stint-link" data-follow-look href="../stint/?look=appliance">Stint app</a>
         <a id="package-link" href="https://pub.dev/packages/appliance_ui">Appliance on pub.dev <span aria-hidden="true">↗</span></a>
       </div>
-      <noscript><p>Enable JavaScript to switch design systems and run the Flutter preview.</p></noscript>
+      <noscript><p class="nojs-note">Enable JavaScript to switch design systems and run the Flutter preview.</p></noscript>
+      <p class="look-pages" id="look-pages">The code and parameters below are Appliance's. This page in each look: <a href="../app-shell/appliance/" aria-current="page">Appliance</a>, <a href="../app-shell/brutal/">Brutal</a>, <a href="../app-shell/civic/">Civic</a>, <a href="../app-shell/clay/">Clay</a>, <a href="../app-shell/comic/">Comic</a>, <a href="../app-shell/fluent2/">Fluent 2</a>, <a href="../app-shell/frosted/">Frosted</a>, <a href="../app-shell/gloss/">Gloss</a>, <a href="../app-shell/keycap/">Keycap</a>, <a href="../app-shell/ledger/">Ledger</a>, <a href="../app-shell/material_expressive/">Material Expressive</a>, <a href="../app-shell/minimal/">Minimal</a>, <a href="../app-shell/neumorphism/">Neumorphism</a>, <a href="../app-shell/retro_desktop/">Retro Desktop</a>, <a href="../app-shell/studio/">Studio</a>, <a href="../app-shell/terminal/">Terminal</a>, <a href="../app-shell/material/">Material (Flutter)</a>, <a href="../app-shell/cupertino/">Cupertino (Flutter)</a>.</p>
       <div id="look-error" hidden><p role="status"></p><button type="button">Try again</button></div>
-      <div id="specimens"><section class="example" id="navigate-workspace" data-example="navigate-workspace">
+      <div id="specimens" data-look="appliance"><section class="example" id="navigate-workspace" data-example="navigate-workspace">
   <div class="section-title"><h2>Navigate a workspace</h2><a class="permalink" href="#navigate-workspace" aria-label="Link to Navigate a workspace">#</a></div>
   <p>Choose Search, then switch between phone and desktop. Observe where the look places navigation and whether the current page stays selected.</p>
 
@@ -79,17 +80,26 @@
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_NavigateWorkspaceState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">NavigateWorkspace</span>&gt; </span>{
   <span class="hljs-built_in">int</span> selected = <span class="hljs-number">0</span>;
-  <span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> destinations = [
-    ApplianceDestination(icon: Icons.home_outlined, label: <span class="hljs-string">'Home'</span>),
-    ApplianceDestination(icon: Icons.search, label: <span class="hljs-string">'Search'</span>),
-  ];
 
   <span class="hljs-meta">@override</span>
-  Widget build(BuildContext context) =&gt; ApplianceScaffold(
-    destinations: destinations,
+  Widget build(BuildContext context) =&gt; ApplianceScaffold.branches(
+    header: <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Workspace'</span>),
+    destinations: <span class="hljs-keyword">const</span> [
+      ApplianceDestination(icon: Icons.home_outlined, label: <span class="hljs-string">'Home'</span>),
+      ApplianceDestination(icon: Icons.search, label: <span class="hljs-string">'Search'</span>),
+    ],
     selectedIndex: selected,
     onSelected: (next) =&gt; setState(() =&gt; selected = next),
-    body: Center(child: Text(selected == <span class="hljs-number">0</span> ? <span class="hljs-string">'Home page'</span> : <span class="hljs-string">'Search page'</span>)),
+    branches: [
+      (context) =&gt; <span class="hljs-keyword">const</span> ApplianceScreen(
+        topBar: ApplianceAppBar(title: <span class="hljs-string">'Home'</span>),
+        body: Center(child: Text(<span class="hljs-string">'Home page'</span>)),
+      ),
+      (context) =&gt; <span class="hljs-keyword">const</span> ApplianceScreen(
+        topBar: ApplianceAppBar(title: <span class="hljs-string">'Search'</span>),
+        body: Center(child: Text(<span class="hljs-string">'Search page'</span>)),
+      ),
+    ],
   );
 }
 </code></pre>
@@ -98,7 +108,7 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;appliance_ui&#47;latest&#47;appliance_ui&#47;ApplianceScaffold-class.html">ApplianceScaffold API ↗</a></div>
-  <dl><div><dt><code>destinations</code></dt><dd>Main pages available in this shell.</dd></div><div><dt><code>selectedIndex</code></dt><dd>Index of the current page.</dd></div><div><dt><code>onSelected</code></dt><dd>Selects another destination.</dd></div><div><dt><code>body</code></dt><dd>Content for the selected page.</dd></div></dl>
+  <dl><div><dt><code>header</code></dt><dd>Names the app beside its navigation on wider windows.</dd></div><div><dt><code>destinations</code></dt><dd>The places, each an icon and a label, in reading order.</dd></div><div><dt><code>selectedIndex</code></dt><dd>The place on screen.</dd></div><div><dt><code>onSelected</code></dt><dd>Receives the place the reader chooses.</dd></div><div><dt><code>branches</code></dt><dd>Builds each place’s first page; each place keeps its own pages, and choosing it again returns to its first.</dd></div></dl>
 </section></div>
       <section class="behaviour" id="behaviour"><h2>Shared behaviour</h2><ul>
 <li><strong>Keyboard and focus.</strong> Tab to a destination and activate it. The current page stays in the same shell while the content changes.</li>

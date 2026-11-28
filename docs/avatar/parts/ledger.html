@@ -42,7 +42,7 @@
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          LedgerAvatar(initials: ana ? <span class="hljs-string">'AL'</span> : <span class="hljs-string">'JR'</span>, label: name),
+          LedgerAvatar(initials: ana ? <span class="hljs-string">'AL'</span> : <span class="hljs-string">'JR'</span>, semanticLabel: name),
           <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
           Text(name),
           <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
@@ -61,5 +61,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;ledger_ui&#47;latest&#47;ledger_ui&#47;LedgerAvatar-class.html">LedgerAvatar API ↗</a></div>
-  <dl><div><dt><code>initials</code></dt><dd>One or two letters.</dd></div><div><dt><code>label</code></dt><dd>Supplies the accessible name for the avatar or its action.</dd></div><div><dt><code>onTap</code></dt><dd>Runs when the reader activates the component. Leave it unset for a read-only item.</dd></div><div><dt><code>focusNode</code></dt><dd>Supplies a focus node owned and disposed by the caller.</dd></div><div><dt><code>autofocus</code></dt><dd>Requests focus when the control first appears.</dd></div><div><dt><code>tapAlignment</code></dt><dd>Positions the avatar within its larger hit target.</dd></div></dl>
+  <dl><div><dt><code>initials</code></dt><dd>One or two letters.</dd></div><div><dt><code>semanticLabel</code></dt><dd>Supplies the accessible name for the avatar or its action.</dd></div><div><dt><code>onTap</code></dt><dd>Runs when the reader activates the component. Leave it unset for a read-only item.</dd></div><div><dt><code>focusNode</code></dt><dd>Supplies a focus node owned and disposed by the caller.</dd></div><div><dt><code>autofocus</code></dt><dd>Requests focus when the control first appears.</dd></div><div><dt><code>tapAlignment</code></dt><dd>Positions the avatar within its larger hit target.</dd></div></dl>
 </section>

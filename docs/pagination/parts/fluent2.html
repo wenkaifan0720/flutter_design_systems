@@ -45,7 +45,7 @@
           pages: titles.length,
           page: page,
           onChanged: (next) =&gt; setState(() =&gt; page = next),
-          label: <span class="hljs-string">'Result pages'</span>,
+          semanticLabel: <span class="hljs-string">'Result pages'</span>,
         ),
         <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
         Text(<span class="hljs-string">'Page <span class="hljs-subst">$page</span> · <span class="hljs-subst">${titles[page - <span class="hljs-number">1</span>]}</span>'</span>),

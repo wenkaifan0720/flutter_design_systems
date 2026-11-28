@@ -2,11 +2,16 @@ const select = document.querySelector('#look');
 const specimens = document.querySelector('#specimens');
 const packageLink = document.querySelector('#package-link');
 const options = [...select.options];
-const variants = new Map([[page.defaultLook, specimens.innerHTML]]);
+// The look whose code the page was served with; a look's own page
+// (`<slug>/<look>/`) keeps it unless the address names another.
+const servedLook = specimens.dataset.look || page.defaultLook;
+const variants = new Map([[servedLook, specimens.innerHTML]]);
+document.querySelector('#look-pages').hidden = true;
 const loadError = document.querySelector('#look-error');
 let revision = 0;
 
-const look = selectedLook(options.map(option => option.value), page.defaultLook);
+const look = 'own' in specimens.dataset && !params.has('look') ? servedLook :
+  selectedLook(options.map(option => option.value), servedLook);
 const state = {
   width: ['390', '1440'].includes(params.get('width')) ? params.get('width') :
     matchMedia('(max-width: 760px)').matches ? '390' : '1440',
@@ -65,7 +70,7 @@ async function renderLook(id) {
   specimens.setAttribute('aria-busy', 'true');
   if (!variants.has(id)) {
     try {
-      const response = await fetch('parts/' + id + '.html');
+      const response = await fetch(page.root + page.page + '/parts/' + id + '.html');
       if (!response.ok) throw new Error(String(response.status));
       variants.set(id, await response.text());
     } catch {

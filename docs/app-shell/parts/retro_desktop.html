@@ -33,28 +33,34 @@
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_NavigateWorkspaceState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">NavigateWorkspace</span>&gt; </span>{
   <span class="hljs-built_in">int</span> selected = <span class="hljs-number">0</span>;
-  <span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> destinations = [
-    RetroDesktopNavItem(
-      label: <span class="hljs-string">'Home'</span>,
-      short: <span class="hljs-string">'Home'</span>,
-      icon: RetroDesktopGlyphs.folder,
-    ),
-    RetroDesktopNavItem(
-      label: <span class="hljs-string">'Search'</span>,
-      short: <span class="hljs-string">'Search'</span>,
-      icon: RetroDesktopGlyphs.search,
-    ),
-  ];
 
   <span class="hljs-meta">@override</span>
-  Widget build(BuildContext context) =&gt; RetroDesktopScaffold(
-    scroll: <span class="hljs-keyword">false</span>,
-    footer: RetroDesktopNavigationBar(
-      items: destinations,
-      selectedIndex: selected,
-      onDestinationSelected: (next) =&gt; setState(() =&gt; selected = next),
-    ),
-    body: Center(child: Text(selected == <span class="hljs-number">0</span> ? <span class="hljs-string">'Home page'</span> : <span class="hljs-string">'Search page'</span>)),
+  Widget build(BuildContext context) =&gt; RetroDesktopAppShell.branches(
+    brand: <span class="hljs-string">'Workspace'</span>,
+    destinations: <span class="hljs-keyword">const</span> [
+      RetroDesktopNavItem(
+        label: <span class="hljs-string">'Home'</span>,
+        short: <span class="hljs-string">'Home'</span>,
+        icon: RetroDesktopGlyphs.folder,
+      ),
+      RetroDesktopNavItem(
+        label: <span class="hljs-string">'Search'</span>,
+        short: <span class="hljs-string">'Search'</span>,
+        icon: RetroDesktopGlyphs.search,
+      ),
+    ],
+    selectedIndex: selected,
+    onDestinationSelected: (next) =&gt; setState(() =&gt; selected = next),
+    branches: [
+      (context) =&gt; <span class="hljs-keyword">const</span> RetroDesktopScaffold(
+        appBar: RetroDesktopAppBar(title: <span class="hljs-string">'Home'</span>),
+        body: Center(child: Text(<span class="hljs-string">'Home page'</span>)),
+      ),
+      (context) =&gt; <span class="hljs-keyword">const</span> RetroDesktopScaffold(
+        appBar: RetroDesktopAppBar(title: <span class="hljs-string">'Search'</span>),
+        body: Center(child: Text(<span class="hljs-string">'Search page'</span>)),
+      ),
+    ],
   );
 }
 </code></pre>
@@ -62,6 +68,6 @@
   </div>
 </section>
 <section class="reference" id="parameters">
-  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;retro_desktop_ui&#47;latest&#47;retro_desktop_ui&#47;RetroDesktopScaffold-class.html">RetroDesktopScaffold API ↗</a></div>
-  <dl><div><dt><code>footer</code></dt><dd>Places the look’s destination bar alongside the page body.</dd></div><div><dt><code>body</code></dt><dd>Content of the selected destination.</dd></div><div><dt><code>scroll</code></dt><dd>Controls whether the scaffold scrolls the body.</dd></div></dl>
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;retro_desktop_ui&#47;latest&#47;retro_desktop_ui&#47;RetroDesktopAppShell-class.html">RetroDesktopAppShell API ↗</a></div>
+  <dl><div><dt><code>brand</code></dt><dd>Names the app beside its navigation on wider windows.</dd></div><div><dt><code>destinations</code></dt><dd>The places, each an icon and a label, in reading order.</dd></div><div><dt><code>selectedIndex</code></dt><dd>The place on screen.</dd></div><div><dt><code>onDestinationSelected</code></dt><dd>Receives the place the reader chooses.</dd></div><div><dt><code>branches</code></dt><dd>Builds each place’s first page; each place keeps its own pages, and choosing it again returns to its first.</dd></div></dl>
 </section>

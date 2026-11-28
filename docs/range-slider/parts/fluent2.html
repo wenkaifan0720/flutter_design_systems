@@ -44,7 +44,7 @@
           values: prices,
           max: <span class="hljs-number">100</span>,
           divisions: <span class="hljs-number">20</span>,
-          label: <span class="hljs-string">'Price'</span>,
+          semanticLabel: <span class="hljs-string">'Price'</span>,
           onChanged: (next) =&gt; setState(() =&gt; prices = next),
           valueLabel: (price) =&gt; <span class="hljs-string">'\$<span class="hljs-subst">${price.round()}</span>'</span>,
         ),
@@ -60,5 +60,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;fluent2_design_ui&#47;latest&#47;fluent2_design_ui&#47;Fluent2RangeSlider-class.html">Fluent2RangeSlider API ↗</a></div>
-  <dl><div><dt><code>values</code></dt><dd>Lower and upper prices on the track.</dd></div><div><dt><code>max</code></dt><dd>Largest allowed price.</dd></div><div><dt><code>valueLabel</code></dt><dd>Formats the selected price in dollars.</dd></div><div><dt><code>label</code></dt><dd>Names the price range.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives the updated bounds.</dd></div></dl>
+  <dl><div><dt><code>values</code></dt><dd>Lower and upper prices on the track.</dd></div><div><dt><code>max</code></dt><dd>Largest allowed price.</dd></div><div><dt><code>valueLabel</code></dt><dd>Formats the selected price in dollars.</dd></div><div><dt><code>semanticLabel</code></dt><dd>Names the price range.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives the updated bounds.</dd></div></dl>
 </section>

@@ -42,7 +42,7 @@
       children: [
         <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Inbox'</span>),
         <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
-        Fluent2Badge(unread, label: <span class="hljs-string">'<span class="hljs-subst">$unread</span> unread messages'</span>),
+        Fluent2Badge(unread, semanticLabel: <span class="hljs-string">'<span class="hljs-subst">$unread</span> unread messages'</span>),
         <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
         Fluent2Button(
           unread == <span class="hljs-number">0</span> ? <span class="hljs-string">'Reset inbox'</span> : <span class="hljs-string">'Mark one read'</span>,
@@ -59,5 +59,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;fluent2_design_ui&#47;latest&#47;fluent2_design_ui&#47;Fluent2Badge-class.html">Fluent2Badge API ↗</a></div>
-  <dl><div><dt><code>count</code></dt><dd>What it counts.</dd></div><div><dt><code>label</code></dt><dd>Names what the badge counts for a screen reader.</dd></div><div><dt><code>child</code></dt><dd>Supplies the content inside the component.</dd></div><div><dt><code>overflowCount</code></dt><dd>The largest count shown before it reads N+.</dd></div><div><dt><code>showZero</code></dt><dd>Draw a zero count instead of nothing.</dd></div><div><dt><code>color</code></dt><dd>Fluent&#39;s color.</dd></div><div><dt><code>appearance</code></dt><dd>Selects the component’s visual treatment.</dd></div><div><dt><code>size</code></dt><dd>Selects the size of the component.</dd></div><div><dt><code>shape</code></dt><dd>Chooses the outline of the component.</dd></div></dl>
+  <dl><div><dt><code>count</code></dt><dd>What it counts.</dd></div><div><dt><code>semanticLabel</code></dt><dd>Names what the badge counts for a screen reader.</dd></div><div><dt><code>child</code></dt><dd>Supplies the content inside the component.</dd></div><div><dt><code>overflowCount</code></dt><dd>The largest count shown before it reads N+.</dd></div><div><dt><code>showZero</code></dt><dd>Draw a zero count instead of nothing.</dd></div><div><dt><code>color</code></dt><dd>Fluent&#39;s color.</dd></div><div><dt><code>appearance</code></dt><dd>Selects the component’s visual treatment.</dd></div><div><dt><code>size</code></dt><dd>Selects the size of the component.</dd></div><div><dt><code>shape</code></dt><dd>Chooses the outline of the component.</dd></div></dl>
 </section>

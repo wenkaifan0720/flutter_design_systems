@@ -42,7 +42,7 @@
       mainAxisSize: MainAxisSize.min,
       children: [
         ComicCheckbox(
-          label: <span class="hljs-string">'Email receipt'</span>,
+          semanticLabel: <span class="hljs-string">'Email receipt'</span>,
           value: receipt,
           onChanged: (next) =&gt; setState(() =&gt; receipt = next ?? <span class="hljs-keyword">false</span>),
         ),
@@ -60,5 +60,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;comic_ui&#47;latest&#47;comic_ui&#47;ComicCheckbox-class.html">ComicCheckbox API ↗</a></div>
-  <dl><div><dt><code>label</code></dt><dd>Names the choice.</dd></div><div><dt><code>value</code></dt><dd>Whether a receipt is requested.</dd></div><div><dt><code>onChanged</code></dt><dd>Updates the request when the checkbox changes.</dd></div></dl>
+  <dl><div><dt><code>semanticLabel</code></dt><dd>Names the choice.</dd></div><div><dt><code>value</code></dt><dd>Whether a receipt is requested.</dd></div><div><dt><code>onChanged</code></dt><dd>Updates the request when the checkbox changes.</dd></div></dl>
 </section>

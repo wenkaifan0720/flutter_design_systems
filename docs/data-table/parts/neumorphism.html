@@ -58,7 +58,7 @@
     child: SingleChildScrollView(
       child: NeumorphicDataTable&lt;(<span class="hljs-built_in">String</span>, <span class="hljs-built_in">int</span>)&gt;(
         controller: stock,
-        label: <span class="hljs-string">'Stock'</span>,
+        semanticLabel: <span class="hljs-string">'Stock'</span>,
         cell: (item, column) =&gt; column.id == <span class="hljs-string">'item'</span> ? item.$<span class="hljs-number">1</span> : <span class="hljs-string">'<span class="hljs-subst">${item.$<span class="hljs-number">2</span>}</span>'</span>,
       ),
     ),
@@ -70,5 +70,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;neumorphism_ui&#47;latest&#47;neumorphism_ui&#47;NeumorphicDataTable-class.html">NeumorphicDataTable API ↗</a></div>
-  <dl><div><dt><code>controller</code></dt><dd>The rows, columns, sort, selection and page.</dd></div><div><dt><code>cell</code></dt><dd>A cell&#39;s words.</dd></div><div><dt><code>selectable</code></dt><dd>Whether the rows have checks.</dd></div><div><dt><code>onActivate</code></dt><dd>Called by Enter or a double press on a row.</dd></div><div><dt><code>label</code></dt><dd>What a screen reader calls the table.</dd></div></dl>
+  <dl><div><dt><code>controller</code></dt><dd>The rows, columns, sort, selection and page.</dd></div><div><dt><code>cell</code></dt><dd>A cell&#39;s words.</dd></div><div><dt><code>selectable</code></dt><dd>Whether the rows have checks.</dd></div><div><dt><code>onActivate</code></dt><dd>Called by Enter or a double press on a row.</dd></div><div><dt><code>semanticLabel</code></dt><dd>What a screen reader calls the table.</dd></div></dl>
 </section>

@@ -42,7 +42,7 @@
       mainAxisSize: MainAxisSize.min,
       children: [
         Fluent2InputGroup(
-          label: <span class="hljs-string">'Parcel weight in kilograms'</span>,
+          semanticLabel: <span class="hljs-string">'Parcel weight in kilograms'</span>,
           suffix: <span class="hljs-string">'kg'</span>,
           onChanged: (value) =&gt; setState(() =&gt; weight = value.trim()),
         ),
@@ -58,5 +58,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;fluent2_design_ui&#47;latest&#47;fluent2_design_ui&#47;Fluent2InputGroup-class.html">Fluent2InputGroup API ↗</a></div>
-  <dl><div><dt><code>label</code></dt><dd>Identifies the value and its unit.</dd></div><div><dt><code>suffix</code></dt><dd>Fixed kilogram unit beside the editable value.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives only the editable portion.</dd></div></dl>
+  <dl><div><dt><code>semanticLabel</code></dt><dd>Identifies the value and its unit.</dd></div><div><dt><code>suffix</code></dt><dd>Fixed kilogram unit beside the editable value.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives only the editable portion.</dd></div></dl>
 </section>

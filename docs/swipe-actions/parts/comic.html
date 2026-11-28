@@ -55,7 +55,7 @@
             child: ComicListTile(
               title: <span class="hljs-string">'Route note'</span>,
               subtitle: read ? <span class="hljs-string">'Read'</span> : <span class="hljs-string">'Unread'</span>,
-              label: read ? <span class="hljs-string">'Route note, read'</span> : <span class="hljs-string">'Route note, unread'</span>,
+              semanticLabel: read ? <span class="hljs-string">'Route note, read'</span> : <span class="hljs-string">'Route note, unread'</span>,
               onPressed: () =&gt; setState(() =&gt; read = !read),
             ),
           ),

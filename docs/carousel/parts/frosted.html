@@ -31,7 +31,7 @@
   Widget build(BuildContext context) =&gt; ConstrainedBox(
     constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
     child: <span class="hljs-keyword">const</span> FrostedCarouselView(
-      label: <span class="hljs-string">'Rooms'</span>,
+      semanticLabel: <span class="hljs-string">'Rooms'</span>,
       height: <span class="hljs-number">112</span>,
       children: [
         Center(child: Text(<span class="hljs-string">'Hall'</span>)),
@@ -47,5 +47,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;frosted_ui&#47;latest&#47;frosted_ui&#47;FrostedCarouselView-class.html">FrostedCarouselView API ↗</a></div>
-  <dl><div><dt><code>children</code></dt><dd>The child widgets in reading order.</dd></div><div><dt><code>height</code></dt><dd>The vertical space reserved for the component.</dd></div><div><dt><code>viewportFraction</code></dt><dd>Sets the share of the viewport used by one slide.</dd></div><div><dt><code>loop</code></dt><dd>Allows the sequence to wrap around.</dd></div><div><dt><code>onPageChanged</code></dt><dd>Receives the index of the new slide.</dd></div><div><dt><code>label</code></dt><dd>The label exposed to a screen reader.</dd></div></dl>
+  <dl><div><dt><code>children</code></dt><dd>The child widgets in reading order.</dd></div><div><dt><code>height</code></dt><dd>The vertical space reserved for the component.</dd></div><div><dt><code>viewportFraction</code></dt><dd>Sets the share of the viewport used by one slide.</dd></div><div><dt><code>loop</code></dt><dd>Allows the sequence to wrap around.</dd></div><div><dt><code>onPageChanged</code></dt><dd>Receives the index of the new slide.</dd></div><div><dt><code>semanticLabel</code></dt><dd>The label exposed to a screen reader.</dd></div></dl>
 </section>

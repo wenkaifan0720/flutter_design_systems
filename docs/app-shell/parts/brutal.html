@@ -34,17 +34,20 @@
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_NavigateWorkspaceState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">NavigateWorkspace</span>&gt; </span>{
   <span class="hljs-built_in">int</span> selected = <span class="hljs-number">0</span>;
-  <span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> destinations = [
-    BrutalDestination(icon: Icons.home_outlined, label: <span class="hljs-string">'Home'</span>),
-    BrutalDestination(icon: Icons.search, label: <span class="hljs-string">'Search'</span>),
-  ];
 
   <span class="hljs-meta">@override</span>
-  Widget build(BuildContext context) =&gt; BrutalScaffold(
-    destinations: destinations,
+  Widget build(BuildContext context) =&gt; BrutalAppShell.branches(
+    brand: <span class="hljs-string">'Workspace'</span>,
+    tabs: <span class="hljs-keyword">const</span> [
+      BrutalTab(Icons.home_outlined, <span class="hljs-string">'Home'</span>),
+      BrutalTab(Icons.search, <span class="hljs-string">'Search'</span>),
+    ],
     selectedIndex: selected,
     onDestinationSelected: (next) =&gt; setState(() =&gt; selected = next),
-    body: Center(child: Text(selected == <span class="hljs-number">0</span> ? <span class="hljs-string">'Home page'</span> : <span class="hljs-string">'Search page'</span>)),
+    branches: [
+      (context) =&gt; <span class="hljs-keyword">const</span> BrutalScreen(body: Center(child: Text(<span class="hljs-string">'Home page'</span>))),
+      (context) =&gt; <span class="hljs-keyword">const</span> BrutalScreen(body: Center(child: Text(<span class="hljs-string">'Search page'</span>))),
+    ],
   );
 }
 </code></pre>
@@ -52,6 +55,6 @@
   </div>
 </section>
 <section class="reference" id="parameters">
-  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;brutal_ui&#47;latest&#47;brutal_ui&#47;BrutalScaffold-class.html">BrutalScaffold API ↗</a></div>
-  <dl><div><dt><code>destinations</code></dt><dd>Main pages available in this shell.</dd></div><div><dt><code>selectedIndex</code></dt><dd>Index of the current page.</dd></div><div><dt><code>onDestinationSelected</code></dt><dd>Selects another destination.</dd></div><div><dt><code>body</code></dt><dd>Content for the selected page.</dd></div></dl>
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;brutal_ui&#47;latest&#47;brutal_ui&#47;BrutalAppShell-class.html">BrutalAppShell API ↗</a></div>
+  <dl><div><dt><code>brand</code></dt><dd>Names the app beside its navigation on wider windows.</dd></div><div><dt><code>tabs</code></dt><dd>The places, each an icon and a label, in reading order.</dd></div><div><dt><code>selectedIndex</code></dt><dd>The place on screen.</dd></div><div><dt><code>onDestinationSelected</code></dt><dd>Receives the place the reader chooses.</dd></div><div><dt><code>branches</code></dt><dd>Builds each place’s first page; each place keeps its own pages, and choosing it again returns to its first.</dd></div></dl>
 </section>

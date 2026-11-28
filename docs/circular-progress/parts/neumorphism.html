@@ -40,7 +40,7 @@
     spacing: <span class="hljs-number">12</span>,
     children: [
       <span class="hljs-keyword">if</span> (running)
-        <span class="hljs-keyword">const</span> NeumorphicCircularProgressIndicator(label: <span class="hljs-string">'Syncing folder'</span>),
+        <span class="hljs-keyword">const</span> NeumorphicCircularProgressIndicator(semanticLabel: <span class="hljs-string">'Syncing folder'</span>),
       Text(running ? <span class="hljs-string">'Syncing folder'</span> : <span class="hljs-string">'Folder ready'</span>),
       NeumorphicButton(
         running ? <span class="hljs-string">'Finish sync'</span> : <span class="hljs-string">'Start sync'</span>,
@@ -55,5 +55,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;neumorphism_ui&#47;latest&#47;neumorphism_ui&#47;NeumorphicCircularProgressIndicator-class.html">NeumorphicCircularProgressIndicator API ↗</a></div>
-  <dl><div><dt><code>label</code></dt><dd>Names the operation while it is running.</dd></div><div><dt><code>size</code></dt><dd>Sets the spinner size.</dd></div><div><dt><code>value</code></dt><dd>Sets determinate progress when a fraction is known.</dd></div><div><dt><code>color</code></dt><dd>Overrides the ink used for the spinner.</dd></div></dl>
+  <dl><div><dt><code>semanticLabel</code></dt><dd>Names the operation while it is running.</dd></div><div><dt><code>size</code></dt><dd>Sets the spinner size.</dd></div><div><dt><code>value</code></dt><dd>Sets determinate progress when a fraction is known.</dd></div><div><dt><code>color</code></dt><dd>Overrides the ink used for the spinner.</dd></div></dl>
 </section>

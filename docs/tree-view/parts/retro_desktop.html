@@ -48,7 +48,7 @@
     constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
     child: SingleChildScrollView(
       child: RetroDesktopTreeView&lt;<span class="hljs-built_in">String</span>&gt;(
-        label: <span class="hljs-string">'Folders'</span>,
+        semanticLabel: <span class="hljs-string">'Folders'</span>,
         controller: folders,
         labelOf: (folder) =&gt; folder,
       ),
@@ -61,5 +61,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;retro_desktop_ui&#47;latest&#47;retro_desktop_ui&#47;RetroDesktopTreeView-class.html">RetroDesktopTreeView API ↗</a></div>
-  <dl><div><dt><code>controller</code></dt><dd>Holds the tree’s nodes, expanded branches and selection.</dd></div><div><dt><code>labelOf</code></dt><dd>A node&#39;s words.</dd></div><div><dt><code>iconOf</code></dt><dd>A node&#39;s glyph, if any.</dd></div><div><dt><code>onActivate</code></dt><dd>Called when a node is opened (Enter, or a double press).</dd></div><div><dt><code>label</code></dt><dd>The tree&#39;s name for a screen reader.</dd></div></dl>
+  <dl><div><dt><code>controller</code></dt><dd>Holds the tree’s nodes, expanded branches and selection.</dd></div><div><dt><code>labelOf</code></dt><dd>A node&#39;s words.</dd></div><div><dt><code>iconOf</code></dt><dd>A node&#39;s glyph, if any.</dd></div><div><dt><code>onActivate</code></dt><dd>Called when a node is opened (Enter, or a double press).</dd></div><div><dt><code>semanticLabel</code></dt><dd>The tree&#39;s name for a screen reader.</dd></div></dl>
 </section>

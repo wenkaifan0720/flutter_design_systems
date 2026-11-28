@@ -31,7 +31,7 @@
   Widget build(BuildContext context) =&gt; ConstrainedBox(
     constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
     child: <span class="hljs-keyword">const</span> Fluent2CarouselView(
-      label: <span class="hljs-string">'Rooms'</span>,
+      semanticLabel: <span class="hljs-string">'Rooms'</span>,
       aspect: <span class="hljs-number">3.4</span>,
       children: [
         Center(child: Text(<span class="hljs-string">'Hall'</span>)),
@@ -47,5 +47,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;fluent2_design_ui&#47;latest&#47;fluent2_design_ui&#47;Fluent2CarouselView-class.html">Fluent2CarouselView API ↗</a></div>
-  <dl><div><dt><code>focusNode</code></dt><dd>Supplies a focus node owned and disposed by the caller.</dd></div><div><dt><code>autofocus</code></dt><dd>Requests focus when the control first appears.</dd></div><div><dt><code>children</code></dt><dd>The slides.</dd></div><div><dt><code>label</code></dt><dd>What a screen reader calls it.</dd></div><div><dt><code>initialItem</code></dt><dd>The first slide shown.</dd></div><div><dt><code>looping</code></dt><dd>Whether it runs past its ends.</dd></div><div><dt><code>autoplay</code></dt><dd>How long each slide stays, when it turns by itself.</dd></div><div><dt><code>onChanged</code></dt><dd>Told the slide it settles on.</dd></div><div><dt><code>aspect</code></dt><dd>The viewport&#39;s width over its height.</dd></div></dl>
+  <dl><div><dt><code>focusNode</code></dt><dd>Supplies a focus node owned and disposed by the caller.</dd></div><div><dt><code>autofocus</code></dt><dd>Requests focus when the control first appears.</dd></div><div><dt><code>children</code></dt><dd>The slides.</dd></div><div><dt><code>semanticLabel</code></dt><dd>What a screen reader calls it.</dd></div><div><dt><code>initialItem</code></dt><dd>The first slide shown.</dd></div><div><dt><code>looping</code></dt><dd>Whether it runs past its ends.</dd></div><div><dt><code>autoplay</code></dt><dd>How long each slide stays, when it turns by itself.</dd></div><div><dt><code>onChanged</code></dt><dd>Told the slide it settles on.</dd></div><div><dt><code>aspect</code></dt><dd>The viewport&#39;s width over its height.</dd></div></dl>
 </section>

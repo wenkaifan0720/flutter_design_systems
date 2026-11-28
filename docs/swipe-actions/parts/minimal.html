@@ -23,6 +23,7 @@
     <div class="source" role="tabpanel" id="archive-note-code" aria-labelledby="archive-note-code-tab" hidden>
       <div class="source-head"><span class="filename">components&#47;swipe-actions&#47;minimal&#47;archive_note.dart</span><button type="button" class="copy">Copy code</button></div>
       <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:material_ui/material_ui.dart'</span> <span class="hljs-keyword">show</span> Icons;
 <span class="hljs-keyword">import</span> <span class="hljs-string">'package:minimal_ui/minimal_ui.dart'</span>;
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ArchiveNote</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
@@ -51,6 +52,13 @@
                 <span class="hljs-string">'Archive'</span>,
                 onPressed: () =&gt; setState(() =&gt; archived = <span class="hljs-keyword">true</span>),
               ),
+              <span class="hljs-comment">// A delete marks itself destructive: the danger tone and a bin.</span>
+              MinimalSwipeAction(
+                <span class="hljs-string">'Delete'</span>,
+                icon: Icons.delete_outline,
+                destructive: <span class="hljs-keyword">true</span>,
+                onPressed: () =&gt; setState(() =&gt; archived = <span class="hljs-keyword">true</span>),
+              ),
             ],
             child: MinimalListTile(
               title: <span class="hljs-string">'Route note'</span>,
@@ -66,5 +74,5 @@
 </section>
 <section class="reference" id="parameters">
   <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;minimal_ui&#47;latest&#47;minimal_ui&#47;MinimalSwipeActions-class.html">MinimalSwipeActions API ↗</a></div>
-  <dl><div><dt><code>child</code></dt><dd>The row — usually a MinimalThemeData.rowHeight row with its own hairline.</dd></div><div><dt><code>leading</code></dt><dd>Actions revealed by a drag toward the trailing edge, first nearest the leading edge.</dd></div><div><dt><code>trailing</code></dt><dd>Actions revealed by a drag toward the leading edge, first nearest the trailing edge.</dd></div><div><dt><code>allowsFullSwipe</code></dt><dd>A long swipe past 60 % of the row performs the first action on that edge.</dd></div><div><dt><code>initiallyOpen</code></dt><dd>Starts the row with its actions revealed.</dd></div></dl>
+  <dl><div><dt><code>child</code></dt><dd>The row — usually a MinimalThemeData.rowHeight row with its own hairline.</dd></div><div><dt><code>leading</code></dt><dd>Actions revealed by a drag toward the trailing edge, first nearest the leading edge.</dd></div><div><dt><code>trailing</code></dt><dd>Actions revealed by a drag toward the leading edge, first nearest the trailing edge. Each is a MinimalSwipeAction: its label, onPressed, an optional icon, and destructive: true for a delete, drawn in the danger tone.</dd></div><div><dt><code>allowsFullSwipe</code></dt><dd>A long swipe past 60 % of the row performs the first action on that edge.</dd></div><div><dt><code>initiallyOpen</code></dt><dd>Starts the row with its actions revealed.</dd></div></dl>
 </section>
